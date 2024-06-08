@@ -52,4 +52,9 @@ class User extends Authenticatable
             'is_premium' => 'boolean', 
         ];
     }
+
+    public function student()
+        {
+            return $this->hasOne(Student::class, 'user_id');
+        }
 }

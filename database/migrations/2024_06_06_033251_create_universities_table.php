@@ -11,10 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('capstone_manuscripts', function (Blueprint $table) {
+        Schema::create('universities', function (Blueprint $table) {
             $table->id();
+            $table->string('uni_name');
             $table->timestamps();
         });
+
     }
 
     /**
@@ -22,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('capstone_manuscripts');
+        Schema::dropIfExists('universities');
     }
 };

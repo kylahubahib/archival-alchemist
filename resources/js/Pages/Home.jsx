@@ -58,7 +58,7 @@ export default function Home({auth}) {
                      empowering individuals to unlock their full potential and embark on transformative journeys of discovery.</p>
                 </div>
             </div>
-        </div>
+           </div>
 
         </>
     );

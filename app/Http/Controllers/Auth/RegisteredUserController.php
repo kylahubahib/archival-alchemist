@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers\Auth;
 
+use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Models\Student;
+use App\Models\Faculty;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -20,7 +23,7 @@ class RegisteredUserController extends Controller
      */
     public function create(): Response
     {
-        return Inertia::render('Auth/Register');
+        return Inertia::render('Auth/RegistrationForm');
     }
 
     /**
@@ -29,30 +32,55 @@ class RegisteredUserController extends Controller
      * @throws \Illuminate\Validation\ValidationException
      */
     public function store(Request $request): RedirectResponse
-    {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|lowercase|email|max:255|unique:'.User::class,
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
-        ]);
+{
+    $validatedData = $request->validate([
+        'name' => 'required|string|max:255',
+        'email' => 'required|string|email|max:255|unique:users',
+        'password' => ['required', 'confirmed', Rules\Password::defaults()],
+        'role' => 'required|string',
+        'uni_branch_id' => 'integer',
+        'uni_id_num' => 'string|max:50',
+    ]);
 
+    \Log::info('Validated Data:', $validatedData);
+
+    try {
         $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'uni_id_num' => null, 
-            'user_pnum' => null, 
-            'user_aboutme' => null, 
-            'user_type' => 'student', 
-            'user_status' => 'active', 
-            'is_premium' => false, 
-            'user_pic' => null, 
+            'name' => $validatedData['name'],
+            'email' => $validatedData['email'],
+            'password' => Hash::make($validatedData['password']),
+            'uni_id_num' => $validatedData['uni_id_num'] ?? null,
+            'user_type' => $validatedData['role'],
+            'user_status' => 'active',
+            'is_premium' => false,
         ]);
 
-        event(new Registered($user));
+        \Log::info('User created:', ['user_id' => $user->id]);
 
-        Auth::login($user);
+        if ($validatedData['role'] === 'student') {
+            $student = Student::create([
+                'user_id' => $user->id,
+                'uni_branch_id' => $validatedData['uni_branch_id'],
+                'course' => 'Bachelor of Science in Information Technology'
+            ]);
+            \Log::info('Student created:', ['student_id' => $student->id]);
+        } elseif ($validatedData['role'] === 'teacher') {
+            $faculty = Faculty::create([
+                'user_id' => $user->id,
+                'uni_branch_id' => $validatedData['uni_branch_id'],
+            ]);
+            \Log::info('Faculty created:', ['faculty_id' => $faculty->id]);
+        }
 
-        return redirect(route('savedlist', absolute: false));
+        //\Log::info('Redirecting to login');
+        //return redirect()->route('login')->with('success', 'Registration successful! Please log in.');
+
+    } catch (\Exception $e) {
+        \Log::error('Error during registration:', ['error' => $e->getMessage()]);
+        return redirect()->back()->withErrors(['error' => 'An unexpected error occurred. Please try again.']);
     }
+}
+
+
+    
 }

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\UniversityController;
 use App\Http\Middleware\CheckUserTypeMiddleware;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
@@ -29,7 +30,7 @@ Route::get('/forum', function () {
 })->middleware(['auth', 'verified', 'user-type:student,teacher'])->name('forum');
 
 Route::get('/class', function () {
-    return Inertia::render('Users/Class');
+    return Inertia::render('Users/Class/Class');
 })->middleware(['auth', 'verified', 'user-type:student,teacher'])->name('class');
 
 
@@ -144,5 +145,9 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
+
+Route::get('api/universities-branches', [UniversityController::class, 'getUniversitiesWithBranches']);
+
+
 
 require __DIR__.'/auth.php';
