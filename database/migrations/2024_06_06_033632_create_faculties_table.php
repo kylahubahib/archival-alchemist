@@ -15,7 +15,8 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('user_id')->unique();
             $table->unsignedBigInteger('uni_branch_id')->unique();
-            $table->string('teacher_position');
+            $table->string('faculty_position');
+            //$table->string('teacher_position');
             $table->timestamps();
 
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');

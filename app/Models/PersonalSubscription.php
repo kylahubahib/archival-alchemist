@@ -8,23 +8,26 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
-class Student extends Model
+class PersonalSubscription extends Model
 {
     use HasFactory;
 
     protected $fillable = [
         'user_id',
-        'uni_branch_id',
-        'course'
+        'plan_id',
+        'persub_status',
+        'total_amount',
+        'start_date',
+        'end_date'
     ];
+
+    public function plan(): BelongsTo
+    {
+        return $this->belongsTo(SubscriptionPlan::class, 'plan_id');
+    }
 
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
-    }
-
-    public function university_branch(): BelongsTo
-    {
-        return $this->belongsTo(UniversityBranch::class, 'uni_branch_id');
     }
 }

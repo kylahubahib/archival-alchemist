@@ -16,13 +16,20 @@ class CheckUserTypeMiddleware
      */
     public function handle(Request $request, Closure $next, ...$allowedUserTypes)
     {
-        // Check if the user is authenticated and their user type matches the allowed user type
-        if (in_array($request->user()->user_type, $allowedUserTypes)) {
-            // If the user type is allowed, proceed to the next middleware
+        $user = $request->user();
+
+        // Check if user is not authenticated
+        if (in_array('guest', $allowedUserTypes) && !$user) {
             return $next($request);
         }
-    
+
+        // Check if there is an authenticated user
+        if ($user) {
+            if (in_array($user->user_type, $allowedUserTypes)) {
+                return $next($request);
+            }
+        }
+
         return Redirect::back()->with('error', 'Unauthorized');
     }
-    
 }

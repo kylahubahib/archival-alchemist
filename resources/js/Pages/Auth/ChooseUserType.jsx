@@ -1,7 +1,7 @@
 import React from 'react';
 import Stepper from '@/Components/Stepper';
 
-export default function ChooseUserType({ nextStep, handleChange, values }) {
+export default function ChooseUserType({ nextStep, handleChange, values, errors }) {
     const { role } = values;
 
     const continueStep = (e) => {

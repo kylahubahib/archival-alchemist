@@ -6,7 +6,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
 export default function JoinAffiliation({ nextStep, prevStep, handleChange, values }) {
-    const { uni_branch_id, uni_id_num, role, idnumber } = values;
+    const { uni_branch_id, uni_id_num } = values;
     const [universities, setUniversities] = useState([]);
 
     useEffect(() => {
@@ -49,15 +49,13 @@ export default function JoinAffiliation({ nextStep, prevStep, handleChange, valu
 
                 <InputLabel value={'Id Number'} />
                 <TextInput
-                    id="'uni_id_num"
-                    name="'uni_id_num"
-                    value={idnumber}
+                    id="uni_id_num"
+                    name="uni_id_num"
+                    value={uni_id_num}
                     className="mt-1 block w-full"
                     isFocused={true}
                     onChange={handleChange('uni_id_num')}
                 />
-
-                
 
                 <div className="flex items-center justify-between mt-4">
                     <button type="button" onClick={prevStep} className="btn btn-secondary mr-5">Back</button>

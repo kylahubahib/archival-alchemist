@@ -1,35 +1,19 @@
 import React from 'react';
 import { Head, Link } from '@inertiajs/react';
-import { Inertia } from '@inertiajs/inertia'; 
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import Stepper from '@/Components/Stepper';
 
-export default function Register({ prevStep, handleChange, values = {}, handleSubmit, errors = {}, setErrors }) {
-    const { name = '', email = '', password = '', password_confirmation = '' } = values;
-    
-    const submitForm = async (e) => {
-        e.preventDefault();
-        try {
-            const response = await axios.post('/register', values);
-            console.log(response.data);
-            Inertia.visit('/login');
-        } catch (error) {
-            if (error.response) {
-                setErrors(error.response.data.errors);
-            } else {
-                console.error(error);
-            }
-        }
-    };
+export default function Register({ prevStep, handleChange, values, handleSubmit, errors }) {
+    const { name, email, password, password_confirmation } = values;
 
     return (
         <>
             <Head title="Register" />
             <Stepper steps={['1', '2', '3']} currentStep={3} />
-            <form onSubmit={submitForm}>
+            <form onSubmit={handleSubmit}>
                 <div>
                     <InputLabel htmlFor="name" value="Name" />
                     <TextInput

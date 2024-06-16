@@ -7,27 +7,27 @@ use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
+// Route::get('/', function () {
+//     return Inertia::render('Home', [
+//         'canLogin' => Route::has('login'),
+//         'canRegister' => Route::has('register'),
+//         'laravelVersion' => Application::VERSION,
+//         'phpVersion' => PHP_VERSION,
+//     ]);
+// });
+
 Route::get('/', function () {
-    return Inertia::render('Home', [
-        'canLogin' => Route::has('login'),
-        'canRegister' => Route::has('register'),
-        'laravelVersion' => Application::VERSION,
-        'phpVersion' => PHP_VERSION,
-    ]);
+    return Inertia::render('Home');
 });
 
 
-Route::get('/home', function () {
-    return Inertia::render('Home');
-})->name('home');
-
 Route::get('/library', function () {
     return Inertia::render('Users/Library');
-})->middleware(['auth', 'verified', 'user-type:student,teacher'])->name('library');
+})->middleware(['user-type:student,teacher,guest'])->name('library');
 
 Route::get('/forum', function () {
     return Inertia::render('Users/Forum');
-})->middleware(['auth', 'verified', 'user-type:student,teacher'])->name('forum');
+})->middleware(['user-type:student,teacher,guest'])->name('forum');
 
 Route::get('/class', function () {
     return Inertia::render('Users/Class/Class');
@@ -125,6 +125,11 @@ Route::get('/institution/subscription-billing', function () {
 // })->middleware(['auth', 'verified'])->name('dashboard');
 
 //guest
+
+Route::get('/home', function () {
+    return Inertia::render('Home');
+})->name('home');
+
 Route::get('/tour', function () {
     return Inertia::render('Tour');
 })->name('tour');
@@ -133,9 +138,12 @@ Route::get('/pricing', function () {
     return Inertia::render('Pricing');
 })->name('pricing');
 
-Route::get('/termsandcondition', function () {
+Route::get('/terms-and-condition', function () {
     return Inertia::render('Terms&Condition');
 })->name('termsandcondition');
+
+
+
 
 
 

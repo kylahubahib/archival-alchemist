@@ -20,13 +20,13 @@ const SearchBar = ({ onSearch }) => {
                 placeholder="Search..."
                 value={query}
                 onChange={handleChange}
-                className=" w-96 px-4 py-2 rounded-l-full focus:outline-none focus:ring focus:border-customlightBlue flex-1"
+                className=" w-96 px-4 py-2 rounded-l-full focus:outline-none flex-1"
             />
             <button
                 type="submit"
-                className="px-4 py-2 bg-gray-100 text-white font-semibold rounded-r-full 
+                className=" px-4 py-3 bg-gray-100 text-white font-semibold rounded-r-full 
                 hover:bg-gray-200 focus:outline-none focus:bg-customlightBlue flex items-center">
-                <FaSearch className="text-customBlue" />
+                <FaSearch className="text-customBlue" size={20} />
             </button>
         </form>
     );

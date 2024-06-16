@@ -6,6 +6,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class User extends Authenticatable
 {
@@ -53,8 +56,23 @@ class User extends Authenticatable
         ];
     }
 
-    public function student()
-        {
-            return $this->hasOne(Student::class, 'user_id');
-        }
+    public function student(): HasOne
+    {
+        return $this->hasOne(Student::class, 'user_id');        
+    }
+
+    public function faculty(): HasOne
+    {
+        return $this->hasOne(Faculty::class, 'user_id');        
+    }
+
+    public function institution_admin(): HasOne
+    {
+        return $this->hasOne(InstitutionAdmin::class, 'user_id');        
+    }
+
+    public function personal_subscription(): HasOne
+    {
+        return $this->hasOne(PersonalSubscription::class, 'user_id');        
+    }
 }

@@ -5,17 +5,15 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 
-class Student extends Model
+class InstitutionAdmin extends Model
 {
     use HasFactory;
 
     protected $fillable = [
         'user_id',
-        'uni_branch_id',
-        'course'
+        'insub_id',
+        'ins_admin_proof'
     ];
 
     public function user(): BelongsTo
@@ -23,8 +21,10 @@ class Student extends Model
         return $this->belongsTo(User::class, 'user_id');
     }
 
-    public function university_branch(): BelongsTo
+    public function institution_subscription(): BelongsTo
     {
-        return $this->belongsTo(UniversityBranch::class, 'uni_branch_id');
+        return $this->belongsTo(InstitutionSubscription::class, 'insub_id');
     }
+
+
 }
