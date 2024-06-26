@@ -12,3 +12,5 @@
 
  Installed package in npm
  - npm install date-fns
+
+...
