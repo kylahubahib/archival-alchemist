@@ -2,6 +2,7 @@ import ApplicationLogo from '@/Components/ApplicationLogo';
 import NavLink from '@/Components/NavLink';
 
 export default function GuestLayout({ user, children }) {
+
     return (
         <div className="min-h-screen bg-customlightBlue flex flex-col">
         <nav className="bg-transparent border-b border-gray-100">
@@ -18,7 +19,14 @@ export default function GuestLayout({ user, children }) {
                     <div className="flex space-x-8 sm:space-x-10">
                     {user ? (
                                 <>
-                                <NavLink to='/savedlist' active={route().current('savedlist')} className="text-customBlue">My Account</NavLink>
+                                {user.user_type === 'superadmin' ?(
+                                    <NavLink to={'/dashboard'} active={route().current('dashboard')} className="text-customBlue">My Account</NavLink>
+                                ) : user.user_type === 'admin' ? (
+                                    <NavLink to={'/institution/students'} active={route().current('institution-students')} className="text-customBlue">My Account</NavLink>
+                                ) : (
+                                    <NavLink to={'/savedlist'} active={route().current('savedlist')} className="text-customBlue">My Account</NavLink>
+                                )}
+                
                                 </>
                             ) : (
                                 <>

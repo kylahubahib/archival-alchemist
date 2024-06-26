@@ -75,4 +75,9 @@ class User extends Authenticatable
     {
         return $this->hasOne(PersonalSubscription::class, 'user_id');        
     }
+
+    public function custom_content(): HasOne
+    {
+        return $this->hasMany(CustomContent::class, 'user_id');        
+    }
 }

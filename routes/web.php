@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\TermsAndConditionController;
 use App\Http\Controllers\UniversityController;
 use App\Http\Middleware\CheckUserTypeMiddleware;
 use App\Http\Controllers\ProfileController;
@@ -23,109 +24,82 @@ Route::get('/', function () {
 
 Route::get('/library', function () {
     return Inertia::render('Users/Library');
-})->middleware(['user-type:student,teacher,guest'])->name('library');
-
+})->middleware(['user-type:student,teacher,guest'])-> name('library');
 Route::get('/forum', function () {
     return Inertia::render('Users/Forum');
 })->middleware(['user-type:student,teacher,guest'])->name('forum');
 
+
 Route::get('/class', function () {
     return Inertia::render('Users/Class/Class');
 })->middleware(['auth', 'verified', 'user-type:student,teacher'])->name('class');
-
-
 Route::get('/savedlist', function () {
     return Inertia::render('Users/SavedList');
 })->middleware(['auth', 'verified', 'user-type:student,teacher'])->name('savedlist');
-
 Route::get('/inbox', function () {
     return Inertia::render('Users/Inbox');
 })->middleware(['auth', 'verified', 'user-type:student,teacher'])->name('inbox');
 
 
 
-
-
 //SUPERADMIN
-Route::get('/dashboard', function () {
-    return Inertia::render('SuperAdmin/Dashboard');
-})->middleware(['auth', 'verified', 'user-type:superadmin'])->name('dashboard');
+Route::middleware(['auth', 'verified', 'user-type:superadmin'])->group(function () {
+    Route::get('/dashboard', function () {
+        return Inertia::render('SuperAdmin/Dashboard');})->name('dashboard');
 
-Route::get('/users', function () {
-    return Inertia::render('SuperAdmin/Users');
-})->middleware(['auth', 'verified', 'user-type:superadmin'])->name('users');
+    Route::get('/users', function () {
+        return Inertia::render('SuperAdmin/Users');})->name('users');
 
-Route::get('/archives', function () {
-    return Inertia::render('SuperAdmin/Archives');
-})->middleware(['auth', 'verified', 'user-type:superadmin'])->name('archives');
+    Route::get('/archives', function () {
+        return Inertia::render('SuperAdmin/Archives');})->name('archives');
 
-Route::get('/subscription-billing', function () {
-    return Inertia::render('SuperAdmin/SubscriptionBilling');
-})->middleware(['auth', 'verified', 'user-type:superadmin'])->name('subscription-billing');
+    Route::get('/subscription-billing', function () {
+        return Inertia::render('SuperAdmin/SubscriptionBilling');})->name('subscription-billing');
 
-Route::get('/user-feedbacks', function () {
-    return Inertia::render('SuperAdmin/UserFeedbacks');
-})->middleware(['auth', 'verified', 'user-type:superadmin'])->name('user-feedbacks');
+    Route::get('/user-feedbacks', function () {
+        return Inertia::render('SuperAdmin/UserFeedbacks');})->name('user-feedbacks');
 
-Route::get('/user-reports', function () {
-    return Inertia::render('SuperAdmin/UserReports');
-})->middleware(['auth', 'verified', 'user-type:superadmin'])->name('user-reports');
+    Route::get('/user-reports', function () {
+        return Inertia::render('SuperAdmin/UserReports');})->name('user-reports');
 
-Route::get('/terms-condition', function () {
-    return Inertia::render('SuperAdmin/TermsCondition');
-})->middleware(['auth', 'verified', 'user-type:superadmin'])->name('terms-condition');
+    Route::get('/subscription-plans', function () {
+        return Inertia::render('SuperAdmin/SubscriptionPlans');})->name('subscription-plans');
 
-Route::get('/subscription-plans', function () {
-    return Inertia::render('SuperAdmin/SubscriptionPlans');
-})->middleware(['auth', 'verified', 'user-type:superadmin'])->name('subscription-plans');
+    Route::get('/faq', function () {
+        return Inertia::render('SuperAdmin/Faq');})->name('faq');
 
-Route::get('/faq', function () {
-    return Inertia::render('SuperAdmin/Faq');
-})->middleware(['auth', 'verified', 'user-type:superadmin'])->name('faq');
+    Route::get('/advanced', function () {
+        return Inertia::render('SuperAdmin/Advanced');})->name('advanced');
 
-Route::get('/advanced', function () {
-    return Inertia::render('SuperAdmin/Advanced');
-})->middleware(['auth', 'verified', 'user-type:superadmin'])->name('advanced');
-
-
+    Route::resource('manage-terms-and-conditions', TermsAndConditionController::class);
+});
 
 
 //institution admin
-Route::get('/institution/archives', function () {
-    return Inertia::render('InstitutionAdmin/Archives');
-})->middleware(['auth', 'verified', 'user-type:admin'])->name('institution-archives');
+Route::middleware(['auth', 'verified', 'user-type:admin'])->prefix('institution')->group(function () {
+    Route::get('/archives', function () {
+        return Inertia::render('InstitutionAdmin/Archives');})->name('institution-archives');
 
-Route::get('/institution/coadmins', function () {
-    return Inertia::render('InstitutionAdmin/CoAdmins');
-})->middleware(['auth', 'verified', 'user-type:admin'])->name('institution-coadmins');
+    Route::get('/coadmins', function () {
+        return Inertia::render('InstitutionAdmin/CoAdmins');})->name('institution-coadmins');
 
-Route::get('/institution/courses', function () {
-    return Inertia::render('InstitutionAdmin/Courses');
-})->middleware(['auth', 'verified', 'user-type:admin'])->name('institution-courses');
+    Route::get('/courses', function () {
+        return Inertia::render('InstitutionAdmin/Courses');})->name('institution-courses');
 
-Route::get('/institution/departments', function () {
-    return Inertia::render('InstitutionAdmin/Departments');
-})->middleware(['auth', 'verified', 'user-type:admin'])->name('institution-departments');
+    Route::get('/departments', function () {
+        return Inertia::render('InstitutionAdmin/Departments');})->name('institution-departments');
 
-Route::get('/institution/faculties', function () {
-    return Inertia::render('InstitutionAdmin/Faculties');
-})->middleware(['auth', 'verified', 'user-type:admin'])->name('institution-faculties');
+    Route::get('/faculties', function () {
+        return Inertia::render('InstitutionAdmin/Faculties');})->name('institution-faculties');
 
-Route::get('/institution/students', function () {
-    return Inertia::render('InstitutionAdmin/Students');
-})->middleware(['auth', 'verified', 'user-type:admin'])->name('institution-students');
+    Route::get('/students', function () {
+        return Inertia::render('InstitutionAdmin/Students');})->name('institution-students');
 
-Route::get('/institution/subscription-billing', function () {
-    return Inertia::render('InstitutionAdmin/SubscriptionBilling');
-})->middleware(['auth', 'verified', 'user-type:admin'])->name('institution-subscrition-billing');
-
-
-// Route::get('/dashboard', function () {
-//     return Inertia::render('Dashboard');
-// })->middleware(['auth', 'verified'])->name('dashboard');
+    Route::get('/subscription-billing', function () {
+        return Inertia::render('InstitutionAdmin/SubscriptionBilling');})->name('institution-subscription-billing');
+});
 
 //guest
-
 Route::get('/home', function () {
     return Inertia::render('Home');
 })->name('home');
@@ -146,15 +120,17 @@ Route::get('/terms-and-condition', function () {
 
 
 
-
-
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
+//Universities Controller Route
 Route::get('api/universities-branches', [UniversityController::class, 'getUniversitiesWithBranches']);
+
+//Terms and Condition Controller Route
+
 
 
 

@@ -13,8 +13,8 @@ export default function Sidebar({children, color, borderRadius, margin }) {
     
     return (
         <>
-            <aside className="sticky top-1 ...">
-                <nav className={`h-screen flex flex-col ${bgColor} border-r shadow-sm ${radius} ${SidebarMargin}`}>
+            <aside>
+                <nav className={`h-full flex flex-col ${bgColor} border-r shadow-sm ${radius} ${SidebarMargin}`}>
                     <div className="p-4 pb-2 flex justify-between items-center bg-customBlue rounded-t-xl">
                         <button onClick={() => setExpanded((curr) => !curr)} className="p-1.5 rounded-lg text-customlightBlue hover:text-gray-100">
                             {expanded ? <HiMenu size={30} /> : <HiMenu size={30} />}

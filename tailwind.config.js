@@ -17,7 +17,7 @@ export default {
             },
             colors: {
                 customlightBlue: '#e9f1ff',
-                customBlue: '#294996' // Define your custom color here
+                customBlue: '#294996' 
               },
         },
         

@@ -10,4 +10,5 @@
  Laravel Prompts is a PHP package for adding beautiful and user-friendly forms to your command-line 
  applications, with browser-like features including placeholder text and validation.
 
- 
+ Installed package in npm
+ - npm install date-fns
