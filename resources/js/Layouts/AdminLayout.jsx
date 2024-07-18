@@ -18,7 +18,7 @@ export default function AdminLayout({ auth, user, header, children }) {
         {user.user_type == 'superadmin' ? (
              //SIDEBAR FOR THE SUPER ADMIN
             <Sidebar color="customBlue" borderRadius="none" margin="0">
-                <SidebarItem icon={<MdSpaceDashboard size={20} className="text-white group-hover:text-gray-600" />} text="Dashboard" color="white" marginBottom="5" to="/dashboard" />
+                <SidebarItem icon={<MdSpaceDashboard size={20} className="text-white group-hover:text-gray-600" />} text="Dashboard" color="white" to="/dashboard" />
                 <SidebarTitle title="MANAGEMENT"></SidebarTitle>
                 <SidebarItem icon={<FaUsers size={20} className="text-white group-hover:text-gray-600" />} text="Users" color="white" to="/users" />
                 <SidebarItem icon={<FaBook size={20} className="text-white group-hover:text-gray-600" />} text="Archives" color="white" to="/archives" />
@@ -28,9 +28,9 @@ export default function AdminLayout({ auth, user, header, children }) {
 
                 <SidebarTitle title="CUSTOMIZATION"></SidebarTitle>
                 <SidebarItem icon={<FaFileContract size={20} className="text-white group-hover:text-gray-600" />} text="Terms & Conditions" color="white" to="/manage-terms-and-conditions" />
-                <SidebarItem icon={<FaScroll size={20} className="text-white group-hover:text-gray-600" />} text="Subscription Plans" color="white" to="/subscription-plans" />
-                <SidebarItem icon={<BsQuestionCircleFill size={20} className="text-white group-hover:text-gray-600" />} text="FAQs" color="white" to="/faq" />
-                <SidebarItem icon={<FaWrench size={20} className="text-white group-hover:text-gray-600" />} text="Advanced" color="white" to="/advanced" />
+                <SidebarItem icon={<FaScroll size={20} className="text-white group-hover:text-gray-600" />} text="Subscription Plans" color="white" to="/manage-subscription-plans" />
+                <SidebarItem icon={<BsQuestionCircleFill size={20} className="text-white group-hover:text-gray-600" />} text="FAQs" color="white" to="/manage-faqs" />
+                <SidebarItem icon={<FaWrench size={20} className="text-white group-hover:text-gray-600" />} text="Advanced" color="white" to="/advanced/forum" />
             </Sidebar>
         ) : (
             

@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\TermsAndConditionController;
+use App\Http\Controllers\SubscriptionPlanController;
+use App\Http\Controllers\FAQController;
 use App\Http\Controllers\UniversityController;
 use App\Http\Middleware\CheckUserTypeMiddleware;
 use App\Http\Controllers\ProfileController;
@@ -45,7 +47,7 @@ Route::get('/inbox', function () {
 //SUPERADMIN
 Route::middleware(['auth', 'verified', 'user-type:superadmin'])->group(function () {
     Route::get('/dashboard', function () {
-        return Inertia::render('SuperAdmin/Dashboard');})->name('dashboard');
+        return Inertia::render('SuperAdmin/Dashboard/Dashboard');})->name('dashboard');
 
     Route::get('/users', function () {
         return Inertia::render('SuperAdmin/Users');})->name('users');
@@ -57,21 +59,57 @@ Route::middleware(['auth', 'verified', 'user-type:superadmin'])->group(function 
         return Inertia::render('SuperAdmin/SubscriptionBilling');})->name('subscription-billing');
 
     Route::get('/user-feedbacks', function () {
-        return Inertia::render('SuperAdmin/UserFeedbacks');})->name('user-feedbacks');
+        return Inertia::render('SuperAdmin/UserFeedbacks/UserFeedbacks');})->name('user-feedbacks');
 
     Route::get('/user-reports', function () {
-        return Inertia::render('SuperAdmin/UserReports');})->name('user-reports');
+        return Inertia::render('SuperAdmin/UserReports/UserReports');})->name('user-reports');
 
     Route::get('/subscription-plans', function () {
-        return Inertia::render('SuperAdmin/SubscriptionPlans');})->name('subscription-plans');
+         return Inertia::render('SuperAdmin/SubscriptionPlans/SubscriptionPlans');})->name('subscription-plans');
 
     Route::get('/faq', function () {
-        return Inertia::render('SuperAdmin/Faq');})->name('faq');
+        return Inertia::render('SuperAdmin/FrequentlyAskedQuestions/Faq');})->name('faq');
+
+    ///ADVANCED ROUTES
+    ///Decided to create routes for the buttons in advanced page to simplify or easily create the crud functionality 
 
     Route::get('/advanced', function () {
-        return Inertia::render('SuperAdmin/Advanced');})->name('advanced');
+        return Inertia::render('SuperAdmin/Advanced/Advanced');})->name('advanced');
+
+    Route::get('/advanced/forum', function () {
+        return Inertia::render('SuperAdmin/Advanced/Forum/Forum');})->name('advanced-forum');
+
+    Route::get('/advanced/custom-messages', function () {
+        return Inertia::render('SuperAdmin/Advanced/CustomMessages/CustomMessages');})->name('advanced-custom-messages');
+
+    Route::get('/advanced/universities', function () {
+        return Inertia::render('SuperAdmin/Advanced/Universities/Universities');})->name('universities');
+
+    Route::get('/advanced/tags', function () {
+        return Inertia::render('SuperAdmin/Advanced/Tags/Tags');})->name('advanced-tags');
+
+
+    ///ADVANCED ROUTES
 
     Route::resource('manage-terms-and-conditions', TermsAndConditionController::class);
+
+    Route::resource('manage-faqs', FAQController::class);
+
+    Route::resource('manage-subscription-plans', SubscriptionPlanController::class);
+
+    // You can use put or patch. Put is used to update a resource entirely 
+    // while patch is used to update a single fields
+
+    Route::put('manage-terms-and-conditions/{id}/change-status', [TermsAndConditionController::class, 'change_status'])
+    ->name('manage-terms-and-conditions.change_status');
+
+    Route::put('manage-subscription-plans/{id}/change-status', [SubscriptionPlanController::class, 'change_status'])
+    ->name('manage-subscription-plans.change_status');
+
+    Route::put('manage-faqs/{id}/change-status', [FAQController::class, 'change_status'])
+    ->name('manage-faqs.change_status');
+
+
 });
 
 
@@ -108,9 +146,9 @@ Route::get('/tour', function () {
     return Inertia::render('Tour');
 })->name('tour');
 
-Route::get('/pricing', function () {
-    return Inertia::render('Pricing');
-})->name('pricing');
+Route::get('/pricing', [SubscriptionPlanController::class, 'pricing'])->name('pricing');
+
+Route::get('/terms-and-conditions', [TermsAndConditionController::class, 'terms_and_conditions'])->name('terms-and-conditions');
 
 Route::get('/terms-and-condition', function () {
     return Inertia::render('Terms&Condition');
@@ -130,8 +168,6 @@ Route::middleware('auth')->group(function () {
 Route::get('api/universities-branches', [UniversityController::class, 'getUniversitiesWithBranches']);
 
 //Terms and Condition Controller Route
-
-
 
 
 require __DIR__.'/auth.php';

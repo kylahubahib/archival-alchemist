@@ -17,7 +17,7 @@ return new class extends Migration
             $table->decimal('plan_price');
             $table->string('plan_term');
             $table->string('plan_type');
-            $table->unsignedInteger('plan_user_num');
+            $table->unsignedInteger('plan_user_num')->nullable();
             $table->decimal('plan_discount')->nullable();
             $table->unsignedInteger('free_trial_days')->nullable();
             $table->timestamps();

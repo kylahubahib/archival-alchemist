@@ -4,22 +4,20 @@ import AdminLayout from '@/Layouts/AdminLayout';
 import { Head, router } from '@inertiajs/react';
 import { useState } from 'react';
 import Create from "./Create";
-import Show from "./Show";
 import Edit from "./Edit";
 
-export default function TermsCondition({ auth, termsConditions = [] }) {
-    const [filteredData, setFilteredData] = useState(termsConditions);
+export default function FrequentlyAskedQuestion({ auth, faqs}) {
+    const [filteredData, setFilteredData] = useState(faqs);
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-    const [isShowModalOpen, setIsShowModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [filteredStatus, setfilteredStatus] = useState("All");
-    const [selectedTerms, setSelectedTerms] = useState(null);
+    const [selectedQuestion, setSelectedQuestion] = useState(null);
     const [wordEntered, setWordEntered] = useState("");
 
     const handleFilter = (e) => {
         const searchWord = e.target.value;
         setWordEntered(searchWord);
-        const newFilter = termsConditions.filter((value) => {
+        const newFilter = faqs.filter((value) => {
             return (
                 value.content_title.toLowerCase().includes(searchWord.toLowerCase()) ||
                 value.user.name.toLowerCase().includes(searchWord.toLowerCase())
@@ -32,9 +30,9 @@ export default function TermsCondition({ auth, termsConditions = [] }) {
         setfilteredStatus(status);
 
         if(status === "All"){
-            setFilteredData(termsConditions);
+            setFilteredData(faqs);
         } else {
-            setFilteredData(termsConditions.filter(tc => tc.content_status.toLowerCase() === status.toLowerCase()));
+            setFilteredData(faqs.filter(faq => faq.content_status.toLowerCase() === status.toLowerCase()));
         }
     };
 
@@ -42,29 +40,25 @@ export default function TermsCondition({ auth, termsConditions = [] }) {
         setIsCreateModalOpen(true);
     };
 
-    const openIndexModal = (tc) => {
-        setSelectedTerms(tc);
-        setIsShowModalOpen(true);
-    };
 
-    const openEditModal = (tc) => {
-        setSelectedTerms(tc);
+    const openEditModal = (faq) => {
+        setSelectedQuestion(faq);
         setIsEditModalOpen(true);
     };
 
     const closeModal = () => {
-        setFilteredData(termsConditions)
+        setFilteredData(faqs);
+        console.log(faqs)
         setfilteredStatus("All");
         setWordEntered("");
         setIsCreateModalOpen(false);
-        setIsShowModalOpen(false);
         setIsEditModalOpen(false);
-        setSelectedTerms(null);
+        setSelectedQuestion(null);
     };
 
-    const deleteTermCondition = (id) => {
-        if (confirm("Are you sure you want to delete this term and condition?")) {
-            router.delete(route('manage-terms-and-conditions.destroy', id), {
+    const deleteQuestion = (id) => {
+        if (confirm("Are you sure you want to delete this question?")) {
+            router.delete(route('manage-faqs.destroy', id), {
                 preserveScroll: true,
                 onSuccess: () => {
                     alert('Successfully deleted!');
@@ -76,18 +70,18 @@ export default function TermsCondition({ auth, termsConditions = [] }) {
     return (
         <AdminLayout
             user={auth.user}
-            header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Terms And Condition</h2>}
+            header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Frequently Asked Questions</h2>}
         >
-            <Head title="Terms Condition" />
+            <Head title="Frequently Asked Questions" />
 
             <div className="py-12">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
                     <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                         <div className="flex flex-row justify-between m-3">
-                            <div className="text-gray-900">Terms and Condition</div>
+                            <div className="text-gray-900">Frequently Asked Questions</div>
                             <div>
                                 <AddButton onClick={openCreateModal} className="text-customBlue hover:text-white space-x-1">
-                                    <FaPlus /><span>Add T&Cs</span>
+                                    <FaPlus /><span>Add FAQ</span>
                                 </AddButton>
                             </div>
                         </div>
@@ -132,10 +126,10 @@ export default function TermsCondition({ auth, termsConditions = [] }) {
                                 <thead className="text-xs text-gray-700 uppercase bg-gray-50">
                                     <tr>
                                         <th scope="col" className="px-6 py-3">
-                                            Title
+                                            Question
                                         </th>
                                         <th scope="col" className="px-6 py-3">
-                                            Content
+                                            Answer
                                         </th>
                                         <th scope="col" className="px-6 py-3">
                                             Modified By
@@ -149,20 +143,20 @@ export default function TermsCondition({ auth, termsConditions = [] }) {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {filteredData.length > 0 ? ((wordEntered || filteredStatus != "All" ? filteredData : termsConditions).map((tc) => (
-                                        <tr key={tc.id} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50">
+                                    {filteredData.length > 0 ? ((wordEntered || filteredStatus != "All" ? filteredData : faqs).map((faq) => (
+                                        <tr key={faq.id} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50">
                                             <th scope="row" className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
                                                 <div className="pl-3">
-                                                    <div className="text-base font-semibol max-w-44 truncate">{tc.content_title}</div>
+                                                    <div className="text-base font-semibol max-w-44 truncate">{faq.content_title}</div>
                                                 </div>
                                             </th>
-                                            <td className="px-6 py-4 max-w-60 truncate">{tc.content_text}</td>
-                                            <td className="px-6 py-4">{tc.user.name}</td>
-                                            <td className="px-6 py-4">{tc.updated_at}</td>
+                                            <td className="px-6 py-4 max-w-60 truncate">{faq.content_text}</td>
+                                            <td className="px-6 py-4">{faq.user.name}</td>
+                                            <td className="px-6 py-4">{faq.updated_at}</td>
                                             <td className="px-6 py-4 flex flex-col space-y-1">
-                                                <a onClick={() => openIndexModal(tc)} className="font-medium text-blue-600 dark:text-blue-500 hover:underline cursor-pointer">View</a>
-                                                <a onClick={() => openEditModal(tc)} className="font-medium text-blue-600 dark:text-blue-500 hover:underline cursor-pointer">Edit</a>
-                                                <a onClick={() => deleteTermCondition(tc.id)} className="font-medium text-blue-600 dark:text-blue-500 hover:underline cursor-pointer">Delete</a>
+                                                {/* <a onClick={() => openIndexModal(faq)} className="font-medium text-blue-600 dark:text-blue-500 hover:underline cursor-pointer">View</a> */}
+                                                <a onClick={() => openEditModal(faq)} className="font-medium text-blue-600 dark:text-blue-500 hover:underline cursor-pointer">Edit</a>
+                                                <a onClick={() => deleteQuestion(faq.id)} className="font-medium text-blue-600 dark:text-blue-500 hover:underline cursor-pointer">Delete</a>
                                             </td>
                                         </tr>
                                     ))) : (
@@ -178,8 +172,7 @@ export default function TermsCondition({ auth, termsConditions = [] }) {
             </div>
 
             <Create isOpen={isCreateModalOpen} onClose={closeModal}/>
-            {selectedTerms && <Show isOpen={isShowModalOpen} onClose={closeModal} termConditions={selectedTerms} />}
-            {selectedTerms && <Edit isOpen={isEditModalOpen} onClose={closeModal} termConditions={selectedTerms} />}
+            {selectedQuestion && <Edit isOpen={isEditModalOpen} onClose={closeModal} faq={selectedQuestion} />}
         </AdminLayout>
     );
 }

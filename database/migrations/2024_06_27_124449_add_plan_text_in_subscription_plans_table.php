@@ -11,18 +11,18 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('features', function (Blueprint $table) {
-            $table->id();
-            $table->text('feature_name');
-            $table->timestamps();
+        Schema::table('subscription_plans', function (Blueprint $table) {
+            $table->text('plan_text');
         });
     }
 
     /**
-     * Reverse the migrations.
+     * Reverse the migrations
      */
     public function down(): void
     {
-        Schema::dropIfExists('features');
+        Schema::table('subscription_plans', function (Blueprint $table) {
+            $table->dropColumn('plan_text');
+        });
     }
 };

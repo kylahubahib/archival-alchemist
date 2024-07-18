@@ -2,14 +2,23 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\University;
+use App\Models\Features;
 use Illuminate\Http\Request;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Validation\Rules;
+use Inertia\Inertia;
+use Inertia\Response;
+use Illuminate\Support\Facades\Auth;
 
-class UniversityController extends Controller
+
+class FeaturesController extends Controller
 {
+    /**
+     * Display a listing of the resource.
+     */
     public function index()
     {
-        $branches = UniversityBranch::with('university')->get();
+        
     }
 
     /**
@@ -59,11 +68,4 @@ class UniversityController extends Controller
     {
         //
     }
-
-    public function getUniversitiesWithBranches()
-    {
-        $universities = University::with('university_branch')->get();
-        return response()->json($universities);
-    }
-
 }
