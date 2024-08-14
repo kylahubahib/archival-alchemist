@@ -36,4 +36,9 @@ class UniversityBranch extends Model
     {
         return $this->hasOne(InstitutionSubscription::class, 'uni_branch_id');
     }
+
+    public function department(): HasMany
+    {
+        return $this->hasMany(Department::class, 'uni_branch_id');
+    }
 }

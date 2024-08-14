@@ -18,7 +18,10 @@ export default {
             colors: {
                 customlightBlue: '#e9f1ff',
                 customBlue: '#294996' 
-              },
+            },
+            minHeight: {
+                'custom': 'calc(100vh - 12rem)',
+            }
         },
         
     },

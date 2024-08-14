@@ -16,7 +16,7 @@ class TermsAndConditionController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index() 
     {
         $termsConditions = CustomContent::with('user')
             ->where('content_type', 'terms and conditions')
@@ -114,12 +114,6 @@ class TermsAndConditionController extends Controller
 
         return redirect(route('manage-terms-and-conditions.index'))->with('success', 'Terms and conditions updated successfully.');
 
-
-        // // Update status if provided in the request
-        // if ($request->has('status')) {
-        //     $termsAndCondition->status = $request->status;
-        //     $termsAndCondition->save();
-        // }
     }
 
 

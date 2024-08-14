@@ -1,45 +1,55 @@
+import { AiFillEdit } from "react-icons/ai"; 
+import { FaTrash } from "react-icons/fa"; 
+import { CgArrowsExchangeAltV } from "react-icons/cg"; 
 import { FaPlus } from "react-icons/fa";  
 import AddButton from '@/Components/AddButton';
 import AdminLayout from '@/Layouts/AdminLayout';
 import { Head, router } from '@inertiajs/react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Create from "./Create";
 import Edit from "./Edit";
+import Pagination from "@/Components/Pagination";
 
-export default function FrequentlyAskedQuestion({ auth, faqs}) {
+export default function FrequentlyAskedQuestion({ auth, faqs }) {
     const [filteredData, setFilteredData] = useState(faqs);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage] = useState(3);
+    const [filteredStatus, setFilteredStatus] = useState("All");
+    const [wordEntered, setWordEntered] = useState("");
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-    const [filteredStatus, setfilteredStatus] = useState("All");
     const [selectedQuestion, setSelectedQuestion] = useState(null);
-    const [wordEntered, setWordEntered] = useState("");
 
-    const handleFilter = (e) => {
-        const searchWord = e.target.value;
-        setWordEntered(searchWord);
+    useEffect(() => {
         const newFilter = faqs.filter((value) => {
-            return (
-                value.content_title.toLowerCase().includes(searchWord.toLowerCase()) ||
-                value.user.name.toLowerCase().includes(searchWord.toLowerCase())
-            );
+            if (filteredStatus === "All") {
+                return (
+                    (value.content_title.toLowerCase().includes(wordEntered.toLowerCase()) ||
+                    value.user.name.toLowerCase().includes(wordEntered.toLowerCase()))
+                );
+            } else {
+                return (
+                    value.content_status === filteredStatus.toLowerCase() &&
+                    (value.content_title.toLowerCase().includes(wordEntered.toLowerCase()) ||
+                    value.user.name.toLowerCase().includes(wordEntered.toLowerCase()))
+                );
+            }
         });
         setFilteredData(newFilter);
+    }, [filteredStatus, wordEntered, faqs]);
+
+    const handleFilter = (e) => {
+        setWordEntered(e.target.value);
+    };
+
+    const handlePagination = (pageNumber) => {
+        setCurrentPage(pageNumber);
     };
 
     const filterStatus = (status) => {
-        setfilteredStatus(status);
-
-        if(status === "All"){
-            setFilteredData(faqs);
-        } else {
-            setFilteredData(faqs.filter(faq => faq.content_status.toLowerCase() === status.toLowerCase()));
-        }
+        setCurrentPage(1)
+        setFilteredStatus(status);
     };
-
-    const openCreateModal = () => {
-        setIsCreateModalOpen(true);
-    };
-
 
     const openEditModal = (faq) => {
         setSelectedQuestion(faq);
@@ -47,9 +57,9 @@ export default function FrequentlyAskedQuestion({ auth, faqs}) {
     };
 
     const closeModal = () => {
+        setCurrentPage(1);
         setFilteredData(faqs);
-        console.log(faqs)
-        setfilteredStatus("All");
+        setFilteredStatus("All");
         setWordEntered("");
         setIsCreateModalOpen(false);
         setIsEditModalOpen(false);
@@ -61,11 +71,31 @@ export default function FrequentlyAskedQuestion({ auth, faqs}) {
             router.delete(route('manage-faqs.destroy', id), {
                 preserveScroll: true,
                 onSuccess: () => {
+                    setCurrentPage(1);
                     alert('Successfully deleted!');
                 },
             });
         }
     };
+
+    const changeStatus = (id) => {
+        router.put(route('manage-faqs.change_status', id), {}, {
+            preserveScroll: true,
+            onSuccess: () => {
+                setFilteredData(faqs);
+                setFilteredStatus("All");
+                setWordEntered("");
+            },
+            onError: (errors) => {
+                console.error('Update failed', errors);
+            },
+        });
+    };
+
+
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const currentItems = filteredData.slice(indexOfFirstItem, indexOfLastItem);
 
     return (
         <AdminLayout
@@ -78,9 +108,9 @@ export default function FrequentlyAskedQuestion({ auth, faqs}) {
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
                     <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                         <div className="flex flex-row justify-between m-3">
-                            <div className="text-gray-900">Frequently Asked Questions</div>
+                            <div className="text-gray-800 text-3xl font-bold">Frequently Asked Questions</div>
                             <div>
-                                <AddButton onClick={openCreateModal} className="text-customBlue hover:text-white space-x-1">
+                                <AddButton onClick={() => setIsCreateModalOpen(true)} className="text-customBlue hover:text-white space-x-1">
                                     <FaPlus /><span>Add FAQ</span>
                                 </AddButton>
                             </div>
@@ -97,7 +127,7 @@ export default function FrequentlyAskedQuestion({ auth, faqs}) {
                                     </div>
                                     <input 
                                         type="text" 
-                                        id="table-search-users" 
+                                        id="search-users" 
                                         className="block pt-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg w-80 bg-gray-50 focus:ring-blue-500 focus:border-blue-500" 
                                         placeholder="Search" 
                                         value={wordEntered}
@@ -113,59 +143,52 @@ export default function FrequentlyAskedQuestion({ auth, faqs}) {
 
                                     <button onClick={() => {filterStatus("Available")}} 
                                     className={`px-5 py-2 text-xs font-medium text-gray-600 transition-colors duration-200 ${filteredStatus === "Available" ? "bg-customBlue text-white": "hover:bg-gray-100"} sm:text-sm`}>
-                                        Available
+                                        Posted
                                     </button>
 
                                     <button onClick={() => {filterStatus("Unavailable")}} 
                                     className={`px-5 py-2 text-xs font-medium text-gray-600 transition-colors duration-200 ${filteredStatus === "Unavailable" ? "bg-customBlue text-white": "hover:bg-gray-100"} sm:text-sm`}>
-                                        Unavailable
+                                        Not Posted
                                     </button>
                                 </div>
                             </div>
-                            <table className="w-full text-sm text-left rtl:text-right text-gray-500">
-                                <thead className="text-xs text-gray-700 uppercase bg-gray-50">
-                                    <tr>
-                                        <th scope="col" className="px-6 py-3">
-                                            Question
-                                        </th>
-                                        <th scope="col" className="px-6 py-3">
-                                            Answer
-                                        </th>
-                                        <th scope="col" className="px-6 py-3">
-                                            Modified By
-                                        </th>
-                                        <th scope="col" className="px-6 py-3">
-                                            Date Modified
-                                        </th>
-                                        <th scope="col" className="px-6 py-3">
-                                            Action
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {filteredData.length > 0 ? ((wordEntered || filteredStatus != "All" ? filteredData : faqs).map((faq) => (
-                                        <tr key={faq.id} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50">
-                                            <th scope="row" className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
-                                                <div className="pl-3">
-                                                    <div className="text-base font-semibol max-w-44 truncate">{faq.content_title}</div>
-                                                </div>
-                                            </th>
-                                            <td className="px-6 py-4 max-w-60 truncate">{faq.content_text}</td>
-                                            <td className="px-6 py-4">{faq.user.name}</td>
-                                            <td className="px-6 py-4">{faq.updated_at}</td>
-                                            <td className="px-6 py-4 flex flex-col space-y-1">
-                                                {/* <a onClick={() => openIndexModal(faq)} className="font-medium text-blue-600 dark:text-blue-500 hover:underline cursor-pointer">View</a> */}
-                                                <a onClick={() => openEditModal(faq)} className="font-medium text-blue-600 dark:text-blue-500 hover:underline cursor-pointer">Edit</a>
-                                                <a onClick={() => deleteQuestion(faq.id)} className="font-medium text-blue-600 dark:text-blue-500 hover:underline cursor-pointer">Delete</a>
-                                            </td>
-                                        </tr>
-                                    ))) : (
-                                        <tr>
-                                            <td colSpan="5" className="px-6 py-4 text-center text-gray-600">No results found</td>
-                                        </tr>
-                                    )}
-                                </tbody>
-                            </table>
+
+                            {currentItems.length > 0 ? (
+                                currentItems.map((faq) => (
+                                    <div key={faq.id} className="block w-full p-6 my-5 bg-white border border-gray-200 rounded-lg shadow">
+                                        <div className="flex justify-between">
+                                            <div className="flex flex-row space-x-2">
+                                                <h3 className="mb-1 text-xl font-bold tracking-tight text-gray-700">{faq.content_title}</h3>
+                                                <div><p className={`text-xs font-medium me-2 px-2.5 py-0.5 rounded 
+                                                    ${faq.content_status === "available" ? "bg-blue-100 text-blue-800" : "bg-red-100 text-red-800"}`}>
+                                                    {faq.content_status === "available" ? "Posted" : "Not Posted"}
+                                                </p></div>
+                                            </div>
+                                            <div className="flex flex-row space-x-2 items-center">
+                                                <a onClick={() => changeStatus(faq.id)} className="font-medium text-customBlue hover:text-blue-950 cursor-pointer" title="Change Status"><CgArrowsExchangeAltV size={22}/></a>
+                                                <a onClick={() => openEditModal(faq)} className="font-medium  text-customBlue hover:text-blue-950 cursor-pointer" title="Edit"><AiFillEdit size={20} color="#294996"/></a>
+                                                <a onClick={() => deleteQuestion(faq.id)} className="font-medium  text-customBlue hover:text-blue-950 cursor-pointer" title="Delete"><FaTrash color="#294996" /></a>
+                                            </div>
+                                        </div>
+                                        <span className="font-normal text-lg text-gray-700">{faq.content_text}</span>
+                                        <div className="flex justify-between text-sm mt-2">
+                                            <span>Modified By: {faq.user.name}</span>
+                                            <span>Modified At: {faq.updated_at}</span>
+                                        </div>
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="text-center m-5 overflow-hidden">
+                                    <span className="px-6 py-4 text-center text-gray-600">No results found</span>
+                                </div>
+                            )}
+
+                            <Pagination
+                                totalItems={filteredData.length}
+                                itemsPerPage={itemsPerPage}
+                                currentPage={currentPage}
+                                onPageChange={handlePagination}
+                            />
                         </div>
                     </div>
                 </div>

@@ -76,8 +76,43 @@ class User extends Authenticatable
         return $this->hasOne(PersonalSubscription::class, 'user_id');        
     }
 
-    public function custom_content(): HasOne
+    public function custom_content(): HasMany
     {
         return $this->hasMany(CustomContent::class, 'user_id');        
+    }
+
+    public function forum(): HasMany
+    {
+        return $this->hasMany(Forum::class, 'user_id');        
+    }
+
+    public function post(): HasMany
+    {
+        return $this->hasMany(Post::class, 'user_id');        
+    }
+
+    public function user_report(): HasMany
+    {
+        return $this->hasMany(UserReport::class, 'reporter_id', 'reported_id');        
+    }
+
+    public function chat(): HasMany
+    {
+        return $this->hasMany(Chat::class, 'from_id', 'to_id');        
+    }
+
+    public function report_type(): HasMany
+    {
+        return $this->hasMany(ReportType::class, 'user_id');        
+    }
+
+    public function notification(): HasMany
+    {
+        return $this->hasMany(Notification::class, 'user_id');        
+    }
+
+    public function feedback(): HasMany
+    {
+        return $this->hasMany(Feedback::class, 'user_id');        
     }
 }

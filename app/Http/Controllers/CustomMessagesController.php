@@ -2,16 +2,28 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Controller;
+use App\Models\CustomContent;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rules;
+use Inertia\Inertia;
+use Inertia\Response;
+use Illuminate\Support\Facades\Auth;
 
-class PlanFeatureController extends Controller
+class CustomMessagesController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        //
+        $customMessages = CustomContent::with('user')
+            ->where('content_type', 'custom messages')
+            ->get();
+        return Inertia::render('SuperAdmin/Advanced/CustomMessages/CustomMessages', [
+            'customMessages' => $customMessages,
+        ]);
     }
 
     /**

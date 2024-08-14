@@ -4,12 +4,22 @@ namespace App\Http\Controllers;
 
 use App\Models\University;
 use Illuminate\Http\Request;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Validation\Rules;
+use Inertia\Inertia;
+use Inertia\Response;
+use Illuminate\Support\Facades\Auth;
 
 class UniversityController extends Controller
 {
     public function index()
     {
-        $branches = UniversityBranch::with('university')->get();
+        $universities = University::with('university_branch')->get();
+        
+        return Inertia::render('SuperAdmin/Advanced/Universities/Universities', [
+            'universities' => $universities,
+        ]);
+
     }
 
     /**

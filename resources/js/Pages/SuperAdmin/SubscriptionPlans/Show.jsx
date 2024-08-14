@@ -1,9 +1,23 @@
 import Modal from '@/Components/Modal';
 import InputLabel from '@/Components/InputLabel';
 import { CgArrowsExchangeAltV } from "react-icons/cg"; 
+import { router } from '@inertiajs/react';
 
 export default function Show({ isOpen, onClose, subscriptionPlans, planFeatures }) {
     if (!subscriptionPlans) return null;
+
+    
+    const changeStatus = (id) => {
+        router.put(route('manage-subscription-plans.change_status', id), {}, {
+            preserveScroll: true,
+            onSuccess: () => {
+                onClose();
+            },
+            onError: (errors) => {
+                console.error('Update failed', errors);
+            },
+        });
+    };
 
     return (
         <Modal show={isOpen} onClose={onClose} maxWidth='5xl'>
@@ -11,7 +25,7 @@ export default function Show({ isOpen, onClose, subscriptionPlans, planFeatures 
                 <h2 className="text-xl text-white font-bold">View Subscription Plan</h2>
                 <div className="flex items-center space-x-2">
                     <span>Status: <b>{subscriptionPlans.plan_status.toUpperCase()}</b></span>
-                    <button title="Change status" className="focus:outline-none">
+                    <button onClick={() => {changeStatus(subscriptionPlans.id)}} title="Change status" className="focus:outline-none">
                     <CgArrowsExchangeAltV size={25} />
                     </button>
                 </div>

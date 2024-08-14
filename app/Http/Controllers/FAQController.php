@@ -23,9 +23,10 @@ class FAQController extends Controller
             ->get();
 
         return Inertia::render('SuperAdmin/FrequentlyAskedQuestions/Faq', [
-            'faqs' => $faqs,
+            'faqs' => $faqs
         ]);
     }
+
 
     /**
      * Show the form for creating a new resource.
@@ -137,6 +138,5 @@ class FAQController extends Controller
 
     return redirect(route('manage-faqs.index'))->with('success', 'Status updated.');
     }
-
 
 }

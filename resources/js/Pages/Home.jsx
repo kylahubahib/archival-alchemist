@@ -20,12 +20,14 @@ export default function Home({auth}) {
             </section>
 
             <section>
-            <div className="flex flex-row justify-center">
+            <div className="flex flex-row justify-cent er">
                 <div className="w-full text-center bg-white overflow-hidden align-middle">
                     <img src="/images/img1.png" alt="books" className="w-full h-full object-cover" />
                 </div>
 
                 <div className="w-full text-justify bg-white overflow-hidden sm:rounded-t-lg">
+
+                    {/* Make this dynamic */}
                     <p className="text-base md:text-lg p-10"> Archival Alchemist is a vibrant platform where users can seamlessly 
                     browse a diverse array of projects, upload their own creations, and connect with like-minded individuals. 
                     It serves as a dynamic hub for exploration and collaboration, offering users the opportunity to immerse 

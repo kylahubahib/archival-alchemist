@@ -1,9 +1,16 @@
 <?php
 
+use App\Http\Controllers\TagsController;
 use App\Http\Controllers\TermsAndConditionController;
 use App\Http\Controllers\SubscriptionPlanController;
 use App\Http\Controllers\FAQController;
 use App\Http\Controllers\UniversityController;
+use App\Http\Controllers\UserFeedbacksController;
+use App\Http\Controllers\CustomMessagesController;
+use App\Http\Controllers\DepartmentsController;
+use App\Http\Controllers\CoursesController;
+use App\Http\Controllers\SectionsController;
+
 use App\Http\Middleware\CheckUserTypeMiddleware;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
@@ -58,17 +65,17 @@ Route::middleware(['auth', 'verified', 'user-type:superadmin'])->group(function 
     Route::get('/subscription-billing', function () {
         return Inertia::render('SuperAdmin/SubscriptionBilling');})->name('subscription-billing');
 
-    Route::get('/user-feedbacks', function () {
-        return Inertia::render('SuperAdmin/UserFeedbacks/UserFeedbacks');})->name('user-feedbacks');
+    // Route::get('/user-feedbacks', function () {
+    //     return Inertia::render('SuperAdmin/UserFeedbacks/UserFeedbacks');})->name('user-feedbacks');
 
     Route::get('/user-reports', function () {
         return Inertia::render('SuperAdmin/UserReports/UserReports');})->name('user-reports');
 
-    Route::get('/subscription-plans', function () {
-         return Inertia::render('SuperAdmin/SubscriptionPlans/SubscriptionPlans');})->name('subscription-plans');
+    // Route::get('/subscription-plans', function () {
+    //      return Inertia::render('SuperAdmin/SubscriptionPlans/SubscriptionPlans');})->name('subscription-plans');
 
-    Route::get('/faq', function () {
-        return Inertia::render('SuperAdmin/FrequentlyAskedQuestions/Faq');})->name('faq');
+    // Route::get('/faq', function () {
+    //     return Inertia::render('SuperAdmin/FrequentlyAskedQuestions/Faq');})->name('faq');
 
     ///ADVANCED ROUTES
     ///Decided to create routes for the buttons in advanced page to simplify or easily create the crud functionality 
@@ -79,23 +86,28 @@ Route::middleware(['auth', 'verified', 'user-type:superadmin'])->group(function 
     Route::get('/advanced/forum', function () {
         return Inertia::render('SuperAdmin/Advanced/Forum/Forum');})->name('advanced-forum');
 
-    Route::get('/advanced/custom-messages', function () {
-        return Inertia::render('SuperAdmin/Advanced/CustomMessages/CustomMessages');})->name('advanced-custom-messages');
+    // Route::get('/advanced/custom-messages', function () {
+    //     return Inertia::render('SuperAdmin/Advanced/CustomMessages/CustomMessages');})->name('advanced-custom-messages');
+    Route::resource('advanced/custom-messages', CustomMessagesController::class)->names('manage-custom-messages');
 
-    Route::get('/advanced/universities', function () {
-        return Inertia::render('SuperAdmin/Advanced/Universities/Universities');})->name('universities');
+    // Route::get('/advanced/universities', function () {
+    //     return Inertia::render('SuperAdmin/Advanced/Universities/Universities');})->name('universities');
+    Route::resource('advanced/universities', UniversityController::class)->names('manage-universities');
 
-    Route::get('/advanced/tags', function () {
-        return Inertia::render('SuperAdmin/Advanced/Tags/Tags');})->name('advanced-tags');
+    // Route::get('/advanced/tags', function () {
+    //     return Inertia::render('SuperAdmin/Advanced/Tags/Tags');})->name('advanced-tags');
+    Route::resource('advanced/tags', TagsController::class)->names('manage-tags');
 
-
-    ///ADVANCED ROUTES
+    ///END ADVANCED ROUTES
 
     Route::resource('manage-terms-and-conditions', TermsAndConditionController::class);
 
     Route::resource('manage-faqs', FAQController::class);
 
     Route::resource('manage-subscription-plans', SubscriptionPlanController::class);
+
+    Route::resource('user-feedbacks', UserFeedbacksController::class);
+
 
     // You can use put or patch. Put is used to update a resource entirely 
     // while patch is used to update a single fields
@@ -121,11 +133,16 @@ Route::middleware(['auth', 'verified', 'user-type:admin'])->prefix('institution'
     Route::get('/coadmins', function () {
         return Inertia::render('InstitutionAdmin/CoAdmins');})->name('institution-coadmins');
 
-    Route::get('/courses', function () {
-        return Inertia::render('InstitutionAdmin/Courses');})->name('institution-courses');
+    // Route::get('/departments', function () {
+    //     return Inertia::render('InstitutionAdmin/Departments');})->name('institution-departments');
+    Route::resource('/departments', DepartmentsController::class)->names('manage-departments');
 
-    Route::get('/departments', function () {
-        return Inertia::render('InstitutionAdmin/Departments');})->name('institution-departments');
+    // Route::get('/courses', function () {
+    //     return Inertia::render('InstitutionAdmin/Courses');})->name('institution-courses');
+    
+    Route::resource('/courses', CoursesController::class)->names('manage-courses');
+
+    Route::resource('/sections', SectionsController::class)->names('manage-sections');
 
     Route::get('/faculties', function () {
         return Inertia::render('InstitutionAdmin/Faculties');})->name('institution-faculties');

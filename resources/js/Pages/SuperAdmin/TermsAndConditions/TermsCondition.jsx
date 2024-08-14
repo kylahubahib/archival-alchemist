@@ -2,40 +2,48 @@ import { FaPlus } from "react-icons/fa";
 import AddButton from '@/Components/AddButton';
 import AdminLayout from '@/Layouts/AdminLayout';
 import { Head, router } from '@inertiajs/react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Create from "./Create";
 import Show from "./Show";
-import Edit from "./Edit";
+import Edit from "./Edit"; 
+import Pagination from "@/Components/Pagination";
 
 export default function TermsCondition({ auth, termsConditions = [] }) {
     const [filteredData, setFilteredData] = useState(termsConditions);
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [isShowModalOpen, setIsShowModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-    const [filteredStatus, setfilteredStatus] = useState("All");
+    const [filteredStatus, setFilteredStatus] = useState("All");
     const [selectedTerms, setSelectedTerms] = useState(null);
     const [wordEntered, setWordEntered] = useState("");
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage] = useState(5);
 
-    const handleFilter = (e) => {
-        const searchWord = e.target.value;
-        setWordEntered(searchWord);
+    useEffect(() => {
         const newFilter = termsConditions.filter((value) => {
-            return (
-                value.content_title.toLowerCase().includes(searchWord.toLowerCase()) ||
-                value.user.name.toLowerCase().includes(searchWord.toLowerCase())
-            );
+            if (filteredStatus === "All") {
+                return (
+                    (value.content_title.toLowerCase().startsWith(wordEntered.toLowerCase()) ||
+                    value.user.name.toLowerCase().startsWith(wordEntered.toLowerCase()))
+                );
+            } else {
+                return ( 
+                    value.content_status === filteredStatus.toLowerCase() &&
+                    (value.content_title.toLowerCase().startsWith(wordEntered.toLowerCase()) ||
+                    value.user.name.toLowerCase().startsWith(wordEntered.toLowerCase()))
+                );
+            }
         });
         setFilteredData(newFilter);
+    }, [filteredStatus, wordEntered, termsConditions]);
+
+    const handleFilter = (e) => {
+        setWordEntered(e.target.value);
     };
 
     const filterStatus = (status) => {
-        setfilteredStatus(status);
-
-        if(status === "All"){
-            setFilteredData(termsConditions);
-        } else {
-            setFilteredData(termsConditions.filter(tc => tc.content_status.toLowerCase() === status.toLowerCase()));
-        }
+        setCurrentPage(1)
+        setFilteredStatus(status);
     };
 
     const openCreateModal = () => {
@@ -54,7 +62,7 @@ export default function TermsCondition({ auth, termsConditions = [] }) {
 
     const closeModal = () => {
         setFilteredData(termsConditions)
-        setfilteredStatus("All");
+        setFilteredStatus("All");
         setWordEntered("");
         setIsCreateModalOpen(false);
         setIsShowModalOpen(false);
@@ -73,10 +81,18 @@ export default function TermsCondition({ auth, termsConditions = [] }) {
         }
     };
 
+    const handlePagination = (pageNumber) => {
+        setCurrentPage(pageNumber);
+    };
+
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const currentItems = filteredData.slice(indexOfFirstItem, indexOfLastItem);
+
     return (
         <AdminLayout
             user={auth.user}
-            header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Terms And Condition</h2>}
+            header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Terms And Conditions</h2>}
         >
             <Head title="Terms Condition" />
 
@@ -84,13 +100,13 @@ export default function TermsCondition({ auth, termsConditions = [] }) {
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
                     <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                         <div className="flex flex-row justify-between m-3">
-                            <div className="text-gray-900">Terms and Condition</div>
+                            <div className="text-gray-800 text-3xl font-bold">Terms and Conditions</div>
                             <div>
                                 <AddButton onClick={openCreateModal} className="text-customBlue hover:text-white space-x-1">
                                     <FaPlus /><span>Add T&Cs</span>
-                                </AddButton>
-                            </div>
-                        </div>
+                                </AddButton> 
+                            </div> 
+                        </div>  
 
                         <div className="overflow-x-auto shadow-md sm:rounded-lg px-5 sm:px-5">
                             <div className="flex items-center justify-between flex-column md:flex-row flex-wrap space-y-4 md:space-y-0 py-4 bg-white">
@@ -149,7 +165,7 @@ export default function TermsCondition({ auth, termsConditions = [] }) {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {filteredData.length > 0 ? ((wordEntered || filteredStatus != "All" ? filteredData : termsConditions).map((tc) => (
+                                    {currentItems.length > 0 ? (currentItems.map((tc) => (
                                         <tr key={tc.id} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50">
                                             <th scope="row" className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
                                                 <div className="pl-3">
@@ -172,6 +188,13 @@ export default function TermsCondition({ auth, termsConditions = [] }) {
                                     )}
                                 </tbody>
                             </table>
+
+                            <Pagination
+                                totalItems={filteredData.length}
+                                itemsPerPage={itemsPerPage}
+                                currentPage={currentPage}
+                                onPageChange={handlePagination}
+                            />
                         </div>
                     </div>
                 </div>
