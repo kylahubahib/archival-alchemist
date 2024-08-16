@@ -1,6 +1,4 @@
 import { FiChevronRight } from "react-icons/fi"; 
-import { BsChevronRight } from "react-icons/bs"; 
-import { IoIosArrowBack } from "react-icons/io"; 
 import AddButton from '@/Components/AddButton';
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
@@ -12,6 +10,8 @@ import AdminLayout from '@/Layouts/AdminLayout';
 import { Head, router, useForm } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 import { FaPlus } from 'react-icons/fa';
+import CreateCourse from "./CreateCourse";
+import EditCourse from "./EditCourse";
 
 export default function Departments({ auth, departments, uniBranch_id, courses, sections}) {
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -21,60 +21,63 @@ export default function Departments({ auth, departments, uniBranch_id, courses, 
     const [selectedDept, setSelectedDept] = useState(null);
     const [selectedCourse, setSelectedCourse] = useState(null);
     const [selectedSection, setSelectedSection] = useState(null);
+    const [selectedId, setSelectedId] = useState(null);
     const [wordEntered, setWordEntered] = useState("");
     const [currentPage, setCurrentPage] = useState(1);
-    const [itemsPerPage] = useState(5);
+    const [itemsPerPage] = useState(7);
 
     const { data, setData, post, put, processing, errors, reset } = useForm({
         dept_name: '',
         uni_branch_id: ''
     });
 
-    const { data: crsData, setData: setCrsData, post: crsPost, put: crsPut, processing: crsProcessing, errors: crsErrors, reset: crsReset } = useForm({
-        course_name: '',
-        dept_id: ''
-    });
-
-    const { data: secData, setData: setSecData, post: secPost, put: secPut, processing: secProcessing, errors: secErrors, reset: secReset } = useForm({
-        section_name: '',
-        course_id: ''
-    });
-
     useEffect(() => {
         if (displayedData === 'Departments') {
-            const deptFilter = departments.filter((value) => {
-                return value.dept_name.toLowerCase().startsWith(wordEntered.toLowerCase());
-            });
+            const deptFilter = departments.filter((value) => 
+                value.dept_name.toLowerCase().startsWith(wordEntered.toLowerCase())
+            );
             setFilteredData(deptFilter);
             setData('uni_branch_id', uniBranch_id);
         } else if (displayedData === 'Courses') {
-            const courseFilter = courses.filter((value) => {
-                return value.course_name.toLowerCase().startsWith(wordEntered.toLowerCase());
-            });
-            setFilteredData(courseFilter);
+            if (selectedId !== null) {
+                const courseFilter = courses
+                    .filter(course => course.department.id === selectedId) // Filter by department
+                    .filter(course => course.course_name.toLowerCase().startsWith(wordEntered.toLowerCase())); // Filter by course name
+    
+                setFilteredData(courseFilter);
+            } 
         }
-    }, [wordEntered, departments, courses]);
+    }, [wordEntered, departments, courses, displayedData, selectedId]);
+    
 
     const handleFilter = (e) => {
         setWordEntered(e.target.value);
     };
 
     const displayCourses = (id) => {
+        setCurrentPage(1);
+        setSelectedId(id);
         setDisplayedData('Courses');
         setFilteredData(courses.filter(course => course.department.id === id));
-        console.log(filteredData);
     }
 
     const displayDepts = () => {
+        setCurrentPage(1);
+        setSelectedId(null);
         setDisplayedData('Departments');
         setFilteredData(departments);
-        console.log(filteredData);
+        // console.log('Data:', filteredData);
+
+
+
     }
 
     const displaySections = (id) => {
+        setCurrentPage(1);
         setDisplayedData('Sections');
         setFilteredData(sections.filter(section => section.course.id === id));
-        console.log(filteredData);
+        setSelectedId(id);
+        //console.log(filteredData);
     }
 
     const createSubmit = (e) => {
@@ -119,21 +122,52 @@ export default function Departments({ auth, departments, uniBranch_id, courses, 
 
     const openCreateModal = () => {
         setIsCreateModalOpen(true);
+        console.log(selectedId);
     };
 
-    const openEditModal = (dept) => {
-        setSelectedDept(dept);
-        setData('dept_name', dept.dept_name)
-        setIsEditModalOpen(true);
+    const openEditModal = (item) => {
+        
+        if(displayedData === 'Departments'){
+            setSelectedDept(item);
+            setData('dept_name', item.dept_name)
+            setIsEditModalOpen(true);
+
+        }
+        else if(displayedData === 'Courses'){
+            setSelectedCourse(item);
+            setIsEditModalOpen(true);
+        }
+        else if(displayedData === 'Sections'){
+            setSelectedDept(item);
+            setData('dept_name', item.dept_name)
+            setIsEditModalOpen(true);
+        }
     };
 
     const closeModal = () => {
-        setIsEditModalOpen(false)
+        setIsEditModalOpen(false);
         setIsCreateModalOpen(false);
-        setFilteredData(departments)
-        setWordEntered("");
-        setData('dept_name', '');
-        setSelectedDept(null);
+        console.log(displayedData);
+
+        if(displayedData === 'Departments'){
+            setFilteredData(departments)
+            setWordEntered("");
+            setData('dept_name', '');
+            setSelectedDept(null);
+        }
+        else if(displayedData === 'Courses'){
+            setFilteredData(courses.filter(course => course.department.id === selectedId));
+            setWordEntered("");
+            setSelectedCourse(null);
+            //console.log('Current Dept Id: ', selectedId)
+            //console.log('filteredData:', filteredData);
+        }
+        else if(displayedData === 'Sections'){
+            setFilteredData(departments)
+            setWordEntered("");
+            setSelectedDept(null);
+        }
+       
     };
 
 
@@ -271,7 +305,7 @@ export default function Departments({ auth, departments, uniBranch_id, courses, 
                                 </div>
                                 <div>
                                     <AddButton onClick={openCreateModal} className="text-customBlue hover:text-white space-x-1">
-                                        <FaPlus /><span>Add Department</span>
+                                        <FaPlus /><span>Add Course</span>
                                     </AddButton> 
                                 </div> 
                             </div>
@@ -301,8 +335,8 @@ export default function Departments({ auth, departments, uniBranch_id, courses, 
                                                 </th>
                                                 <td className="px-6 py-4 max-w-60 truncate">{course.department.dept_name}</td>
                                                 <td className="px-6 py-4 flex flex-row space-x-5">
-                                                    <a onClick={() => {}} className="font-medium text-blue-600 dark:text-blue-500 hover:underline cursor-pointer">View Sections</a>
-                                                    <a onClick={() => {}} className="font-medium text-blue-600 dark:text-blue-500 hover:underline cursor-pointer">Edit</a>
+                                                    <a onClick={() => displaySections(course.id)} className="font-medium text-blue-600 dark:text-blue-500 hover:underline cursor-pointer">View Sections</a>
+                                                    <a onClick={() => openEditModal(course)} className="font-medium text-blue-600 dark:text-blue-500 hover:underline cursor-pointer">Edit</a>
                                                     <a onClick={() => {}} className="font-medium text-blue-600 dark:text-blue-500 hover:underline cursor-pointer">Delete</a>
                                                 </td>
                                             </tr>
@@ -360,7 +394,7 @@ export default function Departments({ auth, departments, uniBranch_id, courses, 
                                 </div>
                                 <div>
                                     <AddButton onClick={openCreateModal} className="text-customBlue hover:text-white space-x-1">
-                                        <FaPlus /><span>Add Department</span>
+                                        <FaPlus /><span>Add Section</span>
                                     </AddButton> 
                                 </div> 
                             </div>
@@ -388,8 +422,9 @@ export default function Departments({ auth, departments, uniBranch_id, courses, 
                                                         <div className="text-base font-semibol max-w-44">{section.section_name}</div>
                                                     </div>
                                                 </th>
-                                                <td className="px-6 py-4 max-w-60 truncate">{section.added_by}</td>
+                                                <td className="px-6 py-4 max-w-60 truncate">{section.course.course_name}</td>
                                                 <td className="px-6 py-4 flex flex-row space-x-5">
+                                                    <a onClick={() => {}} className="font-medium text-blue-600 dark:text-blue-500 hover:underline cursor-pointer">View Member List</a>
                                                     <a onClick={() => {}} className="font-medium text-blue-600 dark:text-blue-500 hover:underline cursor-pointer">Edit</a>
                                                     <a onClick={() => {}} className="font-medium text-blue-600 dark:text-blue-500 hover:underline cursor-pointer">Delete</a>
                                                 </td>
@@ -418,8 +453,8 @@ export default function Departments({ auth, departments, uniBranch_id, courses, 
             </div>
 
 
-            {/* CREATE MODAL */}
-            <Modal show={isCreateModalOpen} onClose={closeModal}>
+            {/* CREATE MODAL FOR DEPARTMENT */}
+            {displayedData === 'Departments' && <Modal show={isCreateModalOpen} onClose={closeModal}>
                 <div className="bg-customBlue p-3" >
                     <h2 className="text-xl text-white font-bold">Add Department</h2>
                 </div>
@@ -452,10 +487,10 @@ export default function Departments({ auth, departments, uniBranch_id, courses, 
                 <div className="bg-customBlue p-2 flex justify-end" >
                     <button onClick={closeModal} className="text-white text-right mr-5">Close</button>
                 </div>
-            </Modal>
+            </Modal>}
 
-            {/* EDIT MODAL */}
-            <Modal show={isEditModalOpen} onClose={closeModal}>
+            {/* EDIT MODAL FOR DEPARTMENT*/}
+            {displayedData === 'Departments' && <Modal show={isEditModalOpen} onClose={closeModal}>
                 <div className="bg-customBlue p-3" >
                     <h2 className="text-xl text-white font-bold">Add Department</h2>
                 </div>
@@ -488,7 +523,11 @@ export default function Departments({ auth, departments, uniBranch_id, courses, 
                 <div className="bg-customBlue p-2 flex justify-end" >
                     <button onClick={closeModal} className="text-white text-right mr-5">Close</button>
                 </div>
-            </Modal>
+            </Modal>}
+
+            {displayedData === 'Courses' && <CreateCourse isOpen={isCreateModalOpen} onClose={closeModal} deptId={selectedId} setFilteredData={setFilteredData} courses={courses}/>}
+
+            {displayedData === 'Courses' && selectedCourse && <EditCourse isOpen={isEditModalOpen} onClose={closeModal} deptId={selectedId} course={selectedCourse}/>}
 
         </AdminLayout>
     );

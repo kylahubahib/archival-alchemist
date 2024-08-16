@@ -59,7 +59,7 @@ class CoursesController extends Controller
             'added_by' => Auth::user()->name
         ]);
 
-        return redirect(route('manage-courses.index'))->with('success', 'Courses created successfully.');
+        return redirect(route('manage-departments.index'))->with('success', 'Courses created successfully.');
     }
 
     /**
@@ -93,7 +93,7 @@ class CoursesController extends Controller
             'course_name' =>  $request->course_name
         ]);
 
-        return redirect(route('manage-courses.index'))->with('success', 'Courses updated successfully.');
+        return redirect(route('manage-departments.index'))->with('success', 'Courses updated successfully.');
     }
 
     /**
