@@ -8,20 +8,19 @@ import Show from './Show';
 import Edit from './Edit';
 import Pagination from '@/Components/Pagination';
 
-export default function SubscriptionPlans({ auth, subscriptionPlans, features, planFeatures }) {
+export default function SubscriptionPlans({ auth, subscriptionPlans = [], features, planFeatures }) {
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [isShowModalOpen, setIsShowModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [selectedPlan, setSelectedPlan] = useState(null);
     const [selectedPlanFeature, setSelectedPlanFeature] = useState([]);
-    const [filteredData, setFilteredData] = useState(subscriptionPlans);
+    const [filteredData, setFilteredData] = useState(subscriptionPlans.data);
     const [filteredStatus, setFilteredStatus] = useState("All");
     const [wordEntered, setWordEntered] = useState("");
-    const [currentPage, setCurrentPage] = useState(1);
-    const [itemsPerPage] = useState(4); 
 
     useEffect(() => {
-        const newFilter = subscriptionPlans.filter((value) => {
+        const newFilter = subscriptionPlans.data.filter((value) => {
+            
             if(filteredStatus === "All"){
                 return (
                     (value.plan_name.toLowerCase().includes(wordEntered.toLowerCase()))
@@ -34,15 +33,12 @@ export default function SubscriptionPlans({ auth, subscriptionPlans, features, p
             }
         });
         setFilteredData(newFilter);
-    }, [filteredStatus, wordEntered, subscriptionPlans]);
+    }, [filteredStatus, wordEntered, subscriptionPlans.data]);
 
     const handleFilter = (e) => {
         setWordEntered(e.target.value);
     };
 
-    const handlePagination = (pageNumber) => {
-        setCurrentPage(pageNumber);
-    };
 
     const filterStatus = (status) => {
         setCurrentPage(1)
@@ -84,7 +80,7 @@ export default function SubscriptionPlans({ auth, subscriptionPlans, features, p
     };
 
     const closeModal = () => {
-        setFilteredData(subscriptionPlans)
+        setFilteredData(subscriptionPlans.data)
         setFilteredStatus("All");
         setWordEntered("");
         setIsCreateModalOpen(false);
@@ -96,9 +92,6 @@ export default function SubscriptionPlans({ auth, subscriptionPlans, features, p
     };
 
 
-    const indexOfLastItem = currentPage * itemsPerPage;
-    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    const currentItems = filteredData.slice(indexOfFirstItem, indexOfLastItem);
 
     return (
         <AdminLayout
@@ -178,7 +171,7 @@ export default function SubscriptionPlans({ auth, subscriptionPlans, features, p
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {currentItems.length > 0 ? (currentItems.map((sp) => (
+                                    {filteredData.length > 0 ? (filteredData.map((sp) => (
                                         <tr key={sp.id} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50">
                                             <th scope="row" className="flex items-center px-6 py-4 text-gray-900">
                                                 <div className="pl-3">
@@ -209,12 +202,7 @@ export default function SubscriptionPlans({ auth, subscriptionPlans, features, p
                                 </tbody>
                             </table>
 
-                            <Pagination
-                                totalItems={filteredData.length}
-                                itemsPerPage={itemsPerPage}
-                                currentPage={currentPage}
-                                onPageChange={handlePagination}
-                            />
+                            <Pagination links={subscriptionPlans.links} />
                         </div>
                     </div>
                 </div>

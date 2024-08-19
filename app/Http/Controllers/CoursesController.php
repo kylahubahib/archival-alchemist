@@ -48,7 +48,7 @@ class CoursesController extends Controller
 
         $request->validate([
             'dept_id' => 'required|integer',
-            'course_name' => 'required|string',
+            'course_name' => 'required|string|unique:courses',
         ]);
 
         \Log::info('New Course: ', $request->all());
@@ -103,6 +103,6 @@ class CoursesController extends Controller
     {
         Course::find($id)->delete();
 
-        return redirect(route('manage-courses.index'))->with('success', 'Courses deleted successfully.');
+        return redirect(route('manage-departments.index'))->with('success', 'Courses deleted successfully.');
     }
 }

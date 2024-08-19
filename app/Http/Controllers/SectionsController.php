@@ -42,7 +42,7 @@ class SectionsController extends Controller
 
         $request->validate([
             'course_id' => 'required|integer',
-            'section_name' => 'required|string',
+            'section_name' => 'required|string|unique:sections',
         ]);
 
         \Log::info('New Section: ', $request->all());

@@ -19,9 +19,11 @@ class SubscriptionPlanController extends Controller
      */ 
     public function index()
     {
-        $subscriptionPlans = SubscriptionPlan::all();
+        $subscriptionPlans = SubscriptionPlan::paginate(10);
         $features = Feature::all();
         $planFeatures = PlanFeature::with(['plan', 'feature'])->get();
+
+        \Log::info('Terms ', $subscriptionPlans->toArray());
 
         
         return Inertia::render('SuperAdmin/SubscriptionPlans/SubscriptionPlans', [
@@ -64,7 +66,7 @@ class SubscriptionPlanController extends Controller
         \Log::info('Create request data: ', $request->all());
 
         $request->validate([
-            'plan_name' => 'required|string|max:255',
+            'plan_name' => 'required|string|max:255|unique:subscription_plans',
             'plan_price' => 'required|numeric|between:0,99999.99',
             'plan_term' => 'required|string|max:255',
             'plan_type' => 'required|string|max:255',

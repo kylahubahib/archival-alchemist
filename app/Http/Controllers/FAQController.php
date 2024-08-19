@@ -20,7 +20,7 @@ class FAQController extends Controller
     {
         $faqs = CustomContent::with('user')
             ->where('content_type', 'frequently asked questions')
-            ->get();
+            ->paginate(10);
 
         return Inertia::render('SuperAdmin/FrequentlyAskedQuestions/Faq', [
             'faqs' => $faqs

@@ -151,7 +151,7 @@ Route::middleware(['auth', 'verified', 'user-type:admin'])->prefix('institution'
         return Inertia::render('InstitutionAdmin/Students');})->name('institution-students');
 
     Route::get('/subscription-billing', function () {
-        return Inertia::render('InstitutionAdmin/SubscriptionBilling');})->name('institution-subscription-billing');
+        return Inertia::render('InstitutionAdmin/SubscriptionBilling/SubscriptionBilling');})->name('institution-subscription-billing');
 });
 
 //guest

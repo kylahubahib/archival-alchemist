@@ -11,9 +11,7 @@ import Edit from "./Edit";
 import Pagination from "@/Components/Pagination";
 
 export default function FrequentlyAskedQuestion({ auth, faqs }) {
-    const [filteredData, setFilteredData] = useState(faqs);
-    const [currentPage, setCurrentPage] = useState(1);
-    const [itemsPerPage] = useState(3);
+    const [filteredData, setFilteredData] = useState(faqs.data);
     const [filteredStatus, setFilteredStatus] = useState("All");
     const [wordEntered, setWordEntered] = useState("");
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -21,7 +19,7 @@ export default function FrequentlyAskedQuestion({ auth, faqs }) {
     const [selectedQuestion, setSelectedQuestion] = useState(null);
 
     useEffect(() => {
-        const newFilter = faqs.filter((value) => {
+        const newFilter = faqs.data.filter((value) => {
             if (filteredStatus === "All") {
                 return (
                     (value.content_title.toLowerCase().includes(wordEntered.toLowerCase()) ||
@@ -36,15 +34,12 @@ export default function FrequentlyAskedQuestion({ auth, faqs }) {
             }
         });
         setFilteredData(newFilter);
-    }, [filteredStatus, wordEntered, faqs]);
+    }, [filteredStatus, wordEntered, faqs.data]);
 
     const handleFilter = (e) => {
         setWordEntered(e.target.value);
     };
 
-    const handlePagination = (pageNumber) => {
-        setCurrentPage(pageNumber);
-    };
 
     const filterStatus = (status) => {
         setCurrentPage(1)
@@ -57,8 +52,7 @@ export default function FrequentlyAskedQuestion({ auth, faqs }) {
     };
 
     const closeModal = () => {
-        setCurrentPage(1);
-        setFilteredData(faqs);
+        setFilteredData(faqs.data);
         setFilteredStatus("All");
         setWordEntered("");
         setIsCreateModalOpen(false);
@@ -82,7 +76,7 @@ export default function FrequentlyAskedQuestion({ auth, faqs }) {
         router.put(route('manage-faqs.change_status', id), {}, {
             preserveScroll: true,
             onSuccess: () => {
-                setFilteredData(faqs);
+                setFilteredData(faqs.data);
                 setFilteredStatus("All");
                 setWordEntered("");
             },
@@ -92,10 +86,6 @@ export default function FrequentlyAskedQuestion({ auth, faqs }) {
         });
     };
 
-
-    const indexOfLastItem = currentPage * itemsPerPage;
-    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    const currentItems = filteredData.slice(indexOfFirstItem, indexOfLastItem);
 
     return (
         <AdminLayout
@@ -153,8 +143,8 @@ export default function FrequentlyAskedQuestion({ auth, faqs }) {
                                 </div>
                             </div>
 
-                            {currentItems.length > 0 ? (
-                                currentItems.map((faq) => (
+                            {filteredData.length > 0 ? (
+                                filteredData.map((faq) => (
                                     <div key={faq.id} className="block w-full p-6 my-5 bg-white border border-gray-200 rounded-lg shadow">
                                         <div className="flex justify-between">
                                             <div className="flex flex-row space-x-2">
@@ -183,12 +173,7 @@ export default function FrequentlyAskedQuestion({ auth, faqs }) {
                                 </div>
                             )}
 
-                            <Pagination
-                                totalItems={filteredData.length}
-                                itemsPerPage={itemsPerPage}
-                                currentPage={currentPage}
-                                onPageChange={handlePagination}
-                            />
+                            <Pagination links={faqs.links}/>
                         </div>
                     </div>
                 </div>

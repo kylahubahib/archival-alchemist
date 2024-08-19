@@ -44,17 +44,17 @@ class DepartmentsController extends Controller
                     $uniBranch_id = $uni_branch->id;
 
                     // Get departments for the university branch
-                    $departments = Department::where('uni_branch_id', $uniBranch_id)->get();
+                    $departments = Department::where('uni_branch_id', $uniBranch_id)->paginate(10);
                    
                     $departmentIds = $departments->pluck('id')->toArray();
                     // Get courses where the department_id matches the department IDs
-                    $courses = Course::whereIn('dept_id', $departmentIds)->with(['department'])->get();
+                    $courses = Course::whereIn('dept_id', $departmentIds)->with(['department'])->paginate(10);
 
                     \Log::info('Courses: ', $courses->toArray());
 
                     // Get sections where the course_id matches the course IDs
                     $courseIds = $courses->pluck('id')->toArray();
-                    $sections = Section::whereIn('course_id', $courseIds)->with(['course'])->get();
+                    $sections = Section::whereIn('course_id', $courseIds)->with(['course'])->paginate(10);
                 }
             }
         }
@@ -89,7 +89,10 @@ class DepartmentsController extends Controller
 
         $request->validate([
             'uni_branch_id' => 'required|integer',
-            'dept_name' => 'required|string',
+            'dept_name' => 'required|string|unique:departments'
+        ], [
+            'dept_name.unique' => 'The department name has already been taken.',
+            'dept_name.required' => 'The department name is required.',
         ]);
 
         \Log::info('Create Data: ', $request->all());

@@ -23,33 +23,25 @@ export default function Tags({ auth, tags }) {
     // State to manage the visibility of the create tag form
     const [createTag, setCreateTag] = useState(false);
     // State to manage filtered tags based on search input
-    const [filteredData, setFilteredData] = useState(tags);
-    // State to manage current page for pagination
-    const [currentPage, setCurrentPage] = useState(1);
-    // Items per page for pagination
-    const [itemsPerPage] = useState(45);
+    const [filteredData, setFilteredData] = useState(tags.data);
     // State to manage search input value
     const [wordEntered, setWordEntered] = useState("");
 
     // Effect to filter tags based on search input
     useEffect(() => {
-        const newFilter = tags.filter((value) => {
+        const newFilter = tags.data.filter((value) => {
             return (
                 value.tag_name.toLowerCase().startsWith(wordEntered.toLowerCase())
             );
         });
         setFilteredData(newFilter);
-    }, [wordEntered, tags]);
+    }, [wordEntered, tags.data]);
 
     // Handler for search input change
     const handleFilter = (e) => {
         setWordEntered(e.target.value);
     };
 
-    // Handler for pagination
-    const handlePagination = (pageNumber) => {
-        setCurrentPage(pageNumber);
-    };
 
     // Handler for submitting the create tag form
     const submit = (e) => {
@@ -93,18 +85,6 @@ export default function Tags({ auth, tags }) {
             preserveScroll: true
         });
     };
-
-    // Calculate current items for pagination
-    // Calculate the index of the last item on the current page
-    const indexOfLastItem = currentPage * itemsPerPage;
-
-    // Calculate the index of the first item on the current page
-    // Subtracting itemsPerPage from indexOfLastItem gives the starting index
-    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-
-    // Extract the subset of items to display on the current page
-    // The slice method creates a new array with items from indexOfFirstItem (inclusive) to indexOfLastItem (exclusive)
-    const currentItems = filteredData.slice(indexOfFirstItem, indexOfLastItem);
 
 
     return (
@@ -189,8 +169,8 @@ export default function Tags({ auth, tags }) {
                         <div className="mt-4">
                             <div className="flex flex-wrap -mx-2">
                                 {
-                                    currentItems.length > 0 ? (
-                                        currentItems.map((t) => (
+                                    filteredData.length > 0 ? (
+                                        filteredData.map((t) => (
                                             <div key={t.id} className="px-2 py-1">
                                                 <TagBadge>
                                                     <div className="mr-2">{t.tag_name}</div>
@@ -209,12 +189,7 @@ export default function Tags({ auth, tags }) {
 
                             {/* Pagination component */}
                             
-                            <Pagination
-                                totalItems={filteredData.length}
-                                itemsPerPage={itemsPerPage}
-                                currentPage={currentPage}
-                                onPageChange={handlePagination}
-                            />
+                            <Pagination links={tags.links}/>
                         </div>
                     </div>
                 </div>

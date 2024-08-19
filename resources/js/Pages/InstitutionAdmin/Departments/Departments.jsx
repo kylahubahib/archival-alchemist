@@ -16,7 +16,7 @@ import EditCourse from "./EditCourse";
 export default function Departments({ auth, departments, uniBranch_id, courses, sections}) {
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-    const [filteredData, setFilteredData] = useState(departments);
+    const [filteredData, setFilteredData] = useState(departments.data);
     const [displayedData, setDisplayedData] = useState('Departments');
     const [selectedDept, setSelectedDept] = useState(null);
     const [selectedCourse, setSelectedCourse] = useState(null);
@@ -26,56 +26,56 @@ export default function Departments({ auth, departments, uniBranch_id, courses, 
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage] = useState(7);
 
-    const { data, setData, post, put, processing, errors, reset } = useForm({
+    const { data, setData, post, put, processing, errors, clearErrors, reset } = useForm({
         dept_name: '',
         uni_branch_id: ''
     });
 
     useEffect(() => {
         if (displayedData === 'Departments') {
-            const deptFilter = departments.filter((value) => 
+            const deptFilter = departments.data.filter((value) => 
                 value.dept_name.toLowerCase().startsWith(wordEntered.toLowerCase())
             );
             setFilteredData(deptFilter);
             setData('uni_branch_id', uniBranch_id);
         } else if (displayedData === 'Courses') {
             if (selectedId !== null) {
-                const courseFilter = courses
+                const courseFilter = courses.data
                     .filter(course => course.department.id === selectedId) // Filter by department
                     .filter(course => course.course_name.toLowerCase().startsWith(wordEntered.toLowerCase())); // Filter by course name
     
                 setFilteredData(courseFilter);
             } 
         }
-    }, [wordEntered, departments, courses, displayedData, selectedId]);
+    }, [wordEntered, departments.data, courses.data, displayedData, selectedId]);
     
 
     const handleFilter = (e) => {
         setWordEntered(e.target.value);
     };
 
-    const displayCourses = (id) => {
+    const displayCourses = (item) => {
+
+        if(displayedData != 'Sections'){
+            setSelectedDept(item);
+        }
+
         setCurrentPage(1);
-        setSelectedId(id);
+        setSelectedId(item.id);
         setDisplayedData('Courses');
-        setFilteredData(courses.filter(course => course.department.id === id));
+        setFilteredData(courses.data.filter(course => course.department.id === item.id));
     }
 
     const displayDepts = () => {
-        setCurrentPage(1);
         setSelectedId(null);
         setDisplayedData('Departments');
-        setFilteredData(departments);
+        setFilteredData(departments.data);
         // console.log('Data:', filteredData);
-
-
-
     }
 
     const displaySections = (id) => {
-        setCurrentPage(1);
         setDisplayedData('Sections');
-        setFilteredData(sections.filter(section => section.course.id === id));
+        setFilteredData(sections.data.filter(section => section.course.id === id));
         setSelectedId(id);
         //console.log(filteredData);
     }
@@ -116,13 +116,28 @@ export default function Departments({ auth, departments, uniBranch_id, courses, 
         }
     };
 
-    const handlePagination = (pageNumber) => {
-        setCurrentPage(pageNumber);
+    const closeClick = () => {
+        reset(); 
+        clearErrors(); 
+        closeModal();
     };
+    
+
+    const deleteCourses = (id) => {
+        if (confirm("Are you sure you want to delete this course?")) {
+            router.delete(route('manage-courses.destroy', id), {
+                preserveScroll: true,
+                onSuccess: () => {
+                    alert('Successfully deleted!');
+                },
+            });
+        }
+    };
+
 
     const openCreateModal = () => {
         setIsCreateModalOpen(true);
-        console.log(selectedId);
+        // console.log(selectedId);
     };
 
     const openEditModal = (item) => {
@@ -147,33 +162,26 @@ export default function Departments({ auth, departments, uniBranch_id, courses, 
     const closeModal = () => {
         setIsEditModalOpen(false);
         setIsCreateModalOpen(false);
-        console.log(displayedData);
-
+    
         if(displayedData === 'Departments'){
-            setFilteredData(departments)
+            setFilteredData(departments.data);
             setWordEntered("");
             setData('dept_name', '');
             setSelectedDept(null);
         }
         else if(displayedData === 'Courses'){
-            setFilteredData(courses.filter(course => course.department.id === selectedId));
+            setFilteredData(courses.data.filter(course => course.department.id === selectedId));
             setWordEntered("");
             setSelectedCourse(null);
-            //console.log('Current Dept Id: ', selectedId)
-            //console.log('filteredData:', filteredData);
         }
         else if(displayedData === 'Sections'){
-            setFilteredData(departments)
+            setFilteredData(sections.data.filter(section => section.course.id === selectedId));
             setWordEntered("");
             setSelectedDept(null);
         }
-       
     };
 
 
-    const indexOfLastItem = currentPage * itemsPerPage;
-    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    const currentItems = filteredData.slice(indexOfFirstItem, indexOfLastItem);
 
     return (
         
@@ -236,8 +244,8 @@ export default function Departments({ auth, departments, uniBranch_id, courses, 
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {currentItems.length > 0 ? (
-                                        currentItems.map((dept) => (
+                                    {filteredData.length > 0 ? (
+                                        filteredData.map((dept) => (
                                             <tr key={dept.id} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50">
                                                 <th scope="row" className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
                                                     <div className="pl-3">
@@ -246,7 +254,7 @@ export default function Departments({ auth, departments, uniBranch_id, courses, 
                                                 </th>
                                                 <td className="px-6 py-4 max-w-60 truncate">{dept.added_by}</td>
                                                 <td className="px-6 py-4 flex flex-row space-x-5">
-                                                    <a onClick={() => displayCourses(dept.id)} className="font-medium text-blue-600 dark:text-blue-500 hover:underline cursor-pointer">View Courses</a>
+                                                    <a onClick={() => displayCourses(dept)} className="font-medium text-blue-600 dark:text-blue-500 hover:underline cursor-pointer">View Courses</a>
                                                     <a onClick={() => openEditModal(dept)} className="font-medium text-blue-600 dark:text-blue-500 hover:underline cursor-pointer">Edit</a>
                                                     <a onClick={() => deleteDepartment(dept.id)} className="font-medium text-blue-600 dark:text-blue-500 hover:underline cursor-pointer">Delete</a>
                                                 </td>
@@ -262,12 +270,7 @@ export default function Departments({ auth, departments, uniBranch_id, courses, 
 
                         </div>
                         <div className="mt-auto">
-                            <Pagination
-                                totalItems={filteredData.length}
-                                itemsPerPage={itemsPerPage}
-                                currentPage={currentPage}
-                                onPageChange={handlePagination}
-                            />
+                            <Pagination links={departments.links}/>
                         </div>
                     </div>
                 </div>
@@ -325,8 +328,8 @@ export default function Departments({ auth, departments, uniBranch_id, courses, 
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {currentItems.length > 0 ? (
-                                        currentItems.map((course) => (
+                                    {filteredData.length > 0 ? (
+                                        filteredData.map((course) => (
                                             <tr key={course.id} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50">
                                                 <th scope="row" className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
                                                     <div className="pl-3">
@@ -337,7 +340,7 @@ export default function Departments({ auth, departments, uniBranch_id, courses, 
                                                 <td className="px-6 py-4 flex flex-row space-x-5">
                                                     <a onClick={() => displaySections(course.id)} className="font-medium text-blue-600 dark:text-blue-500 hover:underline cursor-pointer">View Sections</a>
                                                     <a onClick={() => openEditModal(course)} className="font-medium text-blue-600 dark:text-blue-500 hover:underline cursor-pointer">Edit</a>
-                                                    <a onClick={() => {}} className="font-medium text-blue-600 dark:text-blue-500 hover:underline cursor-pointer">Delete</a>
+                                                    <a onClick={() => deleteCourses(course.id)} className="font-medium text-blue-600 dark:text-blue-500 hover:underline cursor-pointer">Delete</a>
                                                 </td>
                                             </tr>
                                         ))
@@ -350,12 +353,7 @@ export default function Departments({ auth, departments, uniBranch_id, courses, 
                             </table>
                         </div>
                         <div className="mt-auto">
-                            <Pagination
-                                totalItems={filteredData.length}
-                                itemsPerPage={itemsPerPage}
-                                currentPage={currentPage}
-                                onPageChange={handlePagination}
-                            />
+                            <Pagination links={courses.links}/>
                         </div>
                     </div>
                 </div>
@@ -369,7 +367,7 @@ export default function Departments({ auth, departments, uniBranch_id, courses, 
                     <div className="text-gray-800 text-3xl font-bold mb-3">
                         <div className="flex flex-row space-x-2">
                             <button onClick={() => displayDepts()} className="flex items-center hover:text-customBlue"> <span>Departments</span></button>
-                            <button onClick={() => displayCourses()} className="flex items-center hover:text-customBlue"><FiChevronRight /><span>Courses</span></button>
+                            <button onClick={() => displayCourses(selectedDept)} className="flex items-center hover:text-customBlue"><FiChevronRight /><span>Courses</span></button>
                             <button onClick={() => {}} className="flex items-center  hover:text-customBlue"><FiChevronRight /><span>Sections</span></button>
                         </div>
                     </div>
@@ -414,8 +412,8 @@ export default function Departments({ auth, departments, uniBranch_id, courses, 
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {currentItems.length > 0 ? (
-                                        currentItems.map((section) => (
+                                    {filteredData.length > 0 ? (
+                                        filteredData.map((section) => (
                                             <tr key={section.id} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50">
                                                 <th scope="row" className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
                                                     <div className="pl-3">
@@ -439,12 +437,7 @@ export default function Departments({ auth, departments, uniBranch_id, courses, 
                             </table>
                         </div>
                         <div className="mt-auto">
-                            <Pagination
-                                totalItems={filteredData.length}
-                                itemsPerPage={itemsPerPage}
-                                currentPage={currentPage}
-                                onPageChange={handlePagination}
-                            />
+                            <Pagination links={sections.links}/>
                         </div>
                     </div>
 			    </div>
@@ -454,40 +447,39 @@ export default function Departments({ auth, departments, uniBranch_id, courses, 
 
 
             {/* CREATE MODAL FOR DEPARTMENT */}
-            {displayedData === 'Departments' && <Modal show={isCreateModalOpen} onClose={closeModal}>
-                <div className="bg-customBlue p-3" >
-                    <h2 className="text-xl text-white font-bold">Add Department</h2>
-                </div>
-
-                <div className="p-6 space-y-5">
+            {displayedData === 'Departments' && (
+                <Modal show={isCreateModalOpen} onClose={closeClick}>
+                    <div className="bg-customBlue p-3" >
+                        <h2 className="text-xl text-white font-bold">Add Department</h2>
+                    </div>
                     <form onSubmit={createSubmit}>
-                        <div className='space-y-5'>
-                            <div className="flex flex-col">
-                                <InputLabel htmlFor="dept_name" value="Department" />
-                                <TextInput
-                                    id="dept_name"
-                                    value={data.dept_name}
-                                    onChange={(e) => {setData('dept_name', e.target.value)}}
-                                    className="mt-1 block w-full"
-                                    placeholder="Department"
-                                />
-                                <InputError message={errors.dept_name} className="mt-2" />
-                            </div>
+                        <div className="p-6 space-y-5">
+                            <div className='space-y-5'>
+                                <div className="flex flex-col">
+                                    <InputLabel htmlFor="dept_name" value="Department" />
+                                    <TextInput
+                                        id="dept_name"
+                                        value={data.dept_name}
+                                        onChange={(e) => setData('dept_name', e.target.value)}
+                                        className="mt-1 block w-full"
+                                        placeholder="Department"
+                                    />
+                                    <InputError message={errors.dept_name} className="mt-2" />
+                                </div>
                                 <input type="hidden" value={data.uni_branch_id} />
-
-                            <div className="mt-6 flex">
-                                <PrimaryButton type="submit" disabled={processing}>
-                                    Save
-                                </PrimaryButton>
+                                <div className="mt-6 flex">
+                                    <PrimaryButton type="submit" disabled={processing}>
+                                        Save
+                                    </PrimaryButton>
+                                </div>
                             </div>
                         </div>
+                        <div className="bg-customBlue p-2 flex justify-end">
+                            <button type="button" onClick={closeClick} className="text-white text-right mr-5">Close</button>
+                        </div>
                     </form>
-                </div>
-
-                <div className="bg-customBlue p-2 flex justify-end" >
-                    <button onClick={closeModal} className="text-white text-right mr-5">Close</button>
-                </div>
-            </Modal>}
+                </Modal>
+            )}
 
             {/* EDIT MODAL FOR DEPARTMENT*/}
             {displayedData === 'Departments' && <Modal show={isEditModalOpen} onClose={closeModal}>
@@ -525,7 +517,7 @@ export default function Departments({ auth, departments, uniBranch_id, courses, 
                 </div>
             </Modal>}
 
-            {displayedData === 'Courses' && <CreateCourse isOpen={isCreateModalOpen} onClose={closeModal} deptId={selectedId} setFilteredData={setFilteredData} courses={courses}/>}
+            {displayedData === 'Courses' && <CreateCourse isOpen={isCreateModalOpen} onClose={closeModal} deptId={selectedId} setFilteredData={setFilteredData} courses={courses.data}/>}
 
             {displayedData === 'Courses' && selectedCourse && <EditCourse isOpen={isEditModalOpen} onClose={closeModal} deptId={selectedId} course={selectedCourse}/>}
 

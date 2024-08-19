@@ -8,7 +8,8 @@ import { Head, useForm } from '@inertiajs/react';
 import { useState } from 'react';
 
 export default function Create({ isOpen, onClose, features = {}}) {
-    const { data, setData, post, processing, errors, reset } = useForm({
+
+    const { data, setData, post, processing, errors, clearErrors, reset } = useForm({
         plan_name: '',
         plan_price: '',
         plan_term: '',
@@ -25,11 +26,18 @@ export default function Create({ isOpen, onClose, features = {}}) {
         e.preventDefault();
         post(route('manage-subscription-plans.store'), {
             onSuccess: () => {
+                reset();
+                clearErrors();
                 onClose();
                 alert('Success!');
-                reset();
             },
         });
+    };
+
+    const closeClick = () => {
+        reset(); 
+        clearErrors(); 
+        onClose(); 
     };
 
     const addFeature = (featureId) => {
@@ -51,13 +59,13 @@ export default function Create({ isOpen, onClose, features = {}}) {
     };
 
     return (
-        <Modal show={isOpen} onClose={onClose} maxWidth='5xl'>
+        <Modal show={isOpen} onClose={closeClick} maxWidth='5xl'>
             <div className="bg-customBlue p-3" >
                 <h2 className="text-xl text-white font-bold">Add Subscription Plan</h2>
             </div>
-
-            <div className="p-6 space-y-5">
-                <form onSubmit={submit}>
+            
+            <form onSubmit={submit}>
+                <div className="p-6 space-y-5">
                     <div className="flex flex-row space-x-8">
                         <div className='space-y-5'>
                             <div className="flex flex-row space-x-10">
@@ -146,7 +154,6 @@ export default function Create({ isOpen, onClose, features = {}}) {
                                         className="mt-1 block w-full"
                                         onChange={(e) => setData('plan_user_num', e.target.value)}
                                     />
-                                    {/* <InputError message={errors.plan_user_num} className="mt-2" /> */}
                                 </div>
                                 <div className="flex flex-col">
                                     <InputLabel value="Number of days for free trial (if applicable)" />
@@ -158,7 +165,6 @@ export default function Create({ isOpen, onClose, features = {}}) {
                                         className="mt-1 block w-full"
                                         onChange={(e) => setData('free_trial_days', e.target.value)}
                                     />
-                                    {/* <InputError message={errors.free_trial_days} className="mt-2" /> */}
                                 </div>
                             </div>
                         
@@ -204,14 +210,14 @@ export default function Create({ isOpen, onClose, features = {}}) {
                             Save
                         </PrimaryButton>
                     </div>
-                    
-                </form>
+                </div>
 
-            </div>
-
-            <div className="bg-customBlue p-2 flex justify-end" >
-                <button onClick={onClose} className="text-white text-right mr-5">Close</button>
-            </div>
+                <div className="bg-customBlue p-2 flex justify-end">
+                    <button type="button" onClick={closeClick} className="text-white text-right mr-5">
+                        Close
+                    </button>
+                </div>
+            </form>
         </Modal>
     );
 }

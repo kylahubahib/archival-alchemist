@@ -9,18 +9,16 @@ import Edit from "./Edit";
 import Pagination from "@/Components/Pagination";
 
 export default function TermsCondition({ auth, termsConditions = [] }) {
-    const [filteredData, setFilteredData] = useState(termsConditions);
+    const [filteredData, setFilteredData] = useState(termsConditions.data);
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [isShowModalOpen, setIsShowModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [filteredStatus, setFilteredStatus] = useState("All");
     const [selectedTerms, setSelectedTerms] = useState(null);
     const [wordEntered, setWordEntered] = useState("");
-    const [currentPage, setCurrentPage] = useState(1);
-    const [itemsPerPage] = useState(5);
 
     useEffect(() => {
-        const newFilter = termsConditions.filter((value) => {
+        const newFilter = termsConditions.data.filter((value) => {
             if (filteredStatus === "All") {
                 return (
                     (value.content_title.toLowerCase().startsWith(wordEntered.toLowerCase()) ||
@@ -35,7 +33,7 @@ export default function TermsCondition({ auth, termsConditions = [] }) {
             }
         });
         setFilteredData(newFilter);
-    }, [filteredStatus, wordEntered, termsConditions]);
+    }, [filteredStatus, wordEntered, termsConditions.data]);
 
     const handleFilter = (e) => {
         setWordEntered(e.target.value);
@@ -61,7 +59,7 @@ export default function TermsCondition({ auth, termsConditions = [] }) {
     };
 
     const closeModal = () => {
-        setFilteredData(termsConditions)
+        setFilteredData(termsConditions.data)
         setFilteredStatus("All");
         setWordEntered("");
         setIsCreateModalOpen(false);
@@ -81,13 +79,7 @@ export default function TermsCondition({ auth, termsConditions = [] }) {
         }
     };
 
-    const handlePagination = (pageNumber) => {
-        setCurrentPage(pageNumber);
-    };
 
-    const indexOfLastItem = currentPage * itemsPerPage;
-    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    const currentItems = filteredData.slice(indexOfFirstItem, indexOfLastItem);
 
     return (
         <AdminLayout
@@ -165,7 +157,7 @@ export default function TermsCondition({ auth, termsConditions = [] }) {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {currentItems.length > 0 ? (currentItems.map((tc) => (
+                                    {filteredData.length > 0 ? (filteredData.map((tc) => (
                                         <tr key={tc.id} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50">
                                             <th scope="row" className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
                                                 <div className="pl-3">
@@ -189,12 +181,7 @@ export default function TermsCondition({ auth, termsConditions = [] }) {
                                 </tbody>
                             </table>
 
-                            <Pagination
-                                totalItems={filteredData.length}
-                                itemsPerPage={itemsPerPage}
-                                currentPage={currentPage}
-                                onPageChange={handlePagination}
-                            />
+                            <Pagination links={termsConditions.links} />
                         </div>
                     </div>
                 </div>

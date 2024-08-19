@@ -5,9 +5,9 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import { useForm } from '@inertiajs/react';
 
-export default function CreateCourse({isOpen, onClose, courses, deptId, setFilteredData}) {
+export default function CreateCourse({isOpen, onClose, deptId}) {
 
-    const { data, setData, post, put, processing, errors, reset } = useForm({
+    const { data, setData, post, processing, errors, clearErrors, reset } = useForm({
         course_name: '',
         dept_id: deptId
     });
@@ -23,11 +23,16 @@ export default function CreateCourse({isOpen, onClose, courses, deptId, setFilte
         });
     };
 
-
+    const closeClick = () => {
+        reset(); 
+        clearErrors(); 
+        onClose();
+    };
+    
 
     return (
       
-        <Modal show={isOpen} onClose={onClose}>
+        <Modal show={isOpen} onClose={closeClick}>
                 <div className="bg-customBlue p-3" >
                     <h2 className="text-xl text-white font-bold">New Course</h2>
                 </div>
@@ -57,7 +62,7 @@ export default function CreateCourse({isOpen, onClose, courses, deptId, setFilte
                 </div>
 
                 <div className="bg-customBlue p-2 flex justify-end" >
-                    <button onClick={onClose} className="text-white text-right mr-5">Close</button>
+                    <button onClick={closeClick} className="text-white text-right mr-5">Close</button>
                 </div>
         </Modal>
 

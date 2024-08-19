@@ -1,42 +1,68 @@
-// Pagination component to navigate through a list of items
-// Props:
-// - totalItems: Total number of items across all pages
-// - itemsPerPage: Number of items displayed per page
-// - currentPage: The current active page number
-// - onPageChange: Function to call when changing pages
+import { Inertia } from '@inertiajs/inertia';
 
-export default function Pagination({ totalItems, itemsPerPage, currentPage, onPageChange }) {
-    // Calculate the total number of pages needed, rounding up to the nearest whole number
-    const totalPages = Math.ceil(totalItems / itemsPerPage);
-
-    // Function to handle page changes
-    const handlePageChange = (pageNumber) => {
-        //Condition to check if the new page number is within the valid range (1 to totalPages)
-        if (pageNumber > 0 && pageNumber <= totalPages) {
-            onPageChange(pageNumber); // Trigger the callback with the new page number
+export default function Pagination({ links }) {
+    
+    const paginatePage = (url) => {
+        if (url) {
+            Inertia.visit(url);
         }
     };
 
+    // If there are only two links (the "previous" and "next" links), then there's only one page
+    if (links.length <= 3) {
+        return null; // Don't render the pagination
+    }
+
     return (
-        <div className='pagination flex justify-between m-5'>
-            {/* Button to go to the previous page */}
-            <button 
-                onClick={() => handlePageChange(currentPage - 1)} // Decrement page number by 1
-                disabled={currentPage === 1} // Disable button if already on the first page
-                className={`px-4 py-2 border rounded ${currentPage <= 1 ? "bg-gray-300 cursor-not-allowed" : "bg-white hover:bg-customBlue hover:text-white"}`}>
-                    Previous
-            </button>
 
-            {/* Display the current page and total number of pages */}
-            <span>Page {currentPage} of {totalPages}</span>
-
-            {/* Button to go to the next page */}
-            <button 
-                onClick={() => handlePageChange(currentPage + 1)} // Increment page number by 1
-                disabled={currentPage === totalPages} // Disable button if already on the last page
-                className={`px-4 py-2 border rounded ${currentPage >= totalPages ? "bg-gray-300 cursor-not-allowed" : "bg-white hover:bg-customBlue hover:text-white"}`}>
-                    Next
-            </button>
+        <div className="flex justify-end m-5">
+            <ul className="flex items-center -space-x-px h-10 text-base">
+                {links.map((link, index) => (
+                    <li key={index} className={`${!link.url ? "hidden" : "bg-white hover:bg-gray-100 hover:text-gray-700"}`}>
+                        <a
+                            onClick={() => paginatePage(link.url)}
+                            className={`flex items-center justify-center px-4 h-10 cursor-pointer leading-tight text-gray-500 bg-white border 
+                            border-gray-300 ${link.active ? 'bg-customBlue' : 'hover:bg-gray-100 hover:text-gray-700'}`}
+                            dangerouslySetInnerHTML={{ __html: link.label.replace('&raquo;', '»').replace('&laquo;', '«') }}
+                        />
+                    </li>
+                ))}
+            </ul>
         </div>
     );
 }
+
+
+
+// function Pagination({ links }) {
+    
+//     const paginatePage = (url) => {
+//     if (url) {
+//         Inertia.visit(url);
+//     }
+// };
+
+
+//     return (
+//         <div className="flex justify-center">
+//             <nav className="inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
+//             <ul class="flex items-center -space-x-px h-10 text-base">
+
+//                 {links.map(link => (
+//                     <li>
+//                         <a onClick={() =>paginatePage(link.url)}  class={`flex items-center justify-center px-4 h-10 leading-tight text-gray-500 bg-white border 
+//                         border-gray-300 hover:bg-gray-100 hover:text-gray-700`}>
+//                         {link.label.replace('&raquo;','»').replace('&laquo;','«')}
+//                         </a>
+//                     </li>
+//                 ))}
+//             </ul>
+//             </nav>
+//         </div>
+
+        
+//     );
+
+
+
+// }
