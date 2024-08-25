@@ -13,7 +13,8 @@ export default function AdminLayout({ auth, user, header, children }) {
     const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
 
     return (
-        <div className="min-h-screen bg-customlightBlue flex  overflow-auto">
+        <div className="min-h-screen bg-customlightBlue flex">
+        
 
         {user.user_type == 'superadmin' ? (
              //SIDEBAR FOR THE SUPER ADMIN
@@ -55,12 +56,7 @@ export default function AdminLayout({ auth, user, header, children }) {
         <div className="flex-1">
             <nav className="bg-white border-b">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex justify-between h-16">
-                        <div className="flex">
-                            <div className="shrink-0 flex items-center">
-                            <SearchBar></SearchBar>
-                            </div>
-                        </div>
+                    <div className="flex justify-end h-14">
 
                         <div className="hidden sm:flex sm:items-center sm:ml-6">
                             <div className="ml-3 relative">
@@ -145,9 +141,14 @@ export default function AdminLayout({ auth, user, header, children }) {
                 </div>
             </nav>
 
-            {/* Main content */}
-            <main>{children}</main>
+             {/* Main content */}
+             <div>
+                <main>{children}</main>
+            </div>
+            
         </div>
+
+           
     </div>
     );
 }

@@ -42,7 +42,6 @@ export default function FrequentlyAskedQuestion({ auth, faqs }) {
 
 
     const filterStatus = (status) => {
-        setCurrentPage(1)
         setFilteredStatus(status);
     };
 
@@ -65,7 +64,6 @@ export default function FrequentlyAskedQuestion({ auth, faqs }) {
             router.delete(route('manage-faqs.destroy', id), {
                 preserveScroll: true,
                 onSuccess: () => {
-                    setCurrentPage(1);
                     alert('Successfully deleted!');
                 },
             });
@@ -94,17 +92,17 @@ export default function FrequentlyAskedQuestion({ auth, faqs }) {
         >
             <Head title="Frequently Asked Questions" />
 
-            <div className="py-12">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
-                    <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                        <div className="flex flex-row justify-between m-3">
-                            <div className="text-gray-800 text-3xl font-bold">Frequently Asked Questions</div>
-                            <div>
-                                <AddButton onClick={() => setIsCreateModalOpen(true)} className="text-customBlue hover:text-white space-x-1">
-                                    <FaPlus /><span>Add FAQ</span>
-                                </AddButton>
-                            </div>
+                    <div className="flex flex-row justify-between my-5">
+                        <div className="text-gray-800 text-3xl font-bold">Frequently Asked Questions</div>
+                        <div>
+                            <AddButton onClick={() => setIsCreateModalOpen(true)} className="text-customBlue hover:text-white space-x-1">
+                                <FaPlus /><span>Add FAQ</span>
+                            </AddButton>
                         </div>
+                    </div>
+                    <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                        
 
                         <div className="overflow-x-auto shadow-md sm:rounded-lg px-5 sm:px-5">
                             <div className="flex items-center justify-between flex-column md:flex-row flex-wrap space-y-4 md:space-y-0 py-4 bg-white">
@@ -143,6 +141,9 @@ export default function FrequentlyAskedQuestion({ auth, faqs }) {
                                 </div>
                             </div>
 
+                            
+                            <div className="overflow-y-auto h-480">
+
                             {filteredData.length > 0 ? (
                                 filteredData.map((faq) => (
                                     <div key={faq.id} className="block w-full p-6 my-5 bg-white border border-gray-200 rounded-lg shadow">
@@ -173,11 +174,12 @@ export default function FrequentlyAskedQuestion({ auth, faqs }) {
                                 </div>
                             )}
 
+                            </div>
+
                             <Pagination links={faqs.links}/>
                         </div>
                     </div>
                 </div>
-            </div>
 
             <Create isOpen={isCreateModalOpen} onClose={closeModal}/>
             {selectedQuestion && <Edit isOpen={isEditModalOpen} onClose={closeModal} faq={selectedQuestion} />}

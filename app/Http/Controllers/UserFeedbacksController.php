@@ -17,7 +17,7 @@ class UserFeedbacksController extends Controller
      */
     public function index()
     {
-        $feedbacks = Feedback::with('user')->paginate(2);  
+        $feedbacks = Feedback::with('user')->paginate(100);  
 
 
         return Inertia::render('SuperAdmin/UserFeedbacks/UserFeedbacks', [

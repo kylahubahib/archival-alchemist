@@ -22,7 +22,7 @@ class TermsAndConditionController extends Controller
 
         $termsConditions = CustomContent::with('user')
             ->where('content_type', 'terms and conditions')
-            ->paginate(10);
+            ->paginate(100);
 
         
             \Log::info('Terms ', $termsConditions->toArray());

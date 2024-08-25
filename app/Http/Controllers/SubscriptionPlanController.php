@@ -19,7 +19,7 @@ class SubscriptionPlanController extends Controller
      */ 
     public function index()
     {
-        $subscriptionPlans = SubscriptionPlan::paginate(10);
+        $subscriptionPlans = SubscriptionPlan::paginate(100);
         $features = Feature::all();
         $planFeatures = PlanFeature::with(['plan', 'feature'])->get();
 

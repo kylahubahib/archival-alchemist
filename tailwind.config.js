@@ -21,6 +21,12 @@ export default {
             },
             minHeight: {
                 'custom': 'calc(100vh - 12rem)',
+                '400': '400px'
+            },
+            height: {
+                '445': '445px',
+                '400': '400px',
+                '480': '480px'
             }
         },
         

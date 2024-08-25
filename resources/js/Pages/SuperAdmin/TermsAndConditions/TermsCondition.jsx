@@ -1,4 +1,4 @@
-import { FaPlus } from "react-icons/fa";  
+import { FaEye, FaPen, FaPlus, FaTrash } from "react-icons/fa";  
 import AddButton from '@/Components/AddButton';
 import AdminLayout from '@/Layouts/AdminLayout';
 import { Head, router } from '@inertiajs/react';
@@ -40,7 +40,6 @@ export default function TermsCondition({ auth, termsConditions = [] }) {
     };
 
     const filterStatus = (status) => {
-        setCurrentPage(1)
         setFilteredStatus(status);
     };
 
@@ -88,10 +87,8 @@ export default function TermsCondition({ auth, termsConditions = [] }) {
         >
             <Head title="Terms Condition" />
 
-            <div className="py-12">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
-                    <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                        <div className="flex flex-row justify-between m-3">
+                    <div className="flex flex-row justify-between my-5">
                             <div className="text-gray-800 text-3xl font-bold">Terms and Conditions</div>
                             <div>
                                 <AddButton onClick={openCreateModal} className="text-customBlue hover:text-white space-x-1">
@@ -100,6 +97,9 @@ export default function TermsCondition({ auth, termsConditions = [] }) {
                             </div> 
                         </div>  
 
+                
+                    <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                        
                         <div className="overflow-x-auto shadow-md sm:rounded-lg px-5 sm:px-5">
                             <div className="flex items-center justify-between flex-column md:flex-row flex-wrap space-y-4 md:space-y-0 py-4 bg-white">
                                 <label className="sr-only">Search</label>
@@ -136,6 +136,7 @@ export default function TermsCondition({ auth, termsConditions = [] }) {
                                     </button>
                                 </div>
                             </div>
+                            <div className="overflow-y-auto h-480">
                             <table className="w-full text-sm text-left rtl:text-right text-gray-500">
                                 <thead className="text-xs text-gray-700 uppercase bg-gray-50">
                                     <tr>
@@ -167,10 +168,16 @@ export default function TermsCondition({ auth, termsConditions = [] }) {
                                             <td className="px-6 py-4 max-w-60 truncate">{tc.content_text}</td>
                                             <td className="px-6 py-4">{tc.user.name}</td>
                                             <td className="px-6 py-4">{tc.updated_at}</td>
-                                            <td className="px-6 py-4 flex flex-col space-y-1">
-                                                <a onClick={() => openIndexModal(tc)} className="font-medium text-blue-600 dark:text-blue-500 hover:underline cursor-pointer">View</a>
-                                                <a onClick={() => openEditModal(tc)} className="font-medium text-blue-600 dark:text-blue-500 hover:underline cursor-pointer">Edit</a>
-                                                <a onClick={() => deleteTermCondition(tc.id)} className="font-medium text-blue-600 dark:text-blue-500 hover:underline cursor-pointer">Delete</a>
+                                            <td className="px-6 py-4 flex flex-row space-x-2">
+                                                <a onClick={() => openIndexModal(tc)} className="bg-customBlue text-white rounded p-1 hover:bg-transparent hover:text-customBlue cursor-pointer" title="View">
+                                                    <FaEye/>
+                                                </a>
+                                                <a onClick={() => openEditModal(tc)} className="bg-customBlue text-white rounded p-1 hover:bg-transparent hover:text-customBlue cursor-pointer" title="Edit">
+                                                    <FaPen />
+                                                </a>
+                                                <a onClick={() => deleteTermCondition(tc.id)} className="bg-customBlue text-white rounded p-1 hover:bg-transparent hover:text-customBlue cursor-pointer" title="Delete">
+                                                    <FaTrash />
+                                                </a>
                                             </td>
                                         </tr>
                                     ))) : (
@@ -180,12 +187,11 @@ export default function TermsCondition({ auth, termsConditions = [] }) {
                                     )}
                                 </tbody>
                             </table>
-
+                            </div>
                             <Pagination links={termsConditions.links} />
                         </div>
                     </div>
                 </div>
-            </div>
 
             <Create isOpen={isCreateModalOpen} onClose={closeModal}/>
             {selectedTerms && <Show isOpen={isShowModalOpen} onClose={closeModal} termConditions={selectedTerms} />}
