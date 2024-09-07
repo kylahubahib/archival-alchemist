@@ -1,0 +1,16 @@
+
+ 
+ bootstrap/app.php - file has been revitalized as a code-first application configuration file. 
+ From this file, you may now customize your application's routing, middleware, service providers, 
+ exception handling, and more.
+
+ Laravel's default password hashing algorithm is bcrypt. The "work factor" for bcrypt hashes can be 
+ adjusted via the config/hashing.php configuration file or the BCRYPT_ROUNDS environment variable.
+
+ Laravel Prompts is a PHP package for adding beautiful and user-friendly forms to your command-line 
+ applications, with browser-like features including placeholder text and validation.
+
+ Installed package in npm
+ - npm install date-fns
+
+...
