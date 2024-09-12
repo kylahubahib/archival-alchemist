@@ -14,7 +14,6 @@ use App\Http\Controllers\CustomMessagesController;
 use App\Http\Controllers\DepartmentsController;
 use App\Http\Controllers\CoursesController;
 use App\Http\Controllers\SectionsController;
-use App\Http\Controllers\StripeController;
 use App\Http\Controllers\PaymentSessionController;
 
 
