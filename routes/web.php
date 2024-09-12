@@ -1,7 +1,19 @@
 <?php
 
+use App\Http\Controllers\TagsController;
 use App\Http\Controllers\TermsAndConditionController;
+use App\Http\Controllers\SubscriptionPlanController;
+use App\Http\Controllers\FAQController;
 use App\Http\Controllers\UniversityController;
+use App\Http\Controllers\UserFeedbacksController;
+use App\Http\Controllers\CustomMessagesController;
+use App\Http\Controllers\DepartmentsController;
+use App\Http\Controllers\CoursesController;
+use App\Http\Controllers\SectionsController;
+use App\Http\Controllers\StripeController;
+use App\Http\Controllers\PaymentSessionController;
+
+
 use App\Http\Middleware\CheckUserTypeMiddleware;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
@@ -20,6 +32,14 @@ use Inertia\Inertia;
 Route::get('/', function () {
     return Inertia::render('Home');
 });
+
+//Route::post('/create-checkout-session', [StripeController::class, 'createCheckoutSession']);
+//Route::post('/subscribe', [SubscriptionController::class, 'subscribe']);
+Route::get('/pricing/payment/success', [PaymentSessionController::class, "paymentSuccess"])->name('pricing.paymentSuccess');
+Route::get('/pricing/payment/cancel', [PaymentSessionController::class, "paymentCancel"])->name('pricing.paymentCancel');
+Route::post('/pricing/payment', [PaymentSessionController::class, 'PaymentSession'])->name('pricing.payment');
+
+
 
 
 Route::get('/library', function () {
@@ -45,7 +65,7 @@ Route::get('/inbox', function () {
 //SUPERADMIN
 Route::middleware(['auth', 'verified', 'user-type:superadmin'])->group(function () {
     Route::get('/dashboard', function () {
-        return Inertia::render('SuperAdmin/Dashboard');})->name('dashboard');
+        return Inertia::render('SuperAdmin/Dashboard/Dashboard');})->name('dashboard');
 
     Route::get('/users', function () {
         return Inertia::render('SuperAdmin/Users');})->name('users');
@@ -56,22 +76,63 @@ Route::middleware(['auth', 'verified', 'user-type:superadmin'])->group(function 
     Route::get('/subscription-billing', function () {
         return Inertia::render('SuperAdmin/SubscriptionBilling');})->name('subscription-billing');
 
-    Route::get('/user-feedbacks', function () {
-        return Inertia::render('SuperAdmin/UserFeedbacks');})->name('user-feedbacks');
+    // Route::get('/user-feedbacks', function () {
+    //     return Inertia::render('SuperAdmin/UserFeedbacks/UserFeedbacks');})->name('user-feedbacks');
 
     Route::get('/user-reports', function () {
-        return Inertia::render('SuperAdmin/UserReports');})->name('user-reports');
+        return Inertia::render('SuperAdmin/UserReports/UserReports');})->name('user-reports');
 
-    Route::get('/subscription-plans', function () {
-        return Inertia::render('SuperAdmin/SubscriptionPlans');})->name('subscription-plans');
+    // Route::get('/subscription-plans', function () {
+    //      return Inertia::render('SuperAdmin/SubscriptionPlans/SubscriptionPlans');})->name('subscription-plans');
 
-    Route::get('/faq', function () {
-        return Inertia::render('SuperAdmin/Faq');})->name('faq');
+    // Route::get('/faq', function () {
+    //     return Inertia::render('SuperAdmin/FrequentlyAskedQuestions/Faq');})->name('faq');
+
+    ///ADVANCED ROUTES
+    ///Decided to create routes for the buttons in advanced page to simplify or easily create the crud functionality 
 
     Route::get('/advanced', function () {
-        return Inertia::render('SuperAdmin/Advanced');})->name('advanced');
+        return Inertia::render('SuperAdmin/Advanced/Advanced');})->name('advanced');
+
+    Route::get('/advanced/forum', function () {
+        return Inertia::render('SuperAdmin/Advanced/Forum/Forum');})->name('advanced-forum');
+
+    // Route::get('/advanced/custom-messages', function () {
+    //     return Inertia::render('SuperAdmin/Advanced/CustomMessages/CustomMessages');})->name('advanced-custom-messages');
+    Route::resource('advanced/custom-messages', CustomMessagesController::class)->names('manage-custom-messages');
+
+    // Route::get('/advanced/universities', function () {
+    //     return Inertia::render('SuperAdmin/Advanced/Universities/Universities');})->name('universities');
+    Route::resource('advanced/universities', UniversityController::class)->names('manage-universities');
+
+    // Route::get('/advanced/tags', function () {
+    //     return Inertia::render('SuperAdmin/Advanced/Tags/Tags');})->name('advanced-tags');
+    Route::resource('advanced/tags', TagsController::class)->names('manage-tags');
+
+    ///END ADVANCED ROUTES
 
     Route::resource('manage-terms-and-conditions', TermsAndConditionController::class);
+
+    Route::resource('manage-faqs', FAQController::class);
+
+    Route::resource('manage-subscription-plans', SubscriptionPlanController::class);
+
+    Route::resource('user-feedbacks', UserFeedbacksController::class);
+
+
+    // You can use put or patch. Put is used to update a resource entirely 
+    // while patch is used to update a single fields
+
+    Route::put('manage-terms-and-conditions/{id}/change-status', [TermsAndConditionController::class, 'change_status'])
+    ->name('manage-terms-and-conditions.change_status');
+
+    Route::put('manage-subscription-plans/{id}/change-status', [SubscriptionPlanController::class, 'change_status'])
+    ->name('manage-subscription-plans.change_status');
+
+    Route::put('manage-faqs/{id}/change-status', [FAQController::class, 'change_status'])
+    ->name('manage-faqs.change_status');
+
+
 });
 
 
@@ -83,11 +144,16 @@ Route::middleware(['auth', 'verified', 'user-type:admin'])->prefix('institution'
     Route::get('/coadmins', function () {
         return Inertia::render('InstitutionAdmin/CoAdmins');})->name('institution-coadmins');
 
-    Route::get('/courses', function () {
-        return Inertia::render('InstitutionAdmin/Courses');})->name('institution-courses');
+    // Route::get('/departments', function () {
+    //     return Inertia::render('InstitutionAdmin/Departments');})->name('institution-departments');
+    Route::resource('/departments', DepartmentsController::class)->names('manage-departments');
 
-    Route::get('/departments', function () {
-        return Inertia::render('InstitutionAdmin/Departments');})->name('institution-departments');
+    // Route::get('/courses', function () {
+    //     return Inertia::render('InstitutionAdmin/Courses');})->name('institution-courses');
+    
+    Route::resource('/courses', CoursesController::class)->names('manage-courses');
+
+    Route::resource('/sections', SectionsController::class)->names('manage-sections');
 
     Route::get('/faculties', function () {
         return Inertia::render('InstitutionAdmin/Faculties');})->name('institution-faculties');
@@ -96,7 +162,7 @@ Route::middleware(['auth', 'verified', 'user-type:admin'])->prefix('institution'
         return Inertia::render('InstitutionAdmin/Students');})->name('institution-students');
 
     Route::get('/subscription-billing', function () {
-        return Inertia::render('InstitutionAdmin/SubscriptionBilling');})->name('institution-subscription-billing');
+        return Inertia::render('InstitutionAdmin/SubscriptionBilling/SubscriptionBilling');})->name('institution-subscription-billing');
 });
 
 //guest
@@ -108,9 +174,9 @@ Route::get('/tour', function () {
     return Inertia::render('Tour');
 })->name('tour');
 
-Route::get('/pricing', function () {
-    return Inertia::render('Pricing');
-})->name('pricing');
+Route::get('/pricing', [SubscriptionPlanController::class, 'pricing'])->name('pricing');
+
+Route::get('/terms-and-conditions', [TermsAndConditionController::class, 'terms_and_conditions'])->name('terms-and-conditions');
 
 Route::get('/terms-and-condition', function () {
     return Inertia::render('Terms&Condition');
@@ -130,8 +196,6 @@ Route::middleware('auth')->group(function () {
 Route::get('api/universities-branches', [UniversityController::class, 'getUniversitiesWithBranches']);
 
 //Terms and Condition Controller Route
-
-
 
 
 require __DIR__.'/auth.php';

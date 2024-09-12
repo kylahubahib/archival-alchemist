@@ -13,12 +13,13 @@ export default function AdminLayout({ auth, user, header, children }) {
     const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
 
     return (
-        <div className="min-h-screen bg-customlightBlue flex  overflow-auto">
-
+    
+    <div className="min-h-screen bg-customlightBlue flex">
+        
         {user.user_type == 'superadmin' ? (
              //SIDEBAR FOR THE SUPER ADMIN
             <Sidebar color="customBlue" borderRadius="none" margin="0">
-                <SidebarItem icon={<MdSpaceDashboard size={20} className="text-white group-hover:text-gray-600" />} text="Dashboard" color="white" marginBottom="5" to="/dashboard" />
+                <SidebarItem icon={<MdSpaceDashboard size={20} className="text-white group-hover:text-gray-600" />} text="Dashboard" color="white" to="/dashboard" />
                 <SidebarTitle title="MANAGEMENT"></SidebarTitle>
                 <SidebarItem icon={<FaUsers size={20} className="text-white group-hover:text-gray-600" />} text="Users" color="white" to="/users" />
                 <SidebarItem icon={<FaBook size={20} className="text-white group-hover:text-gray-600" />} text="Archives" color="white" to="/archives" />
@@ -28,9 +29,9 @@ export default function AdminLayout({ auth, user, header, children }) {
 
                 <SidebarTitle title="CUSTOMIZATION"></SidebarTitle>
                 <SidebarItem icon={<FaFileContract size={20} className="text-white group-hover:text-gray-600" />} text="Terms & Conditions" color="white" to="/manage-terms-and-conditions" />
-                <SidebarItem icon={<FaScroll size={20} className="text-white group-hover:text-gray-600" />} text="Subscription Plans" color="white" to="/subscription-plans" />
-                <SidebarItem icon={<BsQuestionCircleFill size={20} className="text-white group-hover:text-gray-600" />} text="FAQs" color="white" to="/faq" />
-                <SidebarItem icon={<FaWrench size={20} className="text-white group-hover:text-gray-600" />} text="Advanced" color="white" to="/advanced" />
+                <SidebarItem icon={<FaScroll size={20} className="text-white group-hover:text-gray-600" />} text="Subscription Plans" color="white" to="/manage-subscription-plans" />
+                <SidebarItem icon={<BsQuestionCircleFill size={20} className="text-white group-hover:text-gray-600" />} text="FAQs" color="white" to="/manage-faqs" />
+                <SidebarItem icon={<FaWrench size={20} className="text-white group-hover:text-gray-600" />} text="Advanced" color="white" to="/advanced/forum" />
             </Sidebar>
         ) : (
             
@@ -42,7 +43,7 @@ export default function AdminLayout({ auth, user, header, children }) {
                 <SidebarItem icon={<FaUserTie size={20} className="text-white group-hover:text-gray-600" />} text="Faculties" color="white" to="/institution/faculties" />
                 <SidebarItem icon={<FaUserSecret size={20} className="text-white group-hover:text-gray-600" />} text="Co-admins" color="white" to="/institution/coadmins" alert />
                 <SidebarItem icon={<CgOrganisation size={20} className="text-white group-hover:text-gray-600" />} text="Departments" color="white" to="/institution/departments" />
-                <SidebarItem icon={<FaGraduationCap size={20} className="text-white group-hover:text-gray-600" />} text="Courses" color="white" to="/institution/courses" />
+                {/* <SidebarItem icon={<FaGraduationCap size={20} className="text-white group-hover:text-gray-600" />} text="Courses" color="white" to="/institution/courses" /> */}
                 <SidebarItem icon={<FaBook size={20} className="text-white group-hover:text-gray-600" />} text="Archives" color="white" to="/institution/archives" />
                 <SidebarItem icon={<MdSubscriptions size={20} className="text-white group-hover:text-gray-600" />} text="Subscription & Billing" color="white" to="/institution/subscription-billing" />
                 <SidebarItem icon={<FaFacebookMessenger size={20} className="text-white group-hover:text-gray-600" />} text="Chat with us" color="white" to="/institution/students"/>
@@ -53,14 +54,10 @@ export default function AdminLayout({ auth, user, header, children }) {
        
 
         <div className="flex-1">
-            <nav className="bg-white border-b">
+            
+            <nav className="bg-white sticky top-0 shadow-sm">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex justify-between h-16">
-                        <div className="flex">
-                            <div className="shrink-0 flex items-center">
-                            <SearchBar></SearchBar>
-                            </div>
-                        </div>
+                    <div className="flex justify-end h-14">
 
                         <div className="hidden sm:flex sm:items-center sm:ml-6">
                             <div className="ml-3 relative">
@@ -145,9 +142,14 @@ export default function AdminLayout({ auth, user, header, children }) {
                 </div>
             </nav>
 
-            {/* Main content */}
-            <main>{children}</main>
+             {/* Main content */}
+             <div>
+                <main>{children}</main>
+            </div>
+            
         </div>
+
+           
     </div>
     );
 }

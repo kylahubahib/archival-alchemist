@@ -1,12 +1,35 @@
+import { CgArrowsExchangeAltV } from "react-icons/cg"; 
 import Modal from '@/Components/Modal';
+import { router } from "@inertiajs/react";
 
 export default function Show({ isOpen, onClose, termConditions }) {
     if (!termConditions) return null; 
 
+    const changeStatus = (id) => {
+        router.put(route('manage-terms-and-conditions.change_status', id), {}, {
+            preserveScroll: true,
+            onSuccess: () => {
+                onClose();
+                alert('Successfully Changed Status!');
+            },
+            onError: (errors) => {
+                console.error('Update failed', errors);
+            },
+        });
+    };
+
+
     return (
         <Modal show={isOpen} onClose={onClose}>
-            <div className="bg-customBlue p-3">
+            <div className="bg-customBlue p-3 text-white flex justify-between">
                 <h2 className="text-xl text-white font-bold">View Term and Condition</h2>
+                <div className="flex items-center space-x-2">
+                    <span>Status: <b>{termConditions.content_status.toUpperCase()}</b></span>
+                    <button onClick={() => changeStatus(termConditions.id)} title="Change status" className="focus:outline-none hover:text-customlightBlue">
+                    <CgArrowsExchangeAltV size={25} />
+                    </button>
+                </div>
+
             </div>
 
             <div className="p-6 space-y-5">

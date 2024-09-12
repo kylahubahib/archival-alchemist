@@ -1,16 +1,15 @@
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
+import LongTextInput from '@/Components/LongTextInput';
 import Modal from '@/Components/Modal';
+import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
-import AdminLayout from '@/Layouts/AdminLayout';
 import { Head, useForm } from '@inertiajs/react';
 import { useState } from 'react';
-import AddButton from "@/Components/AddButton";
-import { FaPlus } from "react-icons/fa";
 
-export default function SubscriptionPlans({ auth }) {
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const { data, setData, post, processing, errors, reset } = useForm({
+export default function Create({ isOpen, onClose, features = {}}) {
+
+    const { data, setData, post, processing, errors, clearErrors, reset } = useForm({
         plan_name: '',
         plan_price: '',
         plan_term: '',
@@ -19,70 +18,55 @@ export default function SubscriptionPlans({ auth }) {
         plan_discount: '',
         free_trial_days: '',
         plan_status: '',
+        plan_text: '',
         plan_features: [],
     });
 
     const submit = (e) => {
         e.preventDefault();
-        post(route('subscription-plans'));
+        post(route('manage-subscription-plans.store'), {
+            onSuccess: () => {
+                reset();
+                clearErrors();
+                onClose();
+                alert('Success!');
+            },
+        });
     };
 
-    const openModal = () => {
-        setIsModalOpen(true);
+    const closeClick = () => {
+        reset(); 
+        clearErrors(); 
+        onClose(); 
     };
 
-    const closeModal = () => {
-        setIsModalOpen(false);
-    };
-
-    const addFeature = (feature) => {
-        setData('plan_features', data.plan_features.concat(feature));
+    const addFeature = (featureId) => {
+        setData('plan_features', [...data.plan_features, featureId]);
     };
 
     const delFeature = (index) => {
-        setData('plan_features', data.plan_features.filter((_, i) => i !== index));
+        const updatedFeatures = [...data.plan_features];
+        updatedFeatures.splice(index, 1);
+        setData('plan_features', updatedFeatures);
     };
 
     const handleFeatureChange = (e) => {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            addFeature(e.target.value);
-            e.target.value = '';
+        const featureId = parseInt(e.target.value);
+        
+        if (featureId && !data.plan_features.includes(featureId)) {
+            addFeature(featureId);
         }
     };
 
     return (
-        <AdminLayout
-            user={auth.user}
-            header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Subscription Plans</h2>}
-        >
-            <Head title="Subscription Plans" />
-
-            <div className="py-12">
-                <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
-                    <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                        <div className="flex flex-row justify-between">
-                            <div className="p-6 text-gray-900 h-96">Subscription Plans</div>
-                            
-                            <div className="p-3">
-                                <AddButton onClick={openModal} className="text-customBlue hover:text-white space-x-1">
-                                    <FaPlus /><span>Add Plan</span>
-                                </AddButton>
-                            </div>
-                        </div>
-
-                        
-                    </div>
-                </div>
+        <Modal show={isOpen} onClose={closeClick} maxWidth='5xl'>
+            <div className="bg-customBlue p-3" >
+                <h2 className="text-xl text-white font-bold">Add Subscription Plan</h2>
             </div>
-
-            <Modal show={isModalOpen} onClose={closeModal} maxWidth="lg">
-                <div className="bg-customBlue p-3" >
-                    <h2 className="text-xl text-white font-bold">Add Subscription Plan</h2>
-                </div>
-
+            
+            <form onSubmit={submit}>
                 <div className="p-6 space-y-5">
-                    <form onSubmit={submit}>
+                    <div className="flex flex-row space-x-8">
                         <div className='space-y-5'>
                             <div className="flex flex-row space-x-10">
                                 <div className="flex flex-col">
@@ -95,7 +79,7 @@ export default function SubscriptionPlans({ auth }) {
                                         className="mt-1 block w-full"
                                         onChange={(e) => setData('plan_name', e.target.value)}
                                     />
-                                    {/* <InputError message={errors.plan_name} className="mt-2" /> */}
+                                    <InputError message={errors.plan_name} className="mt-2" />
                                 </div>
                                 <div className="flex flex-col">
                                     <InputLabel value="Plan Type" />
@@ -107,12 +91,25 @@ export default function SubscriptionPlans({ auth }) {
                                         className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 rounded-md"
                                     >
                                         <option value="" disabled>Select a plan type</option>
-                                        <option value="institutional">Institutional</option>
-                                        <option value="personal">Personal</option>
+                                        <option value="Institutional">Institutional</option>
+                                        <option value="Personal">Personal</option>
                                     </select>
-                                    {/* <InputError message={errors.plan_type} className="mt-2" /> */}
+                                    <InputError message={errors.plan_type} className="mt-2" />
                                 </div>
                             </div>
+
+                            <div className="flex flex-col">
+                                <InputLabel value="Plan Description" />
+                                <LongTextInput
+                                    id="plan_text"
+                                    name="plan_text"
+                                    value={data.plan_text}
+                                    className="mt-1 block w-full max-h-44"
+                                    onChange={(e) => setData('plan_text', e.target.value)}
+                                />
+                                <InputError message={errors.plan_text} className="mt-2" />
+                            </div>
+
 
                             <div className="flex flex-row space-x-10">
                                 <div className="flex flex-col">
@@ -129,7 +126,7 @@ export default function SubscriptionPlans({ auth }) {
                                         <option value="monthly">monthly</option>
                                         <option value="yearly">yearly</option>
                                     </select>
-                                    {/* <InputError message={errors.plan_term} className="mt-2" /> */}
+                                    <InputError message={errors.plan_term} className="mt-2" />
                                 </div>
                                 <div className="flex flex-col">
                                     <InputLabel value="Plan Price" />
@@ -141,32 +138,10 @@ export default function SubscriptionPlans({ auth }) {
                                         className="mt-1 block w-full"
                                         onChange={(e) => setData('plan_price', e.target.value)}
                                     />
-                                    {/* <InputError message={errors.plan_price} className="mt-2" /> */}
+                                    <InputError message={errors.plan_price} className="mt-2" />
                                 </div>
-                            </div>
-
-                            <div className="flex flex-col border border-gray-300 p-4 rounded-md shadow-sm">
-                                <InputLabel value="Included Features" />
-                                <TextInput
-                                    id="plan_feature"
-                                    type="text"
-                                    name="plan_feature"
-                                    className="mt-1 block w-52 text-sm h-8 mb-1"
-                                    onKeyPress={handleFeatureChange}
-                                    placeholder="Add new feature"
-                                />
-                                {/* <InputError message={errors.plan_feature} className="mt-2" /> */}
-                                <ul>
-                                    {data.plan_features.map((feature, index) => (
-                                        <li key={index} className="flex justify-between">
-                                            {index+1}{". "}{feature}
-                                            <button type="button" onClick={() => delFeature(index)} className="text-red-500 text-sm">
-                                                Remove
-                                            </button>
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
+                            </div> 
+                        
 
                             <div className="flex flex-row space-x-10">
                                 <div className="flex flex-col">
@@ -179,7 +154,6 @@ export default function SubscriptionPlans({ auth }) {
                                         className="mt-1 block w-full"
                                         onChange={(e) => setData('plan_user_num', e.target.value)}
                                     />
-                                    {/* <InputError message={errors.plan_user_num} className="mt-2" /> */}
                                 </div>
                                 <div className="flex flex-col">
                                     <InputLabel value="Number of days for free trial (if applicable)" />
@@ -191,21 +165,59 @@ export default function SubscriptionPlans({ auth }) {
                                         className="mt-1 block w-full"
                                         onChange={(e) => setData('free_trial_days', e.target.value)}
                                     />
-                                    {/* <InputError message={errors.free_trial_days} className="mt-2" /> */}
                                 </div>
                             </div>
+                        
                         </div>
 
-                        
-                    </form>
+                        <div className="flex flex-col border border-gray-300 p-4 rounded-md shadow-sm space-y-2">
+                            <InputLabel value="Included Features" />
+                            <select
+                                id="plan_feature"
+                                name="plan_feature"
+                                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                                onChange={handleFeatureChange}
+                                value=""
+                            >
+                                <option value="">Select a feature</option>
+                                {features.map((feature) => (
+                                    <option key={feature.id} value={feature.id}>
+                                        {feature.feature_name}
+                                    </option>
+                                ))}
+                            </select>
 
+                            <InputError message={errors.plan_feature} className="mt-2" />
+                            <ul>
+                                {data.plan_features.map((featureId, index) => (
+                                    <li key={index} className="flex justify-between">
+                                        {index + 1}. {features.find(f => f.id === featureId)?.feature_name}
+                                        <button
+                                            type="button"
+                                            onClick={() => delFeature(index)}
+                                            className="text-red-500 text-sm"
+                                        >
+                                            Remove
+                                        </button>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div className="mt-6 flex">
+                        <PrimaryButton type="submit" disabled={processing}>
+                            Save
+                        </PrimaryButton>
+                    </div>
                 </div>
 
-                <div className="bg-customBlue p-2 flex justify-end" >
-                    <button onClick={closeModal} className="text-white text-right mr-5">Close</button>
+                <div className="bg-customBlue p-2 flex justify-end">
+                    <button type="button" onClick={closeClick} className="text-white text-right mr-5">
+                        Close
+                    </button>
                 </div>
-            </Modal>
-
-        </AdminLayout>
+            </form>
+        </Modal>
     );
 }
