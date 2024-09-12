@@ -18,7 +18,7 @@ export default function Pricing({ auth, personalPlans=[], institutionalPlans=[],
         setError(null);
 
         try {
-            const response = await axios.post('/pricing/payment', { plan_id: planId });
+            const response = await axios.post('/payment', { plan_id: planId });
 
             if (response.data.checkout_url) {
                 
@@ -129,4 +129,3 @@ export default function Pricing({ auth, personalPlans=[], institutionalPlans=[],
         </GuestLayout>
     );
 }
-

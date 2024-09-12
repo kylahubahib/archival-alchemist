@@ -84,6 +84,12 @@ class SubscriptionPlanController extends Controller
             'plan_text' => 'required|string',
         ]);        
        
+        //Convert percentage discount in decimal
+        if ($discount !== null && $discount != 0.00) {
+            $discount = $request->plan_discount/100;
+        } else {
+            $discount = $request->plan_discount;
+        }
 
         $plan = SubscriptionPlan::create([
             'plan_name' => $request->plan_name,
@@ -91,7 +97,7 @@ class SubscriptionPlanController extends Controller
             'plan_term' => $request->plan_term,
             'plan_type' => $request->plan_type,
             'plan_user_num' => $request->plan_user_num,
-            'plan_discount' => $request->plan_discount,
+            'plan_discount' => $discount,
             'free_trial_days' => $request->free_trial_days,
             'plan_text'=> $request->plan_text,
             'plan_status' => 'Available',

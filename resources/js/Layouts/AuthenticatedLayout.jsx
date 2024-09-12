@@ -16,7 +16,7 @@ export default function Authenticated({ user, children }) {
     //console.log(user.user_type); // Add this line to debug
 
     return (
-        <div className="min-h-screen bg-customlightBlue flex overflow-auto">
+        <div className="min-h-screen bg-customlightBlue flex z-10">
             {/* Sidebar */}
             <Sidebar color="white" borderRadius="xl" margin="3">
                 <SidebarItem icon={<BiBookOpen size={20} />} text="Library" to="/library" />
@@ -31,14 +31,9 @@ export default function Authenticated({ user, children }) {
             </Sidebar>
 
             <div className="flex-1">
-                <nav className="bg-customBlue border-b rounded-xl m-3">
+                <nav className="bg-customBlue border-b rounded-xl m-3 sticky top-3">
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                        <div className="flex justify-between h-16">
-                            <div className="flex">
-                                <div className="shrink-0 flex items-center">
-                                    <SearchBar />
-                                </div>
-                            </div>
+                        <div className="flex justify-end h-16">
 
                             <div className="hidden sm:flex sm:items-center sm:ml-6">
                                 <button className="rounded-full py-1 px-6 bg-green-300">
@@ -53,7 +48,7 @@ export default function Authenticated({ user, children }) {
                                             <span className="inline-flex rounded-md">
                                                 <button
                                                     type="button"
-                                                    className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-full h-10 w-10 flex items-center justify-center text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150"
+                                                    className="items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-full h-10 w-10 flex justify-center text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150"
                                                 >
                                                     {user.name}
 

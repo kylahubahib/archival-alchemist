@@ -37,5 +37,10 @@ class SubscriptionPlan extends Model
     public function plan_feature(): HasMany
     {
         return $this->hasMany(PlanFeature::class, 'plan_id');
-    }
+    } 
+
+    public function transaction(): HasMany
+    {
+        return $this->hasMany(Transaction::class, 'plan_id');
+    } 
 }

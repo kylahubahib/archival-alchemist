@@ -57,13 +57,12 @@ export default function Library({ auth }) {
         <MainLayout
             user={auth.user}
             header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Library</h2>}
-            className="min-h-screen flex flex-col"  // Ensure full height for parent layout
         >
             <Head title="Library" />
 
             <div className="flex-grow py-8"> {/* Use flex-grow to take available space */}
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
-                    <div className="flex flex-col h-full">
+                    <div className="flex flex-col h-screen">
                         <div className="flex justify-between items-center mb-4">
                             <div className="flex">
                                 <button

@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 
-class User extends Authenticatable 
+class User extends Authenticatable  
 {
     use HasFactory, Notifiable;
 
@@ -117,5 +117,10 @@ class User extends Authenticatable
     public function feedback(): HasMany
     {
         return $this->hasMany(Feedback::class, 'user_id');        
+    }
+
+    public function transaction(): HasMany
+    {
+        return $this->hasMany(Transaction::class, 'user_id');        
     }
 }

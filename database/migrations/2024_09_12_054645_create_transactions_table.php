@@ -11,19 +11,21 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('personal_subscriptions', function (Blueprint $table) {
+        Schema::create('transactions', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('user_id');
             $table->unsignedBigInteger('plan_id');
-            $table->string('persub_status')->default('inactive');
-            $table->decimal('total_amount');
-            $table->date('start_date')->nullable();
-            $table->date('end_date')->nullable();
+            $table->string('checkout_id')->nullable();
+            $table->string('reference_number')->nullable();
+            $table->decimal('trans_amount', 10, 2); 
+            $table->string('payment_method')->nullable();
+            $table->string('trans_status')->default('Pending');
             $table->timestamps();
-
+        
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->foreign('plan_id')->references('id')->on('subscription_plans')->onDelete('cascade');
         });
+        
     }
 
     /**
@@ -31,6 +33,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('personal_subscriptions');
+        Schema::dropIfExists('transactions');
     }
 };

@@ -85,7 +85,7 @@ export default function StudentClass({ auth }) {
                     <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                         <div className="p-6 text-gray-900 h-full"> {/* Adjust height to flex container */}
                             {!joinedClass ? (
-                                <div className="flex flex-col items-center justify-center h-full">
+                                <div className="flex flex-col items-center justify-center h-screen">
                                     <BookOpenIcon className="h-32 w-32 text-blue-500" />
                                     <button
                                         onClick={openModal}

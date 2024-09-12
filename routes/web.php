@@ -41,9 +41,9 @@ Route::get('/', function () {
 
 //Route::post('/create-checkout-session', [StripeController::class, 'createCheckoutSession']);
 //Route::post('/subscribe', [SubscriptionController::class, 'subscribe']);
-Route::get('/pricing/payment/success', [PaymentSessionController::class, "paymentSuccess"])->name('pricing.paymentSuccess');
-Route::get('/pricing/payment/cancel', [PaymentSessionController::class, "paymentCancel"])->name('pricing.paymentCancel');
-Route::post('/pricing/payment', [PaymentSessionController::class, 'PaymentSession'])->name('pricing.payment');
+Route::get('/payment/success', [PaymentSessionController::class, "paymentSuccess"])->name('payment.success');
+Route::get('/payment/cancel', [PaymentSessionController::class, "paymentCancel"])->name('payment.cancel');
+Route::post('/payment', [PaymentSessionController::class, 'PaymentSession'])->name('payment');
 
 
 
