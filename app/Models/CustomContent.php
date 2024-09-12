@@ -21,8 +21,6 @@ class CustomContent extends Model
         'content_status'
     ];
 
-    //Formatting the timestamp
-
     public function getUpdatedAtAttribute($value)
     {
         return Carbon::parse($value)->format('Y-m-d');

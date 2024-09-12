@@ -38,10 +38,10 @@ class AuthenticatedSessionController extends Controller
         // Redirect based on user_type
         switch ($user->user_type) {
             case 'student':
-                return redirect()->route('savedlist');
+                return redirect()->route('library');
                 break;
             case 'teacher':
-                return redirect()->route('class');
+                return redirect()->route('library');
                 break;
             case 'admin':
                 return redirect()->route('institution-students');

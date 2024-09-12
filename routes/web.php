@@ -1,5 +1,9 @@
 <?php
 
+use App\Http\Controllers\StudentClassController; // Add this line
+use App\Models\Student;
+use App\Http\Controllers\TagController;
+
 use App\Http\Controllers\TagsController;
 use App\Http\Controllers\TermsAndConditionController;
 use App\Http\Controllers\SubscriptionPlanController;
@@ -14,10 +18,13 @@ use App\Http\Controllers\StripeController;
 use App\Http\Controllers\PaymentSessionController;
 
 
+
 use App\Http\Middleware\CheckUserTypeMiddleware;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Response;
 use Inertia\Inertia;
 
 // Route::get('/', function () {
@@ -41,24 +48,31 @@ Route::post('/pricing/payment', [PaymentSessionController::class, 'PaymentSessio
 
 
 
-
 Route::get('/library', function () {
     return Inertia::render('Users/Library');
-})->middleware(['user-type:student,teacher,guest'])-> name('library');
+})->middleware(['user-type:student,teacher,guest'])->name('library');
+
 Route::get('/forum', function () {
     return Inertia::render('Users/Forum');
 })->middleware(['user-type:student,teacher,guest'])->name('forum');
 
+Route::get('/studentclass', function () {
+    return Inertia::render('Users/Class/Student/StudentClass');
+})->middleware(['auth', 'verified', 'user-type:student'])->name('studentclass');
 
-Route::get('/class', function () {
-    return Inertia::render('Users/Class/Class');
-})->middleware(['auth', 'verified', 'user-type:student,teacher'])->name('class');
+Route::get('/teacherclass', function () {
+    return Inertia::render('Users/Class/Teacher/TeacherClass');
+})->middleware(['auth', 'verified', 'user-type:teacher'])->name('teacherclass');
+
+
 Route::get('/savedlist', function () {
     return Inertia::render('Users/SavedList');
 })->middleware(['auth', 'verified', 'user-type:student,teacher'])->name('savedlist');
+
 Route::get('/inbox', function () {
     return Inertia::render('Users/Inbox');
 })->middleware(['auth', 'verified', 'user-type:student,teacher'])->name('inbox');
+
 
 
 
@@ -184,6 +198,7 @@ Route::get('/terms-and-condition', function () {
 
 
 
+Route::get('profile-pic/{filename}', [ProfileController::class, 'showProfilePic'])->name('profile.pic');
 
 
 Route::middleware('auth')->group(function () {
@@ -196,6 +211,38 @@ Route::middleware('auth')->group(function () {
 Route::get('api/universities-branches', [UniversityController::class, 'getUniversitiesWithBranches']);
 
 //Terms and Condition Controller Route
+
+
+
+//manuscript project
+Route::middleware(['auth'])->group(function () {
+    // Route for storing a new manuscript project
+    Route::post('/capstone/upload', [StudentClassController::class, 'storeManuscriptProject'])->name('api.capstone.upload');
+
+    // Route for tracking a student's activity
+    Route::post('/student/track-activity', [StudentClassController::class, 'trackActivity'])
+        ->name('student.trackActivity.store');
+
+    // Route for approving a student's project
+    Route::post('/student/approve-project', [StudentClassController::class, 'approveProject'])
+        ->name('student.approveProject.store');
+    });
+
+//Add a route for fetching tag suggestions:
+    // In api.php or web.php
+Route::get('/api/tags/suggestions', [TagController::class, 'suggestions']);
+
+Route::get('tags/existing', [TagController::class, 'existingTags']);
+
+Route::post('/api/tags/store', [TagController::class, 'storeTags']);
+Route::post('/tags/get-tag-ids', [TagController::class, 'getTagIds']);
+
+
+//route for checking the class code
+Route::post('/check-class-code', [StudentClassController::class, 'checkClassCode']);
+
+
+Route::get('/api/approved-manuscript', [StudentClassController::class, 'getApprovedManuscript']);
 
 
 require __DIR__.'/auth.php';

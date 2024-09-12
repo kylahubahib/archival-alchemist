@@ -21,6 +21,9 @@ return new class extends Migration
             $table->decimal('plan_discount')->nullable();
             $table->unsignedInteger('free_trial_days')->nullable();
             $table->timestamps();
+
+
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
         });
 
 

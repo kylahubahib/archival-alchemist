@@ -1,6 +1,7 @@
-import { MdChatBubbleOutline, MdOutlineForum  } from "react-icons/md"; 
-import { SiGoogleclassroom } from "react-icons/si"; 
-import { BiBookBookmark, BiBookOpen } from "react-icons/bi"; 
+import { MdChatBubbleOutline, MdOutlineForum } from "react-icons/md";
+import { SiGoogleclassroom } from "react-icons/si";
+import { BiBookBookmark, BiBookOpen } from "react-icons/bi";
+import { FiBell } from "react-icons/fi";
 import { useState } from 'react';
 import Dropdown from '@/Components/Dropdown';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
@@ -11,37 +12,48 @@ import SearchBar from '@/Components/SearchBar';
 export default function Authenticated({ user, children }) {
     const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
 
+    // Debugging: log the user type to console
+    //console.log(user.user_type); // Add this line to debug
+
     return (
-        <div className="min-h-screen bg-customlightBlue flex">
+        <div className="min-h-screen bg-customlightBlue flex overflow-auto">
             {/* Sidebar */}
             <Sidebar color="white" borderRadius="xl" margin="3">
                 <SidebarItem icon={<BiBookOpen size={20} />} text="Library" to="/library" />
                 <SidebarItem icon={<BiBookBookmark size={20} />} text="Favorites" to="/savedlist" />
                 <SidebarItem icon={<MdOutlineForum size={20} />} text="Forum" to="/forum" />
-                <SidebarItem icon={<SiGoogleclassroom size={20} />} text="Class" to="/class" />
+                {user.user_type === 'teacher' ? (
+                    <SidebarItem icon={<SiGoogleclassroom size={20} />} text="Class" to="/teacherclass" />
+                ) : (
+                    <SidebarItem icon={<SiGoogleclassroom size={20} />} text="Class" to="/studentclass" />
+                )}
                 <SidebarItem icon={<MdChatBubbleOutline size={20} />} text="Inbox" to="/inbox" />
-                {/* <SidebarItem icon={<Star size={20} />} text="Subscription" href="/subscription" /> */}
             </Sidebar>
-            
 
             <div className="flex-1">
-                <nav className="bg-customBlue border-b rounded-xl m-3 sticky top-3">
+                <nav className="bg-customBlue border-b rounded-xl m-3">
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                         <div className="flex justify-between h-16">
                             <div className="flex">
                                 <div className="shrink-0 flex items-center">
-                                <SearchBar></SearchBar>
+                                    <SearchBar />
                                 </div>
                             </div>
 
                             <div className="hidden sm:flex sm:items-center sm:ml-6">
+                                <button className="rounded-full py-1 px-6 bg-green-300">
+                                    {user.user_type}
+                                </button>
+
+                                <FiBell size={24} className="ml-3 text-white" />
+
                                 <div className="ml-3 relative">
                                     <Dropdown>
                                         <Dropdown.Trigger>
                                             <span className="inline-flex rounded-md">
                                                 <button
                                                     type="button"
-                                                    className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150"
+                                                    className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-full h-10 w-10 flex items-center justify-center text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150"
                                                 >
                                                     {user.name}
 
@@ -72,6 +84,7 @@ export default function Authenticated({ user, children }) {
                             </div>
                             
                              {/* This part here is for responsive layout. Not yet configured*/}
+
                             <div className="-mr-2 flex items-center sm:hidden">
                                 <button
                                     onClick={() => setShowingNavigationDropdown((previousState) => !previousState)}
@@ -100,6 +113,7 @@ export default function Authenticated({ user, children }) {
                     
 
                      {/* This part here is for responsive layout. Not yet configured*/}
+
                     <div className={(showingNavigationDropdown ? 'block' : 'hidden') + ' sm:hidden'}>
                         <div className="pt-2 pb-3 space-y-1">
                             <ResponsiveNavLink href={route('dashboard')} active={route().current('dashboard')}>

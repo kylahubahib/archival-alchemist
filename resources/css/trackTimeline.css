@@ -1,0 +1,87 @@
+.track-container {
+    width: 100%;
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 1rem;
+    position: relative;
+    transition: height 0.3s ease;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #ddd;
+}
+
+.icon {
+    font-size: 2rem;
+}
+
+.info {
+    flex: 1;
+    padding-left: 1rem;
+}
+
+.title {
+    font-size: 1.25rem;
+    font-weight: bold;
+}
+
+.details {
+    font-size: 1rem;
+    color: blue;
+    cursor: pointer;
+}
+
+.status {
+    text-align: right;
+    font-size: 1rem;
+    font-weight: bold;
+}
+
+.toggle {
+    font-size: 1rem;
+    color: blue;
+    cursor: pointer;
+}
+
+.timeline-container {
+    margin-top: 1rem;
+}
+
+.vertical-timeline {
+    position: relative;
+    padding-left: 1.5rem;
+}
+
+.vertical-timeline::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: black;
+}
+
+.timeline-element {
+    position: relative;
+    padding-left: 2rem;
+    margin-bottom: 1rem;
+    cursor: pointer;
+}
+
+.timeline-element::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    width: 12px;
+    height: 12px;
+    background: black;
+    border-radius: 50%;
+    transform: translateY(-50%);
+}
