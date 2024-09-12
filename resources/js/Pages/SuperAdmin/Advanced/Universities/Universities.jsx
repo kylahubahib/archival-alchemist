@@ -1,10 +1,16 @@
 import AdminLayout from '@/Layouts/AdminLayout';
-import { Head } from '@inertiajs/react';
+import { Head, useForm } from '@inertiajs/react';
 import AdvancedMenu from '../AdvancedMenu';
 import AddButton from '@/Components/AddButton';
-import { FaPlus } from 'react-icons/fa';
+import { FaPen, FaPlus, FaTrash } from 'react-icons/fa';
+import { useState } from 'react';
 
-export default function Universities({ auth }) {
+export default function Universities({ auth, uniBranches }) {
+    const [filteredData, setFilteredData] = useState(uniBranches.data);
+    const { data, setData, post, put, processing, errors, clearErrors, reset } = useForm({ 
+        uni_branch_name: ''
+    });
+
     return (
         
         <AdminLayout
@@ -13,8 +19,7 @@ export default function Universities({ auth }) {
         > 
             <Head title="Advanced" /> 
 
-            <div className="py-8">
-                <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
+                <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 py-8">
                     <div className=" space-x-4 pb-4">
                         <AdvancedMenu />
                     </div>
@@ -38,14 +43,96 @@ export default function Universities({ auth }) {
                                 </div>
                         </div>
 
-                        <div className="overflow-x-auto shadow-md sm:rounded-lg px-5 sm:px-5">
-                            hello
+                        <div className="overflow-y-auto h-480">
+                            <table className="w-full text-sm text-left rtl:text-right text-gray-500">
+                                <thead className="text-xs text-gray-700 uppercase bg-gray-50">
+                                    <tr>
+                                        <th scope="col" className="px-6 py-3">
+                                            School Name
+                                        </th>
+                                        <th scope="col" className="px-6 py-3">
+                                            Branch Name
+                                        </th>
+                                        <th scope="col" className="px-6 py-3">
+                                            Date Created
+                                        </th>
+                                        {/* <th scope="col" className="px-6 py-3">
+                                            Date Modified
+                                        </th>*/}
+                                        <th scope="col" className="px-6 py-3">
+                                            Action
+                                        </th> 
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {filteredData.length > 0 ? (filteredData.map((uni) => (
+                                        <tr key={uni.id} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50">
+                                            <th scope="row" className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
+                                                <div className="pl-3">
+                                                    <div className="text-base font-semibol">{uni.university.uni_name}</div>
+                                                </div>
+                                            </th>
+                                            <td className="px-6 py-4 max-w-60 truncate">{uni.uni_branch_name}</td>
+                                            <td className="px-6 py-4">{uni.created_at}</td>
+                                            {/*<td className="px-6 py-4">yo</td>*/}
+                                            <td className="px-6 py-4 flex flex-row space-x-2">
+                                                <a onClick={() => {}} className="bg-customBlue text-white rounded p-1 hover:bg-transparent hover:text-customBlue cursor-pointer" title="Edit">
+                                                    <FaPen /> 
+                                                </a>
+                                                <a onClick={() => {}} className="bg-customBlue text-white rounded p-1 hover:bg-transparent hover:text-customBlue cursor-pointer" title="Delete">
+                                                    <FaTrash />
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    ))) : (
+                                        <tr>
+                                            <td colSpan="5" className="px-6 py-4 text-center text-gray-600">No results found</td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
                         </div>
-                       
                         
-                    </div>
+                        {/* <Pagination links={uniBranches.links} /> */}
+                        
                 </div>
-            </div>
-            </AdminLayout>
+             </div>
+
+            {/* <Modal show={isEditModalOpen} onClose={closeModal}>
+                <div className="bg-customBlue p-3" >
+                    <h2 className="text-xl text-white font-bold">Add Department</h2>
+                </div>
+
+                <div className="p-6 space-y-5">
+                    <form onSubmit={editSubmit}>
+                        <div className='space-y-5'>
+                            <div className="flex flex-col">
+                                <InputLabel htmlFor="uni_branch_name" value="Department" />
+                                <TextInput
+                                    id="uni_branch_name"
+                                    value={data.dept_name}
+                                    onChange={(e) => {setData('uni_branch_name', e.target.value)}}
+                                    className="mt-1 block w-full"
+                                    placeholder="Department"
+                                />
+                                <InputError message={errors.dept_name} className="mt-2" />
+                            </div>
+                                <input type="hidden" value={data.uni_branch_id} />
+
+                            <div className="mt-6 flex">
+                                <PrimaryButton type="submit" disabled={processing}>
+                                    Save
+                                </PrimaryButton>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <div className="bg-customBlue p-2 flex justify-end" >
+                    <button onClick={closeModal} className="text-white text-right mr-5">Close</button>
+                </div>
+            </Modal> */}
+
+        </AdminLayout>
     );
 }

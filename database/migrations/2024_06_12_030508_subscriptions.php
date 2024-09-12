@@ -32,10 +32,11 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('user_id');
             $table->unsignedBigInteger('plan_id');
-            $table->string('persub_status')->default('Inactive');
+            $table->string('persub_status')->default('pending');
             $table->decimal('total_amount');
             $table->date('start_date');
             $table->date('end_date');
+            $table->string('payment_intent_id');
             $table->timestamps();
 
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');

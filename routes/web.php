@@ -10,6 +10,9 @@ use App\Http\Controllers\CustomMessagesController;
 use App\Http\Controllers\DepartmentsController;
 use App\Http\Controllers\CoursesController;
 use App\Http\Controllers\SectionsController;
+use App\Http\Controllers\StripeController;
+use App\Http\Controllers\PaymentSessionController;
+
 
 use App\Http\Middleware\CheckUserTypeMiddleware;
 use App\Http\Controllers\ProfileController;
@@ -29,6 +32,14 @@ use Inertia\Inertia;
 Route::get('/', function () {
     return Inertia::render('Home');
 });
+
+//Route::post('/create-checkout-session', [StripeController::class, 'createCheckoutSession']);
+//Route::post('/subscribe', [SubscriptionController::class, 'subscribe']);
+Route::get('/pricing/payment/success', [PaymentSessionController::class, "paymentSuccess"])->name('pricing.paymentSuccess');
+Route::get('/pricing/payment/cancel', [PaymentSessionController::class, "paymentCancel"])->name('pricing.paymentCancel');
+Route::post('/pricing/payment', [PaymentSessionController::class, 'PaymentSession'])->name('pricing.payment');
+
+
 
 
 Route::get('/library', function () {

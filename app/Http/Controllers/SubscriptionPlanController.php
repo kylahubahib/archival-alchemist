@@ -23,7 +23,7 @@ class SubscriptionPlanController extends Controller
         $features = Feature::all();
         $planFeatures = PlanFeature::with(['plan', 'feature'])->get();
 
-        \Log::info('Terms ', $subscriptionPlans->toArray());
+        \Log::info('Plans ', $subscriptionPlans->toArray());
 
         
         return Inertia::render('SuperAdmin/SubscriptionPlans/SubscriptionPlans', [
@@ -40,12 +40,20 @@ class SubscriptionPlanController extends Controller
      */ 
     public function pricing()
     {
-        $subscriptionPlans = SubscriptionPlan::where('plan_status', 'available')->get();
+        $personalPlans = SubscriptionPlan::where('plan_status', 'available')
+            ->where('plan_type', 'Personal')
+            ->get();
+
+        $institutionalPlans = SubscriptionPlan::where('plan_status', 'available')
+            ->where('plan_type', 'Institutional')
+            ->get();
+    
         $planFeatures = PlanFeature::with(['plan', 'feature'])->get();
 
         
         return Inertia::render('Pricing', [
-            'subscriptionPlans' => $subscriptionPlans,
+            'personalPlans' => $personalPlans,
+            'institutionalPlans' => $institutionalPlans,
             'planFeatures' => $planFeatures
         ]);
     }
@@ -191,9 +199,22 @@ class SubscriptionPlanController extends Controller
     {
         $plan = SubscriptionPlan::findOrFail($id);
 
-        $plan->update([
-            'plan_status' => 'Unavailable',
-        ]);
+        
+
+        if($plan->plan_status === 'Unavailable'){
+            $plan->update([
+                'plan_status' => 'Available', 
+            ]);
+        }
+        else if($plan->plan_status === 'Available'){
+            $plan->update([
+                'plan_status' => 'Unavailable', 
+            ]);
+        }
+        else {
+            \Log::info('Something went wrong');
+        }
+    
 
 
         return redirect(route('manage-subscription-plans.index'))->with('success', 'Terms and conditions deleted successfully.');

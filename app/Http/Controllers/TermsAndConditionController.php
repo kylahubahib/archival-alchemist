@@ -18,7 +18,7 @@ class TermsAndConditionController extends Controller
      */
     public function index() 
     {
-        \Log::info('ok');
+        \Log::info('ok'); 
 
         $termsConditions = CustomContent::with('user')
             ->where('content_type', 'terms and conditions')
@@ -27,6 +27,7 @@ class TermsAndConditionController extends Controller
         
             \Log::info('Terms ', $termsConditions->toArray());
 
+            
         return Inertia::render('SuperAdmin/TermsAndConditions/TermsCondition', [
             'termsConditions' => $termsConditions,
         ]);

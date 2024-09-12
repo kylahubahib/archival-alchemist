@@ -23,8 +23,6 @@ export default function Departments({ auth, departments, uniBranch_id, courses, 
     const [selectedSection, setSelectedSection] = useState(null);
     const [selectedId, setSelectedId] = useState(null);
     const [wordEntered, setWordEntered] = useState("");
-    const [currentPage, setCurrentPage] = useState(1);
-    const [itemsPerPage] = useState(7);
 
     const { data, setData, post, put, processing, errors, clearErrors, reset } = useForm({
         dept_name: '',
@@ -40,14 +38,14 @@ export default function Departments({ auth, departments, uniBranch_id, courses, 
             setData('uni_branch_id', uniBranch_id);
         } else if (displayedData === 'Courses') {
             if (selectedId !== null) {
-                const courseFilter = courses.data
+                const courseFilter = courses
                     .filter(course => course.department.id === selectedId) // Filter by department
                     .filter(course => course.course_name.toLowerCase().startsWith(wordEntered.toLowerCase())); // Filter by course name
     
                 setFilteredData(courseFilter);
             } 
         }
-    }, [wordEntered, departments.data, courses.data, displayedData, selectedId]);
+    }, [wordEntered, departments.data, courses, displayedData, selectedId]);
     
 
     const handleFilter = (e) => {
@@ -56,14 +54,15 @@ export default function Departments({ auth, departments, uniBranch_id, courses, 
 
     const displayCourses = (item) => {
 
+        console.log(departments.links)
+
         if(displayedData != 'Sections'){
             setSelectedDept(item);
         }
 
-        setCurrentPage(1);
         setSelectedId(item.id);
         setDisplayedData('Courses');
-        setFilteredData(courses.data.filter(course => course.department.id === item.id));
+        setFilteredData(courses.filter(course => course.department.id === item.id));
     }
 
     const displayDepts = () => {
@@ -75,7 +74,7 @@ export default function Departments({ auth, departments, uniBranch_id, courses, 
 
     const displaySections = (id) => {
         setDisplayedData('Sections');
-        setFilteredData(sections.data.filter(section => section.course.id === id));
+        setFilteredData(sections.filter(section => section.course.id === id));
         setSelectedId(id);
         //console.log(filteredData);
     }
@@ -170,12 +169,12 @@ export default function Departments({ auth, departments, uniBranch_id, courses, 
             setSelectedDept(null);
         }
         else if(displayedData === 'Courses'){
-            setFilteredData(courses.data.filter(course => course.department.id === selectedId));
+            setFilteredData(courses.filter(course => course.department.id === selectedId));
             setWordEntered("");
             setSelectedCourse(null);
         }
         else if(displayedData === 'Sections'){
-            setFilteredData(sections.data.filter(section => section.course.id === selectedId));
+            setFilteredData(sections.filter(section => section.course.id === selectedId));
             setWordEntered("");
             setSelectedDept(null);
         }
@@ -192,7 +191,7 @@ export default function Departments({ auth, departments, uniBranch_id, courses, 
         
             <Head title="Department" />
 
-            <div className="py-8">
+            <div className="mt-5">
 
             {/* DEPARTMENTS TABLE */}
             {displayedData === 'Departments' && (   
@@ -228,7 +227,7 @@ export default function Departments({ auth, departments, uniBranch_id, courses, 
                                 </div> 
                             </div>
 
-                           
+                            <div className="overflow-y-auto h-480">
                             <table className="w-full text-sm text-left rtl:text-right text-gray-500">
                                 <thead className="text-xs text-gray-700 uppercase bg-gray-50">
                                     <tr>
@@ -267,6 +266,7 @@ export default function Departments({ auth, departments, uniBranch_id, courses, 
                                     )}
                                 </tbody>
                             </table>
+                            </div>
 
                         </div>
                         <div className="mt-auto">
@@ -312,7 +312,7 @@ export default function Departments({ auth, departments, uniBranch_id, courses, 
                                     </AddButton> 
                                 </div> 
                             </div>
-                            
+                            <div className="overflow-y-auto h-480">
                             <table className="w-full text-sm text-left rtl:text-right text-gray-500">
                                 <thead className="text-xs text-gray-700 uppercase bg-gray-50">
                                     <tr>
@@ -351,10 +351,11 @@ export default function Departments({ auth, departments, uniBranch_id, courses, 
                                     )}
                                 </tbody>
                             </table>
+                            </div>
                         </div>
-                        <div className="mt-auto">
+                        {/* <div className="mt-auto">
                             <Pagination links={courses.links}/>
-                        </div>
+                        </div> */}
                     </div>
                 </div>
             
@@ -396,7 +397,7 @@ export default function Departments({ auth, departments, uniBranch_id, courses, 
                                     </AddButton> 
                                 </div> 
                             </div>
-                            
+                            <div className="overflow-y-auto h-480">
                             <table className="w-full text-sm text-left rtl:text-right text-gray-500">
                                 <thead className="text-xs text-gray-700 uppercase bg-gray-50">
                                     <tr>
@@ -435,10 +436,11 @@ export default function Departments({ auth, departments, uniBranch_id, courses, 
                                     )}
                                 </tbody>
                             </table>
+                            </div>
                         </div>
-                        <div className="mt-auto">
+                        {/* <div className="mt-auto">
                             <Pagination links={sections.links}/>
-                        </div>
+                        </div> */}
                     </div>
 			    </div>
             )} 
@@ -517,7 +519,7 @@ export default function Departments({ auth, departments, uniBranch_id, courses, 
                 </div>
             </Modal>}
 
-            {displayedData === 'Courses' && <CreateCourse isOpen={isCreateModalOpen} onClose={closeModal} deptId={selectedId} setFilteredData={setFilteredData} courses={courses.data}/>}
+            {displayedData === 'Courses' && <CreateCourse isOpen={isCreateModalOpen} onClose={closeModal} deptId={selectedId} setFilteredData={setFilteredData} courses={courses}/>}
 
             {displayedData === 'Courses' && selectedCourse && <EditCourse isOpen={isEditModalOpen} onClose={closeModal} deptId={selectedId} course={selectedCourse}/>}
 

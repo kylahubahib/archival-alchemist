@@ -44,20 +44,20 @@ class DepartmentsController extends Controller
                     $uniBranch_id = $uni_branch->id;
 
                     // Get departments for the university branch
-                    $departments = Department::where('uni_branch_id', $uniBranch_id)->paginate(10);
+                    $departments = Department::where('uni_branch_id', $uniBranch_id)->paginate(100);
                    
                     $departmentIds = $departments->pluck('id')->toArray();
                     // Get courses where the department_id matches the department IDs
-                    $courses = Course::whereIn('dept_id', $departmentIds)->with(['department'])->paginate(10);
+                    $courses = Course::whereIn('dept_id', $departmentIds)->with(['department'])->get();
 
                     \Log::info('Courses: ', $courses->toArray());
 
                     // Get sections where the course_id matches the course IDs
                     $courseIds = $courses->pluck('id')->toArray();
-                    $sections = Section::whereIn('course_id', $courseIds)->with(['course'])->paginate(10);
+                    $sections = Section::whereIn('course_id', $courseIds)->with(['course'])->get();
                 }
             }
-        }
+        } 
 
         
             \Log::info('Departments: ', $departments->toArray());

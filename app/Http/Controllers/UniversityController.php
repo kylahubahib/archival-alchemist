@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\University;
+use App\Models\UniversityBranch;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Validation\Rules;
@@ -15,9 +16,13 @@ class UniversityController extends Controller
     public function index()
     {
         $universities = University::with('university_branch')->get();
+        $uniBranches = UniversityBranch::with('university')->paginate(100);
+
+        \Log::info('Universities ', $uniBranches->toArray());
         
         return Inertia::render('SuperAdmin/Advanced/Universities/Universities', [
             'universities' => $universities,
+            'uniBranches' => $uniBranches
         ]);
 
     }

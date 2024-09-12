@@ -4,7 +4,7 @@ import { CgArrowsExchangeAltV } from "react-icons/cg";
 import { router } from '@inertiajs/react';
 
 export default function Show({ isOpen, onClose, subscriptionPlans, planFeatures }) {
-    if (!subscriptionPlans) return null;
+    if (!subscriptionPlans) return null; 
 
     
     const changeStatus = (id) => {

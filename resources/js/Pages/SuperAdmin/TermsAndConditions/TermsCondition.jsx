@@ -88,7 +88,7 @@ export default function TermsCondition({ auth, termsConditions = [] }) {
             <Head title="Terms Condition" />
 
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
-                    <div className="flex flex-row justify-between my-5">
+                        <div className="flex flex-row justify-between my-5">
                             <div className="text-gray-800 text-3xl font-bold">Terms and Conditions</div>
                             <div>
                                 <AddButton onClick={openCreateModal} className="text-customBlue hover:text-white space-x-1">

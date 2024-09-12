@@ -12,7 +12,7 @@ export default function Authenticated({ user, children }) {
     const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
 
     return (
-        <div className="min-h-screen bg-customlightBlue flex  overflow-auto">
+        <div className="min-h-screen bg-customlightBlue flex">
             {/* Sidebar */}
             <Sidebar color="white" borderRadius="xl" margin="3">
                 <SidebarItem icon={<BiBookOpen size={20} />} text="Library" to="/library" />
@@ -22,9 +22,10 @@ export default function Authenticated({ user, children }) {
                 <SidebarItem icon={<MdChatBubbleOutline size={20} />} text="Inbox" to="/inbox" />
                 {/* <SidebarItem icon={<Star size={20} />} text="Subscription" href="/subscription" /> */}
             </Sidebar>
+            
 
             <div className="flex-1">
-                <nav className="bg-customBlue border-b rounded-xl m-3">
+                <nav className="bg-customBlue border-b rounded-xl m-3 sticky top-3">
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                         <div className="flex justify-between h-16">
                             <div className="flex">
@@ -123,6 +124,7 @@ export default function Authenticated({ user, children }) {
                 </nav>
 
                 {/* Main content */}
+                
                 <main>{children}</main>
             </div>
         </div>

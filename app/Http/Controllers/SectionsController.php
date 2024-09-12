@@ -17,11 +17,7 @@ class SectionsController extends Controller
      */
     public function index(string $id)
     {
-        $sections = Section::where('course_id', $id)->get();
-
-        return Inertia::render('InstitutionAdmin/Departments/Departments', [
-            'sections' => $sections,
-        ]);
+       // 
     }
     
 

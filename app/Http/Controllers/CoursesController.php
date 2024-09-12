@@ -17,16 +17,7 @@ class CoursesController extends Controller
      */
     public function index()
     {
-        \Log::info('Entered course index');
-        // $courses = Course::where('dept_id', $id)->get();
-
-        $courses = Course::all();
-
-        \Log::info('ok course index');
-
-        return Inertia::render('InstitutionAdmin/Departments/Departments', [
-            'courses' => $courses,
-        ]);
+        //
     }
 
     

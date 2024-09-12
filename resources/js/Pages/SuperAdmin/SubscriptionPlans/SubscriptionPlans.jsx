@@ -71,7 +71,7 @@ export default function SubscriptionPlans({ auth, subscriptionPlans = [], featur
     };
 
     const openEditModal = (plan) => {
-        console.log('hello')
+        //console.log('hello')
         setSelectedPlan(plan);
         setIsEditModalOpen(true);
     };
