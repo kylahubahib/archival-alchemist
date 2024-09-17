@@ -196,6 +196,9 @@ Route::post('/tags/get-tag-ids', [TagController::class, 'getTagIds']);
 Route::post('/check-class-code', [StudentClassController::class, 'checkClassCode']);
 
 
-Route::get('/api/approved-manuscript', [StudentClassController::class, 'getApprovedManuscript']);
+Route::get('/api/approved-manuscripts', [StudentClassController::class, 'getApprovedManuscripts']);
+
+
+Route::get('/api/my-approved-manuscripts', [StudentClassController::class, 'myApprovedManuscripts']);
 
 require __DIR__.'/auth.php';

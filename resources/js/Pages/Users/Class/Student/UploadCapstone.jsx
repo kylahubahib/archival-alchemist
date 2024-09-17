@@ -9,7 +9,7 @@ const UploadCapstone = () => {
         man_doc_title: '',
         man_doc_content: null,
         man_doc_adviser: '',
-        authors: '',
+        man_doc_author: [],
         agreed: false,
     });
 
@@ -92,6 +92,7 @@ const UploadCapstone = () => {
     const isFormValid = () => {
         return (
             formValues.man_doc_title &&
+            formValues.man_doc_author.length > 0 &&
             formValues.man_doc_adviser &&
             tags.length > 0 &&
             formValues.man_doc_content &&
@@ -102,10 +103,11 @@ const UploadCapstone = () => {
     // Function to handle form submission
     const handleSubmit = async (e) => {
         e.preventDefault();
-
+        const authorsArray = formValues.man_doc_author; // Make sure this is an array
         const newErrors = {};
 
         if (!formValues.man_doc_title) newErrors.man_doc_title = 'Title is required.';
+        if (authorsArray.length === 0) newErrors.man_doc_author = 'Authors are required.';
         if (!formValues.man_doc_adviser) newErrors.man_doc_adviser = 'Adviser is required.';
         if (tags.length === 0) newErrors.tags = 'At least one tag is required.';
         if (!formValues.man_doc_content) newErrors.man_doc_content = 'A file is required.';
@@ -122,6 +124,7 @@ const UploadCapstone = () => {
                 const formData = new FormData();
                 formData.append('man_doc_title', formValues.man_doc_title);
                 formData.append('man_doc_adviser', formValues.man_doc_adviser);
+                authorsArray.forEach(author => formData.append('man_doc_author[]', author)); // Append each author
                 formData.append('tags_name[]', ...tags); // Spread the tags array
 
 
@@ -168,13 +171,20 @@ const UploadCapstone = () => {
                             onChange={handleFormFieldChange}
                         />
                         {errors.man_doc_title && <div className="text-red-600 text-sm mb-2">{errors.man_doc_title}</div>}
-                        <input
-                            type="text"
-                            name="authors"
-                            placeholder="Authors (Optional)"
+                        <textarea
+                            name="man_doc_author"
+                            placeholder="Authors (Last Name, First Name)"
                             className="w-full p-2 border rounded mb-2"
-                            value={formValues.authors}
-                            onChange={handleFormFieldChange}
+                            value={formValues.man_doc_author.join('\n')} // Join array back into string for display
+                            onChange={(e) => setFormValues({
+                                ...formValues,
+                                man_doc_author: e.target.value
+                                    .split('\n')
+                                    .map(author => author.trim())
+                                    .filter(author => author) // filter out empty authors
+                            })}
+
+                            rows={3} // Adjust the number of rows if needed
                         />
                         <input
                             type="text"

@@ -18,6 +18,7 @@ class ManuscriptProject extends Model
         'man_doc_content',
         'man_doc_status',
         'man_doc_adviser',
+        'man_doc_author',
         'man_doc_view_count',
         'is_publish',
         'man_doc_rating',
@@ -37,5 +38,12 @@ class ManuscriptProject extends Model
     {
         return $this->belongsToMany(Tags::class, 'manuscript_tag', 'manuscript_id', 'tag_id');
     }
+
+
+    public function authors(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'author', 'man_doc_id', 'user_id');
+    }
+
 
 }

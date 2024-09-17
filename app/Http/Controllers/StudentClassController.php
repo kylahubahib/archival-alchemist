@@ -1,46 +1,60 @@
 <?php
 
 namespace App\Http\Controllers;
+use Illuminate\Http\JsonResponse;
 use App\Models\ClassModel;
 use App\Models\ManuscriptProject;
 use App\Models\Tags;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
+
 class StudentClassController extends Controller
 {
-    public function storeManuscriptProject(Request $request)
+public function storeManuscriptProject(Request $request)
 {
     Log::info('Request Data:', $request->all());
 
-    $validatedData = $request->validate([
-        'man_doc_title' => 'required|string|max:255',
-        'man_doc_adviser' => 'required|string|max:255',
-        'tags_id' => 'nullable|array',
-        'tags_id.*' => 'exists:tags,id',
-        'man_doc_content' => 'required|file|mimes:pdf,docx|max:10240',
-    ]);
+    try {
+        $validatedData = $request->validate([
+            'man_doc_title' => 'required|string|max:255',
+            'man_doc_adviser' => 'required|string|max:255',
+            'man_doc_author' => 'required|array',
+            'man_doc_author.*' => 'required|string|max:255',
 
-    $filePath = $request->file('man_doc_content')->store('capstone_files');
+            'tags_id' => 'nullable|array',
+            'tags_id.*' => 'exists:tags,id',
+            'man_doc_content' => 'required|file|mimes:pdf,docx|max:10240',
+        ]);
 
-    $manuscriptProject = ManuscriptProject::create([
-        'man_doc_title' => $validatedData['man_doc_title'],
-        'man_doc_adviser' => $validatedData['man_doc_adviser'],
-        'man_doc_content' => $filePath,
-        'class_id' => null,  // Set class_id to null
-    ]);
+        $filePath = $request->file('man_doc_content')->store('capstone_files');
 
-    // Attach tags to the manuscript project
-    if (!empty($validatedData['tags_id'])) {
-        $manuscriptProject->tags()->attach($validatedData['tags_id']);
+        $author = $request->input('man_doc_author');
+        $authorsString = implode(', ', $author);
 
+        $manuscriptProject = ManuscriptProject::create([
+            'man_doc_title' => $validatedData['man_doc_title'],
+            'man_doc_adviser' => $validatedData['man_doc_adviser'],
+            'man_doc_author' => $authorsString,
+            'man_doc_content' => $filePath,
+            'class_id' => $validatedData['class_id'] ?? null,
+            'man_doc_author' => $authorsString,
+        ]);
+
+        if (isset($validatedData['tags_id'])) {
+            $manuscriptProject->tags()->sync($validatedData['tags_id']);
+        }
+
+        return response()->json(['message' => 'Manuscript project uploaded successfully.'], 200);
+
+    } catch (\Exception $e) {
+        return response()->json(['message' => 'Error uploading manuscript project.', 'errors' => $e->getMessage()], 422);
     }
-
-
-
-
-    return response()->json(['message' => 'Manuscript project uploaded successfully!']);
 }
+
+
+
 
 
 
@@ -91,15 +105,50 @@ public function checkClassCode(Request $request)
 
 
 
-public function getApprovedManuscript()
+public function getApprovedManuscripts(): JsonResponse
 {
-    $manuscript = ManuscriptProject::where('man_doc_status', 'Y')->first();
+    try {
+        $manuscripts = ManuscriptProject::where('man_doc_status', 'Y')->get()->unique('id');
 
-    if ($manuscript) {
-        return response()->json($manuscript);
+        if ($manuscripts->isNotEmpty()) {
+            return response()->json($manuscripts);
+        } else {
+            return response()->json(['message' => 'No approved manuscripts found.'], 404);
+        }
+    } catch (\Exception $e) {
+        return response()->json(['error' => 'An error occurred while fetching manuscripts.', 'details' => $e->getMessage()], 500);
+    }
+}
+
+
+
+
+public function myApprovedManuscripts(): JsonResponse
+    {
+        try {
+            $userId = Auth::id(); // Get the ID of the currently signed-in user
+
+            // Retrieve approved manuscripts where the user is an author
+            $manuscripts = ManuscriptProject::where('man_doc_status', 'Y')
+                ->whereHas('author', function ($query) use ($userId) {
+                    $query->where('user_id', $userId);
+                })
+                ->get();
+
+            if ($manuscripts->isNotEmpty()) {
+                return response()->json($manuscripts);
+            } else {
+                return response()->json(['message' => 'No approved manuscripts found for the current user.'], 404);
+            }
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'An error occurred while fetching manuscripts.', 'details' => $e->getMessage()], 500);
+        }
     }
 
-    return response()->json(['error' => 'No approved manuscript found.'], 404);
 }
 
-}
+
+
+
+
+

@@ -19,6 +19,7 @@ return new class extends Migration
 
             // Define foreign key for ins_id
             $table->foreignId('ins_id')->constrained('user_id')->on('faculties')->onDelete('cascade');
+            $table->foreignId('stud_id')->constrained('user_id')->on('students')->onDelete('cascade');
         });
     }
 

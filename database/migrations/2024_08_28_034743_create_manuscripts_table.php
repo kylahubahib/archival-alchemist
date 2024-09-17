@@ -14,6 +14,8 @@ return new class extends Migration
             $table->text('man_doc_content');
             $table->string('man_doc_status', 1)->default('X');
             $table->string('man_doc_adviser', 30);
+            $table->text('man_doc_authors')->nullable()->change(); // Make sure this field can store multiple authors as a JSON string or a text.
+            $table->string('man_doc_author', 255);
             $table->bigInteger('man_doc_view_count')->default(0);
             $table->boolean('is_publish')->default(false);
             $table->decimal('man_doc_rating', 5, 2)->nullable();
