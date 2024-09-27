@@ -1,4 +1,3 @@
-
 import defaultTheme from 'tailwindcss/defaultTheme';
 import forms from '@tailwindcss/forms';
 const {nextui} = require("@nextui-org/react"); // David
@@ -21,10 +20,19 @@ export default {
             },
             colors: {
                 customlightBlue: '#e9f1ff',
-                customBlue: '#294996'
-              },
+                customBlue: '#294996' 
+            },
+            minHeight: {
+                'custom': 'calc(100vh - 12rem)',
+                '400': '400px'
+            },
+            height: {
+                '445': '445px',
+                '400': '400px',
+                '480': '480px'
+            }
         },
-
+        
     },
 
     plugins: [forms, nextui()], // David

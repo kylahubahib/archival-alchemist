@@ -13,7 +13,7 @@ export default function Sidebar({children, color, borderRadius, margin }) {
     
     return (
         <>
-            <aside>
+            <aside className="sticky top-0 h-screen">
                 <nav className={`h-full flex flex-col ${bgColor} border-r shadow-sm ${radius} ${SidebarMargin}`}>
                     <div className="p-4 pb-2 flex justify-between items-center bg-customBlue rounded-t-xl">
                         <button onClick={() => setExpanded((curr) => !curr)} className="p-1.5 rounded-lg text-customlightBlue hover:text-gray-100">

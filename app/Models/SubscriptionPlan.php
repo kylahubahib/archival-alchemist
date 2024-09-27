@@ -20,6 +20,8 @@ class SubscriptionPlan extends Model
         'plan_user_num',
         'plan_discount',
         'free_trial_days',
+        'plan_status',
+        'plan_text'
     ];
 
     public function institution_subscription(): HasMany 
@@ -31,4 +33,14 @@ class SubscriptionPlan extends Model
     {
         return $this->hasMany(PersonalSubscription::class, 'plan_id');
     }
+
+    public function plan_feature(): HasMany
+    {
+        return $this->hasMany(PlanFeature::class, 'plan_id');
+    } 
+
+    public function transaction(): HasMany
+    {
+        return $this->hasMany(Transaction::class, 'plan_id');
+    } 
 }

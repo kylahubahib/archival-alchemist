@@ -1,4 +1,4 @@
-import { useState, createContext, useContext } from 'react';
+import { useState, createContext, useContext, Fragment } from 'react';
 import { Link } from '@inertiajs/react';
 import { Transition } from '@headlessui/react';
 
@@ -50,6 +50,7 @@ const Content = ({ align = 'right', width = '48', contentClasses = 'py-1 bg-whit
     return (
         <>
             <Transition
+                as={Fragment}
                 show={open}
                 enter="transition ease-out duration-200"
                 enterFrom="opacity-0 scale-95"
@@ -78,13 +79,28 @@ const DropdownLink = ({ className = '', children, ...props }) => {
                 className
             }
         >
-            {children}
+            {children} 
         </Link>
+    );
+};
+
+const DropdownList = ({ className = '', children, ...props }) => {
+    return (
+        <span
+            {...props}
+            className={
+                'block w-full px-4 py-2 text-start text-sm leading-5 text-gray-700 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 transition duration-150 ease-in-out ' +
+                className
+            }
+        >
+            {children}
+        </span>
     );
 };
 
 Dropdown.Trigger = Trigger;
 Dropdown.Content = Content;
 Dropdown.Link = DropdownLink;
+Dropdown.List = DropdownList;
 
 export default Dropdown;

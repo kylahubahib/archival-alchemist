@@ -3,10 +3,11 @@ import NavLink from '@/Components/NavLink';
 
 export default function GuestLayout({ user, children }) {
     const [showMobileMenu, setShowMobileMenu] = useState(false);
+    
 
     return (
         <div className="min-h-screen bg-customlightBlue flex flex-col">
-            <nav className="bg-transparent border-b border-gray-100">
+            <nav className="bg-inherit sticky top-0">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between h-16 items-center">
                         <h1 className="text-customBlue font-bold text-lg">Archival Alchemist</h1>
@@ -80,6 +81,7 @@ export default function GuestLayout({ user, children }) {
                     </div>
                 )}
             </nav>
+
             {children}
         </div>
     );
