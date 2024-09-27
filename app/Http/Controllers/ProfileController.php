@@ -21,24 +21,122 @@ class ProfileController extends Controller
         return Inertia::render('Profile/Edit', [
             'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
             'status' => session('status'),
+            'auth' => [
+                'user' => [
+                    'name' => $request->user()->name,
+                    'email' => $request->user()->email,
+                    'created_at' => $request->user()->created_at,
+                    'user_aboutme' => $request->user()->user_aboutme,
+                    'user_type' => $request->user()->user_type,
+                    'user_pic' => $request->user()->user_pic,
+                    // 'user_pic' => $request->user()->user_pic ? asset('storage/profile_pics/' . $request->user()->user_pic) : null,
+                ]
+            ]
         ]);
     }
 
     /**
      * Update the user's profile information.
      */
-    public function update(ProfileUpdateRequest $request): RedirectResponse
+    public function update(Request $request): \Illuminate\Http\JsonResponse
     {
-        $request->user()->fill($request->validated());
+        // Validate request
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255',
+            'uni_id_num' => 'nullable|string|max:11',
+            'user_pnum' => 'nullable|string|max:11',
+            'user_aboutme' => 'nullable|string|max:1000',
+        ]);
 
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
+        $user = $request->user();
+
+        // Update user details
+        $user->fill($validated);
+
+        // Reset email verification if email changed
+        if ($user->isDirty('email')) {
+            $user->email_verified_at = null;
         }
 
-        $request->user()->save();
+        // Save user
+        $user->save();
 
-        return Redirect::route('profile.edit');
+        // Return JSON response
+        return response()->json(['message' => 'Profile updated successfully!']);
     }
+
+    /**
+     * Update the user's profile picture.
+     */
+    public function updatePicture(Request $request): \Illuminate\Http\JsonResponse
+    {
+
+        \Log::info('User Profile');
+        // Validate request
+        $request->validate([
+            'user_pic' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ]);
+
+        $user = Auth::user();
+
+        $imageName = $user->name . '_' . time().'.'.$request->user_pic->extension();
+        $request->user_pic->move(public_path('storage/profile_pics'), $imageName);
+
+        $user->update([
+            'user_pic' => 'storage/profile_pics/' . $imageName,
+        ]);
+
+
+        \Log::info($user->toArray());
+
+        // Handle file upload
+        // if ($request->hasFile('user_pic')) {
+        //     // Delete old profile picture if it exists
+        //     if ($user->user_pic) {
+        //         Storage::disk('public')->delete('profile_pics/' . $user->user_pic);
+        //     }
+
+        //     // Store new profile picture
+        //     $path = $request->file('user_pic')->store('profile_pics', 'public');
+        //     $user->user_pic = basename($path);
+        //     $user->save();
+        // }
+
+        // Return JSON response
+        return response()->json(['message' => 'Profile picture updated successfully!']);
+    }
+
+    
+    /**
+     * Update the user's profile picture.
+     */
+    // public function updatePicture(Request $request): \Illuminate\Http\JsonResponse
+    // {
+    //     \Log::info('User Profile');
+
+    //     // Validate request
+    //     $request->validate([
+    //         'user_pic' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+    //     ]);
+
+    //     $user = Auth::user();
+
+    //     // Store the uploaded picture in the 'profiles' directory on the public disk
+    //     $path = $request->user_pic->store('profiles', 'public');
+
+    //     // Update the user's profile picture path
+    //     $user->update([
+    //         'user_pic' => $path, // This stores the path relative to the 'public/storage' directory
+    //     ]);
+
+    //     \Log::info($user->toArray());
+
+    //     // Return JSON response
+    //     return response()->json(['message' => 'Profile picture updated successfully!']);
+    // }
+
+
 
     /**
      * Delete the user's account.

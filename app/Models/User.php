@@ -118,4 +118,16 @@ class User extends Authenticatable
     {
         return $this->hasMany(Feedback::class, 'user_id');        
     }
+
+    public function transaction(): HasMany
+    {
+        return $this->hasMany(Transaction::class, 'user_id');        
+    }
+
+    public function user(): HasMany
+    {
+        return $this->hasMany(UserReport::class, 'reporter_id');        
+    }
+   
 }
+ 

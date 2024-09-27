@@ -12,7 +12,7 @@ use App\Http\Controllers\CoursesController;
 use App\Http\Controllers\SectionsController;
 use App\Http\Controllers\StripeController;
 use App\Http\Controllers\PaymentSessionController;
-
+use App\Http\Controllers\UserReportController;
 
 use App\Http\Middleware\CheckUserTypeMiddleware;
 use App\Http\Controllers\ProfileController;
@@ -60,6 +60,13 @@ Route::get('/inbox', function () {
     return Inertia::render('Users/Inbox');
 })->middleware(['auth', 'verified', 'user-type:student,teacher'])->name('inbox');
 
+Route::post('/feedback', [UserFeedbacksController::class, 'store'])->name('user-feedbacks.store');
+
+Route::post('/report', [UserReportController::class, 'store'])->name('user-reports.store');
+
+Route::get('/report-types', [UserReportController::class, 'reportTypeList']);
+
+Route::get('/check-feedback', [UserFeedbacksController::class, 'CheckIfFeedbackExist'])->name('check-feedback');
 
 
 //SUPERADMIN
@@ -76,18 +83,6 @@ Route::middleware(['auth', 'verified', 'user-type:superadmin'])->group(function 
     Route::get('/subscription-billing', function () {
         return Inertia::render('SuperAdmin/SubscriptionBilling');})->name('subscription-billing');
 
-    // Route::get('/user-feedbacks', function () {
-    //     return Inertia::render('SuperAdmin/UserFeedbacks/UserFeedbacks');})->name('user-feedbacks');
-
-    Route::get('/user-reports', function () {
-        return Inertia::render('SuperAdmin/UserReports/UserReports');})->name('user-reports');
-
-    // Route::get('/subscription-plans', function () {
-    //      return Inertia::render('SuperAdmin/SubscriptionPlans/SubscriptionPlans');})->name('subscription-plans');
-
-    // Route::get('/faq', function () {
-    //     return Inertia::render('SuperAdmin/FrequentlyAskedQuestions/Faq');})->name('faq');
-
     ///ADVANCED ROUTES
     ///Decided to create routes for the buttons in advanced page to simplify or easily create the crud functionality 
 
@@ -97,27 +92,27 @@ Route::middleware(['auth', 'verified', 'user-type:superadmin'])->group(function 
     Route::get('/advanced/forum', function () {
         return Inertia::render('SuperAdmin/Advanced/Forum/Forum');})->name('advanced-forum');
 
-    // Route::get('/advanced/custom-messages', function () {
-    //     return Inertia::render('SuperAdmin/Advanced/CustomMessages/CustomMessages');})->name('advanced-custom-messages');
     Route::resource('advanced/custom-messages', CustomMessagesController::class)->names('manage-custom-messages');
 
-    // Route::get('/advanced/universities', function () {
-    //     return Inertia::render('SuperAdmin/Advanced/Universities/Universities');})->name('universities');
     Route::resource('advanced/universities', UniversityController::class)->names('manage-universities');
 
-    // Route::get('/advanced/tags', function () {
-    //     return Inertia::render('SuperAdmin/Advanced/Tags/Tags');})->name('advanced-tags');
     Route::resource('advanced/tags', TagsController::class)->names('manage-tags');
 
     ///END ADVANCED ROUTES
 
-    Route::resource('manage-terms-and-conditions', TermsAndConditionController::class);
+    Route::resource('manage-terms-and-conditions', TermsAndConditionController::class)->names('manage-terms-and-conditions');
 
     Route::resource('manage-faqs', FAQController::class);
 
     Route::resource('manage-subscription-plans', SubscriptionPlanController::class);
 
-    Route::resource('user-feedbacks', UserFeedbacksController::class);
+    Route::resource('user-feedbacks', UserFeedbacksController::class)->names('user-feedbacks')->except(['store']);
+
+    Route::resource('user-reports', UserReportController::class)->names('user-reports')->except(['store']);
+
+    Route::get('filter-user-reports', [UserReportController::class, 'filterReports'])->name('filter-user-reports');
+    Route::get('filter-feedbacks', [UserFeedbacksController::class, 'filterFeedbacks'])->name('filter-feedbacks');
+
 
 
     // You can use put or patch. Put is used to update a resource entirely 
@@ -190,6 +185,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::post('/profile/picture', [ProfileController::class, 'updatePicture'])->name('profile.updatePicture');
 });
 
 //Universities Controller Route

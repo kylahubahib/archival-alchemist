@@ -11,12 +11,50 @@ export default function UpdateProfileInformation({ mustVerifyEmail, status, clas
     const { data, setData, patch, errors, processing, recentlySuccessful } = useForm({
         name: user.name,
         email: user.email,
+        user_pic: user.user_pic,
+        uni_id_num: user.uni_id_num || '',
+        user_pnum: user.user_pnum || '',
+        user_aboutme: user.user_aboutme || '',
     });
 
-    const submit = (e) => {
+    const [profilePic, setProfilePic] = useState(user.user_pic);
+    const [message, setMessage] = useState('');
+
+    // useEffect(() => {
+    //     if (data.user_pic) {
+    //         setProfilePic(URL.createObjectURL(data.user_pic));
+    //     }
+    // }, [data.user_pic]);
+
+    const handleFileChange = (e) => {
+        setData('user_pic', e.target.files[0]);
+    };
+
+    const submit = async (e) => {
         e.preventDefault();
 
-        patch(route('profile.update'));
+        const formData = new FormData();
+        formData.append('name', data.name);
+        formData.append('email', data.email);
+        formData.append('uni_id_num', data.uni_id_num);
+        formData.append('user_pnum', data.user_pnum);
+        formData.append('user_aboutme', data.user_aboutme);
+        if (data.user_pic) {
+            formData.append('user_pic', data.user_pic);
+        }
+
+        try {
+            await axios.patch(route('profile.update'), formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+            setMessage('Profile updated successfully!');
+        } catch (error) {
+            console.error('There was an error updating the profile!', error);
+            setMessage('Error updating profile.');
+        }
+
     };
 
     return (
