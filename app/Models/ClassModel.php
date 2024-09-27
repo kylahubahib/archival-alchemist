@@ -11,7 +11,8 @@ class ClassModel extends Model
      // Specify the table name if it does not follow Laravel's convention
     protected $table = 'class';
     // The attributes that are mass assignable.
-    protected $fillable = ['class_code', 'class_name', 'ins_id'];
+    
+    protected $fillable = ['class_code', 'class_name', 'ins_id', 'stud_id'];
 }
 
 

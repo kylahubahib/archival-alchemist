@@ -3,6 +3,7 @@ import axios from 'axios';
 import Modal from '@/Components/Modal';
 
 const UploadCapstone = () => {
+    const [authors, setAuthors] = useState([]);
     const [tags, setTags] = useState([]);
     const [modalOpen, setModalOpen] = useState(false);
     const [formValues, setFormValues] = useState({
@@ -38,6 +39,18 @@ const UploadCapstone = () => {
         setFormValues({
             ...formValues,
             [name]: type === 'checkbox' ? checked : value,
+        });
+    };
+
+    const handleAuthorChange = (e) => {
+        const newAuthors = e.target.value
+            .split('\n')
+            .map(author => author.trim())
+            .filter(author => author); // Filter out empty authors
+
+        setFormValues({
+            ...formValues,
+            man_doc_author: newAuthors,
         });
     };
 
@@ -171,7 +184,7 @@ const UploadCapstone = () => {
                             onChange={handleFormFieldChange}
                         />
                         {errors.man_doc_title && <div className="text-red-600 text-sm mb-2">{errors.man_doc_title}</div>}
-                        <textarea
+                        {/* <textarea
                             name="man_doc_author"
                             placeholder="Authors (Last Name, First Name)"
                             className="w-full p-2 border rounded mb-2"
@@ -185,7 +198,22 @@ const UploadCapstone = () => {
                             })}
 
                             rows={3} // Adjust the number of rows if needed
-                        />
+                        /> */}
+
+<textarea
+    name="man_doc_author"
+    placeholder="Authors (Last Name, First Name)"
+    className="w-full p-2 border rounded mb-2"
+    value={formValues.man_doc_author.join('\n')} // Join array into string for display
+    onChange={handleAuthorChange} // Handle textarea changes
+    rows={3} // Adjust rows if needed
+/>
+{errors.man_doc_author && <div className="text-red-600 text-sm mb-2">{errors.man_doc_author}</div>}
+
+
+
+
+
                         <input
                             type="text"
                             name="man_doc_adviser"

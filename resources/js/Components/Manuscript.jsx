@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { FaEye, FaComment, FaBookmark, FaFileDownload } from 'react-icons/fa';
 import axios from 'axios';
+import SearchBar from '@/Components/SearchBars/LibrarySearchBar'; // Import the LibrarySearchBar component
+import { Tooltip } from '@nextui-org/react';
 
 const Manuscript = () => {
     const [manuscripts, setManuscripts] = useState([]);
+    const [searchResults, setSearchResults] = useState([]); // State to hold search results
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [showComments, setShowComments] = useState(false);
@@ -20,9 +23,6 @@ const Manuscript = () => {
                 console.log('Fetched manuscripts:', response.data);
                 const data = response.data;
 
-                // Check if there are duplicates in the API response
-                console.log('API Response Check:', data);
-
                 // Remove duplicates
                 const uniqueManuscripts = Array.from(new Set(data.map(item => item.id)))
                     .map(id => data.find(item => item.id === id));
@@ -38,6 +38,11 @@ const Manuscript = () => {
             });
     }, []); // Empty dependency array ensures this runs only once
 
+    // Function to update search results
+    const handleSearchResults = (results) => {
+        setSearchResults(results);
+    };
+
     const toggleComments = () => {
         setShowComments(!showComments);
     };
@@ -50,13 +55,19 @@ const Manuscript = () => {
         return <div>Error: {error}</div>;
     }
 
-    if (manuscripts.length === 0) {
+    const manuscriptsToDisplay = searchResults.length > 0 ? searchResults : manuscripts; // Use search results if available
+
+    if (manuscriptsToDisplay.length === 0) {
         return <div>No manuscripts available.</div>;
     }
 
     return (
         <section className="w-full mx-auto my-4">
-            {manuscripts.map((manuscript) => (
+            <div className="mb-6"> {/* Add margin-bottom here */}
+                <SearchBar onSearchResults={handleSearchResults} /> {/* Add the search bar */}
+    </div>
+
+            {manuscriptsToDisplay.map((manuscript) => (
                 <div key={manuscript.id} className="w-full bg-white shadow-lg flex mb-4">
                     <div className="rounded w-40 h-full bg-gray-200 flex items-center justify-center">
                         <img
@@ -85,9 +96,14 @@ const Manuscript = () => {
                                     {comments.length > 0 ? `${comments.length} Comment${comments.length > 1 ? 's' : ''}` : 'No comments yet'}
                                 </span>
                             </div>
+                            
+                            {/* DAvid */}
+                            <Tooltip content="Button">
                             <button className={`text-gray-600 hover:text-blue-500 ${false ? 'text-blue-500' : ''}`} onClick={() => { /* Handle bookmark */ }}>
                                 <FaBookmark size={20} />
                             </button>
+                            </Tooltip>
+
                             <button className="text-gray-600 hover:text-gray-900">
                                 <FaFileDownload size={20} />
                             </button>

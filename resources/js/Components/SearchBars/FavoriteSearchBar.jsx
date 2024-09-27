@@ -2,7 +2,7 @@ import { FaSearch } from "react-icons/fa";
 import React, { useState } from 'react';
 import axios from 'axios';
 
-const SearchBar = ({ onSearchResults }) => {
+const FavoriteSearchBar = ({ onSearchResults }) => {
     const [query, setQuery] = useState('');
 
     const handleChange = (e) => {
@@ -43,4 +43,4 @@ const SearchBar = ({ onSearchResults }) => {
     );
 };
 
-export default SearchBar;
+export default FavoriteSearchBar;

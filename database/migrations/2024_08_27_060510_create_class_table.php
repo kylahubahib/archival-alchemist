@@ -13,13 +13,15 @@ return new class extends Migration
     {
         Schema::create('class', function (Blueprint $table) {
             $table->id();
-            $table->string('class_code', 8)->unique()->nullable();
+            $table->string('class_code', 8)->nullable();
             $table->string('class_name', 60)->nullable();
             $table->timestamps();
 
             // Define foreign key for ins_id
-            $table->foreignId('ins_id')->constrained('user_id')->on('faculties')->onDelete('cascade');
-            $table->foreignId('stud_id')->constrained('user_id')->on('students')->onDelete('cascade');
+            $table->foreignId('ins_id')->constrained('uni_id_num')->on('faculties')->onDelete('cascade');
+            // Make stud_id nullable
+            $table->foreignId('stud_id')->nullable()->constrained('uni_id_num')->on('students')->onDelete('cascade');
+
         });
     }
 

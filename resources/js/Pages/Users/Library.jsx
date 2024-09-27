@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { BookOpenIcon } from '@heroicons/react/24/outline';
 import Modal from '@/Components/Modal';
 import Manuscript from '@/Components/Manuscript';
+import SearchBar from '@/Components/SearchBars/LibrarySearchBar';
 
 export default function Library({ auth }) {
     const isAuthenticated = !!auth.user;  // Convert auth.user to true or false
@@ -12,11 +13,11 @@ export default function Library({ auth }) {
 
     const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
     const [activeTab, setActiveTab] = useState('AllBooks');
+    const [manuscripts, setManuscripts] = useState([]); // Lifted state for manuscripts
     const [searchQuery, setSearchQuery] = useState('');
 
     const handleSearch = (e) => {
         e.preventDefault();
-        // Add your search logic here
         console.log('Searching for:', searchQuery);
     };
 
@@ -38,12 +39,22 @@ export default function Library({ auth }) {
         setActiveTab(tab);
     };
 
+    const handleSearchResults = (results) => {
+        setManuscripts(results); // Update the manuscripts state with search results
+    };
+
     const buttonStyle = (tab) => `px-4 py-2 font-semibold rounded-t-lg border ${activeTab === tab ? 'bg-gray-200 border-b-2 border-b-blue-500 text-blue-500' : 'border-transparent text-gray-700 hover:text-blue-500'}`;
 
     const renderActiveTabContent = () => {
         switch (activeTab) {
             case 'AllBooks':
-                return <Manuscript title="All Capstone Manuscripts" description="A list of all available capstone manuscripts." />;
+                return (
+                    <Manuscript
+                        title="All Capstone Manuscripts"
+                        description="A list of all available capstone manuscripts."
+                        manuscripts={manuscripts} // Pass the manuscripts prop here
+                    />
+                );
             case 'Recommended':
                 return <Manuscript title="Recommended Manuscripts" description="A selection of manuscripts recommended for you." />;
             case 'ByUniversity':
@@ -57,20 +68,20 @@ export default function Library({ auth }) {
         <MainLayout
             user={auth.user}
             header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Library</h2>}
-            className="min-h-screen flex flex-col"  // Ensure full height for parent layout
+            className="min-h-screen flex flex-col"
         >
             <Head title="Library" />
 
-            <div className="flex-grow py-8"> {/* Use flex-grow to take available space */}
-                <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
-                    <div className="flex flex-col h-full">
+            <div className="flex-grow py-8 ">
+                <div className="max-w-7xl mx-auto sm:px-6 lg:px-8  bg-gray-100 pt-6">
+                    <div className="flex flex-col h-full ">
                         <div className="flex justify-between items-center mb-4">
                             <div className="flex">
                                 <button
                                     onClick={() => handleTabClick('AllBooks')}
                                     className={buttonStyle('AllBooks')}
                                 >
-                                    All Capstone Manuscript
+                                    All
                                 </button>
                                 <button
                                     onClick={() => handleTabClick('Recommended')}
@@ -84,6 +95,11 @@ export default function Library({ auth }) {
                                 >
                                     University
                                 </button>
+                            </div>
+                            <div className="flex">
+                                {/* <div className="shrink-0 flex items-center">
+                                    <SearchBar onSearchResults={handleSearchResults} />
+                                </div> */}
                             </div>
                             <div className="flex items-center space-x-4">
                                 Year
@@ -115,9 +131,7 @@ export default function Library({ auth }) {
                         </div>
                         <div className="border-b border-gray-300 w-full -mx-6"></div> {/* Gray Divider Below Buttons */}
 
-                        {/* Section with background color */}
-                        <div className="bg-gray-100 flex-grow -mx-6 px-6 rounded-b-lg"> {/* Ensure this section grows */}
-                            {/* Conditionally Render Active Tab Component */}
+                        <div className="bg-gray-100 flex-grow -mx-6 px-6 rounded-b-lg">
                             <div className="mt-6">
                                 {renderActiveTabContent()}
                             </div>

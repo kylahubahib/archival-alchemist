@@ -36,13 +36,23 @@ export default function StudentClass({ auth }) {
         // Reset error message
         setErrorMessage('');
 
-        // Check if the class code exists in the database
+        // Check if the class code exists in the database and get class details
         axios.post('/check-class-code', { class_code: classCode })
             .then(response => {
                 if (response.data.exists) {
-                    setJoinedClass(true);
-                    setActiveTab('upload');  // Set active tab to 'upload'
-                    closeModal();
+                    // Extract class details
+                    const { class_name, ins_id } = response.data.classDetails;
+
+                    // Perform insertion with class details
+                    axios.post('/store-student-class', { class_code: classCode, class_name, ins_id })
+                        .then(() => {
+                            setJoinedClass(true);
+                            setActiveTab('upload');  // Set active tab to 'upload'
+                            closeModal();
+                        })
+                        .catch(() => {
+                            setErrorMessage('An error occurred while joining the class.');
+                        });
                 } else {
                     setErrorMessage('Class code not found. Please try again.');
                 }
@@ -93,8 +103,6 @@ export default function StudentClass({ auth }) {
                                     >
                                         Join Class
                                     </button>
-
-
                                 </div>
                             ) : (
                                 <div className="flex flex-col h-full">
@@ -158,13 +166,12 @@ export default function StudentClass({ auth }) {
                         />
                     </div>
                     {errorMessage && (  // Display error message if any
-                                    <div className="mt-2 text-red-500">
-                                        <ul className="list-disc pl-5">
-                                            <li>Class code not found. Please try again.</li>
-                                            <li>You may contact your instructor to authenticate the class code.</li>
-                                        </ul>
-                                    </div>
-                                )}
+                        <div className="mt-2 text-red-500">
+                            <ul className="list-disc pl-5">
+                                <li>{errorMessage}</li>
+                            </ul>
+                        </div>
+                    )}
                     <div className="mt-4">
                         <button
                             type="button"

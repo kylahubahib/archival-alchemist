@@ -1,6 +1,8 @@
 <?php
 use App\Http\Controllers\StudentClassController; // Add this line
 use App\Http\Controllers\UniversityController;
+use App\Http\Controllers\SearchController;
+use App\Http\Controllers\CheckSubscriptionController;
 use App\Http\Middleware\CheckUserTypeMiddleware;
 use App\Http\Controllers\TagController;
 use App\Http\Controllers\ProfileController;
@@ -49,6 +51,14 @@ Route::get('/savedlist', function () {
 Route::get('/inbox', function () {
     return Inertia::render('Users/Inbox');
 })->middleware(['auth', 'verified', 'user-type:student,teacher'])->name('inbox');
+
+Route::get('/authors', function () {
+    return Inertia::render('Users/Authors');
+})->middleware(['auth', 'verified', 'user-type:student,teacher'])->name('authors');
+
+Route::get('/tags', function () {
+    return Inertia::render('Users/Tags');
+})->middleware(['auth', 'verified', 'user-type:student,teacher'])->name('tags');
 
 
 
@@ -194,11 +204,21 @@ Route::post('/tags/get-tag-ids', [TagController::class, 'getTagIds']);
 
 //route for checking the class code
 Route::post('/check-class-code', [StudentClassController::class, 'checkClassCode']);
+// routes for storing student in class table
+Route::post('/store-student-class', [StudentClassController::class, 'storeStudentClass']);
+
 
 
 Route::get('/api/approved-manuscripts', [StudentClassController::class, 'getApprovedManuscripts']);
 
 
 Route::get('/api/my-approved-manuscripts', [StudentClassController::class, 'myApprovedManuscripts']);
+
+//check user in csv file
+Route::post('/check-user-in-spreadsheet', [CheckSubscriptionController::class, 'checkUserInSpreadsheet']);
+
+//Search and filter
+Route::get('/search', [SearchController::class, 'search']);
+Route::get('/searchlib', [SearchController::class, 'searchlib']);
 
 require __DIR__.'/auth.php';

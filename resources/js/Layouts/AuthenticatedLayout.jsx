@@ -1,4 +1,4 @@
-import { MdChatBubbleOutline, MdOutlineForum } from "react-icons/md";
+import { MdChatBubbleOutline, MdOutlineForum, MdOutlinePerson, MdOutlineLabel} from "react-icons/md";
 import { SiGoogleclassroom } from "react-icons/si";
 import { BiBookBookmark, BiBookOpen } from "react-icons/bi";
 import { FiBell } from "react-icons/fi";
@@ -18,15 +18,17 @@ export default function Authenticated({ user, children }) {
         <div className="min-h-screen bg-customlightBlue flex overflow-auto">
             {/* Sidebar */}
             <Sidebar color="white" borderRadius="xl" margin="3">
-                <SidebarItem icon={<BiBookOpen size={20} />} text="Library" to="/library" />
                 <SidebarItem icon={<BiBookBookmark size={20} />} text="Favorites" to="/savedlist" />
+                <SidebarItem icon={<BiBookOpen size={20} />} text="Library" to="/library" />
                 <SidebarItem icon={<MdOutlineForum size={20} />} text="Forum" to="/forum" />
+                <SidebarItem icon={<MdOutlineLabel size={20} />} text="Tags" to="/tags" />
                 {user.user_type === 'teacher' ? (
                     <SidebarItem icon={<SiGoogleclassroom size={20} />} text="Class" to="/teacherclass" />
                 ) : (
                     <SidebarItem icon={<SiGoogleclassroom size={20} />} text="Class" to="/studentclass" />
                 )}
                 <SidebarItem icon={<MdChatBubbleOutline size={20} />} text="Inbox" to="/inbox" />
+                <SidebarItem icon={<MdOutlinePerson size={20} />} text="Authors" to="/authors" />
             </Sidebar>
 
             <div className="flex-1">
@@ -34,12 +36,13 @@ export default function Authenticated({ user, children }) {
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                         <div className="flex justify-between h-16">
                             <div className="flex">
-                                <div className="shrink-0 flex items-center">
+                                {/* <div className="shrink-0 flex items-center">
                                     <SearchBar />
-                                </div>
+                                </div> */}
                             </div>
 
-                            <div className="hidden sm:flex sm:items-center sm:ml-6">
+                            {/* <div className="hidden sm:flex sm:items-center sm:ml-6"> */}
+                            <div className="flex items-center ml-auto">
                                 <button className="rounded-full py-1 px-6 bg-green-300">
                                     {user.user_type}
                                 </button>

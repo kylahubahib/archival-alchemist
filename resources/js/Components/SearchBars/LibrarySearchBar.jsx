@@ -2,7 +2,7 @@ import { FaSearch } from "react-icons/fa";
 import React, { useState } from 'react';
 import axios from 'axios';
 
-const SearchBar = ({ onSearchResults }) => {
+const LibrarySearchBar = ({ onSearchResults }) => {
     const [query, setQuery] = useState('');
 
     const handleChange = (e) => {
@@ -14,7 +14,7 @@ const SearchBar = ({ onSearchResults }) => {
 
         // Make the API call to search
         try {
-            const response = await axios.get('/search', {
+            const response = await axios.get('/searchlib', {
                 params: { query },
             });
             // Call the onSearchResults prop with the response data
@@ -43,4 +43,4 @@ const SearchBar = ({ onSearchResults }) => {
     );
 };
 
-export default SearchBar;
+export default LibrarySearchBar;
