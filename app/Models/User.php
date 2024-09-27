@@ -89,10 +89,6 @@ class User extends Authenticatable
         return $this->belongsToMany(ManuscriptProject::class, 'author', 'user_id', 'man_doc_id');
     }
 
-    public function manuscripts(): BelongsToMany
-    {
-        return $this->belongsToMany(ManuscriptProject::class, 'author', 'user_id', 'man_doc_id');
-    }
 
     public function forum(): HasMany
     {
