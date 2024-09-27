@@ -12,6 +12,11 @@ class UniversityBranchController extends Controller
     public function index()
     {
         $branches = UniversityBranch::with('university')->get();
+
+        return Inertia::render('SuperAdmin/Advanced/Universities/Universities', [
+            'branches' => $branches,
+        ]);
+        
     }
 
     /**

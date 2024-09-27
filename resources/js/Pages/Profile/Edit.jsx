@@ -80,8 +80,8 @@ export default function Edit({ auth, mustVerifyEmail, status }) {
         >
             <Head title="Profile" />
 
-            <div className="relative py-12">
-                <div className="max-w-full mx-auto my-4 sm:px-6 lg:px-8 bg-white rounded-lg shadow-md"
+            <div className="py-8 -z-0">
+                <div className="max-w-full mx-auto my-4 sm:px-6 lg:px-8 bg-white rounded-lg shadow-md "
                      style={{ maxWidth: 'calc(100% - 16px)', transition: 'all 0.3s ease-in-out' }}>
                     <div className="flex items-start pt-8">
                         <div className="relative">

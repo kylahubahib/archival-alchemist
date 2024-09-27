@@ -107,37 +107,6 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Service Providers
-    |--------------------------------------------------------------------------
-    |
-    | Here you may list the service providers for your application. These
-    | service providers are automatically loaded on the request to your
-    | application.
-    |
-    */
-
-    // 'providers' => [
-    //     // Other Service Providers
-    //     Intervention\Image\ImageServiceProvider::class,
-    // ],
-
-    /*
-    |--------------------------------------------------------------------------
-    | Class Aliases
-    |--------------------------------------------------------------------------
-    |
-    | Here you may list the class aliases for your application. These aliases
-    | are automatically loaded on the request to your application.
-    |
-    */
-
-    // 'aliases' => [
-    //     // Other Facades
-    //     'Image' => Intervention\Image\Facades\Image::class,
-    // ],
-
-    /*
-    |--------------------------------------------------------------------------
     | Maintenance Mode Driver
     |--------------------------------------------------------------------------
     |
@@ -153,5 +122,10 @@ return [
         'driver' => env('APP_MAINTENANCE_DRIVER', 'file'),
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
+
+    
+
+
+
 
 ];

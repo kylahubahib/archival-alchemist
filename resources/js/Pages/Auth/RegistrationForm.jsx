@@ -50,7 +50,7 @@ export default function RegistrationForm() {
                     {renderStepContent()}
                 </div>
             </div>
-
+            
         </GuestLayout>
     );
 }

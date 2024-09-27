@@ -29,7 +29,7 @@ export default function SavedList({ auth }) {
     const hasViews = views > 0;
 
     return (
-        <AuthenticatedLayout
+        <AuthenticatedLayout 
             user={auth.user}
             header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Favorites</h2>}
         >

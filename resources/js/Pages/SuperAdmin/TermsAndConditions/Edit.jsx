@@ -71,8 +71,7 @@ export default function Edit({ isOpen, onClose, termConditions }) {
                 </form>
             </div>
 
-            <div className="bg-customBlue p-2 flex justify-between">
-                <button className="text-white text-right ml-5 hover:text-gray-300">Make Unavailable</button>
+            <div className="bg-customBlue p-2 flex justify-end">
                 <button onClick={onClose} className="text-white text-right mr-5">Close</button>
             </div>
         </Modal>

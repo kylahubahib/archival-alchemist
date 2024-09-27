@@ -6,16 +6,17 @@ import { useState } from 'react';
 import Dropdown from '@/Components/Dropdown';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
 import Sidebar, { SidebarItem } from '@/Components/Sidebar';
+
 import SearchBar from '@/Components/SearchBar';
 
 export default function Authenticated({ user, children }) {
     const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
 
     // Debugging: log the user type to console
-    console.log(user.user_type); // Add this line to debug
+    //console.log(user.user_type); // Add this line to debug
 
     return (
-        <div className="min-h-screen bg-customlightBlue flex overflow-auto">
+        <div className="min-h-screen bg-customlightBlue flex z-10">
             {/* Sidebar */}
             <Sidebar color="white" borderRadius="xl" margin="3">
                 <SidebarItem icon={<BiBookBookmark size={20} />} text="Favorites" to="/savedlist" />
@@ -32,7 +33,7 @@ export default function Authenticated({ user, children }) {
             </Sidebar>
 
             <div className="flex-1">
-                <nav className="bg-customBlue border-b rounded-xl m-3">
+                <nav className="bg-customBlue border-b rounded-xl m-3 sticky top-3">
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                         <div className="flex justify-between h-16">
                             <div className="flex">
@@ -55,7 +56,7 @@ export default function Authenticated({ user, children }) {
                                             <span className="inline-flex rounded-md">
                                                 <button
                                                     type="button"
-                                                    className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-full h-10 w-10 flex items-center justify-center text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150"
+                                                    className="items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-full h-10 w-10 flex justify-center text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150"
                                                 >
                                                     {user.name}
 
@@ -85,6 +86,8 @@ export default function Authenticated({ user, children }) {
                                 </div>
                             </div>
 
+                             {/* This part here is for responsive layout. Not yet configured*/}
+
                             <div className="-mr-2 flex items-center sm:hidden">
                                 <button
                                     onClick={() => setShowingNavigationDropdown((previousState) => !previousState)}
@@ -111,6 +114,9 @@ export default function Authenticated({ user, children }) {
                         </div>
                     </div>
 
+
+                     {/* This part here is for responsive layout. Not yet configured*/}
+
                     <div className={(showingNavigationDropdown ? 'block' : 'hidden') + ' sm:hidden'}>
                         <div className="pt-2 pb-3 space-y-1">
                             <ResponsiveNavLink href={route('dashboard')} active={route().current('dashboard')}>
@@ -133,6 +139,8 @@ export default function Authenticated({ user, children }) {
                         </div>
                     </div>
                 </nav>
+
+                {/* Main content */}
 
                 <main>{children}</main>
             </div>
