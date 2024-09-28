@@ -1,7 +1,6 @@
 <?php
 
 namespace App\Http\Controllers\Auth;
-use Illuminate\Support\Facades\Log;
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Controller;
@@ -35,6 +34,9 @@ class RegisteredUserController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
+
+        \Log::info('Register');
+
         $validatedData = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
@@ -44,7 +46,9 @@ class RegisteredUserController extends Controller
             'uni_id_num' => 'nullable|string|max:50',
         ]);
 
-        Log::info('Validated Data:', $validatedData);
+        \Log::info('next validated');
+
+        \Log::info('Validated Data:', $validatedData);
 
         try {
             $user = User::create([
@@ -53,11 +57,12 @@ class RegisteredUserController extends Controller
                 'password' => Hash::make($validatedData['password']),
                 'uni_id_num' => $validatedData['uni_id_num'] ?? null,
                 'user_type' => $validatedData['role'],
+                'user_pic' => 'storage/profile_pics/default_pic.png',
                 'user_status' => 'active',
                 'is_premium' => false,
             ]);
 
-            Log::info('User created:', ['user_id' => $user->id]);
+            \Log::info('User created:', ['user_id' => $user->id]);
 
             if ($validatedData['role'] === 'student') {
                 $student = Student::create([
@@ -65,7 +70,7 @@ class RegisteredUserController extends Controller
                     'uni_branch_id' => $validatedData['uni_branch_id'] ?? null,
                 ]);
 
-                Log::info('Student created:', ['student_id' => $student->id]);
+                \Log::info('Student created:', ['student_id' => $student->id]);
 
             } elseif ($validatedData['role'] === 'teacher') {
                 $faculty = Faculty::create([
@@ -73,7 +78,7 @@ class RegisteredUserController extends Controller
                     'uni_branch_id' => $validatedData['uni_branch_id'],
                 ]);
 
-                Log::info('Faculty created:', ['faculty_id' => $faculty->id]);
+                \Log::info('Faculty created:', ['faculty_id' => $faculty->id]);
 
             } elseif ($validatedData['role'] === 'admin') {
                 $institutionAdmin = InstitutionAdmin::create([
@@ -81,7 +86,7 @@ class RegisteredUserController extends Controller
                     'insub_id' => $validatedData['uni_branch_id'] ?? null,
                 ]);
 
-                Log::info('Institution Admin created:', ['ins_admin_id' => $institutionAdmin->id]);
+                \Log::info('Institution Admin created:', ['ins_admin_id' => $institutionAdmin->id]);
             }
 
             event(new Registered($user));
@@ -89,7 +94,7 @@ class RegisteredUserController extends Controller
             return redirect()->route('login')->with('success', 'Registration successful. Please log in.');
 
         } catch (\Exception $e) {
-            Log::error('Error during registration:', ['error' => $e->getMessage()]);
+            \Log::error('Error during registration:', ['error' => $e->getMessage()]);
             return redirect()->back()->withErrors(['error' => 'An unexpected error occurred. Please try again.']);
         }
     }

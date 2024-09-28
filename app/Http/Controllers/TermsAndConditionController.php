@@ -83,7 +83,7 @@ class TermsAndConditionController extends Controller
      *      'termConditions' => $termsAndCondition,
      *    ]);
      *}
-     */
+     */ 
    
 
     /**

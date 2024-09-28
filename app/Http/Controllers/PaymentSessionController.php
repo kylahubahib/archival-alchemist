@@ -37,6 +37,7 @@ class PaymentSessionController extends Controller
         $price = $plan->plan_price;
         $discount = $plan->plan_discount;
         
+        //Check if there's a discount
         if ($discount !== null && $discount != 0.00) {
             $finalAmount = $price - ($price * $discount);
         } else {
@@ -84,7 +85,7 @@ class PaymentSessionController extends Controller
 
                 $checkout_id = $response->json('data.id');
 
-
+                //Store checkout_id temporarily so that we can use it in paymentSuccess
                 $request->session()->put('checkout_id', $checkout_id);
 
                 $transaction = Transaction::create([
@@ -148,8 +149,10 @@ class PaymentSessionController extends Controller
 
                 if ($subscriptionInterval === 'monthly') {
                     $endDate = $currentDate->copy()->addMonth(); 
+
                 } elseif ($subscriptionInterval === 'yearly') {
                     $endDate = $currentDate->copy()->addYear();
+                    
                 } else {
                     // Handle other intervals or default behavior
                     $endDate = $currentDate; 
