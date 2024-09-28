@@ -63,7 +63,7 @@ export default function SubscriptionPlans({ auth, subscriptionPlans = [], featur
     };
 
     const openShowModal = (plan) => {
-        console.log('hello')
+        //console.log('hello')
         setSelectedPlanFeature(getFeaturesByPlanId(plan.id));
         setSelectedPlan(plan);
         setIsShowModalOpen(true);
