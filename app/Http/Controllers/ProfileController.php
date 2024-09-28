@@ -11,6 +11,8 @@ use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
+use Illuminate\Support\Facades\Log;
+
 
 class ProfileController extends Controller
 {
@@ -94,7 +96,7 @@ class ProfileController extends Controller
     public function updatePicture(Request $request): \Illuminate\Http\JsonResponse
     {
 
-        \Log::info('User Profile');
+        Log::info('User Profile');
         // Validate request
         $request->validate([
             'user_pic' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
@@ -110,7 +112,7 @@ class ProfileController extends Controller
         ]);
 
 
-        \Log::info($user->toArray());
+        Log::info($user->toArray());
 
         // Handle file upload
         // if ($request->hasFile('user_pic')) {
@@ -129,7 +131,7 @@ class ProfileController extends Controller
         return response()->json(['message' => 'Profile picture updated successfully!']);
     }
 
-    
+
     /**
      * Update the user's profile picture.
      */

@@ -13,6 +13,7 @@ import Repository from './Partials/Repository';
 import Posts from './Partials/Posts';
 
 
+
 export default function Edit({ auth, mustVerifyEmail, status }) {
     const [activeTab, setActiveTab] = useState('posts');
     const [profilePic, setProfilePic] = useState(auth.user.user_pic);
