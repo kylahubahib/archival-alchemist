@@ -85,7 +85,7 @@ class SubscriptionPlanController extends Controller
         ]);        
        
         //Convert percentage discount in decimal
-        if ($discount !== null && $discount != 0.00) {
+        if ($request->plan_discount !== null && $request->plan_discount != 0.00) {
             $discount = $request->plan_discount/100;
         } else {
             $discount = $request->plan_discount;
