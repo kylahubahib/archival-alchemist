@@ -1,4 +1,4 @@
-import { MdChatBubbleOutline, MdOutlineForum } from "react-icons/md";
+import { MdChatBubbleOutline, MdOutlineForum, MdOutlineLabel,  } from "react-icons/md";
 import { SiGoogleclassroom } from "react-icons/si";
 import { BiBookBookmark, BiBookOpen } from "react-icons/bi";
 import { FiBell } from "react-icons/fi";
@@ -13,7 +13,7 @@ import GiveFeedbackModal from "@/Components/GiveFeedbackModal";
 
 export default function Authenticated({ user, children, newProfile = null }) {
     const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
-    const [profilePic, setProfilePic] = useState(user.user_pic); 
+    const [profilePic, setProfilePic] = useState(user.user_pic);
     const [isModalOpen, setIsModalOpen] = useState(false);
 
 
@@ -23,7 +23,7 @@ export default function Authenticated({ user, children, newProfile = null }) {
 
     const closeModal = () => {
         setIsModalOpen(false);
-    } 
+    }
 
     // Debugging: log the user type to console
     //console.log(user.user_type); // Add this line to debug
@@ -36,7 +36,7 @@ export default function Authenticated({ user, children, newProfile = null }) {
 
     return (
         <div className="min-h-screen bg-customlightBlue flex z-10">
-            {/* Sidebar */} 
+            {/* Sidebar */}
             <Sidebar color="white" borderRadius="xl" margin="3">
                 <SidebarItem icon={<BiBookBookmark size={20} />} text="Favorites" to="/savedlist" />
                 <SidebarItem icon={<BiBookOpen size={20} />} text="Library" to="/library" />
@@ -79,7 +79,7 @@ export default function Authenticated({ user, children, newProfile = null }) {
                                                     className="relative items-center px-0 py-0 border border-transparent text-sm leading-4 font-medium rounded-full h-10 w-10 flex justify-center text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150"
                                                 >
                                                     <img src={profilePic} className="w-full h-full rounded-full object-cover" />
-                                                    
+
                                                 </button>
                                             </span>
                                         </Dropdown.Trigger>
