@@ -127,7 +127,13 @@ class User extends Authenticatable
 
     public function transaction(): HasMany
     {
-        return $this->hasMany(Transaction::class, 'user_id');
+        return $this->hasMany(Transaction::class, 'user_id');        
     }
 
+    public function user(): HasMany
+    {
+        return $this->hasMany(UserReport::class, 'reporter_id');        
+    }
+   
 }
+ 

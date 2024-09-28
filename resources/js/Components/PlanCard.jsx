@@ -1,11 +1,4 @@
-export default function PlanCard({title, text, price, term, features, planId, ...props }) {
-    // const features = [
-    //     {feature_name: 'Access Project'},
-    //     {feature_name: 'Access Project'},
-    //     {feature_name: 'Access Project'},
-    //     {feature_name: 'Access Project'},
-    //     {feature_name: 'Access Project'},
-    // ];
+export default function PlanCard({title, text, price, term, features, planId}) {
 
     return (
         <div className="flex flex-col p-6 mx-auto min-w-80 max-w-md text-center text-gray-900 bg-white rounded-lg border border-gray-100 shadow">

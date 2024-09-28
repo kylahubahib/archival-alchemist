@@ -8,9 +8,20 @@ import Dropdown from '@/Components/Dropdown';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
 import SearchBar from '@/Components/SearchBar';
 import Sidebar, { SidebarItem, SidebarTitle } from '@/Components/Sidebar';
+import GiveFeedbackModal from "@/Components/GiveFeedbackModal";
 
 export default function AdminLayout({ auth, user, header, children }) {
     const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
+
+    const openModal = () => {
+        setIsModalOpen(true);
+    }
+
+    const closeModal = () => {
+        setIsModalOpen(false);
+    }
 
     return (
     
@@ -44,12 +55,15 @@ export default function AdminLayout({ auth, user, header, children }) {
                 <SidebarItem icon={<FaUserSecret size={20} className="text-white group-hover:text-gray-600" />} text="Co-admins" color="white" to="/institution/coadmins" alert />
                 <SidebarItem icon={<CgOrganisation size={20} className="text-white group-hover:text-gray-600" />} text="Departments" color="white" to="/institution/departments" />
                 {/* <SidebarItem icon={<FaGraduationCap size={20} className="text-white group-hover:text-gray-600" />} text="Courses" color="white" to="/institution/courses" /> */}
+
                 <SidebarItem icon={<FaBook size={20} className="text-white group-hover:text-gray-600" />} text="Archives" color="white" to="/institution/archives" />
                 <SidebarItem icon={<MdSubscriptions size={20} className="text-white group-hover:text-gray-600" />} text="Subscription & Billing" color="white" to="/institution/subscription-billing" />
                 <SidebarItem icon={<FaFacebookMessenger size={20} className="text-white group-hover:text-gray-600" />} text="Chat with us" color="white" to="/institution/students"/>
-                <SidebarItem icon={<FaEnvelope size={20} className="text-white group-hover:text-gray-600" />} text="Give Feedback" color="white" to="/institution/students" />
+                <SidebarItem icon={<FaEnvelope size={20} className="text-white group-hover:text-gray-600" />} text="Give Feedback" color="white" onClick={openModal} isActiveModal={isModalOpen}/>
             </Sidebar>
         )}
+
+        <GiveFeedbackModal isOpen={isModalOpen} onClose={closeModal} />
 
        
 

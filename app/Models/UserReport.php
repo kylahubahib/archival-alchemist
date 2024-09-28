@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
-
+use Carbon\Carbon;
 
 class UserReport extends Model
 {
@@ -20,6 +20,19 @@ class UserReport extends Model
         'report_attachment',
         'report_desc',
         'report_status',
+        'report_location',
         'closed_at'
     ];
+
+    public function getCreatedAtAttribute($value)
+    {
+        return Carbon::parse($value)->format('Y-m-d');
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'reporter_id');
+    }
+
+
 }

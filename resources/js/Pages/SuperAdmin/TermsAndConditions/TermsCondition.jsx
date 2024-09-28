@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react';
 import Create from "./Create";
 import Show from "./Show";
 import Edit from "./Edit"; 
-import Pagination from "@/Components/Pagination";
+import Pagination from "@/Components/Pagination"; 
 
 export default function TermsCondition({ auth, termsConditions = [] }) {
     const [filteredData, setFilteredData] = useState(termsConditions.data);

@@ -3,7 +3,7 @@ import DeleteUserForm from './Partials/DeleteUserForm';
 import UpdatePasswordForm from './Partials/UpdatePasswordForm';
 import UpdateProfileInformationForm from './Partials/UpdateProfileInformationForm';
 import { Head, useForm } from '@inertiajs/react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { FaUserCircle } from 'react-icons/fa';
 import axios from 'axios';
 import { format } from 'date-fns';
@@ -15,7 +15,7 @@ import Posts from './Partials/Posts';
 
 export default function Edit({ auth, mustVerifyEmail, status }) {
     const [activeTab, setActiveTab] = useState('posts');
-    const [profilePic, setProfilePic] = useState(auth.user.user_pic ? route('profile.pic', { filename: auth.user.user_pic }) : '/path-to-default-image');
+    const [profilePic, setProfilePic] = useState(auth.user.user_pic);
     const [profilePicChanged, setProfilePicChanged] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
     const [showErrorModal, setShowErrorModal] = useState(false);
@@ -73,10 +73,15 @@ export default function Edit({ auth, mustVerifyEmail, status }) {
         });
     };
 
+    // useEffect(() => {
+    //     console.log('User in Profile:',auth.user);
+    // });
+
     return (
         <AuthenticatedLayout
             user={auth.user}
             header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Profile</h2>}
+            newProfile={profilePic}
         >
             <Head title="Profile" />
 
@@ -91,11 +96,11 @@ export default function Edit({ auth, mustVerifyEmail, status }) {
                                         src={profilePic}
                                         alt="Profile"
                                         className="w-full h-full rounded-full object-cover"
-                                        onError={(e) => {
-                                            console.log('Image failed to load:', e);
-                                            e.target.onerror = null;
-                                            e.target.src = '/path-to-default-image'; // Default image path
-                                        }}
+                                        // onError={(e) => {
+                                        //     console.log('Image failed to load:', e);
+                                        //     e.target.onerror = null;
+                                        //     e.target.src = '/path-to-default-image'; // Default image path
+                                        // }}
                                     />
                                     <button
                                         className="absolute right-0 bottom-0 bg-gray-300 text-white rounded-full p-1 text-sm w-6 h-6 flex items-center justify-center"

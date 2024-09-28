@@ -14,20 +14,20 @@ export default function UpdateProfileInformation({ mustVerifyEmail, status, clas
     const { data, setData, patch, errors, processing, recentlySuccessful } = useForm({
         name: user.name,
         email: user.email,
-        user_pic: null,
+        user_pic: user.user_pic,
         uni_id_num: user.uni_id_num || '',
         user_pnum: user.user_pnum || '',
         user_aboutme: user.user_aboutme || '',
     });
 
-    const [profilePic, setProfilePic] = useState(user.user_pic ? `/storage/profile_pics/${user.user_pic}` : null);
+    const [profilePic, setProfilePic] = useState(user.user_pic);
     const [message, setMessage] = useState('');
 
-    useEffect(() => {
-        if (data.user_pic) {
-            setProfilePic(URL.createObjectURL(data.user_pic));
-        }
-    }, [data.user_pic]);
+    // useEffect(() => {
+    //     if (data.user_pic) {
+    //         setProfilePic(URL.createObjectURL(data.user_pic));
+    //     }
+    // }, [data.user_pic]);
 
     const handleFileChange = (e) => {
         setData('user_pic', e.target.files[0]);
@@ -47,7 +47,7 @@ export default function UpdateProfileInformation({ mustVerifyEmail, status, clas
         }
 
         try {
-            await axios.post(route('profile.update'), formData, {
+            await axios.patch(route('profile.update'), formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
