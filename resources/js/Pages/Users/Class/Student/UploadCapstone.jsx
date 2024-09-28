@@ -167,7 +167,7 @@ const UploadCapstone = () => {
     };
 
     return (
-        <div className="upload-capstone-container p-4 border rounded shadow-lg bg-white">
+        <div className="upload-capstone-container p-4 border rounded shadow-lg bg-white h-screen">
             <div className="flex items-center mb-4">
                 <div className="text-red-600 mr-2">&#9888;</div>
                 <div>Please ensure all information is accurate before submitting</div>

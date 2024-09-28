@@ -24,7 +24,7 @@ return new class extends Migration
             $table->integer('forum_dislike_count')->default(0);
             $table->timestamps();
 
-            
+
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
         });
 
@@ -34,7 +34,7 @@ return new class extends Migration
             $table->unsignedBigInteger('forum_id');
             $table->timestamps();
 
-            
+
             $table->foreign('tag_id')->references('id')->on('tags')->onDelete('cascade');
             $table->foreign('forum_id')->references('id')->on('forums')->onDelete('cascade');
         });
@@ -49,7 +49,7 @@ return new class extends Migration
             $table->integer('post_like_count')->default(0);
             $table->timestamps();
 
-            
+
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->foreign('forum_id')->references('id')->on('forums')->onDelete('cascade');
         });
@@ -65,7 +65,7 @@ return new class extends Migration
             $table->date('closed_at');
             $table->timestamps();
 
-            
+
             $table->foreign('reporter_id')->references('id')->on('users')->onDelete('cascade');
             $table->foreign('reported_id')->references('id')->on('users')->onDelete('cascade');
         });
@@ -78,7 +78,7 @@ return new class extends Migration
             $table->boolean('chat_is_seen')->default(false);
             $table->timestamps();
 
-            
+
             $table->foreign('from_id')->references('id')->on('users')->onDelete('cascade');
             $table->foreign('to_id')->references('id')->on('users')->onDelete('cascade');
         });
@@ -89,7 +89,7 @@ return new class extends Migration
             $table->string('report_type_content');
             $table->timestamps();
 
-            
+
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
         });
 
@@ -101,7 +101,7 @@ return new class extends Migration
             $table->boolean('notif_is_seen')->default(false);
             $table->timestamps();
 
-            
+
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
         });
 
@@ -111,7 +111,7 @@ return new class extends Migration
             $table->integer('feedback_rating');
             $table->text('feedback_content')->nullable();
             $table->timestamps();
-            
+
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
         });
 
@@ -121,15 +121,18 @@ return new class extends Migration
      * Reverse the migrations.
      */
     public function down(): void
-    {
-        Schema::dropIfExists('forums');
-        Schema::dropIfExists('forum_tags');
-        Schema::dropIfExists('posts');
-        Schema::dropIfExists('user_reports');
-        Schema::dropIfExists('chats');
-        Schema::dropIfExists('report_types');
-        Schema::dropIfExists('notifications');
-        Schema::dropIfExists('feedbacks');
-       
-    }
+{
+    // Drop dependent tables first
+    Schema::dropIfExists('forum_tags');   // Drop the child tables first
+    Schema::dropIfExists('posts');
+    Schema::dropIfExists('user_reports');
+    Schema::dropIfExists('chats');
+    Schema::dropIfExists('report_types');
+    Schema::dropIfExists('notifications');
+    Schema::dropIfExists('feedbacks');
+
+    // Drop the parent table 'forums' last
+    Schema::dropIfExists('forums');
+}
+
 };

@@ -18,9 +18,9 @@ return new class extends Migration
             $table->timestamps();
 
             // Define foreign key for ins_id
-            $table->foreignId('ins_id')->constrained('uni_id_num')->on('faculties')->onDelete('cascade');
+            $table->foreignId('ins_id')->constrained('id')->on('users')->onDelete('cascade');
             // Make stud_id nullable
-            $table->foreignId('stud_id')->nullable()->constrained('uni_id_num')->on('students')->onDelete('cascade');
+            $table->foreignId('stud_id')->nullable()->constrained('id')->on('users')->onDelete('cascade');
 
         });
     }

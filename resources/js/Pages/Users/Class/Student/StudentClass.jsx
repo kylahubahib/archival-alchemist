@@ -36,31 +36,48 @@ export default function StudentClass({ auth }) {
         // Reset error message
         setErrorMessage('');
 
-        // Check if the class code exists in the database and get class details
-        axios.post('/check-class-code', { class_code: classCode })
+        // Check if the current user is premium
+        axios.post('/check-user-premium-status')
             .then(response => {
-                if (response.data.exists) {
-                    // Extract class details
-                    const { class_name, ins_id } = response.data.classDetails;
+                const { is_premium } = response.data;
 
-                    // Perform insertion with class details
-                    axios.post('/store-student-class', { class_code: classCode, class_name, ins_id })
-                        .then(() => {
-                            setJoinedClass(true);
-                            setActiveTab('upload');  // Set active tab to 'upload'
-                            closeModal();
+                // Log the is_premium value to the console
+                console.log('is_premium status:', is_premium);
+
+                if (is_premium === true) {
+                    // Proceed to check the class code
+                    axios.post('/check-class-code', { class_code: classCode })
+                        .then(response => {
+                            if (response.data.exists) {
+                                // Extract class details
+                                const { class_name, ins_id } = response.data.classDetails;
+
+                                // Perform insertion with class details
+                                axios.post('/store-student-class', { class_code: classCode, class_name, ins_id })
+                                    .then(() => {
+                                        setJoinedClass(true);
+                                        setActiveTab('upload');  // Set active tab to 'upload'
+                                        closeModal();
+                                    })
+                                    .catch(() => {
+                                        setErrorMessage('An error occurred while joining the class.');
+                                    });
+                            } else {
+                                setErrorMessage('Class code not found. Please try again.');
+                            }
                         })
                         .catch(() => {
-                            setErrorMessage('An error occurred while joining the class.');
+                            setErrorMessage('An error occurred while checking the class code.');
                         });
                 } else {
-                    setErrorMessage('Class code not found. Please try again.');
+                    setErrorMessage('You need to be a premium user to join the class.');
                 }
             })
-            .catch(error => {
-                setErrorMessage('An error occurred while checking the class code.');
+            .catch(() => {
+                setErrorMessage('An error occurred while checking your premium status.');
             });
     };
+
 
     const handleLeaveClass = () => {
         openConfirmModal();
@@ -86,11 +103,11 @@ export default function StudentClass({ auth }) {
         <AuthenticatedLayout
             user={auth.user}
             header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Class</h2>}
-            className="min-h-screen flex flex-col"  // Ensure full height for parent layout
+            className="h-screen flex flex-col"  // Ensure full height for parent layout
         >
             <Head title="Class for Student" />
 
-            <div className="flex-grow py-8"> {/* Use flex-grow to take available space */}
+            <div className="flex-grow py-8 h-screen"> {/* Use flex-grow to take available space */}
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
                     <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                         <div className="p-6 text-gray-900 h-full"> {/* Adjust height to flex container */}
