@@ -16,18 +16,18 @@ class TermsAndConditionController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index() 
+    public function index()
     {
-        \Log::info('ok'); 
+        \Log::info('ok');
 
         $termsConditions = CustomContent::with('user')
             ->where('content_type', 'terms and conditions')
             ->paginate(100);
 
-        
+
             \Log::info('Terms ', $termsConditions->toArray());
 
-            
+
         return Inertia::render('SuperAdmin/TermsAndConditions/TermsCondition', [
             'termsConditions' => $termsConditions,
         ]);
@@ -78,13 +78,13 @@ class TermsAndConditionController extends Controller
      * public function show($id): Response
      *{
      *    $termsConditions = CustomContent::find($id);
-     * 
+     *
      *   return Inertia::render('SuperAdmin/TermsAndConditions/Show', [
      *      'termConditions' => $termsAndCondition,
      *    ]);
      *}
      */
-   
+
 
     /**
      * Show the form for editing the specified resource.

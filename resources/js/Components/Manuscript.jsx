@@ -78,7 +78,7 @@ const Manuscript = () => {
                     </div>
                     <div className="flex-1 p-4">
                         <h2 className="text-xl font-bold text-gray-900">{manuscript.man_doc_title}</h2>
-                        <p className="text-gray-700 mt-1">Author/s: {manuscript.man_doc_adviser}</p>
+                        <p className="text-gray-700 mt-1">Author/s: {manuscript.man_doc_author}</p>
                         <p className="text-gray-700 mt-1">Adviser/s: {manuscript.man_doc_adviser}</p>
                         <div className="mt-2 flex flex-wrap gap-2">
                             <span className="bg-gray-200 px-2 py-1 text-sm rounded">php</span>
@@ -96,7 +96,7 @@ const Manuscript = () => {
                                     {comments.length > 0 ? `${comments.length} Comment${comments.length > 1 ? 's' : ''}` : 'No comments yet'}
                                 </span>
                             </div>
-                            
+
                             {/* DAvid */}
                             <Tooltip content="Button">
                             <button className={`text-gray-600 hover:text-blue-500 ${false ? 'text-blue-500' : ''}`} onClick={() => { /* Handle bookmark */ }}>

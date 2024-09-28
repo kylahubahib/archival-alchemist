@@ -74,7 +74,7 @@ export default function Library({ auth }) {
 
             <div className="flex-grow py-8 ">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8  bg-gray-100 pt-6">
-                    <div className="flex flex-col h-full ">
+                    <div className="flex flex-col h-screen ">
                         <div className="flex justify-between items-center mb-4">
                             <div className="flex">
                                 <button

@@ -44,4 +44,24 @@ class CheckSubscriptionController extends Controller
         // Return false if the user's ID was not found in either the spreadsheet or subscription table
         return response()->json(['exists' => false], 200);
     }
+
+
+    public function is_premium(Request $request)
+    {
+        // Get the currently authenticated user
+        $user = Auth::user();
+
+        // Check if the user is authenticated
+        if ($user) {
+            // Return the premium status (1 for premium, 0 for not premium)
+            return response()->json([
+                'is_premium' => $user->is_premium
+            ]);
+        } else {
+            // Return an error response if the user is not authenticated
+            return response()->json([
+                'error' => 'User not authenticated.'
+            ], 401);  // 401 Unauthorized
+        }
+    }
 }

@@ -83,6 +83,7 @@ Route::get('/inbox', function () {
     return Inertia::render('Users/Inbox');
 })->middleware(['auth', 'verified', 'user-type:student,teacher'])->name('inbox');
 
+
 Route::get('/authors', function () {
     return Inertia::render('Users/Authors');
 })->middleware(['auth', 'verified', 'user-type:student,teacher'])->name('authors');
@@ -92,6 +93,13 @@ Route::get('/tags', function () {
 })->middleware(['auth', 'verified', 'user-type:student,teacher'])->name('tags');
 
 
+Route::post('/feedback', [UserFeedbacksController::class, 'store'])->name('user-feedbacks.store');
+
+Route::post('/report', [UserReportController::class, 'store'])->name('user-reports.store');
+
+Route::get('/report-types', [UserReportController::class, 'reportTypeList']);
+
+Route::get('/check-feedback', [UserFeedbacksController::class, 'CheckIfFeedbackExist'])->name('check-feedback');
 
 
 //SUPERADMIN
@@ -223,6 +231,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::post('/profile/picture', [ProfileController::class, 'updatePicture'])->name('profile.updatePicture');
 });
 
 //Universities Controller Route
@@ -260,6 +269,8 @@ Route::post('/tags/get-tag-ids', [TagController::class, 'getTagIds']);
 Route::post('/check-class-code', [StudentClassController::class, 'checkClassCode']);
 // routes for storing student in class table
 Route::post('/store-student-class', [StudentClassController::class, 'storeStudentClass']);
+// routes for checking the user premium subscription
+Route::post('/check-user-premium-status', [CheckSubscriptionController::class, 'is_premium']);
 
 
 

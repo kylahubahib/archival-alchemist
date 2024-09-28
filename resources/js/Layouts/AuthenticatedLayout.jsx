@@ -1,19 +1,38 @@
-import { MdChatBubbleOutline, MdOutlineForum, MdOutlinePerson, MdOutlineLabel} from "react-icons/md";
+import { MdChatBubbleOutline, MdOutlineForum, MdOutlineLabel,  } from "react-icons/md";
 import { SiGoogleclassroom } from "react-icons/si";
 import { BiBookBookmark, BiBookOpen } from "react-icons/bi";
 import { FiBell } from "react-icons/fi";
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Dropdown from '@/Components/Dropdown';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
 import Sidebar, { SidebarItem } from '@/Components/Sidebar';
 
 import SearchBar from '@/Components/SearchBar';
+import { FaEnvelope } from "react-icons/fa";
+import GiveFeedbackModal from "@/Components/GiveFeedbackModal";
 
-export default function Authenticated({ user, children }) {
+export default function Authenticated({ user, children, newProfile = null }) {
     const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
+    const [profilePic, setProfilePic] = useState(user.user_pic);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
+
+    const openModal = () => {
+        setIsModalOpen(true);
+    }
+
+    const closeModal = () => {
+        setIsModalOpen(false);
+    }
 
     // Debugging: log the user type to console
-    //console.log(user.user_type); // Add this line to debug
+    ////console.log(user.user_type); // Add this line to debug
+
+    useEffect(() => {
+        if(newProfile != null){
+            setProfilePic(newProfile)
+        }
+    });
 
     return (
         <div className="min-h-screen bg-customlightBlue flex z-10">
@@ -29,8 +48,10 @@ export default function Authenticated({ user, children }) {
                     <SidebarItem icon={<SiGoogleclassroom size={20} />} text="Class" to="/studentclass" />
                 )}
                 <SidebarItem icon={<MdChatBubbleOutline size={20} />} text="Inbox" to="/inbox" />
-                <SidebarItem icon={<MdOutlinePerson size={20} />} text="Authors" to="/authors" />
+                <SidebarItem icon={<FaEnvelope size={20} />} text="Give Feedback" onClick={openModal} isActiveModal={isModalOpen}/>
             </Sidebar>
+
+            <GiveFeedbackModal isOpen={isModalOpen} onClose={closeModal} />
 
             <div className="flex-1">
                 <nav className="bg-customBlue border-b rounded-xl m-3 sticky top-3">
@@ -42,10 +63,9 @@ export default function Authenticated({ user, children }) {
                                 </div> */}
                             </div>
 
-                            {/* <div className="hidden sm:flex sm:items-center sm:ml-6"> */}
-                            <div className="flex items-center ml-auto">
+                            <div className="hidden sm:flex sm:items-center sm:ml-6">
                                 <button className="rounded-full py-1 px-6 bg-green-300">
-                                    {user.user_type}
+                                    {user.user_type.charAt(0).toUpperCase() + user.user_type.slice(1).toLowerCase()}
                                 </button>
 
                                 <FiBell size={24} className="ml-3 text-white" />
@@ -56,22 +76,10 @@ export default function Authenticated({ user, children }) {
                                             <span className="inline-flex rounded-md">
                                                 <button
                                                     type="button"
-                                                    className="items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-full h-10 w-10 flex justify-center text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150"
+                                                    className="relative items-center px-0 py-0 border border-transparent text-sm leading-4 font-medium rounded-full h-10 w-10 flex justify-center text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150"
                                                 >
-                                                    {user.name}
+                                                    <img src={profilePic} className="w-full h-full rounded-full object-cover" />
 
-                                                    <svg
-                                                        className="ml-2 -mr-0.5 h-4 w-4"
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        viewBox="0 0 20 20"
-                                                        fill="currentColor"
-                                                    >
-                                                        <path
-                                                            fillRule="evenodd"
-                                                            d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                                                            clipRule="evenodd"
-                                                        />
-                                                    </svg>
                                                 </button>
                                             </span>
                                         </Dropdown.Trigger>
@@ -85,6 +93,8 @@ export default function Authenticated({ user, children }) {
                                     </Dropdown>
                                 </div>
                             </div>
+
+                             {/* This part here is for responsive layout. Not yet configured*/}
 
                             <div className="-mr-2 flex items-center sm:hidden">
                                 <button
@@ -137,6 +147,8 @@ export default function Authenticated({ user, children }) {
                         </div>
                     </div>
                 </nav>
+
+                {/* Main content */}
 
                 <main>{children}</main>
             </div>
