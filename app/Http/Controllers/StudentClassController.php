@@ -105,12 +105,15 @@ public function storeStudentClass(Request $request)
     ]);
 
     $userId = Auth::id();
+    $user
+
+    \Log::info('in the student class');
 
     try {
         // Check if the user is already enrolled in the class
         $existingEnrollment = ClassModel::where([
             ['class_code', $request->class_code],
-            ['stud_id', $userId],
+            ['stud_id', $userId], 
         ])->first();
 
         if ($existingEnrollment) {
