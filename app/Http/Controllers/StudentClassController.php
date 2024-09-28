@@ -105,9 +105,9 @@ public function storeStudentClass(Request $request)
     ]);
 
     $userId = Auth::id();
-    $user
+    //$user
 
-    \Log::info('in the student class');
+    //\Log::info('in the student class');
 
     try {
         // Check if the user is already enrolled in the class
