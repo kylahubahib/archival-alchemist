@@ -115,20 +115,31 @@ class TagController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function storeTags(Request $request)
-    {
-        $tags = $request->input('tags', []);
-        $existingTags = Tags::pluck('tags_name')->map('strtolower')->toArray(); // Get existing tags in lowercase
+{
+    // Get the tags array from the request, or use an empty array if not provided
+    $tags = $request->input('tags', []);
 
-        foreach ($tags as $tag) {
-            $tag = strtolower($tag); // Convert to lowercase
-            if (!in_array($tag, $existingTags)) {
-                Tags::create(['tags_name' => $tag]);
-                $existingTags[] = $tag; // Update existingTags to include the newly added tag
-            }
+    // Retrieve all existing tags' names from the 'Tags' table and convert them to lowercase
+    $existingTags = Tags::pluck('tags_name')->map('strtolower')->toArray();
+
+    // Loop through each tag provided in the request
+    foreach ($tags as $tag) {
+        // Convert the tag to lowercase for case-insensitive comparison
+        $tag = strtolower($tag);
+
+        // Check if the tag doesn't already exist in the existingTags array
+        if (!in_array($tag, $existingTags)) {
+            // If the tag is new, create a new record in the 'Tags' table
+            Tags::create(['tags_name' => $tag]);
+
+            // Update the existingTags array to include the newly added tag
+            $existingTags[] = $tag;
         }
-
-        return response()->json(['message' => 'Tags saved successfully.']);
     }
+
+    // Return a JSON response indicating the tags were saved successfully
+    return response()->json(['message' => 'Tags saved successfully.']);
+}
 
     /**
      * Get tag IDs based on tag names.

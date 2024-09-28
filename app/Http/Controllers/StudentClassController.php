@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\JsonResponse;
 use App\Models\ClassModel;
 use App\Models\ManuscriptProject;
+use App\Models\ManuscriptTag;
 use App\Models\Tags;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
@@ -12,46 +13,83 @@ use Illuminate\Support\Facades\Log;
 
 class StudentClassController extends Controller
 {
-public function storeManuscriptProject(Request $request)
-{
-    Log::info('Request Data:', $request->all());
+    public function storeManuscriptProject(Request $request)
+    {
+        Log::info('Request Data:', $request->all());
 
-    try {
-        $validatedData = $request->validate([
-            'man_doc_title' => 'required|string|max:255',
-            'man_doc_adviser' => 'required|string|max:255',
-            'man_doc_author' => 'required|array',
-            'man_doc_author.*' => 'required|string|max:255',
+        try {
+            $validatedData = $request->validate([
+                'man_doc_title' => 'required|string|max:255',
+                'man_doc_adviser' => 'required|string|max:255',
+                'man_doc_author' => 'required|array',
+                'man_doc_author.*' => 'required|string|max:255',
 
-            'tags_id' => 'nullable|array',
-            'tags_id.*' => 'exists:tags,id',
-            'man_doc_content' => 'required|file|mimes:pdf,docx|max:10240',
-        ]);
+                'tags_id' => 'nullable|array',
+                'tags_id.*' => 'exists:tags,id',
+                'man_doc_content' => 'required|file|mimes:pdf,docx|max:10240',
+            ]);
 
-        $filePath = $request->file('man_doc_content')->store('capstone_files');
+            $tags = $request->get('tags');
 
-        $author = $request->input('man_doc_author');
-        $authorsString = implode(', ', $author);
+            // Store the file
+            $filePath = $request->file('man_doc_content')->store('capstone_files');
 
-        $manuscriptProject = ManuscriptProject::create([
-            'man_doc_title' => $validatedData['man_doc_title'],
-            'man_doc_adviser' => $validatedData['man_doc_adviser'],
-            'man_doc_author' => $authorsString,
-            'man_doc_content' => $filePath,
-            'class_id' => $validatedData['class_id'] ?? null,
-            'man_doc_author' => $authorsString,
-        ]);
+            // Convert author array to string
+            $author = $request->input('man_doc_author');
+            $authorsString = implode(', ', $author);
 
-        if (isset($validatedData['tags_id'])) {
-            $manuscriptProject->tags()->sync($validatedData['tags_id']);
+            Log::info('ok');
+
+            // Create the manuscript project
+            $manuscriptProject = ManuscriptProject::create([
+                'man_doc_title' => $validatedData['man_doc_title'],
+                'man_doc_adviser' => $validatedData['man_doc_adviser'],
+                'man_doc_author' => $authorsString,
+                'man_doc_content' => $filePath,
+                'class_id' => $validatedData['class_id'] ?? null,
+            ]);
+
+            Log::info('ok2');
+
+
+            // // Attach tags to the manuscript project
+            // if (isset($validatedData['tags_id'])) {
+            //     $manuscriptProject->tags()->sync($validatedData['tags_id']);
+            // }
+
+            $manuscriptProject->save(); // Save the manuscript record
+
+            Log::info($manuscriptProject->id);
+
+
+
+            // Handle tags and store them in the ManuscriptTag table
+            foreach ($tags as $tagName) {
+                // Find the tag by its name
+                $t = Tags::where('tags_name', $tagName)->first();
+
+                // If the tag is found, associate it with the manuscript
+                if ($t) {
+                    ManuscriptTag::create([
+                        'manuscript_id' => $manuscriptProject->id, // The manuscript ID from the saved manuscript
+                        'tag_id' => $t->id, // The tag ID from the form
+                    ]);
+
+                    Log::info('loop');
+                } else {
+                    Log::info("Tag '$tagName' not found.");
+                }
+            }
+
+
+
+            return response()->json(['message' => 'Manuscript project uploaded successfully.'], 200);
+
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Error uploading manuscript project.', 'errors' => $e->getMessage()], 422);
         }
-
-        return response()->json(['message' => 'Manuscript project uploaded successfully.'], 200);
-
-    } catch (\Exception $e) {
-        return response()->json(['message' => 'Error uploading manuscript project.', 'errors' => $e->getMessage()], 422);
     }
-}
+
 
 
 // public function storeStudentClass(Request $request)

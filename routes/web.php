@@ -4,7 +4,7 @@ use App\Http\Controllers\StudentClassController; // Add this line
 use App\Models\Student;
 use App\Http\Controllers\TagController;
 
-
+use App\Http\Controllers\UserReportController;
 use App\Http\Controllers\TagsController;
 use App\Http\Controllers\TermsAndConditionController;
 use App\Http\Controllers\SubscriptionPlanController;
@@ -83,7 +83,6 @@ Route::get('/inbox', function () {
     return Inertia::render('Users/Inbox');
 })->middleware(['auth', 'verified', 'user-type:student,teacher'])->name('inbox');
 
-
 Route::get('/authors', function () {
     return Inertia::render('Users/Authors');
 })->middleware(['auth', 'verified', 'user-type:student,teacher'])->name('authors');
@@ -93,7 +92,7 @@ Route::get('/tags', function () {
 })->middleware(['auth', 'verified', 'user-type:student,teacher'])->name('tags');
 
 
-Route::post('/feedback', [UserFeedbacksController::class, 'store'])->name('user-feedbacks.store');
+//Route::post('/feedback', [UserFeedbacksController::class, 'store'])->name('user-feedbacks.store');
 
 Route::post('/report', [UserReportController::class, 'store'])->name('user-reports.store');
 
@@ -263,6 +262,7 @@ Route::get('tags/existing', [TagController::class, 'existingTags']);
 
 Route::post('/api/tags/store', [TagController::class, 'storeTags']);
 Route::post('/tags/get-tag-ids', [TagController::class, 'getTagIds']);
+Route::get('/api/tags/get-tags', [TagController::class, 'index']);
 
 
 //route for checking the class code

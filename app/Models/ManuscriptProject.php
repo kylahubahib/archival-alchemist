@@ -39,6 +39,10 @@ class ManuscriptProject extends Model
         return $this->belongsToMany(Tags::class, 'manuscript_tag', 'manuscript_id', 'tag_id');
     }
 
+    public function manuscripts()
+    {
+        return $this->belongsToMany(ManuscriptProject::class, 'manuscript_tag', 'tag_id', 'manuscript_id');
+    }
 
     public function authors(): BelongsToMany
     {

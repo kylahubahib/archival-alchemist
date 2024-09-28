@@ -4,6 +4,7 @@ import Modal from '@/Components/Modal';
 
 const UploadCapstone = () => {
     const [authors, setAuthors] = useState([]);
+    const [allTags, setAllTags] = useState([]);
     const [tags, setTags] = useState([]);
     const [modalOpen, setModalOpen] = useState(false);
     const [formValues, setFormValues] = useState({
@@ -23,6 +24,7 @@ const UploadCapstone = () => {
     const handleTagKeyDown = (e) => {
         if (e.key === 'Enter' && e.target.value.trim() !== '') {
             setTags([...tags, e.target.value.trim()]);
+
             setInputValue('');
             setSuggestions([]);
         }
@@ -69,7 +71,7 @@ const UploadCapstone = () => {
     const fetchTagSuggestions = async (query) => {
         try {
             const response = await axios.get('/api/tags/suggestions', {
-                params: { query },
+                params: { query, tags },
             });
             console.log('Tag suggestions response:', response.data); // Debug line
             setSuggestions(response.data);
@@ -139,6 +141,7 @@ const UploadCapstone = () => {
                 formData.append('man_doc_adviser', formValues.man_doc_adviser);
                 authorsArray.forEach(author => formData.append('man_doc_author[]', author)); // Append each author
                 formData.append('tags_name[]', ...tags); // Spread the tags array
+                console.log('Inputted Tags :', tags);
 
 
 
@@ -152,6 +155,9 @@ const UploadCapstone = () => {
                     headers: {
                         'Content-Type': 'multipart/form-data',
                     },
+                    params: {
+                        tags: tags,
+                    }
                 });
                 setMessage(response.data.message);
             } catch (error) {
@@ -165,6 +171,18 @@ const UploadCapstone = () => {
             window.scrollTo(0, 0); // Scroll to top to show errors
         }
     };
+
+    // useEffect(() => {
+    //   axios.get('api/tags/get-tags')
+    //   .then(response => {
+    //     setAllTags(response.data);
+    //   })
+    //   .catch(error => {
+    //     console.log('Error');
+    //   })
+
+    //   console.log(allTags);
+    // })
 
     return (
         <div className="upload-capstone-container p-4 border rounded shadow-lg bg-white h-screen">

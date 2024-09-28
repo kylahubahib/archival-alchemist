@@ -11,12 +11,13 @@ use Illuminate\Validation\Rules;
 use Inertia\Inertia;
 use Inertia\Response;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class SubscriptionPlanController extends Controller
 {
     /**
      * Display a listing of the resource.
-     */ 
+     */
     public function index()
     {
         $subscriptionPlans = SubscriptionPlan::paginate(100);
@@ -25,7 +26,7 @@ class SubscriptionPlanController extends Controller
 
         \Log::info('Plans ', $subscriptionPlans->toArray());
 
-        
+
         return Inertia::render('SuperAdmin/SubscriptionPlans/SubscriptionPlans', [
             'subscriptionPlans' => $subscriptionPlans,
             'features' => $features,
@@ -37,7 +38,7 @@ class SubscriptionPlanController extends Controller
      * Display the available subscription plans in the pricing page.
      * This is a custom method in the controller.
      * You must create a route in web.php if you want to add a custom method.
-     */ 
+     */
     public function pricing()
     {
         $personalPlans = SubscriptionPlan::where('plan_status', 'available')
@@ -47,10 +48,10 @@ class SubscriptionPlanController extends Controller
         $institutionalPlans = SubscriptionPlan::where('plan_status', 'available')
             ->where('plan_type', 'Institutional')
             ->get();
-    
+
         $planFeatures = PlanFeature::with(['plan', 'feature'])->get();
 
-        
+
         return Inertia::render('Pricing', [
             'personalPlans' => $personalPlans,
             'institutionalPlans' => $institutionalPlans,
@@ -71,7 +72,7 @@ class SubscriptionPlanController extends Controller
      */
     public function store(Request $request)
     {
-        \Log::info('Create request data: ', $request->all());
+        Log::info('Create request data: ', $request->all());
 
         $request->validate([
             'plan_name' => 'required|string|max:255|unique:subscription_plans',
@@ -82,8 +83,8 @@ class SubscriptionPlanController extends Controller
             'plan_discount' => 'nullable|numeric|between:0,99.99',
             'free_trial_days' => 'nullable|integer|min:0',
             'plan_text' => 'required|string',
-        ]);        
-       
+        ]);
+
         //Convert percentage discount in decimal
         if ($discount !== null && $discount != 0.00) {
             $discount = $request->plan_discount/100;
@@ -109,8 +110,8 @@ class SubscriptionPlanController extends Controller
                 'feature_id' => $featureId,
             ]);
         }
-        
-        \Log::info('Plan created:', ['plan_id' => $plan->id]);
+
+        Log::info('Plan created:', ['plan_id' => $plan->id]);
 
 
         //return redirect(route('subscription-plans'))->with('success', 'Subscription Plans created successfully.');
@@ -162,8 +163,8 @@ class SubscriptionPlanController extends Controller
             'plan_discount' => 'nullable|numeric|between:0,99.99',
             'free_trial_days' => 'nullable|integer|min:0',
             'plan_text' => 'required|string',
-        ]);        
-       
+        ]);
+
         $subscriptionPlan = SubscriptionPlan::findOrFail($id);
 
         $subscriptionPlan->update([
@@ -205,22 +206,22 @@ class SubscriptionPlanController extends Controller
     {
         $plan = SubscriptionPlan::findOrFail($id);
 
-        
+
 
         if($plan->plan_status === 'Unavailable'){
             $plan->update([
-                'plan_status' => 'Available', 
+                'plan_status' => 'Available',
             ]);
         }
         else if($plan->plan_status === 'Available'){
             $plan->update([
-                'plan_status' => 'Unavailable', 
+                'plan_status' => 'Unavailable',
             ]);
         }
         else {
-            \Log::info('Something went wrong');
+            Log::info('Something went wrong');
         }
-    
+
 
 
         return redirect(route('manage-subscription-plans.index'))->with('success', 'Terms and conditions deleted successfully.');

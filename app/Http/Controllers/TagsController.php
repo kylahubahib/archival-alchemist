@@ -3,13 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Models\Tag;
+use App\Models\Tags;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rules;
 use Inertia\Inertia;
 use Inertia\Response;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class TagsController extends Controller
 {
@@ -18,7 +19,7 @@ class TagsController extends Controller
      */
     public function index()
     {
-        $tags = Tag::paginate(10);
+        $tags = Tags::paginate(10);
 
         return Inertia::render('SuperAdmin/Advanced/Tags/Tags', [
             'tags' => $tags,
@@ -42,7 +43,7 @@ class TagsController extends Controller
             'tag_name' => 'required|string|unique:tags',
         ]);
 
-        Tag::create([
+        Tags::create([
             'tag_name' => $request->tag_name
         ]);
 
@@ -54,7 +55,7 @@ class TagsController extends Controller
      */
     public function show($id): Response
     {
-        $tags = Tag::find($id);
+        $tags = Tags::find($id);
 
         return Inertia::render('SuperAdmin/Advanced/Tags/Tags', [
             'tags' => $tags,
@@ -66,7 +67,7 @@ class TagsController extends Controller
      */
     public function edit($id): Response
     {
-        $tags = Tag::find($id);
+        $tags = Tags::find($id);
 
         return Inertia::render('SuperAdmin/Advanced/Tags/Tags', [
             'tags' => $tags,
@@ -78,14 +79,14 @@ class TagsController extends Controller
      */
     public function update(Request $request, $id): RedirectResponse
     {
-        \Log::info('Update request received for tags ID: ' . $id);
-        \Log::info('Update request data: ', $request->all());
+        Log::info('Update request received for tags ID: ' . $id);
+        Log::info('Update request data: ', $request->all());
 
         $request->validate([
             'tag_name' => 'required|string'
         ]);
 
-        $tags = Tag::find($id);
+        $tags = Tags::find($id);
 
         $tags->update([
             'tag_name' => $request->tag_name
@@ -100,7 +101,7 @@ class TagsController extends Controller
      */
     public function destroy($id): RedirectResponse
     {
-        Tag::find($id)->delete();
+        Tags::find($id)->delete();
 
         return redirect(route('manage-tags.index'));
     }
