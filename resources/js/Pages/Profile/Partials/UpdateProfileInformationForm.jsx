@@ -125,7 +125,7 @@ export default function UpdateProfileInformation({ mustVerifyEmail, status, clas
 
 
                 <div>
-                    <InputLabel htmlFor="uni_id_num" value="Phone School ID #" />
+                    <InputLabel htmlFor="uni_id_num" value="School ID #" />
                     <TextInput
                         id="uni_id_num"
                         className="mt-1 block w-full"
