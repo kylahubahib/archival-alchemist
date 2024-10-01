@@ -116,19 +116,48 @@ class TagController extends Controller
      */
     public function storeTags(Request $request)
     {
-        $tags = $request->input('tags', []);
-        $existingTags = Tags::pluck('tags_name')->map('strtolower')->toArray(); // Get existing tags in lowercase
+        // Validate the incoming request to ensure 'tags' is an array
+        $request->validate([
+            'tags' => 'array',
+            'tags.*' => 'string', // Ensure each tag is a string
+        ]);
 
+        // Get the tags array from the request
+        $tags = $request->input('tags', []);
+
+        // Retrieve all existing tags' names from the 'Tags' table and convert them to lowercase
+        $existingTags = Tags::pluck('tags_name')->map('strtolower')->toArray();
+
+        // Initialize a counter for newly created tags
+        $newTagsCount = 0;
+
+        // Loop through each tag provided in the request
         foreach ($tags as $tag) {
-            $tag = strtolower($tag); // Convert to lowercase
-            if (!in_array($tag, $existingTags)) {
+            // Convert the tag to lowercase for case-insensitive comparison
+            $tag = strtolower(trim($tag)); // Use trim to remove whitespace
+
+            // Check if the tag is not empty and doesn't already exist in the existingTags array
+            if (!empty($tag) && !in_array($tag, $existingTags)) {
+                // If the tag is new, create a new record in the 'Tags' table
                 Tags::create(['tags_name' => $tag]);
-                $existingTags[] = $tag; // Update existingTags to include the newly added tag
+
+                // Increment the new tags counter
+                $newTagsCount++;
+
+                // Update the existingTags array to include the newly added tag
+                $existingTags[] = $tag;
             }
         }
 
-        return response()->json(['message' => 'Tags saved successfully.']);
+        // Return a JSON response indicating the tags were saved successfully
+        return response()->json([
+            'message' => $newTagsCount > 0
+                ? 'Tags saved successfully.'
+                : 'No new tags were added.',
+            'new_tags_count' => $newTagsCount
+        ]);
     }
+
 
     /**
      * Get tag IDs based on tag names.

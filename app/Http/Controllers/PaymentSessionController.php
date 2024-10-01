@@ -28,29 +28,29 @@ class PaymentSessionController extends Controller
         $request->validate([
             'plan_id' => 'required|exists:subscription_plans,id',
         ]);
-    
+
         $plan = SubscriptionPlan::findOrFail($request->plan_id);
         $user = Auth::user();
-    
+
         // \Log::info('User Info:', $user->toArray());
-        
+
         $price = $plan->plan_price;
         $discount = $plan->plan_discount;
-        
+
         //Check if there's a discount
         if ($discount !== null && $discount != 0.00) {
             $finalAmount = $price - ($price * $discount);
         } else {
             $finalAmount = $price;
         }
-        
-    
+
+
         try {
             $response = Http::withBasicAuth(env('PAYMONGO_SECRET_KEY'), '')
                 ->post('https://api.paymongo.com/v1/checkout_sessions', [
                     'data' => [
                         'attributes' => [
-                            'amount' => $finalAmount * 100, 
+                            'amount' => $finalAmount * 100,
                             'currency' => 'PHP',
                             'description' => 'Payment for ' . $plan->plan_name,
                             'billing' => [
@@ -76,11 +76,11 @@ class PaymentSessionController extends Controller
                             //'send_email_receipt' => false,
                             'success_url' => url('/payment/success'),
                             'cancel_url' => url('/pricing'),
-                            
+
                         ],
                     ],
                 ]);
-    
+
             if ($response->successful()) {
 
                 $checkout_id = $response->json('data.id');
@@ -107,7 +107,7 @@ class PaymentSessionController extends Controller
                     'start_date' => null,
                     'end_date' => null,
                 ]);
-                
+
 
                 $checkoutUrl = $response->json('data.attributes.checkout_url');
                 return response()->json(['checkout_url' => $checkoutUrl]);
@@ -119,7 +119,7 @@ class PaymentSessionController extends Controller
             return response()->json(['error' => 'Payment gateway error: ' . $e->getMessage()], 500);
         }
     }
-    
+
     public function paymentSuccess(Request $request){
 
         $checkoutId = $request->session()->get('checkout_id');
@@ -130,13 +130,13 @@ class PaymentSessionController extends Controller
 
             $response = Http::withBasicAuth(env('PAYMONGO_SECRET_KEY'), '')
                 ->get('https://api.paymongo.com/v1/checkout_sessions/' . $checkoutId);
-    
+
             if ($response->successful()) {
 
                 $checkoutDetails = $response->json('data.attributes');
-            
+
                 \Log::info($checkoutDetails);
-            
+
                 $transaction = Transaction::with('plan')
                     ->where('checkout_id', $checkoutId)
                     ->first();
@@ -148,23 +148,23 @@ class PaymentSessionController extends Controller
                 \Log::info($subscriptionInterval);
 
                 if ($subscriptionInterval === 'monthly') {
-                    $endDate = $currentDate->copy()->addMonth(); 
+                    $endDate = $currentDate->copy()->addMonth();
 
                 } elseif ($subscriptionInterval === 'yearly') {
                     $endDate = $currentDate->copy()->addYear();
-                    
+
                 } else {
                     // Handle other intervals or default behavior
-                    $endDate = $currentDate; 
+                    $endDate = $currentDate;
                 }
 
                 \Log::info('End Date: '. $endDate);
-            
+
                 if ($transaction) {
 
                     $referenceNumber = $checkoutDetails['payments'][0]['id'] ?? null;
                     $status = $checkoutDetails['payments'][0]['attributes']['status'] ?? null;
-                    
+
                     //Updates the transaction if payment is successful
                     $transaction->update([
                         'reference_number' => $referenceNumber,
@@ -189,19 +189,19 @@ class PaymentSessionController extends Controller
                     return redirect()->route('library');
 
                 } else {
-                    
+
                     \Log::warning("No transaction found for checkout ID: $checkoutId");
                     return response()->json(['error' => 'No transaction found']);
                 }
             } else {
                 return response()->json(['error' => 'Failed to retrieve checkout session'], 500);
             }
-    
+
         } catch (Exception $e) {
             return response()->json(['error' => 'Error retrieving checkout session: ' . $e->getMessage()], 500);
         }
 
-        
+
 
     }
 

@@ -1,7 +1,7 @@
-import { BsQuestionCircleFill } from "react-icons/bs"; 
+import { BsQuestionCircleFill } from "react-icons/bs";
 import { MdSpaceDashboard, MdSubscriptions } from "react-icons/md";
 import { CgOrganisation } from "react-icons/cg";
-import { FaScroll, FaFileContract, FaFlag, FaUsers, FaWrench, FaUserSecret, FaUserTie, FaUserGraduate, FaGraduationCap, FaBook, FaFacebookMessenger, FaEnvelope, FaEnvelopeOpen } from "react-icons/fa"; 
+import { FaScroll, FaFileContract, FaFlag, FaUsers, FaWrench, FaUserSecret, FaUserTie, FaUserGraduate, FaGraduationCap, FaBook, FaFacebookMessenger, FaEnvelope, FaEnvelopeOpen } from "react-icons/fa";
 
 import { useState } from 'react';
 import Dropdown from '@/Components/Dropdown';
@@ -24,9 +24,9 @@ export default function AdminLayout({ auth, user, header, children }) {
     }
 
     return (
-    
+
     <div className="min-h-screen bg-customlightBlue flex">
-        
+
         {user.user_type == 'superadmin' ? (
              //SIDEBAR FOR THE SUPER ADMIN
             <Sidebar color="customBlue" borderRadius="none" margin="0">
@@ -45,10 +45,10 @@ export default function AdminLayout({ auth, user, header, children }) {
                 <SidebarItem icon={<FaWrench size={20} className="text-white group-hover:text-gray-600" />} text="Advanced" color="white" to="/advanced/forum" />
             </Sidebar>
         ) : (
-            
+
             //SIDEBAR FOR THE INSTITUTION ADMIN
             <Sidebar color="customBlue" borderRadius="none" margin="0">
-            
+
                 <SidebarTitle title="MANAGEMENT"></SidebarTitle>
                 <SidebarItem icon={<FaUserGraduate size={20} className="text-white group-hover:text-gray-600" />} text="Students" color="white" to="/institution/students"/>
                 <SidebarItem icon={<FaUserTie size={20} className="text-white group-hover:text-gray-600" />} text="Faculties" color="white" to="/institution/faculties" />
@@ -65,10 +65,10 @@ export default function AdminLayout({ auth, user, header, children }) {
 
         <GiveFeedbackModal isOpen={isModalOpen} onClose={closeModal} />
 
-       
+
 
         <div className="flex-1">
-            
+
             <nav className="bg-white sticky top-0 shadow-sm">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-end h-14">
@@ -160,10 +160,10 @@ export default function AdminLayout({ auth, user, header, children }) {
              <div>
                 <main>{children}</main>
             </div>
-            
+
         </div>
 
-           
+
     </div>
     );
 }

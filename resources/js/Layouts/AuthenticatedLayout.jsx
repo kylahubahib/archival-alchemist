@@ -26,7 +26,7 @@ export default function Authenticated({ user, children, newProfile = null }) {
     }
 
     // Debugging: log the user type to console
-    //console.log(user.user_type); // Add this line to debug
+    ////console.log(user.user_type); // Add this line to debug
 
     useEffect(() => {
         if(newProfile != null){

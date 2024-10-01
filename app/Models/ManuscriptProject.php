@@ -34,11 +34,14 @@ class ManuscriptProject extends Model
     }
 
 
+     /**
+     * Many-to-Many relationship with Tags.
+     * A manuscript can have multiple tags.
+     */
     public function tags(): BelongsToMany
     {
         return $this->belongsToMany(Tags::class, 'manuscript_tag', 'manuscript_id', 'tag_id');
     }
-
 
     public function authors(): BelongsToMany
     {

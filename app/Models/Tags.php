@@ -18,12 +18,14 @@ class Tags extends Model
     protected $fillable = ['tags_name'];
 
 
-    public function manuscripts(): BelongsToMany
+    /**
+     * Many-to-Many relationship with Manuscripts.
+     * A tag can be linked to multiple manuscripts.
+     */
+    public function ManuscriptProject(): BelongsToMany
     {
         return $this->belongsToMany(ManuscriptProject::class, 'manuscript_tag', 'tag_id', 'manuscript_id');
     }
-    // Optionally, you can define relationships or other model-specific logic here
-
 
     public function forum_tag(): HasMany
     {

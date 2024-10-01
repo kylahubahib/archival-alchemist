@@ -7,10 +7,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 //use Laravel\Cashier\Billable;
-
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+
 
 
 class User extends Authenticatable
@@ -82,13 +83,13 @@ class User extends Authenticatable
     public function custom_content(): HasMany
     {
         return $this->hasMany(CustomContent::class, 'user_id');
-
-    }
+        }
 
     public function manuscripts(): BelongsToMany
     {
         return $this->belongsToMany(ManuscriptProject::class, 'author', 'user_id', 'man_doc_id');
     }
+
 
     public function forum(): HasMany
     {
@@ -127,13 +128,6 @@ class User extends Authenticatable
 
     public function transaction(): HasMany
     {
-        return $this->hasMany(Transaction::class, 'user_id');        
+        return $this->hasMany(Transaction::class, 'user_id');
     }
-
-    public function user(): HasMany
-    {
-        return $this->hasMany(UserReport::class, 'reporter_id');        
-    }
-   
 }
- 

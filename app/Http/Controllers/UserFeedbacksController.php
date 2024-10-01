@@ -6,7 +6,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Validation\Rules; 
+use Illuminate\Validation\Rules;
 use Illuminate\Http\Request;
 use App\Models\Feedback;
 use Inertia\Response;
@@ -16,13 +16,13 @@ use Carbon\Carbon;
 class UserFeedbacksController extends Controller
 {
     /**
-     * 
+     *
      * Display a listing of the resource.
      */
     public function index()
     {
-        $feedbacks = Feedback::with('user')->paginate(100); 
-        $feedbackCount = Feedback::count(); 
+        $feedbacks = Feedback::with('user')->paginate(100);
+        $feedbackCount = Feedback::count();
         $averageRating= number_format(Feedback::average('feedback_rating'), 1);
         $ratingCounts = Feedback::selectRaw('feedback_rating, COUNT(*) as count')
             ->groupBy('feedback_rating')
@@ -69,7 +69,7 @@ class UserFeedbacksController extends Controller
 
             } else if($rating == 'Highest'){
                 $feedbacks->orderBy('feedback_rating', 'desc');
-            } 
+            }
             else {
                 $feedbacks->where('feedback_rating', $rating);
             }

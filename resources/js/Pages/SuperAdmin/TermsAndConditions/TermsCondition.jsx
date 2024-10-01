@@ -1,12 +1,12 @@
-import { FaEye, FaPen, FaPlus, FaTrash } from "react-icons/fa";  
+import { FaEye, FaPen, FaPlus, FaTrash } from "react-icons/fa";
 import AddButton from '@/Components/AddButton';
 import AdminLayout from '@/Layouts/AdminLayout';
 import { Head, router } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 import Create from "./Create";
 import Show from "./Show";
-import Edit from "./Edit"; 
-import Pagination from "@/Components/Pagination"; 
+import Edit from "./Edit";
+import Pagination from "@/Components/Pagination";
 
 export default function TermsCondition({ auth, termsConditions = [] }) {
     const [filteredData, setFilteredData] = useState(termsConditions.data);
@@ -25,7 +25,7 @@ export default function TermsCondition({ auth, termsConditions = [] }) {
                     value.user.name.toLowerCase().startsWith(wordEntered.toLowerCase()))
                 );
             } else {
-                return ( 
+                return (
                     value.content_status === filteredStatus.toLowerCase() &&
                     (value.content_title.toLowerCase().startsWith(wordEntered.toLowerCase()) ||
                     value.user.name.toLowerCase().startsWith(wordEntered.toLowerCase()))
@@ -93,13 +93,13 @@ export default function TermsCondition({ auth, termsConditions = [] }) {
                             <div>
                                 <AddButton onClick={openCreateModal} className="text-customBlue hover:text-white space-x-1">
                                     <FaPlus /><span>Add T&Cs</span>
-                                </AddButton> 
-                            </div> 
-                        </div>  
+                                </AddButton>
+                            </div>
+                        </div>
 
-                
+
                     <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                        
+
                         <div className="overflow-x-auto shadow-md sm:rounded-lg px-5 sm:px-5">
                             <div className="flex items-center justify-between flex-column md:flex-row flex-wrap space-y-4 md:space-y-0 py-4 bg-white">
                                 <label className="sr-only">Search</label>
@@ -109,28 +109,28 @@ export default function TermsCondition({ auth, termsConditions = [] }) {
                                             <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
                                         </svg>
                                     </div>
-                                    <input 
-                                        type="text" 
-                                        id="table-search-users" 
-                                        className="block pt-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg w-80 bg-gray-50 focus:ring-blue-500 focus:border-blue-500" 
-                                        placeholder="Search" 
+                                    <input
+                                        type="text"
+                                        id="table-search-users"
+                                        className="block pt-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg w-80 bg-gray-50 focus:ring-blue-500 focus:border-blue-500"
+                                        placeholder="Search"
                                         value={wordEntered}
                                         onChange={handleFilter}
                                     />
                                 </div>
 
                                 <div className="inline-flex overflow-hidden bg-white border divide-x rounded-lg dark:bg-gray-900 rtl:flex-row-reverse">
-                                    <button onClick={() => {filterStatus("All")}} 
+                                    <button onClick={() => {filterStatus("All")}}
                                     className={`px-5 py-2 text-xs font-medium text-gray-600 transition-colors duration-200 ${filteredStatus === "All" ? "bg-customBlue text-white": "hover:bg-gray-100"} sm:text-sm`}>
                                         View all
                                     </button>
 
-                                    <button onClick={() => {filterStatus("Available")}} 
+                                    <button onClick={() => {filterStatus("Available")}}
                                     className={`px-5 py-2 text-xs font-medium text-gray-600 transition-colors duration-200 ${filteredStatus === "Available" ? "bg-customBlue text-white": "hover:bg-gray-100"} sm:text-sm`}>
                                         Available
                                     </button>
 
-                                    <button onClick={() => {filterStatus("Unavailable")}} 
+                                    <button onClick={() => {filterStatus("Unavailable")}}
                                     className={`px-5 py-2 text-xs font-medium text-gray-600 transition-colors duration-200 ${filteredStatus === "Unavailable" ? "bg-customBlue text-white": "hover:bg-gray-100"} sm:text-sm`}>
                                         Unavailable
                                     </button>
