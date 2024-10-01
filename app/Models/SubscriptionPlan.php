@@ -12,7 +12,7 @@ class SubscriptionPlan extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
+    protected $fillable = [ 
         'plan_name',
         'plan_price',
         'plan_term',

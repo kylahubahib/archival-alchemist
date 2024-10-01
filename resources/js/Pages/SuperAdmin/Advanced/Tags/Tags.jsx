@@ -15,7 +15,7 @@ import Pagination from '@/Components/Pagination';
 export default function Tags({ auth, tags }) {
     // Use Inertia's useForm hook to handle form state
     const { data, setData, post, put, processing, errors, reset } = useForm({
-        tag_name: ''
+        tags_name: ''
     });
 
     // State to manage selected tag for editing
@@ -31,7 +31,7 @@ export default function Tags({ auth, tags }) {
     useEffect(() => {
         const newFilter = tags.data.filter((value) => {
             return (
-                value.tag_name.toLowerCase().startsWith(wordEntered.toLowerCase())
+                value.tags_name.toLowerCase().startsWith(wordEntered.toLowerCase())
             );
         });
         setFilteredData(newFilter);
@@ -73,14 +73,14 @@ export default function Tags({ auth, tags }) {
     const editButtonClick = (tag) => {
         setSelectedTag(tag);
         setCreateTag(false);
-        setData('tag_name', tag.tag_name);
+        setData('tags_name', tag.tags_name);
     };
 
     // Handler for delete button click
     const deleteTag = (id) => {
         setCreateTag(false); 
         setSelectedTag(null); 
-        setData('tag_name', '');
+        setData('tags_name', '');
         router.delete(route('manage-tags.destroy', id), {
             preserveScroll: true
         });
@@ -117,7 +117,7 @@ export default function Tags({ auth, tags }) {
                                     />
                                 </div>
                             <div>
-                                <AddButton onClick={() => {setCreateTag(true); setSelectedTag(null); setData('tag_name', '');}} className="text-customBlue hover:text-white space-x-1">
+                                <AddButton onClick={() => {setCreateTag(true); setSelectedTag(null); setData('tags_name', '');}} className="text-customBlue hover:text-white space-x-1">
                                     <FaPlus /><span>Add Tag</span>
                                 </AddButton>
                             </div>
@@ -129,9 +129,9 @@ export default function Tags({ auth, tags }) {
                                 <form onSubmit={submit} className="flex flex-col">
                                     <div className="flex flex-row">
                                         <TextInput
-                                            id="tag_name"
-                                            value={data.tag_name}
-                                            onChange={(e) => setData('tag_name', e.target.value)}
+                                            id="tags_name"
+                                            value={data.tags_name}
+                                            onChange={(e) => setData('tags_name', e.target.value)}
                                             type="text"
                                             className="mt-1 block"
                                             placeholder="New Tag"
@@ -140,7 +140,7 @@ export default function Tags({ auth, tags }) {
                                             Save
                                         </PrimaryButton>
                                     </div>
-                                    <InputError message={errors.tag_name} className="mt-2" />
+                                    <InputError message={errors.tags_name} className="mt-2" />
                                 </form>
                             </div>
                         )}
@@ -151,9 +151,9 @@ export default function Tags({ auth, tags }) {
                                 <form onSubmit={submitUpdate} className="flex flex-col">
                                     <div className="flex flex-row">
                                         <TextInput
-                                            id="tag_name"
-                                            value={data.tag_name}
-                                            onChange={(e) => setData('tag_name', e.target.value)}
+                                            id="tags_name"
+                                            value={data.tags_name}
+                                            onChange={(e) => setData('tags_name', e.target.value)}
                                             type="text"
                                             className="mt-1 block"
                                         />
@@ -161,7 +161,7 @@ export default function Tags({ auth, tags }) {
                                             Update
                                         </PrimaryButton>
                                     </div>
-                                    <InputError message={errors.tag_name} className="mt-2" />
+                                    <InputError message={errors.tags_name} className="mt-2" />
                                 </form>
                             </div>
                         )}
@@ -173,7 +173,7 @@ export default function Tags({ auth, tags }) {
                                         filteredData.map((t) => (
                                             <div key={t.id} className="px-2 py-1">
                                                 <TagBadge>
-                                                    <div className="mr-2">{t.tag_name}</div>
+                                                    <div className="mr-2">{t.tags_name}</div>
                                                     <button onClick={() => deleteTag(t.id)} className="hover:text-blue-950"><RxCross2 /></button>
                                                     <button onClick={() => editButtonClick(t)} className="hover:text-blue-950"><AiFillEdit /></button>
                                                 </TagBadge>

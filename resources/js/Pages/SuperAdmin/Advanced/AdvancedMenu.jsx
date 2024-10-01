@@ -1,3 +1,4 @@
+import { FaFlag } from "react-icons/fa"; 
 import { AiFillFileText } from "react-icons/ai"; 
 import { MdForum } from "react-icons/md"; 
 import { FaUniversity } from "react-icons/fa"; 
@@ -27,7 +28,12 @@ export default function AdvancedMenu({ auth }) {
                 <span className="font-semibold">MESSAGES</span>
             </Link>
 
-            <Link href="/advanced/tags" className={`inline-flex items-center px-4 py-2 bg-customBlue rounded-md space-x-2 text-white racking-widest hover:bg-blue-900 active:bg-customBlue transition ease-in-out duration-150`}>
+            <Link href="#" className={`inline-flex items-center px-4 py-2 m-3 bg-customBlue rounded-md space-x-2 text-white racking-widest hover:bg-blue-900 active:bg-customBlue transition ease-in-out duration-150`}>
+                <span><FaFlag /></span>
+                <span className="font-semibold">REPORT REASON</span>
+            </Link>
+
+            <Link href="/advanced/tags" className={`inline-flex items-center px-4 py-2 m-3 bg-customBlue rounded-md space-x-2 text-white racking-widest hover:bg-blue-900 active:bg-customBlue transition ease-in-out duration-150`}>
                 <span><FaTags /></span>
                 <span className="font-semibold">TAGS</span>
             </Link>

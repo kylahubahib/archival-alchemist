@@ -5,7 +5,7 @@ import Modal from '@/Components/Modal';
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import { Head, useForm } from '@inertiajs/react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 export default function Create({ isOpen, onClose, features = {}}) {
 
@@ -58,6 +58,10 @@ export default function Create({ isOpen, onClose, features = {}}) {
         }
     };
 
+    useEffect(() =>{
+        console.log(data.plan_features);
+    });
+ 
     return (
         <Modal show={isOpen} onClose={closeClick} maxWidth='5xl'>
             <div className="bg-customBlue p-3" >

@@ -4,7 +4,7 @@ use App\Http\Controllers\StudentClassController; // Add this line
 use App\Models\Student;
 use App\Http\Controllers\TagController;
 
-use App\Http\Controllers\TagsController;
+use App\Http\Controllers\AdvancedTagsController;
 use App\Http\Controllers\TermsAndConditionController;
 use App\Http\Controllers\SubscriptionPlanController;
 use App\Http\Controllers\FAQController;
@@ -121,7 +121,7 @@ Route::middleware(['auth', 'verified', 'user-type:superadmin'])->group(function 
 
     Route::resource('advanced/universities', UniversityController::class)->names('manage-universities');
 
-    Route::resource('advanced/tags', TagsController::class)->names('manage-tags');
+    Route::resource('advanced/tags', AdvancedTagsController::class)->names('manage-tags');
 
     ///END ADVANCED ROUTES
 
@@ -137,6 +137,7 @@ Route::middleware(['auth', 'verified', 'user-type:superadmin'])->group(function 
 
     Route::get('filter-user-reports', [UserReportController::class, 'filterReports'])->name('filter-user-reports');
     Route::get('filter-feedbacks', [UserFeedbacksController::class, 'filterFeedbacks'])->name('filter-feedbacks');
+    Route::get('get-branches', [UniversityController::class, 'getBranches'])->name('get-branches');
 
 
 

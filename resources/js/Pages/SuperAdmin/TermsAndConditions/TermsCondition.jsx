@@ -7,6 +7,7 @@ import Create from "./Create";
 import Show from "./Show";
 import Edit from "./Edit"; 
 import Pagination from "@/Components/Pagination"; 
+import { showToast } from "@/Components/Toast";
 
 export default function TermsCondition({ auth, termsConditions = [] }) {
     const [filteredData, setFilteredData] = useState(termsConditions.data);
@@ -72,7 +73,7 @@ export default function TermsCondition({ auth, termsConditions = [] }) {
             router.delete(route('manage-terms-and-conditions.destroy', id), {
                 preserveScroll: true,
                 onSuccess: () => {
-                    alert('Successfully deleted!');
+                    showToast('success', 'Successfully deleted!');
                 },
             });
         }
@@ -196,6 +197,8 @@ export default function TermsCondition({ auth, termsConditions = [] }) {
             <Create isOpen={isCreateModalOpen} onClose={closeModal}/>
             {selectedTerms && <Show isOpen={isShowModalOpen} onClose={closeModal} termConditions={selectedTerms} />}
             {selectedTerms && <Edit isOpen={isEditModalOpen} onClose={closeModal} termConditions={selectedTerms} />}
+
+
         </AdminLayout>
     );
 }

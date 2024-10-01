@@ -1,3 +1,5 @@
+import { RiMessengerLine } from "react-icons/ri"; 
+import { BiEnvelope } from "react-icons/bi"; 
 import { MdChatBubbleOutline, MdOutlineForum, MdOutlineLabel,  } from "react-icons/md";
 import { SiGoogleclassroom } from "react-icons/si";
 import { BiBookBookmark, BiBookOpen } from "react-icons/bi";
@@ -5,10 +7,10 @@ import { FiBell } from "react-icons/fi";
 import { useEffect, useState } from 'react';
 import Dropdown from '@/Components/Dropdown';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
-import Sidebar, { SidebarItem } from '@/Components/Sidebar';
+import Sidebar, { SidebarItem, SidebarSeparator } from '@/Components/Sidebar';
 
 import SearchBar from '@/Components/SearchBar';
-import { FaEnvelope } from "react-icons/fa";
+import { FaCrown, FaEnvelope } from "react-icons/fa";
 import GiveFeedbackModal from "@/Components/GiveFeedbackModal";
 
 export default function Authenticated({ user, children, newProfile = null }) {
@@ -48,7 +50,11 @@ export default function Authenticated({ user, children, newProfile = null }) {
                     <SidebarItem icon={<SiGoogleclassroom size={20} />} text="Class" to="/studentclass" />
                 )}
                 <SidebarItem icon={<MdChatBubbleOutline size={20} />} text="Inbox" to="/inbox" />
-                <SidebarItem icon={<FaEnvelope size={20} />} text="Give Feedback" onClick={openModal} isActiveModal={isModalOpen}/>
+                <SidebarSeparator marginTop={60}/>
+
+                <SidebarItem icon={<FaCrown size={20} color="#FFD700" />} text="Subscription" to="#" />
+                <SidebarItem icon={<RiMessengerLine size={20} color="#006AFF" />} text="Chat with us" to="https://m.me/432748959923780" externalLink/>
+                <SidebarItem icon={<BiEnvelope size={20} color="#294996" />} text="Give Feedback" onClick={openModal} isActiveModal={isModalOpen}/>
             </Sidebar>
 
             <GiveFeedbackModal isOpen={isModalOpen} onClose={closeModal} />
