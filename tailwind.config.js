@@ -32,8 +32,9 @@ export default {
                 '480': '480px'
             }
         },
-        
     },
+
+    darkMode: 'class', // NextUI uses class-based dark mode
 
     plugins: [forms, nextui()],
 

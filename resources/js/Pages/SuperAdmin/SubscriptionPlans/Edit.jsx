@@ -112,7 +112,7 @@ export default function Edit({ isOpen, onClose, subscriptionPlans, planFeatures,
                                     id="plan_text"
                                     name="plan_text"
                                     value={data.plan_text}
-                                    className="mt-1 block w-full max-h-44"
+                                    className="mt-1 block w-full max-h-40"
                                     onChange={(e) => setData('plan_text', e.target.value)}
                                 />
                                 <InputError message={errors.plan_text} className="mt-2" />
