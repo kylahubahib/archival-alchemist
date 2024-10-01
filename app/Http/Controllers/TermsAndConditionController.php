@@ -16,12 +16,18 @@ class TermsAndConditionController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index() 
     {
+        \Log::info('ok'); 
+
         $termsConditions = CustomContent::with('user')
             ->where('content_type', 'terms and conditions')
-            ->get();
+            ->paginate(100);
 
+        
+            \Log::info('Terms ', $termsConditions->toArray());
+
+            
         return Inertia::render('SuperAdmin/TermsAndConditions/TermsCondition', [
             'termsConditions' => $termsConditions,
         ]);
@@ -61,10 +67,24 @@ class TermsAndConditionController extends Controller
      */
     public function show(CustomContent $termsAndCondition): Response
     {
+
         return Inertia::render('SuperAdmin/TermsAndConditions/Show', [
             'termConditions' => $termsAndCondition,
         ]);
     }
+
+    /**
+     * If the above method didnt work try using this:
+     * public function show($id): Response
+     *{
+     *    $termsConditions = CustomContent::find($id);
+     * 
+     *   return Inertia::render('SuperAdmin/TermsAndConditions/Show', [
+     *      'termConditions' => $termsAndCondition,
+     *    ]);
+     *}
+     */ 
+   
 
     /**
      * Show the form for editing the specified resource.
@@ -100,12 +120,6 @@ class TermsAndConditionController extends Controller
 
         return redirect(route('manage-terms-and-conditions.index'))->with('success', 'Terms and conditions updated successfully.');
 
-
-        // // Update status if provided in the request
-        // if ($request->has('status')) {
-        //     $termsAndCondition->status = $request->status;
-        //     $termsAndCondition->save();
-        // }
     }
 
 
@@ -118,5 +132,28 @@ class TermsAndConditionController extends Controller
 
         return redirect(route('manage-terms-and-conditions.index'))->with('success', 'Terms and conditions deleted successfully.');
     }
+
+    public function change_status(Request $request, $id): RedirectResponse
+    {
+
+    $termsAndCondition = CustomContent::find($id);
+
+
+    if ($termsAndCondition->content_status === 'available') {
+        $termsAndCondition->update([
+            'content_status' => 'unavailable',
+        ]);
+    } else if ($termsAndCondition->content_status === 'unavailable') {
+        $termsAndCondition->update([
+            'content_status' => 'available',
+        ]);
+    } else {
+        \Log::info('Something went wrong');
+    }
+
+
+    return redirect(route('manage-terms-and-conditions.index'))->with('success', 'Status updated.');
+    }
+
 
 }

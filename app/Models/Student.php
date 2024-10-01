@@ -27,4 +27,16 @@ class Student extends Model
     {
         return $this->belongsTo(UniversityBranch::class, 'uni_branch_id');
     }
+
+    // Define the relationship with CapstoneProject
+    public function capstoneProjects(): HasMany
+    {
+        return $this->hasMany(ManuscriptProject::class, 'student_id');
+    }
+
+    // Define the relationship with TrackedActivity
+    // public function trackedActivities(): HasMany
+    // {
+    //     return $this->hasMany(TrackedActivity::class, 'student_id');
+    // }
 }

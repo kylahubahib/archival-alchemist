@@ -34,6 +34,9 @@ class RegisteredUserController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
+
+        \Log::info('Register');
+
         $validatedData = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
@@ -42,6 +45,8 @@ class RegisteredUserController extends Controller
             'uni_branch_id' => 'nullable|integer',
             'uni_id_num' => 'nullable|string|max:50',
         ]);
+
+        \Log::info('next validated');
 
         \Log::info('Validated Data:', $validatedData);
 
@@ -52,6 +57,7 @@ class RegisteredUserController extends Controller
                 'password' => Hash::make($validatedData['password']),
                 'uni_id_num' => $validatedData['uni_id_num'] ?? null,
                 'user_type' => $validatedData['role'],
+                'user_pic' => 'storage/profile_pics/default_pic.png',
                 'user_status' => 'active',
                 'is_premium' => false,
             ]);
