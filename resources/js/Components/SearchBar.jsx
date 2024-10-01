@@ -1,7 +1,7 @@
 import { FaSearch } from "react-icons/fa"; 
 import React, { useState } from 'react';
 
-const SearchBar = ({ onSearch }) => {
+const SearchBar = ({ onSearch}) => {
     const [query, setQuery] = useState('');
 
     const handleChange = (e) => {
@@ -14,13 +14,13 @@ const SearchBar = ({ onSearch }) => {
     };
 
     return (
-        <form onSubmit={handleSubmit} className="flex items-center">
+        <form onSubmit={handleSubmit} className={`flex items-center ` }>
             <input
                 type="text"
                 placeholder="Search..."
                 value={query}
                 onChange={handleChange}
-                className=" w-96 px-4 py-2 rounded-l-full focus:outline-none flex-1"
+                className={` w-96 px-4 py-2 rounded-l-full focus:outline-none flex-1 `} 
             />
             <button
                 type="submit"
