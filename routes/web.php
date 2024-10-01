@@ -243,7 +243,7 @@ Route::get('api/universities-branches', [UniversityController::class, 'getUniver
 //manuscript project
 Route::middleware(['auth'])->group(function () {
     // Route for storing a new manuscript project
-    Route::post('/capstone/upload', [StudentClassController::class, 'storeManuscriptProject'])->name('api.capstone.upload');
+    Route::post('/api/capstone/upload', [StudentClassController::class, 'storeManuscriptProject'])->name('api.capstone.upload');
 
     // Route for tracking a student's activity
     Route::post('/student/track-activity', [StudentClassController::class, 'trackActivity'])
@@ -253,6 +253,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/student/approve-project', [StudentClassController::class, 'approveProject'])
         ->name('student.approveProject.store');
     });
+    Route::post('/api/check-title', [StudentClassController::class, 'checkTitle'])->name('capstone.checkTitle');
 
 //Add a route for fetching tag suggestions:
     // In api.php or web.php

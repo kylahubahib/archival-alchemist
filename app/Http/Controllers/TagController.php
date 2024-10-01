@@ -115,31 +115,49 @@ class TagController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function storeTags(Request $request)
-{
-    // Get the tags array from the request, or use an empty array if not provided
-    $tags = $request->input('tags', []);
+    {
+        // Validate the incoming request to ensure 'tags' is an array
+        $request->validate([
+            'tags' => 'array',
+            'tags.*' => 'string', // Ensure each tag is a string
+        ]);
 
-    // Retrieve all existing tags' names from the 'Tags' table and convert them to lowercase
-    $existingTags = Tags::pluck('tags_name')->map('strtolower')->toArray();
+        // Get the tags array from the request
+        $tags = $request->input('tags', []);
 
-    // Loop through each tag provided in the request
-    foreach ($tags as $tag) {
-        // Convert the tag to lowercase for case-insensitive comparison
-        $tag = strtolower($tag);
+        // Retrieve all existing tags' names from the 'Tags' table and convert them to lowercase
+        $existingTags = Tags::pluck('tags_name')->map('strtolower')->toArray();
 
-        // Check if the tag doesn't already exist in the existingTags array
-        if (!in_array($tag, $existingTags)) {
-            // If the tag is new, create a new record in the 'Tags' table
-            Tags::create(['tags_name' => $tag]);
+        // Initialize a counter for newly created tags
+        $newTagsCount = 0;
 
-            // Update the existingTags array to include the newly added tag
-            $existingTags[] = $tag;
+        // Loop through each tag provided in the request
+        foreach ($tags as $tag) {
+            // Convert the tag to lowercase for case-insensitive comparison
+            $tag = strtolower(trim($tag)); // Use trim to remove whitespace
+
+            // Check if the tag is not empty and doesn't already exist in the existingTags array
+            if (!empty($tag) && !in_array($tag, $existingTags)) {
+                // If the tag is new, create a new record in the 'Tags' table
+                Tags::create(['tags_name' => $tag]);
+
+                // Increment the new tags counter
+                $newTagsCount++;
+
+                // Update the existingTags array to include the newly added tag
+                $existingTags[] = $tag;
+            }
         }
+
+        // Return a JSON response indicating the tags were saved successfully
+        return response()->json([
+            'message' => $newTagsCount > 0
+                ? 'Tags saved successfully.'
+                : 'No new tags were added.',
+            'new_tags_count' => $newTagsCount
+        ]);
     }
 
-    // Return a JSON response indicating the tags were saved successfully
-    return response()->json(['message' => 'Tags saved successfully.']);
-}
 
     /**
      * Get tag IDs based on tag names.

@@ -29,7 +29,7 @@ export default function SavedList({ auth }) {
     const hasViews = views > 0;
 
     return (
-        <AuthenticatedLayout 
+        <AuthenticatedLayout
             user={auth.user}
             header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Favorites</h2>}
         >
@@ -37,10 +37,12 @@ export default function SavedList({ auth }) {
 
             <section className="w-full mx-auto my-4">
                 {bookmarks.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center h-screen">
+                    <div className="max-w-7xl mx-auto bg-white shadow-lg flex justify-center h-screen items-center shadow-sm sm:rounded-lg sticky">
                         <FaBookmark size={50} className="text-gray-500" />
                         <p className="text-gray-500 mt-2">Favorite Manuscript Capstone will be added here.</p>
+
                     </div>
+
                 ) : (
                     <div className="w-full bg-white shadow-lg flex">
                         <div className="rounded w-40 h-full bg-gray-200 flex items-center justify-center">

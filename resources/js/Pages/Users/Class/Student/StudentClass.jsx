@@ -56,7 +56,7 @@ export default function StudentClass({ auth }) {
                                 axios.post('/store-student-class', { class_code: classCode, class_name, ins_id })
                                     .then(() => {
                                         setJoinedClass(true);
-                                        setActiveTab('upload');  // Set active tab to 'upload'
+                                        setActiveTab('track');  // Set active tab to 'upload'
                                         closeModal();
                                     })
                                     .catch(() => {
