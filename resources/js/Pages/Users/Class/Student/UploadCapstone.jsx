@@ -187,10 +187,12 @@ const UploadCapstone = () => {
         } else {
             window.scrollTo(0, 0);
         }
+
+
     };
 
     return (
-        <div className="upload-capstone-container p-4 border rounded shadow-lg bg-white h-screen">
+        <div className="upload-capstone-container p-8 rounded shadow-lg bg-gray-100 h-screen">
             {success ? (
                 <div>
                     <h2 className="text-green-600 mb-4"></h2>
@@ -276,7 +278,7 @@ const UploadCapstone = () => {
                         </div>
                     </div>
                     <div className="right-column">
-<div className="mb-4 p-6 bg-white border border-gray-300 rounded-lg shadow-md text-center">
+<div className="mb-4 p-6 bg-gray-100 border border-gray-300 rounded-lg shadow-md text-center">
     <div className="border-dashed border-2 border-gray-400 p-4 rounded-lg transition hover:bg-gray-100">
         <p className="text-gray-600 mb-2">Drag or drop file here</p>
         <input

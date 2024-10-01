@@ -266,6 +266,9 @@ Route::post('/tags/get-tag-ids', [TagController::class, 'getTagIds']);
 Route::get('/api/tags/get-tags', [TagController::class, 'index']);
 
 
+Route::get('/api/tags', [TagController::class, 'index']);
+
+
 //route for checking the class code
 Route::post('/check-class-code', [StudentClassController::class, 'checkClassCode']);
 // routes for storing student in class table

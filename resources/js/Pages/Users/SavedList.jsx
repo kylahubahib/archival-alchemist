@@ -35,7 +35,7 @@ export default function SavedList({ auth }) {
         >
             <Head title="Favorites" />
 
-            <section className="w-full mx-auto my-4">
+            <section className="bg-white h-full rounded m-4 rounded-xl ">
                 {bookmarks.length === 0 ? (
                     <div className="max-w-7xl mx-auto bg-white shadow-lg flex justify-center h-screen items-center shadow-sm sm:rounded-lg sticky">
                         <FaBookmark size={50} className="text-gray-500" />
@@ -44,8 +44,8 @@ export default function SavedList({ auth }) {
                     </div>
 
                 ) : (
-                    <div className="w-full bg-white shadow-lg flex">
-                        <div className="rounded w-40 h-full bg-gray-200 flex items-center justify-center">
+                    <div className="bg-white h-full rounded m-4">
+                        <div className="rounded h-full items-center justify-center">
                             <img
                                 className="rounded w-36 h-46"
                                 src="https://via.placeholder.com/150" // Placeholder image

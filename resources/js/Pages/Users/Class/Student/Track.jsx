@@ -22,7 +22,7 @@ const Track = () => {
     };
 
     return (
-        <div className={`h-screen w-full border-none rounded-lg shadow-lg p-4 transition-height duration-300 ease-in-out ${expanded ? 'h-auto' : 'h-32'} bg-[#C2E0FF]`}>
+        <div className={`h-screen w-full border-none rounded-lg shadow-lg p-4 transition-height duration-300 ease-in-out ${expanded ? 'h-auto' : 'h-32'} bg-gray-100`}>
             <div className="flex items-center justify-between">
                 <div>
                     <div className="text-lg font-bold">The Archival Alchemist</div>

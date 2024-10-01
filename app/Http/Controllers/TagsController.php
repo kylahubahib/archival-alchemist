@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Log;
 
 class TagsController extends Controller
 {
+    
     /**
      * Display a listing of the resource.
      */
