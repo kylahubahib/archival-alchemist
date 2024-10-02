@@ -20,7 +20,7 @@ export default {
             },
             colors: {
                 customlightBlue: '#e9f1ff',
-                customBlue: '#294996' 
+                customBlue: '#294996'
             },
             minHeight: {
                 'custom': 'calc(100vh - 12rem)',
@@ -32,11 +32,10 @@ export default {
                 '480': '480px'
             }
         },
+
     },
-
-    darkMode: 'class', // NextUI uses class-based dark mode
-
+// david
     plugins: [forms, nextui()],
 
-    
+
 };

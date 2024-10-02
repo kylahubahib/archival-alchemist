@@ -10,15 +10,17 @@ use Illuminate\Validation\Rules;
 use Inertia\Inertia;
 use Inertia\Response;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class AdvancedTagsController extends Controller
 {
+    
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        $tags = Tags::paginate(100);
+        $tags = Tags::paginate(10);
 
         return Inertia::render('SuperAdmin/Advanced/Tags/Tags', [
             'tags' => $tags,
@@ -43,7 +45,7 @@ class AdvancedTagsController extends Controller
         ]);
 
         Tags::create([
-            'tags_name' => $request->tag_name
+            'tag_name' => $request->tag_name
         ]);
 
         return redirect(route('manage-tags.index'));
@@ -78,8 +80,8 @@ class AdvancedTagsController extends Controller
      */
     public function update(Request $request, $id): RedirectResponse
     {
-        //\Log::info('Update request received for tags ID: ' . $id);
-        //\Log::info('Update request data: ', $request->all());
+        Log::info('Update request received for tags ID: ' . $id);
+        Log::info('Update request data: ', $request->all());
 
         $request->validate([
             'tags_name' => 'required|string'

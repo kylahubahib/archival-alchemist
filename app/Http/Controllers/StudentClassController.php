@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\JsonResponse;
 use App\Models\ClassModel;
 use App\Models\ManuscriptProject;
+use App\Models\ManuscriptTag;
 use App\Models\Tags;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
@@ -12,66 +13,100 @@ use Illuminate\Support\Facades\Log;
 
 class StudentClassController extends Controller
 {
-public function storeManuscriptProject(Request $request)
-{
-    Log::info('Request Data:', $request->all());
-
-    try {
-        $validatedData = $request->validate([
-            'man_doc_title' => 'required|string|max:255',
-            'man_doc_adviser' => 'required|string|max:255',
-            'man_doc_author' => 'required|array',
-            'man_doc_author.*' => 'required|string|max:255',
-
-            'tags_id' => 'nullable|array',
-            'tags_id.*' => 'exists:tags,id',
-            'man_doc_content' => 'required|file|mimes:pdf,docx|max:10240',
+    public function checkTitle(Request $request)
+    {
+        // Validate the title parameter
+        $request->validate([
+            'title' => 'required|string|max:255',
         ]);
 
-        $filePath = $request->file('man_doc_content')->store('capstone_files');
+        // Check if the title already exists
+        $exists = ManuscriptProject::where('man_doc_title', $request->input('title'))->exists();
 
-        $author = $request->input('man_doc_author');
-        $authorsString = implode(', ', $author);
-
-        $manuscriptProject = ManuscriptProject::create([
-            'man_doc_title' => $validatedData['man_doc_title'],
-            'man_doc_adviser' => $validatedData['man_doc_adviser'],
-            'man_doc_author' => $authorsString,
-            'man_doc_content' => $filePath,
-            'class_id' => $validatedData['class_id'] ?? null,
-            'man_doc_author' => $authorsString,
-        ]);
-
-        if (isset($validatedData['tags_id'])) {
-            $manuscriptProject->tags()->sync($validatedData['tags_id']);
-        }
-
-        return response()->json(['message' => 'Manuscript project uploaded successfully.'], 200);
-
-    } catch (\Exception $e) {
-        return response()->json(['message' => 'Error uploading manuscript project.', 'errors' => $e->getMessage()], 422);
+        return response()->json(['exists' => $exists]);
     }
-}
 
+    public function storeManuscriptProject(Request $request)
+    {
+        Log::info('Request Data:', $request->all());
+        try {
+            $validatedData = $request->validate([
+                'man_doc_title' => 'required|string|max:255',
+                'man_doc_adviser' => 'required|string|max:255',
+                'man_doc_author' => 'required|array',
+                'man_doc_author.*' => 'required|string|max:255',
+                'tags_name' => 'nullable|array', // Change this line to match your input key
+                'tags_name.*' => 'string|max:255', // Validate individual tag names
+                'man_doc_content' => 'required|file|mimes:pdf,docx|max:10240',
+            ]);
 
-// public function storeStudentClass(Request $request)
-//     {
-//         // Validate the incoming request
-//         $request->validate([
-//             'stud_id' => 'required|integer',
-//             'class_code' => 'required|string',
-//             'class_name' => 'required|string',
-//         ]);
+            // Use the correct key to get tags from the request
+            $tags = $request->get('tags_name', []); // Change from 'tags' to 'tags_name'
 
-//         // Insert into the class table
-//         ClassModel::create([
-//             'stud_id' => $request->stud_id,
-//             'class_code' => $request->class_code,
-//             'class_name' => $request->class_name,
-//         ]);
+            // Store the file
+            $filePath = $request->file('man_doc_content')->store('capstone_files');
 
-//         return response()->json(['success' => true]);
-//     }
+            // Convert author array to string
+            $author = $request->input('man_doc_author');
+            $authorsString = implode(', ', $author);
+
+            // Create the manuscript project
+            $manuscriptProject = ManuscriptProject::create([
+                'man_doc_title' => $validatedData['man_doc_title'],
+                'man_doc_adviser' => $validatedData['man_doc_adviser'],
+                'man_doc_author' => $authorsString,
+                'man_doc_content' => $filePath,
+                'class_id' => $validatedData['class_id'] ?? null,
+            ]);
+
+            Log::info('Manuscript Project Created:', ['id' => $manuscriptProject->id]);
+
+            // Handle tags and store them in the ManuscriptTag table
+            $tagIds = []; // Array to hold the IDs of the tags to be associated with the manuscript
+
+            if (!empty($tags) && is_array($tags)) { // Ensure $tags is an array and not empty
+                foreach ($tags as $tagName) {
+                    // Convert tag to lowercase for consistency and trim any whitespace
+                    $tagName = strtolower(trim($tagName));
+
+                    // Find the tag by its name
+                    $tag = Tags::where('tags_name', $tagName)->first();
+
+                    // If the tag does not exist, create a new record and get its ID
+                    if (!$tag) {
+                        $tag = Tags::create(['tags_name' => $tagName]);
+                        Log::info("Tag '$tagName' created with ID: " . $tag->id);
+                    } else {
+                        Log::info("Tag '$tagName' found with ID: " . $tag->id);
+                    }
+
+                    // Store the tag ID for the ManuscriptTag table
+                    $tagIds[] = $tag->id;
+                }
+            } else {
+                Log::info('No tags provided or tags is not an array.');
+            }
+
+            // Insert the tags into the ManuscriptTag table
+            foreach ($tagIds as $tagId) {
+                ManuscriptTag::create([
+                    'manuscript_id' => $manuscriptProject->id, // The manuscript ID from the saved manuscript
+                    'tag_id' => $tagId, // The tag ID from the tags table
+                ]);
+                Log::info("Inserted into ManuscriptTag:", [
+                    'manuscript_id' => $manuscriptProject->id,
+                    'tag_id' => $tagId,
+                ]);
+            }
+
+            return response()->json(['message' => 'Manuscript project uploaded successfully.'], 200);
+
+        } catch (\Exception $e) {
+            Log::error('Error uploading manuscript project:', ['error' => $e->getMessage()]);
+            return response()->json(['message' => 'Error uploading manuscript project.', 'errors' => $e->getMessage()], 422);
+        }
+    }
+
 
 
 
@@ -198,20 +233,40 @@ public function storeStudentClass(Request $request)
 
 
 
-public function getApprovedManuscripts(): JsonResponse
+// public function getApprovedManuscripts(): JsonResponse
+// {
+//     try {
+//         $manuscripts = ManuscriptProject::where('man_doc_status', 'Y')->get()->unique('id');
+
+//         if ($manuscripts->isNotEmpty()) {
+//             return response()->json($manuscripts);
+//         } else {
+//             return response()->json(['message' => 'No approved manuscripts found.'], 404);
+//         }
+//     } catch (\Exception $e) {
+//         return response()->json(['error' => 'An error occurred while fetching manuscripts.', 'details' => $e->getMessage()], 500);
+//     }
+// }
+
+public function getApprovedManuscripts()
 {
     try {
-        $manuscripts = ManuscriptProject::where('man_doc_status', 'Y')->get()->unique('id');
+        // Fetch manuscripts with 'Y' status and their associated tags
+        $manuscripts = ManuscriptProject::with('tags') // Eager load the tags relationship
+            ->where('man_doc_status', 'Y')
+            ->get();
 
-        if ($manuscripts->isNotEmpty()) {
-            return response()->json($manuscripts);
-        } else {
-            return response()->json(['message' => 'No approved manuscripts found.'], 404);
-        }
+        // Log the fetched manuscripts for debugging
+        logger()->info('Fetched Manuscripts with Tags:', $manuscripts->toArray());
+
+        return response()->json($manuscripts, 200);
     } catch (\Exception $e) {
-        return response()->json(['error' => 'An error occurred while fetching manuscripts.', 'details' => $e->getMessage()], 500);
+        return response()->json(['message' => 'Error fetching manuscripts.', 'errors' => $e->getMessage()], 500);
     }
 }
+
+
+
 
 
 

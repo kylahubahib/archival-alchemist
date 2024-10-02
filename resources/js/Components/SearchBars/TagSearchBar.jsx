@@ -31,7 +31,7 @@ const TagSearchBar = ({ onSearchResults }) => {
                 placeholder="Search..."
                 value={query}
                 onChange={handleChange}
-                className="w-96 px-4 py-2 rounded-l-full focus:outline-none flex-1"
+                className="w-25 px-4 py-2 rounded-l-full focus:outline-none" // Adjust width here
             />
             <button
                 type="submit"

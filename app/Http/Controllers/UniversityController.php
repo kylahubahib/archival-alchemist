@@ -21,7 +21,7 @@ class UniversityController extends Controller
 
         \Log::info('University Controller');
         //\Log::info('Universities ', $uniBranches->toArray());
-        
+
         return Inertia::render('SuperAdmin/Advanced/Universities/Universities', [
             'universities' => $universities,
             'uniBranches' => $uniBranches

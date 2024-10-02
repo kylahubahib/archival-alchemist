@@ -56,7 +56,7 @@ export default function StudentClass({ auth }) {
                                 axios.post('/store-student-class', { class_code: classCode, class_name, ins_id })
                                     .then(() => {
                                         setJoinedClass(true);
-                                        setActiveTab('upload');  // Set active tab to 'upload'
+                                        setActiveTab('track');  // Set active tab to 'upload'
                                         closeModal();
                                     })
                                     .catch(() => {
@@ -107,12 +107,12 @@ export default function StudentClass({ auth }) {
         >
             <Head title="Class for Student" />
 
-            <div className="flex-grow py-8 h-screen"> {/* Use flex-grow to take available space */}
+            <div className="bg-white rounded m-4 h-screen rounded-xl "> {/* Use flex-grow to take available space */}
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
                     <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                         <div className="p-6 text-gray-900 h-full"> {/* Adjust height to flex container */}
                             {!joinedClass ? (
-                                <div className="flex flex-col items-center justify-center h-screen">
+                                <div className="flex flex-col items-center justify-center m-20">
                                     <BookOpenIcon className="h-32 w-32 text-blue-500" />
                                     <button
                                         onClick={openModal}
@@ -122,7 +122,7 @@ export default function StudentClass({ auth }) {
                                     </button>
                                 </div>
                             ) : (
-                                <div className="flex flex-col h-full">
+                                <div className="flex flex-col h-full w-full">
                                     <div className="flex justify-between items-center">
                                         <div className="flex">
                                             <button
@@ -153,10 +153,11 @@ export default function StudentClass({ auth }) {
                                             </button>
                                         </div>
                                     </div>
-                                    <div className="border-b border-gray-300 w-full -mx-6"></div> {/* Gray Divider Below Buttons */}
+                                    <div className="border-b border-gray-300 w-full"></div> {/* Gray Divider Below Buttons */}
 
                                     {/* Section with background color */}
-                                    <div className="bg-gray-100 flex-grow -mx-6 px-6 rounded-b-lg"> {/* Ensure this section grows */}
+
+                                    <div className="bg-gray-100 flex-grow rounded-b-lg w-full"> {/* Ensure this section grows */}
                                         {/* Conditionally Render Active Tab Component */}
                                         <div className="mt-6">
                                             {activeTab === 'upload' && <UploadCapstone />}

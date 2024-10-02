@@ -1,6 +1,6 @@
-import { BsPersonFill } from "react-icons/bs"; 
-import { BsPersonFillExclamation } from "react-icons/bs"; 
-import { BsPersonFillCheck } from "react-icons/bs";  
+import { BsPersonFill } from "react-icons/bs";
+import { BsPersonFillExclamation } from "react-icons/bs";
+import { BsPersonFillCheck } from "react-icons/bs";
 import AdminLayout from '@/Layouts/AdminLayout';
 import { Head } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
@@ -16,7 +16,7 @@ export default function UserReports({ auth, userReports, pendingCount, solvedCou
     const [isModalOpen, setIsModalOpen] = useState(false);
     const[selectedData, setSelectedData] = useState([]);
 
-    
+
     useEffect(() => {
         fetchFilteredReports();
     }, [filteredStatus, filteredDate, filteredLocation]);
@@ -45,9 +45,9 @@ export default function UserReports({ auth, userReports, pendingCount, solvedCou
                     report_location: filteredLocation,
                 },
             });
-            
-            //console.log('Response data:', response.data); 
-            setFilteredData(response.data); 
+
+            //console.log('Response data:', response.data);
+            setFilteredData(response.data);
 
         } catch (error) {
             console.error("Error fetching filtered reports:", error);
@@ -61,14 +61,14 @@ export default function UserReports({ auth, userReports, pendingCount, solvedCou
     }
 
 
-   
-    return ( 
-        
+
+    return (
+
         <AdminLayout
              user={auth.user}
             header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">User Reports</h2>}
         >
-        
+
             <Head title="User Reports" />
 
             <div>
@@ -98,7 +98,7 @@ export default function UserReports({ auth, userReports, pendingCount, solvedCou
                                     <BsPersonFillCheck size={40} color="#294996" />
                                 </div>
                         </div>
-                        
+
                         <button onClick={openReportModal}>open report modal</button>
                     </div>
 
@@ -118,7 +118,7 @@ export default function UserReports({ auth, userReports, pendingCount, solvedCou
                                     ))}
                                     </select>
                                 </div>
-                                
+
                                 <div className="flex flex-row space-x-4">
                                     <div className="flex flex-row items-center space-x-2">
                                         <label className="text-gray-600">Sort by Date:</label>
@@ -198,9 +198,9 @@ export default function UserReports({ auth, userReports, pendingCount, solvedCou
                             </table>
                             </div>
 
-                          
 
-                               
+
+
                         </div>
                     </div>
                 </div>

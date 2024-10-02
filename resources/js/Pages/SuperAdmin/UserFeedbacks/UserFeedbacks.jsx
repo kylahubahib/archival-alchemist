@@ -1,5 +1,5 @@
-import { MdMessage } from "react-icons/md"; 
-import { MdFeedback } from "react-icons/md"; 
+import { MdMessage } from "react-icons/md";
+import { MdFeedback } from "react-icons/md";
 import AdminLayout from '@/Layouts/AdminLayout';
 import { Head, Link } from '@inertiajs/react';
 import Pagination from "@/Components/Pagination";
@@ -26,14 +26,14 @@ export default function UserFeedbacks({ auth, feedbacks, feedbackCount, averageR
                     date_value: filteredDate,
                 },
             });
-            setFilteredData(response.data); 
+            setFilteredData(response.data);
         } catch (error) {
             console.error("Error fetching filtered reports:", error);
         }
     };
 
     return (
-        <AdminLayout 
+        <AdminLayout
             user={auth.user}
             header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">User Feedbacks</h2>}
         >
@@ -44,7 +44,7 @@ export default function UserFeedbacks({ auth, feedbacks, feedbackCount, averageR
                 </div>
 
                 <div className="flex flex-row space-x-4">
-                    
+
                     <div className="w-1/3 space-y-4">
                         <div className="bg-white p-4 border rounded-lg shadow">
                             <div className="border-b-2 pb-2 border-yellow-600 text-customBlue font-bold">Total Feedbacks Received</div>
@@ -53,7 +53,7 @@ export default function UserFeedbacks({ auth, feedbacks, feedbackCount, averageR
                                 <MdFeedback size={40} color="#294996" />
                             </div>
                         </div>
-                        
+
                         <div className="bg-white p-4 border rounded-lg shadow">
                             <div className="border-b-2 pb-2 border-yellow-600 text-customBlue font-bold">Average Ratings Received</div>
                             <div className="flex justify-between pt-2">
@@ -67,15 +67,15 @@ export default function UserFeedbacks({ auth, feedbacks, feedbackCount, averageR
                             {Object.entries(ratingCounts).map(([rating, count]) => (
                                 <li key={rating} className="flex items-center">
                                 <span className=" w-16">{`${rating} star`} </span>
-                                <Progress 
-                                    aria-label="Loading..." 
-                                    size="lg" 
-                                    value={count} 
-                                    maxValue={AllRatingCount}  
+                                <Progress
+                                    aria-label="Loading..."
+                                    size="lg"
+                                    value={count}
+                                    maxValue={AllRatingCount}
                                     classNames={{
-                                        base: "max-w-md rounded-md overflow-hidden m-1",  
-                                        track: "bg-white rounded-md",  
-                                        indicator: "bg-yellow-300 rounded-sm",  
+                                        base: "max-w-md rounded-md overflow-hidden m-1",
+                                        track: "bg-white rounded-md",
+                                        indicator: "bg-yellow-300 rounded-sm",
                                         label: "tracking-wider text-sm",
                                     }}
                                 />
@@ -90,9 +90,9 @@ export default function UserFeedbacks({ auth, feedbacks, feedbackCount, averageR
                     <div className="w-2/3 bg-white overflow-hidden shadow-sm sm:rounded-lg">
                         <div className="px-5">
                             <div className="flex justify-between mt-4 space-x-4">
-                                <Select 
-                                    label="Date Filter" 
-                                    className="max-w-xs" 
+                                <Select
+                                    label="Date Filter"
+                                    className="max-w-xs"
                                     variant={'bordered'}
                                     selectedKeys={new Set([filteredDate])}
                                     onChange={(e) => setFilteredDate(e.target.value)}
@@ -102,9 +102,9 @@ export default function UserFeedbacks({ auth, feedbacks, feedbackCount, averageR
                                     ))}
                                 </Select>
 
-                                <Select 
-                                    label="Rating Filter" 
-                                    className="max-w-xs" 
+                                <Select
+                                    label="Rating Filter"
+                                    className="max-w-xs"
                                     variant={'bordered'}
                                     selectedKeys={new Set([filteredRating])}
                                     onChange={(e) => setFilteredRating(e.target.value)}

@@ -17,7 +17,7 @@ use App\Http\Controllers\DepartmentsController;
 use App\Http\Controllers\CoursesController;
 use App\Http\Controllers\SectionsController;
 use App\Http\Controllers\PaymentSessionController;
-use App\Http\Controllers\UserReportController;
+
 
 
 use App\Http\Middleware\CheckUserTypeMiddleware;
@@ -66,6 +66,14 @@ Route::get('/teacherclass', function () {
 })->middleware(['auth', 'verified', 'user-type:teacher'])->name('teacherclass');
 
 
+Route::get('/authors', function () {
+    return Inertia::render('Users/Authors');
+})->middleware(['auth', 'verified', 'user-type:student,teacher'])->name('authors');
+
+Route::get('/tags', function () {
+    return Inertia::render('Users/Tags');
+})->middleware(['auth', 'verified', 'user-type:student,teacher'])->name('tags');
+
 Route::get('/savedlist', function () {
     return Inertia::render('Users/SavedList');
 })->middleware(['auth', 'verified', 'user-type:student,teacher'])->name('savedlist');
@@ -73,7 +81,6 @@ Route::get('/savedlist', function () {
 Route::get('/inbox', function () {
     return Inertia::render('Users/Inbox');
 })->middleware(['auth', 'verified', 'user-type:student,teacher'])->name('inbox');
-
 
 Route::get('/authors', function () {
     return Inertia::render('Users/Authors');
@@ -84,8 +91,7 @@ Route::get('/tags', function () {
 })->middleware(['auth', 'verified', 'user-type:student,teacher'])->name('tags');
 
 
-
-Route::post('/feedback', [UserFeedbacksController::class, 'store'])->name('user-feedbacks.store');
+//Route::post('/feedback', [UserFeedbacksController::class, 'store'])->name('user-feedbacks.store');
 
 Route::post('/report', [UserReportController::class, 'store'])->name('user-reports.store');
 
@@ -108,6 +114,18 @@ Route::middleware(['auth', 'verified', 'user-type:superadmin'])->group(function 
     Route::get('/subscription-billing', function () {
         return Inertia::render('SuperAdmin/SubscriptionBilling');})->name('subscription-billing');
 
+    // Route::get('/user-feedbacks', function () {
+    //     return Inertia::render('SuperAdmin/UserFeedbacks/UserFeedbacks');})->name('user-feedbacks');
+
+    Route::get('/user-reports', function () {
+        return Inertia::render('SuperAdmin/UserReports/UserReports');})->name('user-reports');
+
+    // Route::get('/subscription-plans', function () {
+    //      return Inertia::render('SuperAdmin/SubscriptionPlans/SubscriptionPlans');})->name('subscription-plans');
+
+    // Route::get('/faq', function () {
+    //     return Inertia::render('SuperAdmin/FrequentlyAskedQuestions/Faq');})->name('faq');
+
     ///ADVANCED ROUTES
     ///Decided to create routes for the buttons in advanced page to simplify or easily create the crud functionality
 
@@ -117,15 +135,19 @@ Route::middleware(['auth', 'verified', 'user-type:superadmin'])->group(function 
     Route::get('/advanced/forum', function () {
         return Inertia::render('SuperAdmin/Advanced/Forum/Forum');})->name('advanced-forum');
 
+    // Route::get('/advanced/custom-messages', function () {
+    //     return Inertia::render('SuperAdmin/Advanced/CustomMessages/CustomMessages');})->name('advanced-custom-messages');
     Route::resource('advanced/custom-messages', CustomMessagesController::class)->names('manage-custom-messages');
 
+    // Route::get('/advanced/universities', function () {
+    //     return Inertia::render('SuperAdmin/Advanced/Universities/Universities');})->name('universities');
     Route::resource('advanced/universities', UniversityController::class)->names('manage-universities');
 
     Route::resource('advanced/tags', AdvancedTagsController::class)->names('manage-tags');
 
     ///END ADVANCED ROUTES
 
-    Route::resource('manage-terms-and-conditions', TermsAndConditionController::class)->names('manage-terms-and-conditions');
+    Route::resource('manage-terms-and-conditions', TermsAndConditionController::class);
 
     Route::resource('manage-faqs', FAQController::class);
 
@@ -225,7 +247,7 @@ Route::get('api/universities-branches', [UniversityController::class, 'getUniver
 //manuscript project
 Route::middleware(['auth'])->group(function () {
     // Route for storing a new manuscript project
-    Route::post('/capstone/upload', [StudentClassController::class, 'storeManuscriptProject'])->name('api.capstone.upload');
+    Route::post('/api/capstone/upload', [StudentClassController::class, 'storeManuscriptProject'])->name('api.capstone.upload');
 
     // Route for tracking a student's activity
     Route::post('/student/track-activity', [StudentClassController::class, 'trackActivity'])
@@ -235,6 +257,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/student/approve-project', [StudentClassController::class, 'approveProject'])
         ->name('student.approveProject.store');
     });
+    Route::post('/api/check-title', [StudentClassController::class, 'checkTitle'])->name('capstone.checkTitle');
 
 //Add a route for fetching tag suggestions:
     // In api.php or web.php
@@ -244,6 +267,10 @@ Route::get('tags/existing', [TagController::class, 'existingTags']);
 
 Route::post('/api/tags/store', [TagController::class, 'storeTags']);
 Route::post('/tags/get-tag-ids', [TagController::class, 'getTagIds']);
+Route::get('/api/tags/get-tags', [TagController::class, 'index']);
+
+
+Route::get('/api/tags', [TagController::class, 'index']);
 
 
 //route for checking the class code
@@ -262,6 +289,7 @@ Route::get('/api/my-approved-manuscripts', [StudentClassController::class, 'myAp
 
 //check user in csv file
 Route::post('/check-user-in-spreadsheet', [CheckSubscriptionController::class, 'checkUserInSpreadsheet']);
+
 
 //Search and filter
 Route::get('/search', [SearchController::class, 'search']);
