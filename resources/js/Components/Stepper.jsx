@@ -2,7 +2,7 @@ import React from 'react';
 
 export default function Stepper({ steps, currentStep }) {
     return (
-        <ul className="flex items-center w-full">
+        <ul className="flex items-center w-full ml-10">
             {steps.map((step, index) => (
                 <li key={index} className={`flex w-full items-center ${index < steps.length - 1 ? 
                 'after:content-[""] after:w-full after:h-1 after:border-4 after:inline-block' : ''} ${index < currentStep - 1 ? 
