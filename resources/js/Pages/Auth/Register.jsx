@@ -82,7 +82,7 @@ export default function Register({ prevStep, handleChange, values, handleSubmit,
                             Selected: {isSelected ? "true" : "false"}
                         </p> */}
                         
-                        <PrimaryButton className="ms-4" disabled={true} type="submit">
+                        <PrimaryButton className="ms-4" disabled={!isSelected} type="submit">
                             Register
                         </PrimaryButton>
                     </div>
@@ -91,7 +91,7 @@ export default function Register({ prevStep, handleChange, values, handleSubmit,
                     <Checkbox isSelected={isSelected} onValueChange={setIsSelected}>
                         I agree to the 
                     </Checkbox>
-                    <a className="text-blue-500">terms and condition</a>
+                    <a className="text-blue-500 cursor-pointer">terms and condition</a>
                 </div>
             </form>
         </>
