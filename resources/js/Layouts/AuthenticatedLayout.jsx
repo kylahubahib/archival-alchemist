@@ -12,6 +12,7 @@ import Sidebar, { SidebarItem, SidebarSeparator } from '@/Components/Sidebar';
 import SearchBar from '@/Components/SearchBar';
 import { FaCrown, FaEnvelope } from "react-icons/fa";
 import GiveFeedbackModal from "@/Components/GiveFeedbackModal";
+import ToastNotification from "@/Components/Toast";
 
 export default function Authenticated({ user, children, newProfile = null }) {
     const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
@@ -159,6 +160,7 @@ export default function Authenticated({ user, children, newProfile = null }) {
                 
                 <div className="flex-1">
                 <main>{children}</main>
+                <ToastNotification/>
                 </div>
             </div>
         </div>

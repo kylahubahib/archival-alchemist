@@ -159,6 +159,8 @@ export default function Forum({ auth }) {
                 >
                   Title Suggestions
                 </Button>
+
+                
               </div>
 
               {/*Forum Posts*/}
