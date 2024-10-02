@@ -107,10 +107,10 @@ export default function StudentClass({ auth }) {
         >
             <Head title="Class for Student" />
 
-            <div className="bg-white rounded m-4 h-screen rounded-xl "> {/* Use flex-grow to take available space */}
+            <div className="bg-white rounded m-4 min-h-screen"> {/* Use flex-grow to take available space */}
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
                     <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                        <div className="p-6 text-gray-900 h-full"> {/* Adjust height to flex container */}
+                        <div className="p-6 text-gray-900 min-h-screen"> {/* Adjust height to flex container */}
                             {!joinedClass ? (
                                 <div className="flex flex-col items-center justify-center m-20">
                                     <BookOpenIcon className="h-32 w-32 text-blue-500" />

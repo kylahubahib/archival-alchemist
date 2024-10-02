@@ -37,7 +37,8 @@ export default function Authenticated({ user, children, newProfile = null }) {
     });
 
     return (
-        <div className="min-h-screen bg-customlightBlue flex z-10">
+        <div className="bg-customlightBlue min-h-screen flex flex-col">
+         <div className="flex-1 flex">
             {/* Sidebar */}
             <Sidebar color="white" borderRadius="xl" margin="3">
                 <SidebarItem icon={<BiBookBookmark size={20} />} text="Favorites" to="/savedlist" />
@@ -59,7 +60,7 @@ export default function Authenticated({ user, children, newProfile = null }) {
 
             <GiveFeedbackModal isOpen={isModalOpen} onClose={closeModal} />
 
-            <div className="flex-1">
+            <div className="flex-1 flex flex-col">
                 <nav className="bg-customBlue border-b rounded-xl m-3 sticky top-3">
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                         <div className="flex justify-between h-16">
@@ -155,9 +156,12 @@ export default function Authenticated({ user, children, newProfile = null }) {
                 </nav>
 
                 {/* Main content */}
-
+                
+                <div className="flex-1">
                 <main>{children}</main>
+                </div>
             </div>
         </div>
+    </div>
     );
 }

@@ -4,6 +4,7 @@ use App\Http\Controllers\StudentClassController; // Add this line
 use App\Models\Student;
 use App\Http\Controllers\TagController;
 
+use App\Http\Controllers\UserReportController;
 use App\Http\Controllers\AdvancedTagsController;
 use App\Http\Controllers\TermsAndConditionController;
 use App\Http\Controllers\SubscriptionPlanController;
@@ -91,8 +92,7 @@ Route::get('/tags', function () {
 })->middleware(['auth', 'verified', 'user-type:student,teacher'])->name('tags');
 
 
-//Route::post('/feedback', [UserFeedbacksController::class, 'store'])->name('user-feedbacks.store');
-
+Route::post('/feedback', [UserFeedbacksController::class, 'store'])->name('user-feedbacks.store');
 Route::post('/report', [UserReportController::class, 'store'])->name('user-reports.store');
 
 Route::get('/report-types', [UserReportController::class, 'reportTypeList']);

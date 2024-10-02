@@ -37,7 +37,7 @@ export default function SavedList({ auth }) {
 
             <section className="bg-white h-full rounded m-4 rounded-xl ">
                 {bookmarks.length === 0 ? (
-                    <div className="max-w-7xl mx-auto bg-white shadow-lg flex justify-center h-screen items-center shadow-sm sm:rounded-lg sticky">
+                    <div className="max-w-7xl mx-auto bg-white shadow-lg flex justify-center h-screen items-center shadow-sm sm:rounded-lg">
                         <FaBookmark size={50} className="text-gray-500" />
                         <p className="text-gray-500 mt-2">Favorite Manuscript Capstone will be added here.</p>
 

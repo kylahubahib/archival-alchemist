@@ -72,9 +72,9 @@ export default function Library({ auth }) {
         >
             <Head title="Library" />
 
-            <div className="bg-white m-4 h-screen rounded-xl ">
-                <div className="mx-auto sm:px-6 lg:px-8 h-screen  bg-gray-100 pt-6">
-                    <div className="flex flex-col h-screen ">
+            <div className="bg-white m-4 rounded-xl ">
+                <div className="mx-auto sm:px-6 lg:px-8 min-h-screen  bg-gray-100 pt-6">
+                    <div className="flex flex-col min-h-screen ">
                         <div className="flex justify-between items-center mb-4">
                             <div className="flex">
                                 <button

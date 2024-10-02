@@ -33,6 +33,13 @@ class TermsAndConditionController extends Controller
         ]);
     }
 
+    public function getTermsAndConditions()
+    {
+        $terms = CustomContent::where('content_type', 'terms and conditions');
+
+        return response()->json($terms);
+    }
+
     /**
      * Show the form for creating a new resource.
      */
