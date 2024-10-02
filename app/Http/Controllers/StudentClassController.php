@@ -1,11 +1,14 @@
 <?php
 
 namespace App\Http\Controllers;
+
+use App\Models\Author;
 use Illuminate\Http\JsonResponse;
 use App\Models\ClassModel;
 use App\Models\ManuscriptProject;
 use App\Models\ManuscriptTag;
 use App\Models\Tags;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -33,8 +36,8 @@ class StudentClassController extends Controller
             $validatedData = $request->validate([
                 'man_doc_title' => 'required|string|max:255',
                 'man_doc_adviser' => 'required|string|max:255',
-                'man_doc_author' => 'required|array',
-                'man_doc_author.*' => 'required|string|max:255',
+                'man_doc_author' => 'nullable|array',
+                'man_doc_author.*' => '.string|max:255',
                 'tags_name' => 'nullable|array', // Change this line to match your input key
                 'tags_name.*' => 'string|max:255', // Validate individual tag names
                 'man_doc_content' => 'required|file|mimes:pdf,docx|max:10240',
@@ -43,18 +46,21 @@ class StudentClassController extends Controller
             // Use the correct key to get tags from the request
             $tags = $request->get('tags_name', []); // Change from 'tags' to 'tags_name'
 
+            // Use the correct key to get tags from the request
+            $users = $request->get('name', []); // Change from 'tags' to 'tags_name'
+
             // Store the file
             $filePath = $request->file('man_doc_content')->store('capstone_files');
 
             // Convert author array to string
-            $author = $request->input('man_doc_author');
-            $authorsString = implode(', ', $author);
+            // $author = $request->input('man_doc_author');
+            // $authorsString = implode(', ', $author);
 
             // Create the manuscript project
             $manuscriptProject = ManuscriptProject::create([
                 'man_doc_title' => $validatedData['man_doc_title'],
                 'man_doc_adviser' => $validatedData['man_doc_adviser'],
-                'man_doc_author' => $authorsString,
+                // 'man_doc_author' => $authorsString,
                 'man_doc_content' => $filePath,
                 'class_id' => $validatedData['class_id'] ?? null,
             ]);
@@ -98,6 +104,45 @@ class StudentClassController extends Controller
                     'tag_id' => $tagId,
                 ]);
             }
+
+
+
+                        // Handle users and store them in the Author table
+                        $userIds = []; // Array to hold the IDs of the users to be associated with the manuscript
+
+                        if (!empty($users) && is_array($users)) { // Ensure $users is an array and not empty
+                            foreach ($users as $userName) {
+                                // Convert name to lowercase for consistency and trim any whitespace
+                                $userName = strtolower(trim($userName));
+
+                                // Find the users by its name
+                                $user = User::where('name', $userName)->first();
+
+                                // If the users does not exist, create a new record and get its ID
+                                if (!$user) {
+                                    return response()->json(['message' => 'User does not exist.', 'errors'], 422);
+                                } else {
+                                    // $author = User::create(['name' => $userName]);
+                                    Log::info("Author '$userName' found with ID: " . $user->id);
+                                    // Store the Users ID for the Authors table
+                                    $userIds[] = $user->id;
+                                }
+                            }
+                        } else {
+                            Log::info('No users provided or users is not an array.');
+                        }
+
+                        // Insert the users into the author table
+                        foreach ($userIds as $userId) {
+                            Author::create([
+                                'man_doc_id' => $manuscriptProject->id, // The manuscript ID from the saved manuscript
+                                'user_id' => $userId, // The tag ID from the tags table
+                            ]);
+                            Log::info("Inserted into Authors Table:", [
+                                'man_doc_id' => $manuscriptProject->id,
+                                'user_id' => $userId,
+                            ]);
+                        }
 
             return response()->json(['message' => 'Manuscript project uploaded successfully.'], 200);
 
@@ -148,7 +193,7 @@ public function storeStudentClass(Request $request)
         // Check if the user is already enrolled in the class
         $existingEnrollment = ClassModel::where([
             ['class_code', $request->class_code],
-            ['stud_id', $userId], 
+            ['stud_id', $userId],
         ])->first();
 
         if ($existingEnrollment) {
@@ -229,35 +274,16 @@ public function storeStudentClass(Request $request)
 
 
 
-
-
-
-
-// public function getApprovedManuscripts(): JsonResponse
-// {
-//     try {
-//         $manuscripts = ManuscriptProject::where('man_doc_status', 'Y')->get()->unique('id');
-
-//         if ($manuscripts->isNotEmpty()) {
-//             return response()->json($manuscripts);
-//         } else {
-//             return response()->json(['message' => 'No approved manuscripts found.'], 404);
-//         }
-//     } catch (\Exception $e) {
-//         return response()->json(['error' => 'An error occurred while fetching manuscripts.', 'details' => $e->getMessage()], 500);
-//     }
-// }
-
 public function getApprovedManuscripts()
 {
     try {
-        // Fetch manuscripts with 'Y' status and their associated tags
-        $manuscripts = ManuscriptProject::with('tags') // Eager load the tags relationship
-            ->where('man_doc_status', 'Y')
+        // Fetch manuscripts with 'Y' status, associated tags, and authors
+        $manuscripts = ManuscriptProject::with(['tags', 'authors']) // Eager load both tags and authors relationships
+            ->where('is_publish', '1')
             ->get();
 
         // Log the fetched manuscripts for debugging
-        logger()->info('Fetched Manuscripts with Tags:', $manuscripts->toArray());
+        logger()->info('Fetched Manuscripts with Tags and Authors:', $manuscripts->toArray());
 
         return response()->json($manuscripts, 200);
     } catch (\Exception $e) {
@@ -265,33 +291,42 @@ public function getApprovedManuscripts()
     }
 }
 
+// SELECT *
+// FROM manuscripts mp
+// JOIN author a ON mp.id = a.man_doc_id
+// WHERE mp.man_doc_status = 'Y'
+// AND a.user_id = 31
+// LIMIT 0, 25;
+
+public function myApprovedManuscripts() {
+    $userId = Auth::id(); // Get the ID of the currently signed-in user
+
+    // Fetch approved manuscripts for the currently authenticated user, including tags and authors
+    $manuscripts = ManuscriptProject::with(['tags', 'authors']) // Eager load tags and authors relationships
+        ->join('author', 'manuscripts.id', '=', 'author.man_doc_id')
+        ->where('manuscripts.man_doc_status', 'Y') // Ensure only approved manuscripts are retrieved
+        ->where('author.user_id', $userId) // Filter by the current user
+        ->select('manuscripts.*') // Select fields from manuscripts table
+        ->get();
+
+    return response()->json($manuscripts, 200);
+}
 
 
+public function myfavoriteManuscripts() {
+    $userId = Auth::id(); // Get the ID of the currently signed-in user
 
+    // Fetch approved manuscripts for the currently authenticated user, including tags and authors
+    $manuscripts = ManuscriptProject::with(['tags', 'authors']) // Eager load tags and authors relationships
+        ->join('author', 'manuscripts.id', '=', 'author.man_doc_id')
+        ->where('manuscripts.man_doc_status', 'Y') // Ensure only approved manuscripts are retrieved
+        ->where('author.user_id', $userId) // Filter by the current user
+        ->select('manuscripts.*') // Select fields from manuscripts table
+        ->get();
 
+    return response()->json($manuscripts, 200);
+}
 
-
-public function myApprovedManuscripts(): JsonResponse
-    {
-        try {
-            $userId = Auth::id(); // Get the ID of the currently signed-in user
-
-            // Retrieve approved manuscripts where the user is an author
-            $manuscripts = ManuscriptProject::where('man_doc_status', 'Y')
-                ->whereHas('author', function ($query) use ($userId) {
-                    $query->where('user_id', $userId);
-                })
-                ->get();
-
-            if ($manuscripts->isNotEmpty()) {
-                return response()->json($manuscripts);
-            } else {
-                return response()->json(['message' => 'No approved manuscripts found for the current user.'], 404);
-            }
-        } catch (\Exception $e) {
-            return response()->json(['error' => 'An error occurred while fetching manuscripts.', 'details' => $e->getMessage()], 500);
-        }
-    }
 
 }
 

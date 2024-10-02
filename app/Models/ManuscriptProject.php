@@ -42,11 +42,13 @@ class ManuscriptProject extends Model
     {
         return $this->belongsToMany(Tags::class, 'manuscript_tag', 'manuscript_id', 'tag_id');
     }
-
+// author: This refers to a method in the ManuscriptProject model that defines the relationship to the Author model.
+//  It's not referring to the author table directly; instead, it refers to the relationship method.
     public function authors(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'author', 'man_doc_id', 'user_id');
     }
+
 
 
 }

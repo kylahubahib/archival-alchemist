@@ -27,7 +27,7 @@ const Manuscript = () => {
     );
     useEffect(() => {
         console.log('Fetching manuscripts...');
-        axios.get('/api/approved-manuscripts')
+        axios.get('/api/my-favorite-manuscripts')
         .then(response => {
             console.log('Fetched manuscripts with tags:', response.data);
             const data = response.data;
@@ -86,37 +86,6 @@ const Manuscript = () => {
 
     return (
         <section className="w-full mx-auto my-4">
-            <div className="mb-6 w-full flex items-center gap-4"> {/* Adjusted to use flex and gap */}
-    <div className="flex-grow"> {/* SearchBar will take up the remaining space */}
-        <SearchBar onSearchResults={handleSearchResults} /> {/* Add the search bar */}
-    </div>
-    <div className="w-[200px]"> {/* Set dropdown button width to 50px */}
-        <Dropdown>
-            <DropdownTrigger className="w-full">
-                <Button
-                    variant="bordered"
-                    className="capitalize w-full flex justify-between items-center" // Flex to align text and icon
-                >
-                    {selectedValue} {/* Default value displayed */}
-                    <FaFilter className="mr-2 text-gray-500" /> {/* Filter icon */}
-                </Button>
-            </DropdownTrigger>
-            <DropdownMenu
-                aria-label="Single selection example"
-                variant="flat"
-                disallowEmptySelection
-                selectionMode="single"
-                selectedKeys={selectedKeys}
-                onSelectionChange={setSelectedKeys}
-            >
-                {/* Remove the "Search by" option from the choices */}
-                <DropdownItem key="Title">Title</DropdownItem>
-                <DropdownItem key="Tags">Tags</DropdownItem>
-                <DropdownItem key="Authors">Authors</DropdownItem>
-            </DropdownMenu>
-        </Dropdown>
-    </div>
-</div>
 
 
             {manuscriptsToDisplay.map((manuscript) => (

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Tags;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Log;
@@ -94,6 +95,24 @@ class TagController extends Controller
         $tags = Tags::where('tags_name', 'like', "%{$query}%")->get();
         return response()->json($tags);
     }
+
+
+
+
+        /**
+     * Search for authors based on the query.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function Authorsuggestions(Request $request)
+    {
+        $query = $request->input('query');
+        $users = User::where('name', 'like', "%{$query}%")->get();
+        return response()->json($users);
+    }
+
+
 
     /**
      * Get existing tags.

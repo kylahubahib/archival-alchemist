@@ -269,6 +269,10 @@ Route::get('/api/tags/get-tags', [TagController::class, 'index']);
 Route::get('/api/tags', [TagController::class, 'index']);
 
 
+//Add a route for fetching tag suggestions:
+    // In api.php or web.php
+    Route::get('/api/authors/suggestions', [TagController::class, 'Authorsuggestions']);
+
 //route for checking the class code
 Route::post('/check-class-code', [StudentClassController::class, 'checkClassCode']);
 // routes for storing student in class table
@@ -282,6 +286,8 @@ Route::get('/api/approved-manuscripts', [StudentClassController::class, 'getAppr
 
 
 Route::get('/api/my-approved-manuscripts', [StudentClassController::class, 'myApprovedManuscripts']);
+
+Route::get('/api/my-favorite-manuscripts', [StudentClassController::class, 'myfavoriteManuscripts']);
 
 //check user in csv file
 Route::post('/check-user-in-spreadsheet', [CheckSubscriptionController::class, 'checkUserInSpreadsheet']);
