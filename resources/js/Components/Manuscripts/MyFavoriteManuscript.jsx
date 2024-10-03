@@ -150,7 +150,7 @@ const Manuscript = () => {
                 </div>
 
                 <Tooltip content="Bookmark">
-                    <button className="text-gray-600 hover:text-blue-500">
+                    <button className="text-blue-500 hover:text-gray-600">
                         <FaBookmark size={20} />
                     </button>
                 </Tooltip>
