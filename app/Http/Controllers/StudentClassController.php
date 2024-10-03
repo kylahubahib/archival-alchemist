@@ -312,20 +312,23 @@ public function myApprovedManuscripts() {
     return response()->json($manuscripts, 200);
 }
 
-
-public function myfavoriteManuscripts() {
+public function myfavoriteManuscripts()
+{
     $userId = Auth::id(); // Get the ID of the currently signed-in user
 
     // Fetch approved manuscripts for the currently authenticated user, including tags and authors
     $manuscripts = ManuscriptProject::with(['tags', 'authors']) // Eager load tags and authors relationships
-        ->join('author', 'manuscripts.id', '=', 'author.man_doc_id')
+        ->join('favorites', 'manuscripts.id', '=', 'favorites.man_doc_id')
         ->where('manuscripts.man_doc_status', 'Y') // Ensure only approved manuscripts are retrieved
-        ->where('author.user_id', $userId) // Filter by the current user
+        ->where('favorites.user_id', $userId) // Filter by the current user
         ->select('manuscripts.*') // Select fields from manuscripts table
         ->get();
 
     return response()->json($manuscripts, 200);
 }
+
+
+
 
 
 }

@@ -85,7 +85,7 @@ const Manuscript = () => {
     }
 
     return (
-        <section className="w-full mx-auto my-4">
+        <section className="w-full mx-auto my-4 mt-10 pt-10">
 
 
             {manuscriptsToDisplay.map((manuscript) => (

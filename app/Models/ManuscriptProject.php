@@ -49,6 +49,10 @@ class ManuscriptProject extends Model
         return $this->belongsToMany(User::class, 'author', 'man_doc_id', 'user_id');
     }
 
+    public function favorites()
+    {
+        return $this->hasMany(Favorite::class, 'ma_doc_id');
+    }
 
 
 }
