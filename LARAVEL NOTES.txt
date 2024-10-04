@@ -486,3 +486,35 @@ for managing your database and interacting with relationships, and the framework
 modifying, and handling of data.
 
 You can find the complete set of Eloquent methods in the [official Laravel documentation](https://laravel.com/docs/eloquent).
+
+
+
+
+
+
+
+//How to install laravel-excel
+
+1. Requirements
+PHP: ^7.2\|^8.0 (php -v)
+Laravel: ^5.8 (php artisan --version)
+PhpSpreadsheet: ^1.21 (Will be installed with laravel-excel)
+(To check enabled php extension: php -m)
+(Go to xamp control panel, click explorer, search and open php.ini, search the extensions not on the list and remove the ; at the start and then restart the server)
+PHP extension php_zip enabled
+PHP extension php_xml enabled
+PHP extension php_gd2 enabled
+PHP extension php_iconv enabled
+PHP extension php_simplexml enabled
+PHP extension php_xmlreader enabled
+PHP extension php_zlib enabled
+
+2. If all requirements are met, proceed to installation:
+composer require maatwebsite/excel
+
+3. Run this command to create the excel.php in the config folder:
+php artisan vendor:publish --provider="Maatwebsite\Excel\ExcelServiceProvider" --tag=config
+
+
+    
+//End How to install laravel-excel

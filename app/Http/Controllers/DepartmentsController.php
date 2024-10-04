@@ -28,7 +28,7 @@ class DepartmentsController extends Controller
         // Get the authenticated user
         $user = Auth::user();
 
-        // Get the user's institution admin record
+        // Get the user's institution admin record 
         $ins_admin = $user->institution_admin;
 
         if ($ins_admin) {
@@ -48,13 +48,13 @@ class DepartmentsController extends Controller
                    
                     $departmentIds = $departments->pluck('id')->toArray();
                     // Get courses where the department_id matches the department IDs
-                    $courses = Course::whereIn('dept_id', $departmentIds)->with(['department'])->get();
+                    $courses = Course::whereIn('dept_id', $departmentIds)->with(['department'])->paginate(100);
 
                     \Log::info('Courses: ', $courses->toArray());
 
                     // Get sections where the course_id matches the course IDs
                     $courseIds = $courses->pluck('id')->toArray();
-                    $sections = Section::whereIn('course_id', $courseIds)->with(['course'])->get();
+                    $sections = Section::whereIn('course_id', $courseIds)->with(['course'])->paginate(100);
                 }
             }
         } 

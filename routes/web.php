@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\StudentClassController; // Add this line
+use App\Http\Controllers\StudentClassController; 
 use App\Models\Student;
 use App\Http\Controllers\TagController;
 
@@ -18,6 +18,7 @@ use App\Http\Controllers\DepartmentsController;
 use App\Http\Controllers\CoursesController;
 use App\Http\Controllers\SectionsController;
 use App\Http\Controllers\PaymentSessionController;
+use App\Http\Controllers\InstitutionSubscriptionController;
 
 
 
@@ -204,8 +205,14 @@ Route::middleware(['auth', 'verified', 'user-type:admin'])->prefix('institution'
     Route::get('/students', function () {
         return Inertia::render('InstitutionAdmin/Students');})->name('institution-students');
 
-    Route::get('/subscription-billing', function () {
-        return Inertia::render('InstitutionAdmin/SubscriptionBilling/SubscriptionBilling');})->name('institution-subscription-billing');
+    // Route::get('/subscription-billing', function () {
+    //     return Inertia::render('InstitutionAdmin/SubscriptionBilling/SubscriptionBilling');})->name('institution-subscription-billing');
+
+    Route::resource('/subscription-billing', InstitutionSubscriptionController::class)->names('institution-subscription-billing');
+
+    Route::post('/upload-csv', [InstitutionSubscriptionController::class, 'uploadCSV'])->name('upload-csv');
+    Route::get('/read-csv', [InstitutionSubscriptionController::class, 'readCSV'])->name('read-csv');
+
 });
 
 //guest

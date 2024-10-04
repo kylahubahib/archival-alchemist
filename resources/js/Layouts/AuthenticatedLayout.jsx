@@ -12,10 +12,11 @@ import Sidebar, { SidebarItem, SidebarSeparator } from '@/Components/Sidebar';
 import SearchBar from '@/Components/SearchBar';
 import { FaCrown, FaEnvelope } from "react-icons/fa";
 import GiveFeedbackModal from "@/Components/GiveFeedbackModal";
-import ToastNotification from "@/Components/Toast";
+import ToastNotification, { showToast } from "@/Components/Toast";
 
 export default function Authenticated({ user, children, newProfile = null }) {
     const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
+    const [isPremium, setIsPremium] = useState(user.is_premium);
     const [profilePic, setProfilePic] = useState(user.user_pic);
     const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -72,8 +73,9 @@ export default function Authenticated({ user, children, newProfile = null }) {
                             </div>
 
                             <div className="hidden sm:flex sm:items-center sm:ml-6">
-                                <button className="rounded-full py-1 px-6 bg-green-300">
-                                    {user.user_type.charAt(0).toUpperCase() + user.user_type.slice(1).toLowerCase()}
+                                <button className="rounded-full py-1 px-6 bg-green-300 flex flex-row space-x-2">
+                                    <span>{isPremium ? [<FaCrown size={20} color="#FFD700" />] : ['']}</span>
+                                    <span>{user.user_type.charAt(0).toUpperCase() + user.user_type.slice(1).toLowerCase()}</span>
                                 </button>
 
                                 <FiBell size={24} className="ml-3 text-white" />
