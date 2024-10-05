@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Http\Controllers\Auth;
-
+use Illuminate\Support\Facades\Log; // Add this line at the top of your controller
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use Illuminate\Http\RedirectResponse;
@@ -18,9 +18,11 @@ class AuthenticatedSessionController extends Controller
      */
     public function create(): Response
     {
+        $user = Auth::user(); // Get the currently authenticated user
         return Inertia::render('Auth/Login', [
             'canResetPassword' => Route::has('password.request'),
             'status' => session('status'),
+            'user' => $user // Pass the user data to the front end
         ]);
     }
 
@@ -32,13 +34,14 @@ class AuthenticatedSessionController extends Controller
         $request->authenticate();
 
         $request->session()->regenerate();
-
-        $user = Auth::user();
+        $user = Auth::user(); // Get the currently authenticated user
+    // Log the user ID to the Laravel log file
+    Log::info('User logged in with ID: ' . $user->id);
 
         // Redirect based on user_type
         switch ($user->user_type) {
             case 'student':
-                return redirect()->route('library');
+                return redirect()->route('library')->with('user', $user);
                 break;
             case 'teacher':
                 return redirect()->route('library');

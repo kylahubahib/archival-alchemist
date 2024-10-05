@@ -7,7 +7,7 @@ import {Button} from "@nextui-org/react";
 import {Dropdown, DropdownTrigger, DropdownMenu, DropdownItem} from "@nextui-org/react";
 import { FaChevronDown } from 'react-icons/fa'; // Import the Chevron down icon
 
-const Manuscript = () => {
+const Manuscript = ({user}) => {
     const [manuscripts, setManuscripts] = useState([]);
     const [searchResults, setSearchResults] = useState([]); // State to hold search results
     const [loading, setLoading] = useState(true);
@@ -18,13 +18,42 @@ const Manuscript = () => {
         { user: 'Commenter 2', text: 'This is another comment.' },
         { user: 'Commenter 3', text: 'This is yet another comment.' },
     ]);
-
+    const [userId, setUserId] = useState(null); // Store the current logged-in user ID
     const [selectedKeys, setSelectedKeys] = React.useState(new Set(["Search By"]));
 
     const selectedValue = React.useMemo(
       () => Array.from(selectedKeys).join(", ").replaceAll("_", " "),
       [selectedKeys]
     );
+
+
+    // Log user to see if it's being passed correctly
+    useEffect(() => {
+        console.log('Current User:', user);
+    }, [user]);
+
+    const handleBookmark = async (manuscriptId) => {
+        if (!user) {
+            alert('You need to be logged in to bookmark.');
+            return;
+        }
+
+        try {
+            const response = await axios.post('/api/favorites', {
+                man_doc_id: manuscriptId,
+                user_id: user.id, // Make sure user.id is correct
+            });
+            console.log('Bookmark response:', response.data);
+            alert(response.data.message); // Display success message
+        } catch (error) {
+            console.error('Error bookmarking the manuscript:', error);
+            alert('Failed to bookmark the manuscript. Please try again.'); // User-friendly error message
+        }
+    };
+
+
+
+
     useEffect(() => {
         console.log('Fetching manuscripts...');
         axios.get('/api/approved-manuscripts')
@@ -65,6 +94,8 @@ const Manuscript = () => {
     const toggleComments = () => {
         setShowComments(!showComments);
     };
+
+
 
     if (loading) {
         return (
@@ -181,10 +212,13 @@ const Manuscript = () => {
                 </div>
 
                 <Tooltip content="Bookmark">
-                    <button className="text-gray-600 hover:text-blue-500">
-                        <FaBookmark size={20} />
-                    </button>
-                </Tooltip>
+                                <button
+                                    className="text-gray-600 hover:text-blue-500"
+                                    onClick={() => handleBookmark(manuscript.id)}
+                                >
+                                    <FaBookmark size={20} />
+                                </button>
+                            </Tooltip>
 
                 <Tooltip content="Download">
                 <button className="text-gray-600 hover:text-gray-900">
