@@ -2,12 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { FaEye, FaComment, FaBookmark, FaFileDownload, FaFilter  } from 'react-icons/fa';
 import axios from 'axios';
 import SearchBar from '@/Components/SearchBars/LibrarySearchBar'; // Import the LibrarySearchBar component
-import { Tooltip } from '@nextui-org/react';
-import {Button} from "@nextui-org/react";
+import { Tooltip, Button } from '@nextui-org/react';
+// import {Button} from "@nextui-org/react";
 import {Dropdown, DropdownTrigger, DropdownMenu, DropdownItem} from "@nextui-org/react";
-import { FaChevronDown } from 'react-icons/fa'; // Import the Chevron down icon
-
 const Manuscript = ({user}) => {
+    const [favorites, setFavorites] = useState(new Set());
+     const [userId, setUserId] = useState(null); // Store the current logged-in user ID
     const [manuscripts, setManuscripts] = useState([]);
     const [searchResults, setSearchResults] = useState([]); // State to hold search results
     const [loading, setLoading] = useState(true);
@@ -18,7 +18,11 @@ const Manuscript = ({user}) => {
         { user: 'Commenter 2', text: 'This is another comment.' },
         { user: 'Commenter 3', text: 'This is yet another comment.' },
     ]);
-    const [userId, setUserId] = useState(null); // Store the current logged-in user ID
+
+    // Log the updated favorites whenever it changes
+    useEffect(() => {
+        console.log('Updated Favorites:', favorites);
+    }, [favorites]);
     const [selectedKeys, setSelectedKeys] = React.useState(new Set(["Search By"]));
 
     const selectedValue = React.useMemo(
@@ -28,9 +32,29 @@ const Manuscript = ({user}) => {
 
 
     // Log user to see if it's being passed correctly
-    useEffect(() => {
-        console.log('Current User:', user);
+     // Fetch user favorites and store them in state
+     useEffect(() => {
+        const fetchFavorites = async () => {
+            if (!user) {
+                console.log('No user available');
+                return;
+            }
+
+            console.log(`Fetching favorites for user: ${user.id}`);
+
+            try {
+                const response = await axios.get(`/user/${user.id}/favorites`);
+                const favoritesData = response.data.map((favorite) => `${user.id}-${favorite.man_doc_id}`);
+                setFavorites(new Set(favoritesData));
+                console.log(`Fetched favorites for user ${user.id}:`, favoritesData);
+            } catch (error) {
+                console.error('Error fetching user favorites:', error);
+            }
+        };
+
+        fetchFavorites();
     }, [user]);
+
 
     const handleBookmark = async (manuscriptId) => {
         if (!user) {
@@ -38,16 +62,45 @@ const Manuscript = ({user}) => {
             return;
         }
 
+        const favoriteKey = `${user.id}-${manuscriptId}`;
+        if (favorites.has(favoriteKey)) {
+            // Manuscript is already favorited by the current user, remove it
+            await handleRemoveFavorite(manuscriptId);
+        } else {
+            // Manuscript is not favorited by the current user, add it
+            await handleAddFavorite(manuscriptId);
+        }
+    };
+
+    const handleRemoveFavorite = async (manuscriptId) => {
         try {
-            const response = await axios.post('/api/favorites', {
-                man_doc_id: manuscriptId,
-                user_id: user.id, // Make sure user.id is correct
+            await axios.delete('/api/removefavorites', {
+                data: { man_doc_id: manuscriptId }
             });
-            console.log('Bookmark response:', response.data);
-            alert(response.data.message); // Display success message
+
+            const favoriteKey = `${user.id}-${manuscriptId}`;
+            setFavorites((prev) => {
+                const newFavorites = new Set(prev);
+                newFavorites.delete(favoriteKey);
+                return newFavorites;
+            });
         } catch (error) {
-            console.error('Error bookmarking the manuscript:', error);
-            alert('Failed to bookmark the manuscript. Please try again.'); // User-friendly error message
+            console.error('Error removing favorite:', error);
+        }
+    };
+
+    const handleAddFavorite = async (manuscriptId) => {
+        try {
+            await axios.post('/api/addfavorites', { man_doc_id: manuscriptId });
+
+            const favoriteKey = `${user.id}-${manuscriptId}`;
+            setFavorites((prev) => {
+                const newFavorites = new Set(prev);
+                newFavorites.add(favoriteKey);
+                return newFavorites;
+            });
+        } catch (error) {
+            console.error('Error adding favorite:', error);
         }
     };
 

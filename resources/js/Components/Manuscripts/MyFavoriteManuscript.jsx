@@ -1,15 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { FaEye, FaComment, FaBookmark, FaFileDownload, FaFilter  } from 'react-icons/fa';
+import { FaEye, FaComment, FaBookmark, FaFileDownload } from 'react-icons/fa';
 import axios from 'axios';
-import SearchBar from '@/Components/SearchBars/LibrarySearchBar'; // Import the LibrarySearchBar component
 import { Tooltip } from '@nextui-org/react';
-import {Button} from "@nextui-org/react";
-import {Dropdown, DropdownTrigger, DropdownMenu, DropdownItem} from "@nextui-org/react";
-import { FaChevronDown } from 'react-icons/fa'; // Import the Chevron down icon
+import { Button } from "@nextui-org/react";
 
-const Manuscript = () => {
+const Manuscript = ({ user }) => {
+    const [favorites, setFavorites] = useState(new Set());
     const [manuscripts, setManuscripts] = useState([]);
-    const [searchResults, setSearchResults] = useState([]); // State to hold search results
+    const [searchResults, setSearchResults] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [showComments, setShowComments] = useState(false);
@@ -19,162 +17,197 @@ const Manuscript = () => {
         { user: 'Commenter 3', text: 'This is yet another comment.' },
     ]);
 
-    const [selectedKeys, setSelectedKeys] = React.useState(new Set(["Search By"]));
-
-    const selectedValue = React.useMemo(
-      () => Array.from(selectedKeys).join(", ").replaceAll("_", " "),
-      [selectedKeys]
-    );
     useEffect(() => {
-        console.log('Fetching manuscripts...');
-        axios.get('/api/my-favorite-manuscripts')
-        .then(response => {
-            console.log('Fetched manuscripts with tags:', response.data);
-            const data = response.data;
+        console.log('Updated Favorites:', favorites);
+    }, [favorites]);
 
-            response.data.forEach(manuscript => {
-                console.log('Manuscript Tags:', manuscript.tags); // Log tags for each manuscript
-            });
+    useEffect(() => {
+        const fetchFavorites = async () => {
+            if (!user) {
+                console.log('No user available');
+                return;
+            }
 
+            try {
+                const response = await axios.get(`/user/${user.id}/favorites`);
+                const favoritesData = response.data.map((favorite) => `${user.id}-${favorite.man_doc_id}`);
+                setFavorites(new Set(favoritesData));
+            } catch (error) {
+                console.error('Error fetching user favorites:', error);
+            }
+        };
 
-            response.data.forEach(manuscript => {
-                console.log('Manuscript Author:', manuscript.authors); // Log users for each manuscript
-            });
+        fetchFavorites();
+    }, [user]);
 
-            // Remove duplicates
-            const uniqueManuscripts = Array.from(new Set(data.map(item => item.id)))
-                .map(id => data.find(item => item.id === id));
+    const handleBookmark = async (manuscriptId) => {
+        if (!user) {
+            alert('You need to be logged in to bookmark.');
+            return;
+        }
 
-            console.log('Unique Manuscripts:', uniqueManuscripts);
-            setManuscripts(uniqueManuscripts);
-            setLoading(false);
-        })
-        .catch(error => {
-            console.error('Error fetching manuscripts:', error);
-            setError('An error occurred while fetching the data.');
-            setLoading(false);
-        });
+        const favoriteKey = `${user.id}-${manuscriptId}`;
+        const updatedFavorites = new Set(favorites);
 
-    }, []); // Empty dependency array ensures this runs only once
+        if (favorites.has(favoriteKey)) {
+            // Optimistically remove the bookmark
+            updatedFavorites.delete(favoriteKey);
+            setFavorites(updatedFavorites);
 
-    // Function to update search results
-    const handleSearchResults = (results) => {
-        setSearchResults(results);
+            // Perform the backend removal
+            await handleRemoveFavorite(manuscriptId);
+        } else {
+            // Optimistically add the bookmark
+            updatedFavorites.add(favoriteKey);
+            setFavorites(updatedFavorites);
+
+            try {
+                // Send the request to add the favorite to the backend
+                await axios.post('/api/addfavorites', {
+                    man_doc_id: manuscriptId,
+                    user_id: user.id
+                });
+            } catch (error) {
+                console.error('Error adding favorite:', error);
+                // Revert the optimistic update on failure
+                updatedFavorites.delete(favoriteKey);
+                setFavorites(new Set(updatedFavorites));
+            }
+        }
     };
+
+
+    const handleRemoveFavorite = async (manuscriptId) => {
+        try {
+            await axios.delete('/api/removefavorites', {
+                data: { man_doc_id: manuscriptId }
+            });
+
+            const favoriteKey = `${user.id}-${manuscriptId}`;
+            setFavorites((prev) => {
+                const newFavorites = new Set(prev);
+                newFavorites.delete(favoriteKey);
+                return newFavorites;
+            });
+
+            // Optionally filter out the manuscript from the displayed list
+            setManuscripts((prev) => prev.filter(manuscript => manuscript.id !== manuscriptId));
+        } catch (error) {
+            console.error('Error removing favorite:', error);
+        }
+    };
+
+    useEffect(() => {
+        axios.get('/api/my-favorite-manuscripts')
+            .then(response => {
+                const data = response.data;
+
+                const uniqueManuscripts = Array.from(new Set(data.map(item => item.id)))
+                    .map(id => data.find(item => item.id === id));
+
+                setManuscripts(uniqueManuscripts);
+                setLoading(false);
+            })
+            .catch(error => {
+                console.error('Error fetching manuscripts:', error);
+                setError('An error occurred while fetching the data.');
+                setLoading(false);
+            });
+    }, []);
 
     const toggleComments = () => {
         setShowComments(!showComments);
     };
 
     if (loading) {
-        return (
-            <Button color="primary" isLoading>
-              Loading
-            </Button>
-          );
+        return <Button color="primary" isLoading>Loading</Button>;
     }
 
     if (error) {
         return <div>Error: {error}</div>;
     }
 
-    const manuscriptsToDisplay = searchResults.length > 0 ? searchResults : manuscripts; // Use search results if available
+    const manuscriptsToDisplay = searchResults.length > 0 ? searchResults : manuscripts;
 
     if (manuscriptsToDisplay.length === 0) {
-        return <div>No manuscripts available.</div>;
+        return                     <div className="max-w-7xl mx-auto bg-white shadow-lg flex justify-center h-screen items-center shadow-sm sm:rounded-lg sticky">
+        <FaBookmark size={50} className="text-gray-500" />
+        <p className="text-gray-500 mt-2">Favorite Manuscript Capstone will be added here.</p>
+    </div>
     }
 
     return (
         <section className="w-full mx-auto my-4 mt-10 pt-10">
-
-
             {manuscriptsToDisplay.map((manuscript) => (
-        <div key={manuscript.id} className="w-full bg-white shadow-lg flex mb-4">
-            <div className="rounded w-40 h-full bg-gray-200 flex items-center justify-center">
-                <img
-                    className="rounded w-36 h-46"
-                    src="https://via.placeholder.com/150"
-                    alt="Book"
-                />
-            </div>
-        <div className="flex-1 p-4">
-            <h2 className="text-xl font-bold text-gray-900">{manuscript.man_doc_title}</h2>
-            {/* <p className="text-gray-700 mt-1">Author: {user.name}</p> */}
+                <div key={manuscript.id} className="w-full bg-white shadow-lg flex mb-4">
+                    <div className="rounded w-40 h-full bg-gray-200 flex items-center justify-center">
+                        <img
+                            className="rounded w-36 h-46"
+                            src="https://via.placeholder.com/150"
+                            alt="Book"
+                        />
+                    </div>
+                    <div className="flex-1 p-4">
+                        <h2 className="text-xl font-bold text-gray-900">{manuscript.man_doc_title}</h2>
+                        <p className="text-gray-700 mt-1">Author: {manuscript.authors?.map(author => author.name).join(', ') || 'No authors available'}</p>
+                        <p className="text-gray-700 mt-1">Adviser: {manuscript.man_doc_adviser}</p>
 
-
-
-{/* Display the users here */}
-<div className="mt-2 flex flex-wrap gap-2">
-    <p className="text-gray-700 mt-1">Author:</p>
-    {manuscript.authors?.length > 0 ? (
-        <p className="text-gray-700 mt-1">
-            {manuscript.authors.map(author => author.name).join(', ')}
-        </p>
-    ) : (
-        <p className="text-gray-700 mt-1">No authors Avialable</p>
-    )}
-</div>
-
-
-
-            <p className="text-gray-700 mt-1">Adviser: {manuscript.man_doc_adviser}</p>
-
-{/* Display the tags here */}
-<div className="mt-2 flex flex-wrap gap-2">
-    {manuscript.tags && manuscript.tags.length > 0 ? ( // Check if tags exist and if the length is greater than 0
-        manuscript.tags.map(tag => ( // Map through the tags array
-            <span key={tag.id} className="bg-gray-200 text-gray-800 px-2 py-1 rounded">
-                {tag.tags_name} {/* Display the tag name */}
-            </span>
-        ))
-    ) : (
-        <p>No tags available</p> // Display message if no tags are found
-    )}
-</div>
-
-
-
-            <div className="mt-4 flex items-center gap-4">
-            <Tooltip content="Views">
-                <div className={`flex items-center ${manuscript.man_doc_view_count > 0 ? 'text-blue-500' : 'text-gray-600'} hover:text-blue-700 cursor-pointer`}>
-                    <FaEye size={20} />
-                    <span className="ml-1">{manuscript.man_doc_view_count}</span>
-                </div>
-                </Tooltip>
-
-                <div className={`flex items-center ${comments.length > 0 ? 'text-blue-500' : 'text-gray-600'} hover:text-blue-700 cursor-pointer`} onClick={toggleComments}>
-                    <FaComment size={20} />
-                    <span className="ml-1">
-                        {comments.length > 0 ? `${comments.length} Comment${comments.length > 1 ? 's' : ''}` : 'No comments yet'}
-                    </span>
-                </div>
-
-                <Tooltip content="Bookmark">
-                    <button className="text-blue-500 hover:text-gray-600">
-                        <FaBookmark size={20} />
-                    </button>
-                </Tooltip>
-
-                <Tooltip content="Download">
-                <button className="text-gray-600 hover:text-gray-900">
-                    <FaFileDownload size={20} />
-                </button></Tooltip>
-            </div>
-
-            {showComments && (
-                <div className="mt-4 space-y-4">
-                    {comments.map((comment, index) => (
-                        <div key={index} className="border p-2 rounded">
-                            <p className="font-bold">{comment.user}</p>
-                            <p>{comment.text}</p>
+                        <div className="mt-2 flex flex-wrap gap-2">
+                            {manuscript.tags?.length > 0 ? (
+                                manuscript.tags.map(tag => (
+                                    <span key={tag.id} className="bg-gray-200 text-gray-800 px-2 py-1 rounded">
+                                        {tag.tags_name}
+                                    </span>
+                                ))
+                            ) : (
+                                <p>No tags available</p>
+                            )}
                         </div>
-                    ))}
-                </div>
-            )}
-        </div>
-    </div>
-))}
 
+                        <div className="mt-4 flex items-center gap-4">
+                            <Tooltip content="Views">
+                                <div className={`flex items-center ${manuscript.man_doc_view_count > 0 ? 'text-blue-500' : 'text-gray-600'} hover:text-blue-700 cursor-pointer`}>
+                                    <FaEye size={20} />
+                                    <span className="ml-1">{manuscript.man_doc_view_count}</span>
+                                </div>
+                            </Tooltip>
+
+                            <div className={`flex items-center ${comments.length > 0 ? 'text-blue-500' : 'text-gray-600'} hover:text-blue-700 cursor-pointer`} onClick={toggleComments}>
+                                <FaComment size={20} />
+                                <span className="ml-1">
+                                    {comments.length > 0 ? `${comments.length} Comment${comments.length > 1 ? 's' : ''}` : 'No comments yet'}
+                                </span>
+                            </div>
+
+                            <Tooltip content="Bookmark">
+                                <button
+                                    className={`text-blue-500 ${favorites.has(`${user.id}-${manuscript.id}`) ? 'text-blur-500' : 'hover:text-gray-600'}`}
+                                    onClick={() => handleBookmark(manuscript.id)}
+                                >
+                                    <FaBookmark size={20} />
+                                </button>
+                            </Tooltip>
+
+                            <Tooltip content="Download">
+                                <button className="text-gray-600 hover:text-gray-900">
+                                    <FaFileDownload size={20} />
+                                </button>
+                            </Tooltip>
+                        </div>
+
+                        {showComments && (
+                            <div className="mt-4 space-y-4">
+                                {comments.map((comment, index) => (
+                                    <div key={index} className="border p-2 rounded">
+                                        <p className="font-bold">{comment.user}</p>
+                                        <p>{comment.text}</p>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                </div>
+            ))}
         </section>
     );
 }

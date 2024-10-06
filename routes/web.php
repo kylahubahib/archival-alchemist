@@ -68,6 +68,7 @@ Route::get('/library', function () {
 
 
 
+
 // Route::get('/library', function () {
 //     return Inertia::render('Users/Library');
 // })->middleware(['user-type:student,teacher,guest'])->name('library');
@@ -307,10 +308,24 @@ Route::get('/api/my-approved-manuscripts', [StudentClassController::class, 'myAp
 
 Route::get('/api/my-favorite-manuscripts', [StudentClassController::class, 'myfavoriteManuscripts']);
 
-Route::post('/api/favorites', [StudentClassController::class, 'storefavorites'])
+Route::post('/api/addfavorites', [StudentClassController::class, 'storefavorites'])
     ->middleware(['auth', 'verified', 'user-type:student'])
     ->name('storefavorites');
 ;
+// Correct
+// Route::get('/user/{id}/favorites', [StudentClassController::class, 'getUserFavorites']);
+
+// Add the correct middleware if needed
+Route::get('/user/{id}/favorites', [StudentClassController::class, 'getUserFavorites'])
+->middleware(['auth', 'verified', 'user-type:student'])
+->name('getUserFavorites');
+
+
+// Route for removing a favorite
+Route::delete('/api/removefavorites', [StudentClassController::class, 'removeFavorite'])
+    ->middleware(['auth', 'verified', 'user-type:student'])
+    ->name('removeFavorite');
+
 
 
 //check user in csv file

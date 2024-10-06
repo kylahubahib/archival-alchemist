@@ -6,6 +6,8 @@ import axios from 'axios'; // Import Axios
 import Manuscript from '@/Components/Manuscripts/MyFavoriteManuscript';
 
 export default function SavedList({ auth }) {
+    const isAuthenticated = !!auth.user; // Check if user is authenticated
+    const MainLayout = isAuthenticated ? AuthenticatedLayout : GuestLayout;
     const [bookmarks, setBookmarks] = useState([]);
     const [manuscripts, setManuscripts] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -33,7 +35,7 @@ export default function SavedList({ auth }) {
     }
 
     return (
-        <AuthenticatedLayout
+        <MainLayout
             user={auth.user}
             header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Favorites</h2>}
         >
@@ -47,10 +49,12 @@ export default function SavedList({ auth }) {
                     </div>
                 ) : (
                     <div className="h-screen bg-white rounded m-4 rounded-xl">
-                        <Manuscript manuscripts={manuscripts} /> {/* Pass the fetched manuscripts */}
+                        <Manuscript manuscripts={manuscripts} // Update this with actual data as needed
+                        user={auth.user} // Pass the user to Manuscript
+                        /> {/* Pass the fetched manuscripts */}
                     </div>
                 )}
             </section>
-        </AuthenticatedLayout>
+        </MainLayout>
     );
 }
