@@ -1,5 +1,5 @@
-import { RiMessengerLine } from "react-icons/ri"; 
-import { BiEnvelope } from "react-icons/bi"; 
+import { RiMessengerLine } from "react-icons/ri";
+import { BiEnvelope } from "react-icons/bi";
 import { MdChatBubbleOutline, MdOutlineForum, MdOutlineLabel,  } from "react-icons/md";
 import { SiGoogleclassroom } from "react-icons/si";
 import { BiBookBookmark, BiBookOpen } from "react-icons/bi";
@@ -46,7 +46,7 @@ export default function Authenticated({ user, children, newProfile = null }) {
                 <SidebarItem icon={<BiBookBookmark size={20} />} text="Favorites" to="/savedlist" />
                 <SidebarItem icon={<BiBookOpen size={20} />} text="Library" to="/library" />
                 <SidebarItem icon={<MdOutlineForum size={20} />} text="Forum" to="/forum" />
-                <SidebarItem icon={<MdOutlineLabel size={20} />} text="Tags" to="/tags" />
+                {/* <SidebarItem icon={<MdOutlineLabel size={20} />} text="Tags" to="/tags" /> */}
                 {user.user_type === 'teacher' ? (
                     <SidebarItem icon={<SiGoogleclassroom size={20} />} text="Class" to="/teacherclass" />
                 ) : (
@@ -159,7 +159,7 @@ export default function Authenticated({ user, children, newProfile = null }) {
                 </nav>
 
                 {/* Main content */}
-                
+
                 <div className="flex-1">
                 <main>{children}</main>
                 <ToastNotification/>
