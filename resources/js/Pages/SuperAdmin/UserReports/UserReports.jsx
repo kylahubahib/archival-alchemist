@@ -56,7 +56,7 @@ export default function UserReports({ auth, userReports, pendingCount, solvedCou
 
     const viewDetails = (data) => {
         setSelectedData(data);
-        console.log(data);
+        //console.log(data);
         setIsModalOpen(true);
     }
 

@@ -17,6 +17,8 @@ use Illuminate\Validation\Rules;
 use Inertia\Inertia;
 use Inertia\Response;
 
+
+
 class RegisteredUserController extends Controller
 {
     /**
@@ -59,10 +61,11 @@ class RegisteredUserController extends Controller
                 'user_type' => $validatedData['role'],
                 'user_pic' => 'storage/profile_pics/default_pic.png',
                 'user_status' => 'active',
+                'user_dob' => '3/11/2002',
                 'is_premium' => false,
             ]);
 
-            \Log::info('User created:', ['user_id' => $user->id]);
+            \Log::info('User created:', $user->toArray());
 
             if ($validatedData['role'] === 'student') {
                 $student = Student::create([
@@ -71,6 +74,7 @@ class RegisteredUserController extends Controller
                 ]);
 
                 \Log::info('Student created:', ['student_id' => $student->id]);
+
 
             } elseif ($validatedData['role'] === 'teacher') {
                 $faculty = Faculty::create([
@@ -88,6 +92,8 @@ class RegisteredUserController extends Controller
 
                 \Log::info('Institution Admin created:', ['ins_admin_id' => $institutionAdmin->id]);
             }
+
+    
 
             event(new Registered($user));
 

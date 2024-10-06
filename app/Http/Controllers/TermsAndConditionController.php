@@ -18,19 +18,26 @@ class TermsAndConditionController extends Controller
      */
     public function index()
     {
-        \Log::info('ok');
+        //\Log::info('ok'); 
 
         $termsConditions = CustomContent::with('user')
             ->where('content_type', 'terms and conditions')
             ->paginate(100);
 
-
-            \Log::info('Terms ', $termsConditions->toArray());
+        
+            //\Log::info('Terms ', $termsConditions->toArray());
 
 
         return Inertia::render('SuperAdmin/TermsAndConditions/TermsCondition', [
             'termsConditions' => $termsConditions,
         ]);
+    }
+
+    public function getTermsAndConditions()
+    {
+        $terms = CustomContent::where('content_type', 'terms and conditions');
+
+        return response()->json($terms);
     }
 
     /**
@@ -101,8 +108,8 @@ class TermsAndConditionController extends Controller
      */
     public function update(Request $request, $id): RedirectResponse
     {
-        \Log::info('Update request received for tc ID: ' . $id);
-        \Log::info('Update request data: ', $request->all());
+        //\Log::info('Update request received for tc ID: ' . $id);
+        //\Log::info('Update request data: ', $request->all());
 
         $request->validate([
             'content_title' => 'required|string|max:1000',

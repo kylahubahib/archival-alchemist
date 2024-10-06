@@ -7,8 +7,9 @@ import { useState } from 'react';
 import Dropdown from '@/Components/Dropdown';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
 import SearchBar from '@/Components/SearchBar';
-import Sidebar, { SidebarItem, SidebarTitle } from '@/Components/Sidebar';
+import Sidebar, { SidebarItem, SidebarSeparator, SidebarTitle } from '@/Components/Sidebar';
 import GiveFeedbackModal from "@/Components/GiveFeedbackModal";
+import ToastNotification from "@/Components/Toast";
 
 export default function AdminLayout({ auth, user, header, children }) {
     const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
@@ -58,7 +59,10 @@ export default function AdminLayout({ auth, user, header, children }) {
 
                 <SidebarItem icon={<FaBook size={20} className="text-white group-hover:text-gray-600" />} text="Archives" color="white" to="/institution/archives" />
                 <SidebarItem icon={<MdSubscriptions size={20} className="text-white group-hover:text-gray-600" />} text="Subscription & Billing" color="white" to="/institution/subscription-billing" />
-                <SidebarItem icon={<FaFacebookMessenger size={20} className="text-white group-hover:text-gray-600" />} text="Chat with us" color="white" to="/institution/students"/>
+
+                <SidebarSeparator/>
+
+                <SidebarItem icon={<FaFacebookMessenger size={20} className="text-white group-hover:text-gray-600" />} text="Chat with us" color="white" to="https://m.me/432748959923780" externalLink/>
                 <SidebarItem icon={<FaEnvelope size={20} className="text-white group-hover:text-gray-600" />} text="Give Feedback" color="white" onClick={openModal} isActiveModal={isModalOpen}/>
             </Sidebar>
         )}
@@ -159,6 +163,7 @@ export default function AdminLayout({ auth, user, header, children }) {
              {/* Main content */}
              <div>
                 <main>{children}</main>
+                <ToastNotification/>
             </div>
 
         </div>

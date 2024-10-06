@@ -33,7 +33,7 @@ export default function Sidebar({children, color, borderRadius, margin }) {
     )
 }
 
-export function SidebarItem({ icon, text, color, marginTop, marginBottom, alert, to, onClick, isActiveModal, ...props }) {
+export function SidebarItem({ icon, text, color, marginTop, marginBottom, alert, to, onClick, isActiveModal, externalLink, ...props }) {
   const { expanded } = useContext(SidebarContext);
   const { url } = usePage(); 
 
@@ -53,9 +53,45 @@ export function SidebarItem({ icon, text, color, marginTop, marginBottom, alert,
 
   const textColor = `text-${color}`;
 
-  return to ? (
-    <Link href={to}>
-      <li className={`${itemClasses}`}>
+  if (externalLink) {
+    return (
+      <a href={to} target="_blank" rel="noopener noreferrer">
+        <li className={`${itemClasses}`}>
+          {icon}
+          <span className={`${textColor} overflow-hidden whitespace-nowrap transition-all group-hover:text-gray-600 ${expanded ? 'w-52 ml-3' : 'w-0'} mt-${marginTop} mb-${marginBottom}`}>
+            {text}
+          </span>
+          {alert && (
+            <div className={`absolute right-2 w-2 h-2 rounded bg-indigo-400 ${expanded ? '' : 'top-2'}`}></div>
+          )}
+          {!expanded && (
+            <div className={`absolute left-full rounded-md px-2 py-1 ml-6 bg-indigo-100 text-indigo-800 text-sm invisible opacity-20 -translate-x-3 transition-all group-hover:visible group-hover:opacity-100 group-hover:translate-x-0 overflow-hidden whitespace-nowrap`}>
+              {text}
+            </div>
+          )}
+        </li>
+      </a>
+    );
+  } else {
+    return to ? (
+      <Link href={to}>
+        <li className={`${itemClasses}`}>
+          {icon}
+          <span className={`${textColor} overflow-hidden whitespace-nowrap transition-all group-hover:text-gray-600 ${expanded ? 'w-52 ml-3' : 'w-0'} mt-${marginTop} mb-${marginBottom}`}>
+            {text}
+          </span>
+          {alert && (
+            <div className={`absolute right-2 w-2 h-2 rounded bg-indigo-400 ${expanded ? '' : 'top-2'}`}></div>
+          )}
+          {!expanded && (
+            <div className={`absolute left-full rounded-md px-2 py-1 ml-6 bg-indigo-100 text-indigo-800 text-sm invisible opacity-20 -translate-x-3 transition-all group-hover:visible group-hover:opacity-100 group-hover:translate-x-0 overflow-hidden whitespace-nowrap`}>
+              {text}
+            </div>
+          )}
+        </li>
+      </Link>
+    ) : (
+      <li className={`${itemClasses} relative`} onClick={handleClick}>
         {icon}
         <span className={`${textColor} overflow-hidden whitespace-nowrap transition-all group-hover:text-gray-600 ${expanded ? 'w-52 ml-3' : 'w-0'} mt-${marginTop} mb-${marginBottom}`}>
           {text}
@@ -69,36 +105,31 @@ export function SidebarItem({ icon, text, color, marginTop, marginBottom, alert,
           </div>
         )}
       </li>
-    </Link>
-  ) : (
-    <li className={`${itemClasses} relative`} onClick={handleClick}>
-      {icon}
-      <span className={`${textColor} overflow-hidden whitespace-nowrap transition-all group-hover:text-gray-600 ${expanded ? 'w-52 ml-3' : 'w-0'} mt-${marginTop} mb-${marginBottom}`}>
-        {text}
-      </span>
-      {alert && (
-        <div className={`absolute right-2 w-2 h-2 rounded bg-indigo-400 ${expanded ? '' : 'top-2'}`}></div>
-      )}
-      {!expanded && (
-        <div className={`absolute left-full rounded-md px-2 py-1 ml-6 bg-indigo-100 text-indigo-800 text-sm invisible opacity-20 -translate-x-3 transition-all group-hover:visible group-hover:opacity-100 group-hover:translate-x-0 overflow-hidden whitespace-nowrap`}>
-          {text}
-        </div>
-      )}
-    </li>
-  );
+    );
+  }
 }
 
 
 
+export function SidebarSeparator({ marginTop=56 }) {
+  const { expanded } = useContext(SidebarContext);
+
+  const marginTopClass = {
+    56: 'mt-56',
+    60: 'mt-60',
+    72: 'mt-72',
+  }[marginTop] || '';
+
+  return (
+    <div
+      className={`${marginTopClass} transition-all duration-300 ease-in-out ${
+        expanded ? 'w-full' : 'w-10 mx-auto'
+      }`}
+    />
+  );
+}
 
 
-  export function SidebarSeparator({}) {
-    const { expanded } = useContext(SidebarContext);
-  
-    return (
-      <span className="border-t-2 border-gray-600 mt-4 mb-4"></span> 
-    );
-  }
 
   export function SidebarTitle({title}) {
     const { expanded } = useContext(SidebarContext);

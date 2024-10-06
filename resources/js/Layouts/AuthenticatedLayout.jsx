@@ -1,3 +1,5 @@
+import { RiMessengerLine } from "react-icons/ri"; 
+import { BiEnvelope } from "react-icons/bi"; 
 import { MdChatBubbleOutline, MdOutlineForum, MdOutlineLabel,  } from "react-icons/md";
 import { SiGoogleclassroom } from "react-icons/si";
 import { BiBookBookmark, BiBookOpen } from "react-icons/bi";
@@ -5,14 +7,16 @@ import { FiBell } from "react-icons/fi";
 import { useEffect, useState } from 'react';
 import Dropdown from '@/Components/Dropdown';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
-import Sidebar, { SidebarItem } from '@/Components/Sidebar';
+import Sidebar, { SidebarItem, SidebarSeparator } from '@/Components/Sidebar';
 
 import SearchBar from '@/Components/SearchBar';
-import { FaEnvelope } from "react-icons/fa";
+import { FaCrown, FaEnvelope } from "react-icons/fa";
 import GiveFeedbackModal from "@/Components/GiveFeedbackModal";
+import ToastNotification, { showToast } from "@/Components/Toast";
 
 export default function Authenticated({ user, children, newProfile = null }) {
     const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
+    const [isPremium, setIsPremium] = useState(user.is_premium);
     const [profilePic, setProfilePic] = useState(user.user_pic);
     const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -35,7 +39,8 @@ export default function Authenticated({ user, children, newProfile = null }) {
     });
 
     return (
-        <div className="min-h-screen bg-customlightBlue flex z-10">
+        <div className="bg-customlightBlue min-h-screen flex flex-col">
+         <div className="flex-1 flex">
             {/* Sidebar */}
             <Sidebar color="white" borderRadius="xl" margin="3">
                 <SidebarItem icon={<BiBookBookmark size={20} />} text="Favorites" to="/savedlist" />
@@ -48,12 +53,16 @@ export default function Authenticated({ user, children, newProfile = null }) {
                     <SidebarItem icon={<SiGoogleclassroom size={20} />} text="Class" to="/studentclass" />
                 )}
                 <SidebarItem icon={<MdChatBubbleOutline size={20} />} text="Inbox" to="/inbox" />
-                <SidebarItem icon={<FaEnvelope size={20} />} text="Give Feedback" onClick={openModal} isActiveModal={isModalOpen}/>
+                <SidebarSeparator marginTop={60}/>
+
+                <SidebarItem icon={<FaCrown size={20} color="#FFD700" />} text="Subscription" to="#" />
+                <SidebarItem icon={<RiMessengerLine size={20} color="#006AFF" />} text="Chat with us" to="https://m.me/432748959923780" externalLink/>
+                <SidebarItem icon={<BiEnvelope size={20} color="#294996" />} text="Give Feedback" onClick={openModal} isActiveModal={isModalOpen}/>
             </Sidebar>
 
             <GiveFeedbackModal isOpen={isModalOpen} onClose={closeModal} />
 
-            <div className="flex-1">
+            <div className="flex-1 flex flex-col">
                 <nav className="bg-customBlue border-b rounded-xl m-3 sticky top-3">
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                         <div className="flex justify-between h-16">
@@ -64,8 +73,9 @@ export default function Authenticated({ user, children, newProfile = null }) {
                             </div>
 
                             <div className="hidden sm:flex sm:items-center sm:ml-6">
-                                <button className="rounded-full py-1 px-6 bg-green-300">
-                                    {user.user_type.charAt(0).toUpperCase() + user.user_type.slice(1).toLowerCase()}
+                                <button className="rounded-full py-1 px-6 bg-green-300 flex flex-row space-x-2">
+                                    <span>{isPremium ? [<FaCrown size={20} color="#FFD700" />] : ['']}</span>
+                                    <span>{user.user_type.charAt(0).toUpperCase() + user.user_type.slice(1).toLowerCase()}</span>
                                 </button>
 
                                 <FiBell size={24} className="ml-3 text-white" />
@@ -149,9 +159,13 @@ export default function Authenticated({ user, children, newProfile = null }) {
                 </nav>
 
                 {/* Main content */}
-
+                
+                <div className="flex-1">
                 <main>{children}</main>
+                <ToastNotification/>
+                </div>
             </div>
         </div>
+    </div>
     );
 }

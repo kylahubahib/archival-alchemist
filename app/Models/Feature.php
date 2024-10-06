@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 class Feature extends Model
 {
     use HasFactory;
-
+ 
     protected $fillable = [
         'feature_name'
     ];

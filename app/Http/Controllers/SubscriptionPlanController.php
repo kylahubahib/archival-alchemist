@@ -24,7 +24,7 @@ class SubscriptionPlanController extends Controller
         $features = Feature::all();
         $planFeatures = PlanFeature::with(['plan', 'feature'])->get();
 
-        \Log::info('Plans ', $subscriptionPlans->toArray());
+        //\Log::info('Plans ', $subscriptionPlans->toArray());
 
 
         return Inertia::render('SuperAdmin/SubscriptionPlans/SubscriptionPlans', [
@@ -64,7 +64,7 @@ class SubscriptionPlanController extends Controller
      */
     public function create()
     {
-        return Inertia::render('SuperAdmin/SubscriptionPlan/SubscriptionPlan');
+        //return Inertia::render('SuperAdmin/SubscriptionPlan/SubscriptionPlan');
     }
 
     /**
@@ -110,8 +110,8 @@ class SubscriptionPlanController extends Controller
                 'feature_id' => $featureId,
             ]);
         }
-
-        Log::info('Plan created:', ['plan_id' => $plan->id]);
+        
+        //\Log::info('Plan created:', ['plan_id' => $plan->id]);
 
 
         //return redirect(route('subscription-plans'))->with('success', 'Subscription Plans created successfully.');

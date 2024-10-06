@@ -11,13 +11,15 @@ use Inertia\Inertia;
 use Inertia\Response;
 use Illuminate\Support\Facades\Auth;
 
+
 class UniversityController extends Controller
 {
     public function index()
     {
-        $universities = University::with('university_branch')->get();
+        $universities = University::with('university_branch')->paginate(100);
         $uniBranches = UniversityBranch::with('university')->paginate(100);
 
+        \Log::info('University Controller');
         //\Log::info('Universities ', $uniBranches->toArray());
 
         return Inertia::render('SuperAdmin/Advanced/Universities/Universities', [
@@ -26,6 +28,27 @@ class UniversityController extends Controller
         ]);
 
     }
+
+
+    public function getBranches(Request $request)
+    {
+        $id = $request->get('id');
+        // \Log::info('ID type: ' . gettype($id));  
+        // \Log::info('ID value: ' . $id);
+
+        if($id == 0){
+            $uniBranches = UniversityBranch::with('university')->get();
+        }
+        else {
+            $uniBranches = UniversityBranch::with('university')
+            ->where('uni_id', $id)
+            ->get();
+        }
+
+
+        return response()->json($uniBranches);
+    }
+
 
     /**
      * Show the form for creating a new resource.
@@ -40,7 +63,7 @@ class UniversityController extends Controller
      */
     public function store(Request $request)
     {
-        //
+    
     }
 
     /**
@@ -56,7 +79,7 @@ class UniversityController extends Controller
      */
     public function edit(string $id)
     {
-        //
+        
     }
 
     /**
@@ -65,6 +88,20 @@ class UniversityController extends Controller
     public function update(Request $request, string $id)
     {
 
+            // $uni = University::find($id);
+
+            // $uni->update([
+            //     'university_name' => $request->university_name,
+            //]);
+         
+            $uniBranch = UniversityBranch::find($id);
+            $uniBranch->update([
+                'uni_branch_name' => $request->uni_branch_name,
+            ]);
+
+            return redirect(route('manage-universities.index'))->with('success', 'University successfully updated.');
+            
+         
     }
 
     /**

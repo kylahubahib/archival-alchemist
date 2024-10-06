@@ -12,7 +12,7 @@ use Inertia\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
-class TagsController extends Controller
+class AdvancedTagsController extends Controller
 {
     
     /**
@@ -41,7 +41,7 @@ class TagsController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $request->validate([
-            'tag_name' => 'required|string|unique:tags',
+            'tags_name' => 'required|string|unique:tags',
         ]);
 
         Tags::create([
@@ -84,13 +84,13 @@ class TagsController extends Controller
         Log::info('Update request data: ', $request->all());
 
         $request->validate([
-            'tag_name' => 'required|string'
+            'tags_name' => 'required|string'
         ]);
 
         $tags = Tags::find($id);
 
         $tags->update([
-            'tag_name' => $request->tag_name
+            'tags_name' => $request->tag_name
         ]);
 
         return redirect(route('manage-tags.index'));

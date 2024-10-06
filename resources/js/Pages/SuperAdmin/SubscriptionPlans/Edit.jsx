@@ -15,7 +15,7 @@ export default function Edit({ isOpen, onClose, subscriptionPlans, planFeatures,
             .filter(planFeature => planFeature.plan.id === planId)
             .map(planFeature => planFeature.feature.id);
     };
-
+ 
     const { data, setData, put, processing, errors, reset } = useForm({
         plan_name: subscriptionPlans.plan_name,
         plan_price: subscriptionPlans.plan_price,

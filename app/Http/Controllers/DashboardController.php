@@ -1,22 +1,17 @@
 <?php
 
-namespace App\Http\Controllers; 
+namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 
-class UniversityBranchController extends Controller
+class DashboardController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        $branches = UniversityBranch::with('university')->get();
-
-        return Inertia::render('SuperAdmin/Advanced/Universities/Universities', [
-            'branches' => $branches,
-        ]);
-        
+        //
     }
 
     /**

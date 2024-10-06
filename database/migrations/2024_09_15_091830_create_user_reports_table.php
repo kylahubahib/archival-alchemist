@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class DropUserReportsTable extends Migration
+class CreateUserReportsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,16 +13,7 @@ class DropUserReportsTable extends Migration
      */
     public function up()
     {
-        Schema::dropIfExists('user_reports');
-    }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
-    {
         Schema::create('user_reports', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('reporter_id');
@@ -38,6 +29,16 @@ class DropUserReportsTable extends Migration
             
             $table->foreign('reporter_id')->references('id')->on('users')->onDelete('cascade');
         });
+    }
+
+    /**
+     * Reverse the migrations.
+     *
+     * @return void
+     */
+    public function down()
+    {
+        Schema::dropIfExists('user_reports');
 
 
     }

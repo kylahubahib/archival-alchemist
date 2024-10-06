@@ -1,11 +1,11 @@
 <?php
 
-use App\Http\Controllers\StudentClassController; // Add this line
+use App\Http\Controllers\StudentClassController;
 use App\Models\Student;
 use App\Http\Controllers\TagController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\UserReportController;
-use App\Http\Controllers\TagsController;
+use App\Http\Controllers\AdvancedTagsController;
 use App\Http\Controllers\TermsAndConditionController;
 use App\Http\Controllers\SubscriptionPlanController;
 use App\Http\Controllers\FAQController;
@@ -18,7 +18,8 @@ use App\Http\Controllers\DepartmentsController;
 use App\Http\Controllers\CoursesController;
 use App\Http\Controllers\SectionsController;
 use App\Http\Controllers\PaymentSessionController;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Auth;use App\Http\Controllers\InstitutionSubscriptionController;
+
 
 
 use App\Http\Middleware\CheckUserTypeMiddleware;
@@ -111,8 +112,7 @@ Route::get('/tags', function () {
 })->middleware(['auth', 'verified', 'user-type:student,teacher'])->name('tags');
 
 
-//Route::post('/feedback', [UserFeedbacksController::class, 'store'])->name('user-feedbacks.store');
-
+Route::post('/feedback', [UserFeedbacksController::class, 'store'])->name('user-feedbacks.store');
 Route::post('/report', [UserReportController::class, 'store'])->name('user-reports.store');
 
 Route::get('/report-types', [UserReportController::class, 'reportTypeList']);
@@ -163,9 +163,7 @@ Route::middleware(['auth', 'verified', 'user-type:superadmin'])->group(function 
     //     return Inertia::render('SuperAdmin/Advanced/Universities/Universities');})->name('universities');
     Route::resource('advanced/universities', UniversityController::class)->names('manage-universities');
 
-    // Route::get('/advanced/tags', function () {
-    //     return Inertia::render('SuperAdmin/Advanced/Tags/Tags');})->name('advanced-tags');
-    Route::resource('advanced/tags', TagsController::class)->names('manage-tags');
+    Route::resource('advanced/tags', AdvancedTagsController::class)->names('manage-tags');
 
     ///END ADVANCED ROUTES
 
@@ -175,7 +173,14 @@ Route::middleware(['auth', 'verified', 'user-type:superadmin'])->group(function 
 
     Route::resource('manage-subscription-plans', SubscriptionPlanController::class);
 
-    Route::resource('user-feedbacks', UserFeedbacksController::class);
+    Route::resource('user-feedbacks', UserFeedbacksController::class)->names('user-feedbacks')->except(['store']);
+
+    Route::resource('user-reports', UserReportController::class)->names('user-reports')->except(['store']);
+
+    Route::get('filter-user-reports', [UserReportController::class, 'filterReports'])->name('filter-user-reports');
+    Route::get('filter-feedbacks', [UserFeedbacksController::class, 'filterFeedbacks'])->name('filter-feedbacks');
+    Route::get('get-branches', [UniversityController::class, 'getBranches'])->name('get-branches');
+
 
 
     // You can use put or patch. Put is used to update a resource entirely
@@ -219,8 +224,14 @@ Route::middleware(['auth', 'verified', 'user-type:admin'])->prefix('institution'
     Route::get('/students', function () {
         return Inertia::render('InstitutionAdmin/Students');})->name('institution-students');
 
-    Route::get('/subscription-billing', function () {
-        return Inertia::render('InstitutionAdmin/SubscriptionBilling/SubscriptionBilling');})->name('institution-subscription-billing');
+    // Route::get('/subscription-billing', function () {
+    //     return Inertia::render('InstitutionAdmin/SubscriptionBilling/SubscriptionBilling');})->name('institution-subscription-billing');
+
+    Route::resource('/subscription-billing', InstitutionSubscriptionController::class)->names('institution-subscription-billing');
+
+    Route::post('/upload-csv', [InstitutionSubscriptionController::class, 'uploadCSV'])->name('upload-csv');
+    Route::get('/read-csv', [InstitutionSubscriptionController::class, 'readCSV'])->name('read-csv');
+
 });
 
 //guest

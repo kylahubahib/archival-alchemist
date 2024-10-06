@@ -4,6 +4,7 @@ import ChooseUserType from './ChooseUserType';
 import JoinAffiliation from './JoinAffiliation';
 import Register from './Register';
 import { useForm } from '@inertiajs/react';
+import NavLink from '@/Components/NavLink';
 
 export default function RegistrationForm() {
     const [step, setStep] = useState(1);
@@ -43,14 +44,29 @@ export default function RegistrationForm() {
     };
 
     return (
-        <GuestLayout>
+        //<GuestLayout>
 
-            <div className="flex-grow flex justify-center items-center">
+        <div className='flex flex-row align-middle'>
+            <div>
+                <img src="/images/img2.png" alt="books" className="h-screen" />
+            </div>
+
+            <div className="flex-grow flex flex-col justify-center items-center space-y-3">
+                <div className="mb-5">
+                    <p className=" text-4xl font-bold text-customBlue text-center">WELCOME TO <br/> ARCHIVAL ALCHEMIST!</p>
+                </div>
+
                 <div className="w-full max-w-md mt-6 px-6 py-4 bg-white shadow-md overflow-hidden sm:rounded-lg">
                     {renderStepContent()}
                 </div>
+
+                <div>
+                    <span>Already have an account? 
+                    <NavLink href={route('login')} className=" text-blue-500 font-semibold">LOG IN</NavLink> </span>
+                </div>
             </div>
+        </div>
             
-        </GuestLayout>
+        //</GuestLayout>
     );
 }

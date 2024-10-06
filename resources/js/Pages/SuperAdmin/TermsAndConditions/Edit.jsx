@@ -4,6 +4,7 @@ import LongTextInput from '@/Components/LongTextInput';
 import Modal from '@/Components/Modal';
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
+import { showToast } from '@/Components/Toast';
 import { Head, router, useForm } from '@inertiajs/react';
 import { useState } from 'react';
 
@@ -20,10 +21,11 @@ export default function Edit({ isOpen, onClose, termConditions }) {
             preserveScroll: true,
             onSuccess: () => {
                 onClose();
-                alert('Successfully Updated!');
+                showToast('success', 'Updated Successfully!');
+                
             },
             onError: (errors) => {
-                console.error('Update failed', errors);
+                showToast('error', 'Something is wrong!');
             },
         });
     };
@@ -56,7 +58,7 @@ export default function Edit({ isOpen, onClose, termConditions }) {
                                 id="content_text"
                                 value={data.content_text}
                                 onChange={(e) => setData('content_text', e.target.value)}
-                                className="mt-1 block w-full"
+                                className="mt-1 block w-full min-h-44 max-h-60"
                                 placeholder="Content"
                             />
                             <InputError message={errors.content_text} className="mt-2" />
