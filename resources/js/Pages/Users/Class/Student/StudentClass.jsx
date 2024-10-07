@@ -202,27 +202,36 @@ export default function StudentClass({ auth }) {
                 </div>
             </Modal>
 
-            <Modal show={isConfirmModalOpen} onClose={closeConfirmModal}>
+            <Modal show={isModalOpen} onClose={closeModal}>
                 <div className="p-6">
-                    <h3 className="text-lg font-medium leading-6 text-gray-900">Are you sure you want to leave the class?</h3>
-                    <div className="mt-4 flex space-x-4">
+                    <h3 className="text-lg font-medium leading-6 text-gray-900">Enter Class Code</h3>
+                    <div className="mt-2">
+                        <input
+                            type="text"
+                            className="w-full px-4 py-2 border border-gray-300 rounded-md"
+                            value={classCode}
+                            onChange={(e) => setClassCode(e.target.value)}
+                        />
+                    </div>
+                    {errorMessage && (
+                        <div className="mt-2 text-red-500">
+                            <ul className="list-disc pl-5">
+                                <li>{errorMessage}</li>
+                            </ul>
+                        </div>
+                    )}
+                    <div className="mt-4">
                         <button
                             type="button"
-                            className="px-4 py-2 bg-red-500 text-white font-semibold rounded-md"
-                            onClick={confirmLeaveClass}
+                            className="px-4 py-2 bg-blue-500 text-white font-semibold rounded-md"
+                            onClick={handleJoinClass}
                         >
-                            Yes
-                        </button>
-                        <button
-                            type="button"
-                            className="px-4 py-2 bg-gray-500 text-white font-semibold rounded-md"
-                            onClick={cancelLeaveClass}
-                        >
-                            Cancel
+                            Join
                         </button>
                     </div>
                 </div>
             </Modal>
+
         </AuthenticatedLayout>
     );
 }

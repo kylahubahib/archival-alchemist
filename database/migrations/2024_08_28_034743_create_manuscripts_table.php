@@ -13,13 +13,15 @@ return new class extends Migration
             $table->string('man_doc_title', 255);
             $table->text('man_doc_content');
             $table->string('man_doc_status', 1)->default('X');
+            $table->string('man_doc_visibility', 1)->default('X'); // if private or not
             $table->string('man_doc_adviser', 30);
-            $table->text('man_doc_authors')->nullable()->change(); // Make sure this field can store multiple authors as a JSON string or a text.
-            $table->string('man_doc_author', 255);
+            $table->string('man_doc_authors')->nullable(); // Make sure this field can store multiple authors as a JSON string or a text.
+            // $table->string('man_doc_author', 255);
             $table->bigInteger('man_doc_view_count')->default(0);
             $table->boolean('is_publish')->default(false);
             $table->decimal('man_doc_rating', 5, 2)->nullable();
             $table->timestamps();
+
 
             // Ensure that these foreign key columns are unsignedBigInteger if you are referencing an id column of that type
             $table->foreignId('class_id')->nullable()->constrained('class_code')->on('class')->onDelete('set null');

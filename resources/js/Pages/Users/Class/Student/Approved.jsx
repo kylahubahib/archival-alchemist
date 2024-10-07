@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import Manuscript from '@/Components/Manuscript';
+import Manuscript from '@/Components/Manuscripts/MyManuscript';
+
 
 const Approved = () => {
     const [manuscripts, setManuscripts] = useState([]);
@@ -14,9 +15,12 @@ const Approved = () => {
                 setLoading(false);
             })
             .catch(error => {
-                setError('Error fetching manuscript data.');
+                console.error('Error fetching manuscripts:', error);
+                const errorMessage = error.response ? error.response.data.error : 'An error occurred while fetching the data.';
+                setError(errorMessage);
                 setLoading(false);
             });
+
     }, []);
 
     if (loading) return <div>Loading...</div>;

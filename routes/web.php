@@ -1,9 +1,9 @@
 <?php
 
-use App\Http\Controllers\StudentClassController; 
+use App\Http\Controllers\StudentClassController;
 use App\Models\Student;
 use App\Http\Controllers\TagController;
-
+use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\UserReportController;
 use App\Http\Controllers\AdvancedTagsController;
 use App\Http\Controllers\TermsAndConditionController;
@@ -18,7 +18,7 @@ use App\Http\Controllers\DepartmentsController;
 use App\Http\Controllers\CoursesController;
 use App\Http\Controllers\SectionsController;
 use App\Http\Controllers\PaymentSessionController;
-use App\Http\Controllers\InstitutionSubscriptionController;
+use Illuminate\Support\Facades\Auth;use App\Http\Controllers\InstitutionSubscriptionController;
 
 
 
@@ -29,6 +29,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Response;
 use Inertia\Inertia;
+use Illuminate\Http\Request;
 
 // Route::get('/', function () {
 //     return Inertia::render('Home', [
@@ -38,6 +39,13 @@ use Inertia\Inertia;
 //         'phpVersion' => PHP_VERSION,
 //     ]);
 // });
+Route::get('/auth/user', function (Request $request) {
+    return response()->json([
+        'id' => $request->user()->id,
+        'user_type' => $request->user()->user_type,
+        // Add any other fields you might need
+    ]);
+})->middleware('auth');
 
 Route::get('/', function () {
     return Inertia::render('Home');
@@ -50,10 +58,21 @@ Route::get('/payment/cancel', [PaymentSessionController::class, "paymentCancel"]
 Route::post('/payment', [PaymentSessionController::class, 'PaymentSession'])->name('payment');
 
 
-
 Route::get('/library', function () {
-    return Inertia::render('Users/Library');
-})->middleware(['user-type:student,teacher,guest'])->name('library');
+    $user = Auth::user(); // Get the currently authenticated user
+    Log::info('User accessing library:', ['user' => $user]); // Log user info
+    return Inertia::render('Users/Library', [
+        'user' => $user // Pass user data to the component
+    ]);
+})->middleware(['auth', 'user-type:student,teacher,guest'])->name('library');
+
+
+
+
+
+// Route::get('/library', function () {
+//     return Inertia::render('Users/Library');
+// })->middleware(['user-type:student,teacher,guest'])->name('library');
 
 Route::get('/forum', function () {
     return Inertia::render('Users/Forum');
@@ -259,6 +278,10 @@ Route::get('/api/tags/get-tags', [TagController::class, 'index']);
 Route::get('/api/tags', [TagController::class, 'index']);
 
 
+//Add a route for fetching tag suggestions:
+    // In api.php or web.php
+    Route::get('/api/authors/suggestions', [TagController::class, 'Authorsuggestions']);
+
 //route for checking the class code
 Route::post('/check-class-code', [StudentClassController::class, 'checkClassCode']);
 // routes for storing student in class table
@@ -272,6 +295,28 @@ Route::get('/api/approved-manuscripts', [StudentClassController::class, 'getAppr
 
 
 Route::get('/api/my-approved-manuscripts', [StudentClassController::class, 'myApprovedManuscripts']);
+
+Route::get('/api/my-favorite-manuscripts', [StudentClassController::class, 'myfavoriteManuscripts']);
+
+Route::post('/api/addfavorites', [StudentClassController::class, 'storefavorites'])
+    ->middleware(['auth', 'verified', 'user-type:student'])
+    ->name('storefavorites');
+;
+// Correct
+// Route::get('/user/{id}/favorites', [StudentClassController::class, 'getUserFavorites']);
+
+// Add the correct middleware if needed
+Route::get('/user/{id}/favorites', [StudentClassController::class, 'getUserFavorites'])
+->middleware(['auth', 'verified', 'user-type:student'])
+->name('getUserFavorites');
+
+
+// Route for removing a favorite
+Route::delete('/api/removefavorites', [StudentClassController::class, 'removeFavorite'])
+    ->middleware(['auth', 'verified', 'user-type:student'])
+    ->name('removeFavorite');
+
+
 
 //check user in csv file
 Route::post('/check-user-in-spreadsheet', [CheckSubscriptionController::class, 'checkUserInSpreadsheet']);
