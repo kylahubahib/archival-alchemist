@@ -59,6 +59,26 @@ class SubscriptionPlanController extends Controller
         ]);
     }
 
+    public function getPlans()
+    {
+        $personalPlans = SubscriptionPlan::where('plan_status', 'available')
+            ->where('plan_type', 'Personal')
+            ->get();
+
+        $institutionalPlans = SubscriptionPlan::where('plan_status', 'available')
+            ->where('plan_type', 'Institutional')
+            ->where('plan_name', '!=', 'Free Plan')
+            ->get();
+
+        $planFeatures = PlanFeature::with(['plan', 'feature'])->get();
+
+
+        return response()->json([
+            'institutionalPlans' => $institutionalPlans,
+            'planFeatures' => $planFeatures
+        ]);
+    }
+
     /**
      * Show the form for creating a new resource.
      */

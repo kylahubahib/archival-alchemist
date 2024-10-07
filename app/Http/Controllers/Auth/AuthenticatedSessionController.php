@@ -43,43 +43,48 @@ class AuthenticatedSessionController extends Controller
 
         //Check if user is affiliated with an institution
         // $user->student->uni_branch_id : Eloquent way of retrieving data from the student table
-        $checkInSub = InstitutionSubscription::where('uni_branch_id', $user->student->uni_branch_id)->first();
-        //\Log::info('Check Subscription:', $checkInSub ? $checkInSub->toArray() : 'No subscription found');
-
-        //\Log::info('Before checkinsub');
-        //\Log::info($checkInSub->toArray());
-
-        //Check if $checkInSub retrieve a data or is it null
-        if ($checkInSub != null) 
+        if($user->user_type != 'admin' && $user->user_type != 'superadmin')
         {
-            //\Log::info('Enter checkinsub ok');
 
-            //Retrieve the path of the csv from the data stored in $checkInSub
-            $filePath = $checkInSub->insub_content;
-            //Retrieve data from a CSV file and convert it into a PHP array using Laravel Excel
-            $csvData = Excel::toArray(new UsersImport, public_path($filePath));
-            
-            //Logging the data retrieved in Auth::user()
-            \Log::info('Auth ' . $user->uni_id_num . ' ' . $user->name . ' ' . $user->user_dob);
+            $checkInSub = InstitutionSubscription::where('uni_branch_id', $user->student->uni_branch_id)->first();
+            //\Log::info('Check Subscription:', $checkInSub ? $checkInSub->toArray() : 'No subscription found');
 
-            //Check if 
-            if (!empty($csvData) && !empty($csvData[0])) {
-                $data = $csvData[0];
-                foreach ($data as $row) {
-                    if (count($row) >= 5) {
-                        \Log::info($row['id_number'] . ' ' . $row['name'] . ' ' . $row['dob']);
-                        if ($row['id_number'] == $user->uni_id_num && $row['name'] == $user->name && $row['dob'] == $user->user_dob) {
-                            $user->update([
-                                'is_premium' => true
-                            ]);
-                            \Log::info('User upgraded to premium: ', $user->toArray());
-                            break; 
+            //\Log::info('Before checkinsub');
+            //\Log::info($checkInSub->toArray());
+
+            //Check if $checkInSub retrieve a data or is it null
+            if ($checkInSub != null) 
+            {
+                //\Log::info('Enter checkinsub ok');
+
+                //Retrieve the path of the csv from the data stored in $checkInSub
+                $filePath = $checkInSub->insub_content;
+                //Retrieve data from a CSV file and convert it into a PHP array using Laravel Excel
+                $csvData = Excel::toArray(new UsersImport, public_path($filePath));
+                
+                //Logging the data retrieved in Auth::user()
+                \Log::info('Auth ' . $user->uni_id_num . ' ' . $user->name . ' ' . $user->user_dob);
+
+                //Check if 
+                if (!empty($csvData) && !empty($csvData[0])) {
+                    $data = $csvData[0];
+                    foreach ($data as $row) {
+                        if (count($row) >= 5) {
+                            \Log::info($row['id_number'] . ' ' . $row['name'] . ' ' . $row['dob']);
+                            if ($row['id_number'] == $user->uni_id_num && $row['name'] == $user->name && $row['dob'] == $user->user_dob) {
+                                $user->update([
+                                    'is_premium' => true
+                                ]);
+                                \Log::info('User upgraded to premium: ', $user->toArray());
+                                break; 
+                            }
                         }
                     }
+                } else {
+                    \Log::warning('CSV data is empty or not in the expected format.');
                 }
-            } else {
-                \Log::warning('CSV data is empty or not in the expected format.');
             }
+
         }
 
         // Redirect based on user_type

@@ -30,14 +30,15 @@ export default function Login({ status, canResetPassword }) {
 
     return (
         //<GuestLayout>
-         <div className='flex flex-row align-middle'>
-                <div>
-                    <img src="/images/img2.png" alt="books" className="h-screen" />
-                </div>
+         
+        <div className="flex flex-col md:flex-row align-middle">
+            <div className="h-64 md:min-h-screen md:w-1/2">
+                <img src="/images/img2.png" alt="books" className="w-full h-full object-cover" />
+            </div>
 
-            <div className="flex-grow flex flex-col justify-center items-center space-y-3">
+            <div className="flex-grow flex flex-col justify-center items-center space-y-3 p-4 md:p-0">
                 <div className="mb-5">
-                    <p className=" text-5xl font-bold text-customBlue text-center">ARCHIVAL <br/> ALCHEMIST</p>
+                    <p className=" text-4xl font-bold text-customBlue text-center">ARCHIVAL <br/> ALCHEMIST</p>
                 </div>
                
                 <div className="w-full max-w-md mt-6 px-6 py-4 bg-white shadow-md overflow-hidden sm:rounded-lg">
@@ -107,7 +108,7 @@ export default function Login({ status, canResetPassword }) {
                         </div>
                     </form>
                 </div>
-                <div>
+                <div className="text-center">
                     <span>Don't have an account? 
                     <NavLink href={route('register')} className=" text-blue-500 font-semibold">REGISTER</NavLink> </span>
                 </div>

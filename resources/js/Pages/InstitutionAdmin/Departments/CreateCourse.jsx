@@ -3,13 +3,15 @@ import InputLabel from '@/Components/InputLabel';
 import Modal from '@/Components/Modal';
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
+import { showToast } from '@/Components/Toast';
 import { useForm } from '@inertiajs/react';
 
-export default function CreateCourse({isOpen, onClose, deptId}) {
+export default function CreateCourse({isOpen, onClose, deptId, branchId}) {
 
     const { data, setData, post, processing, errors, clearErrors, reset } = useForm({
         course_name: '',
-        dept_id: deptId
+        dept_id: deptId,
+        uni_branch_id: branchId
     });
 
     const createSubmit = (e) => {
@@ -17,7 +19,7 @@ export default function CreateCourse({isOpen, onClose, deptId}) {
         post(route('manage-courses.store'), {
             onSuccess: () => {
                 onClose();
-                alert('Success!');
+                showToast('success', 'Successfully added course!')
                 reset();
             },
         });

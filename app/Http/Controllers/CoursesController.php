@@ -3,12 +3,16 @@
 namespace App\Http\Controllers;
 
 use App\Models\Course;
+use App\Models\Department;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Validation\Rules;
 use Inertia\Inertia;
 use Inertia\Response;
-use Illuminate\Support\Facades\Auth; 
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\DB;
+
 
 class CoursesController extends Controller
 {
@@ -35,12 +39,39 @@ class CoursesController extends Controller
      */
     public function store(Request $request)
     {
-        \Log::info('ok');
+
+        // $request->validate([
+        //     'dept_id' => 'required|integer',
+        //     'course_name' => 'required|string|unique:courses',
+        // ]);
 
         $request->validate([
             'dept_id' => 'required|integer',
-            'course_name' => 'required|string|unique:courses',
+            'course_name' => [
+                'required',
+                'string',
+                Rule::unique('courses')->where(function ($query) use ($request) {
+                    // Find the department associated with the given dept_id
+                    $department = Department::find($request->dept_id);
+        
+                    // If the department exists, add conditions to the query
+                    if ($department) {
+                        return $query->where('dept_id', $request->dept_id)
+                                     ->whereExists(function ($subQuery) use ($department) {
+                                         $subQuery->select(DB::raw(1))
+                                             ->from('departments')
+                                             ->whereColumn('departments.id', 'courses.dept_id')
+                                             ->where('departments.uni_branch_id', $department->uni_branch_id);
+                                     });
+                    }
+        
+                    // If the department doesn't exist, just return the query
+                    return $query;
+                }),
+            ],
         ]);
+        
+
 
         \Log::info('New Course: ', $request->all());
 

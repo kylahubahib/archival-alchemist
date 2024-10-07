@@ -95,10 +95,9 @@ Route::get('/tags', function () {
 
 Route::post('/feedback', [UserFeedbacksController::class, 'store'])->name('user-feedbacks.store');
 Route::post('/report', [UserReportController::class, 'store'])->name('user-reports.store');
-
 Route::get('/report-types', [UserReportController::class, 'reportTypeList']);
-
 Route::get('/check-feedback', [UserFeedbacksController::class, 'CheckIfFeedbackExist'])->name('check-feedback');
+Route::get('/check-university-subscription', [UniversityController::class, 'checkUniversitySubscription'])->name('check-university-subscription');
 
 
 //SUPERADMIN
@@ -115,17 +114,8 @@ Route::middleware(['auth', 'verified', 'user-type:superadmin'])->group(function 
     Route::get('/subscription-billing', function () {
         return Inertia::render('SuperAdmin/SubscriptionBilling');})->name('subscription-billing');
 
-    // Route::get('/user-feedbacks', function () {
-    //     return Inertia::render('SuperAdmin/UserFeedbacks/UserFeedbacks');})->name('user-feedbacks');
-
     Route::get('/user-reports', function () {
         return Inertia::render('SuperAdmin/UserReports/UserReports');})->name('user-reports');
-
-    // Route::get('/subscription-plans', function () {
-    //      return Inertia::render('SuperAdmin/SubscriptionPlans/SubscriptionPlans');})->name('subscription-plans');
-
-    // Route::get('/faq', function () {
-    //     return Inertia::render('SuperAdmin/FrequentlyAskedQuestions/Faq');})->name('faq');
 
     ///ADVANCED ROUTES
     ///Decided to create routes for the buttons in advanced page to simplify or easily create the crud functionality
@@ -136,12 +126,8 @@ Route::middleware(['auth', 'verified', 'user-type:superadmin'])->group(function 
     Route::get('/advanced/forum', function () {
         return Inertia::render('SuperAdmin/Advanced/Forum/Forum');})->name('advanced-forum');
 
-    // Route::get('/advanced/custom-messages', function () {
-    //     return Inertia::render('SuperAdmin/Advanced/CustomMessages/CustomMessages');})->name('advanced-custom-messages');
     Route::resource('advanced/custom-messages', CustomMessagesController::class)->names('manage-custom-messages');
 
-    // Route::get('/advanced/universities', function () {
-    //     return Inertia::render('SuperAdmin/Advanced/Universities/Universities');})->name('universities');
     Route::resource('advanced/universities', UniversityController::class)->names('manage-universities');
 
     Route::resource('advanced/tags', AdvancedTagsController::class)->names('manage-tags');
@@ -188,12 +174,7 @@ Route::middleware(['auth', 'verified', 'user-type:admin'])->prefix('institution'
     Route::get('/coadmins', function () {
         return Inertia::render('InstitutionAdmin/CoAdmins');})->name('institution-coadmins');
 
-    // Route::get('/departments', function () {
-    //     return Inertia::render('InstitutionAdmin/Departments');})->name('institution-departments');
     Route::resource('/departments', DepartmentsController::class)->names('manage-departments');
-
-    // Route::get('/courses', function () {
-    //     return Inertia::render('InstitutionAdmin/Courses');})->name('institution-courses');
 
     Route::resource('/courses', CoursesController::class)->names('manage-courses');
 
@@ -204,14 +185,12 @@ Route::middleware(['auth', 'verified', 'user-type:admin'])->prefix('institution'
 
     Route::get('/students', function () {
         return Inertia::render('InstitutionAdmin/Students');})->name('institution-students');
-
-    // Route::get('/subscription-billing', function () {
-    //     return Inertia::render('InstitutionAdmin/SubscriptionBilling/SubscriptionBilling');})->name('institution-subscription-billing');
-
+        
     Route::resource('/subscription-billing', InstitutionSubscriptionController::class)->names('institution-subscription-billing');
 
     Route::post('/upload-csv', [InstitutionSubscriptionController::class, 'uploadCSV'])->name('upload-csv');
     Route::get('/read-csv', [InstitutionSubscriptionController::class, 'readCSV'])->name('read-csv');
+    Route::get('/get-plans', [SubscriptionPlanController::class, 'getPlans'])->name('get-plans');
 
 });
 

@@ -8,7 +8,7 @@ import Stepper from '@/Components/Stepper';
 import { Checkbox } from '@nextui-org/react';
 
 export default function Register({ prevStep, handleChange, values, handleSubmit, errors }) {
-    const { name, email, password, password_confirmation } = values;
+    const { name, email, password, password_confirmation, user_dob } = values;
     const [isSelected, setIsSelected] = useState(false);
 
     return (
@@ -43,6 +43,20 @@ export default function Register({ prevStep, handleChange, values, handleSubmit,
                         required
                     />
                     <InputError message={errors.email} className="mt-2" />
+                </div>
+
+                <div className="mt-4">
+                    <InputLabel htmlFor="user_dob" value="Date of Birth" />
+                    <TextInput
+                        id="user_dob"
+                        type="date"
+                        name="user_dob"
+                        value={user_dob}
+                        className="my-1 block w-full"
+                        onChange={handleChange('user_dob')}
+                        required
+                    />
+                    <InputError message={errors.user_dob} className="mt-2" />
                 </div>
 
                 <div className="mt-4">

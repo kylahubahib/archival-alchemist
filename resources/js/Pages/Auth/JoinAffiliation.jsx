@@ -6,17 +6,21 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
 export default function JoinAffiliation({ nextStep, prevStep, handleChange, values }) {
-    const { uni_branch_id, uni_id_num } = values;
+    const { uni_branch_id, uni_id_num, role, ins_admin_proof } = values;
     const [universities, setUniversities] = useState([]);
+    const [selectedFile, setSelectedFile] = useState(ins_admin_proof); 
+    const [errorMessage, setErrorMessage] = useState(null);
 
     useEffect(() => {
         axios.get('/api/universities-branches')
-            .then(response => {
+            .then(response => { 
                 setUniversities(response.data);
             })
             .catch(error => {
                 console.error('Error fetching university data:', error);
             });
+
+        console.log(errorMessage);
     }, []);
 
     const continueStep = (e) => {
@@ -24,17 +28,57 @@ export default function JoinAffiliation({ nextStep, prevStep, handleChange, valu
         nextStep();
     };
 
+    const handleFileChange = (e) => {
+        const file = e.target.files[0];
+        setSelectedFile(file);
+        handleChange('ins_admin_proof')({
+            target: {
+                value: file,
+            },
+        });
+    };
+
+    const checkIfUniversityExist = async (uni_branch_id) => {
+        
+        handleChange('uni_branch_id')({
+            target: {
+                value: uni_branch_id,
+            }
+        });
+
+        if(role === 'admin'){
+            try {
+                const response = await axios.get('/check-university-subscription', {
+                    params: {
+                        uni_branch_id: uni_branch_id
+                    }
+                });
+        
+                if (response.status === 200) {
+                    console.log(response.data.message);
+                    setErrorMessage(response.data.message);
+                } else if (response.status === 204) {
+                    setErrorMessage(null);
+                }
+            } catch (error) {
+                console.error('Error checking university subscription:', error);
+            }
+        }
+
+       
+    };
+
     return (
         <div className="flex flex-col space-y-4 justify-center">
             <h2 className="text-2xl text-center font-bold mb-4">Join Affiliation</h2>
             <Stepper steps={['1', '2', '3']} currentStep={2} />
-            <form onSubmit={continueStep} className="w-full max-w-lg mt-4">
+            <form onSubmit={continueStep} className="w-full max-w-lg mt-4 space-y-3">
                 <InputLabel value={'University'} />
                 <select
                     id="uni_branch_id"
                     name="uni_branch_id"
                     value={uni_branch_id}
-                    onChange={handleChange('uni_branch_id')}
+                    onChange={(e) => checkIfUniversityExist(e.target.value)}  
                     className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
                 >
                     <option value="" disabled>Select a university</option>
@@ -57,9 +101,40 @@ export default function JoinAffiliation({ nextStep, prevStep, handleChange, valu
                     onChange={handleChange('uni_id_num')}
                 />
 
+                {role === 'admin' ? (
+                    <>
+                    <InputLabel value={'Proof of University Connection'} />
+                    <div className="flex items-center justify-center w-full">
+                        <label htmlFor="dropzone-file" className="flex flex-col items-center justify-center w-full h-12 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
+                            <div className="flex flex-row space-x-2 items-center justify-between p-5">
+                                {selectedFile ? (
+                                    <p className="text-sm text-blue-500 mt-2">
+                                        {selectedFile.name} ({(selectedFile.size / 1024).toFixed(2)} KB)
+                                    </p>
+                                ) : (
+                                    <p className="text-sm text-gray-500 font-semibold">Click to upload</p>
+                                )}
+                            </div>
+                            <input
+                                id="dropzone-file"
+                                type="file"
+                                className="hidden"
+                                onChange={handleFileChange} 
+                            />
+                        </label>
+                    </div>
+                    </>
+                ) : null}
+
+                {errorMessage && (
+                    <div className="text-red-500 font-medium mt-2">
+                        {errorMessage}
+                    </div>
+                )}
+
                 <div className="flex items-center justify-between mt-4">
                     <button type="button" onClick={prevStep} className="btn btn-secondary mr-5">Back</button>
-                    <button type="submit" className="btn btn-primary">Next</button>
+                    <button type="submit" className={`btn btn-primary ${errorMessage != null ? 'text-gray-400' : 'text-gray-700'}`} disabled={errorMessage != null}>Next</button>
                 </div>
             </form>
         </div>

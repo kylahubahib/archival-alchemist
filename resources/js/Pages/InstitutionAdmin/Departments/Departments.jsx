@@ -38,14 +38,14 @@ export default function Departments({ auth, departments, uniBranch_id, courses, 
             setData('uni_branch_id', uniBranch_id);
         } else if (displayedData === 'Courses') {
             if (selectedId !== null) {
-                const courseFilter = courses
+                const courseFilter = courses.data
                     .filter(course => course.department.id === selectedId) // Filter by department
                     .filter(course => course.course_name.toLowerCase().startsWith(wordEntered.toLowerCase())); // Filter by course name
     
                 setFilteredData(courseFilter);
             } 
         }
-    }, [wordEntered, departments.data, courses, displayedData, selectedId]);
+    }, [wordEntered, departments.data, courses.data, displayedData, selectedId]);
     
 
     const handleFilter = (e) => {
@@ -62,7 +62,7 @@ export default function Departments({ auth, departments, uniBranch_id, courses, 
 
         setSelectedId(item.id);
         setDisplayedData('Courses');
-        setFilteredData(courses.filter(course => course.department.id === item.id));
+        setFilteredData(courses.data.filter(course => course.department.id === item.id));
     }
 
     const displayDepts = () => {
@@ -169,7 +169,7 @@ export default function Departments({ auth, departments, uniBranch_id, courses, 
             setSelectedDept(null);
         }
         else if(displayedData === 'Courses'){
-            setFilteredData(courses.filter(course => course.department.id === selectedId));
+            setFilteredData(courses.data.filter(course => course.department.id === selectedId));
             setWordEntered("");
             setSelectedCourse(null);
         }
@@ -519,7 +519,7 @@ export default function Departments({ auth, departments, uniBranch_id, courses, 
                 </div>
             </Modal>}
 
-            {displayedData === 'Courses' && <CreateCourse isOpen={isCreateModalOpen} onClose={closeModal} deptId={selectedId} setFilteredData={setFilteredData} courses={courses}/>}
+            {displayedData === 'Courses' && <CreateCourse isOpen={isCreateModalOpen} onClose={closeModal} deptId={selectedId} setFilteredData={setFilteredData} courses={courses.data}/>}
 
             {displayedData === 'Courses' && selectedCourse && <EditCourse isOpen={isEditModalOpen} onClose={closeModal} deptId={selectedId} course={selectedCourse}/>}
 

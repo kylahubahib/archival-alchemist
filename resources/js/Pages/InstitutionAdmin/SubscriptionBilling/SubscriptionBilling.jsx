@@ -1,14 +1,17 @@
 import DangerButton from '@/Components/DangerButton';
-import FileUpload from '@/Components/FileUpload';
 import PrimaryButton from '@/Components/PrimaryButton';
 import AdminLayout from '@/Layouts/AdminLayout';
 import { Head } from '@inertiajs/react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import ViewCSV from './ViewCSV';
+import axios from 'axios';
+import SubscriptionPlansList from './SubscriptionPlansList';
 
 export default function InsAdminSubscriptionBilling({ auth, ins_sub }) {
     const [isModalOpen, setIsModalOpen] = useState(false);
-
+    const [institutionalPlans, setInstitutionalPlans] = useState([]);
+    const [planFeatures, setPlanFeatures] = useState([]); 
+    const [viewPlans, setViewPlans] = useState(null);
 
     const openModal = () => {
         setIsModalOpen(true);
@@ -18,6 +21,28 @@ export default function InsAdminSubscriptionBilling({ auth, ins_sub }) {
         setIsModalOpen(false);
     }
 
+    useEffect(() =>{
+        console.log(institutionalPlans);
+        console.log(planFeatures);
+    })
+
+    const viewPlanList = async () => {
+        try {
+            const response = await axios.get('/institution/get-plans');
+
+            if (response.data) {
+                setInstitutionalPlans(response.data.institutionalPlans);
+                setPlanFeatures(response.data.planFeatures);
+                setViewPlans(true);
+            } else {
+                console.error('No data returned');
+            }
+        } catch (error) {
+            console.error('Error fetching plans:', error.response ? error.response.data : error);
+        }
+
+    };
+    
     return (
         <AdminLayout
             user={auth.user}
@@ -25,6 +50,7 @@ export default function InsAdminSubscriptionBilling({ auth, ins_sub }) {
         >
             <Head title="Subscription & Billing" />
 
+            {!viewPlans ? (
             <div className="py-4 select-none">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
                     <div className="text-gray-700 text-3xl font-bold my-3">Subscription and Billing</div>
@@ -67,13 +93,28 @@ export default function InsAdminSubscriptionBilling({ auth, ins_sub }) {
                         <div className="flex flex-row justify-between mt-auto">
                             <button className="text-blue-600 font-bold hover:text-customBlue">View Agreement</button>
                             <div className="flex flex-row space-x-3">
-                                <DangerButton>Cancel Subscription</DangerButton>
-                                <PrimaryButton>Renew Subscription</PrimaryButton>
+                                { ins_sub.plan_id != 6 ? (
+                                    <>
+                                    <DangerButton>Cancel Subscription</DangerButton>
+                                    <PrimaryButton>Renew Subscription</PrimaryButton>
+                                    </>
+                                    ) : (
+                                        <>
+                                            <PrimaryButton onClick={viewPlanList}>UPGRADE TO PREMIUM PLANS</PrimaryButton>
+                                        </>
+                                    )
+
+                                }
+                               
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
+            ) : (
+                <SubscriptionPlansList institutionalPlans={institutionalPlans} planFeatures={planFeatures}/>
+            )
+            }
 
 
             <ViewCSV isOpen={isModalOpen} onClose={closeModal} file={ins_sub.insub_content} ins_sub={ins_sub} />
