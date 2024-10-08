@@ -20,7 +20,7 @@ class UniversityController extends Controller
         $universities = University::with('university_branch')->paginate(100);
         $uniBranches = UniversityBranch::with('university')->paginate(100);
 
-        \Log::info('University Controller');
+        //\Log::info('University Controller');
         //\Log::info('Universities ', $uniBranches->toArray());
 
         return Inertia::render('SuperAdmin/Advanced/Universities/Universities', [
@@ -52,8 +52,6 @@ class UniversityController extends Controller
     public function getBranches(Request $request)
     {
         $id = $request->get('id');
-        // \Log::info('ID type: ' . gettype($id));  
-        // \Log::info('ID value: ' . $id);
 
         if($id == 0){
             $uniBranches = UniversityBranch::with('university')->get();
