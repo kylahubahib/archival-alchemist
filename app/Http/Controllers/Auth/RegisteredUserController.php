@@ -22,8 +22,6 @@ use App\Models\InstitutionAdmin;
 use App\Models\InstitutionSubscription;
 
 
-
-
 class RegisteredUserController extends Controller
 {
     /**
