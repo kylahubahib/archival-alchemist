@@ -11,7 +11,6 @@ const UploadCapstone = () => {
         man_doc_title: '',
         man_doc_content: null,
         man_doc_adviser: '',
-        man_doc_author: [],
         agreed: false,
     });
     const [errors, setErrors] = useState({ users: '', tags: '' });
@@ -28,7 +27,6 @@ const UploadCapstone = () => {
             man_doc_title: '',
             man_doc_content: null,
             man_doc_adviser: '',
-            man_doc_author: [],
             agreed: false,
         });
         setTags([]);
@@ -77,17 +75,6 @@ const UploadCapstone = () => {
         });
     };
 
-    const handleAuthorChange = (e) => {
-        const newAuthors = e.target.value
-            .split('\n')
-            .map(author => author.trim())
-            .filter(author => author);
-
-        setFormValues({
-            ...formValues,
-            man_doc_author: newAuthors,
-        });
-    };
 
     const handleTagInputChange = (e) => {
         const { value } = e.target;
@@ -166,7 +153,6 @@ const UploadCapstone = () => {
     const isFormValid = () => {
         return (
             formValues.man_doc_title &&
-            // formValues.man_doc_author.length > 0 &&
             formValues.man_doc_adviser &&
             users.length > 0 &&
             tags.length > 0 &&
@@ -187,11 +173,9 @@ const UploadCapstone = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        // const authorsArray = formValues.man_doc_author;
         const newErrors = {};
 
         if (!formValues.man_doc_title) newErrors.man_doc_title = 'Title is required.';
-        // if (authorsArray.length === 0) newErrors.man_doc_author = 'Authors are required.';
         if (users.length === 0) newErrors.users = 'At least one user is required.';
         if (!formValues.man_doc_adviser) newErrors.man_doc_adviser = 'Adviser is required.';
         if (tags.length === 0) newErrors.tags = 'At least one tag is required.';
@@ -215,7 +199,6 @@ const UploadCapstone = () => {
                 const formData = new FormData();
                 formData.append('man_doc_title', formValues.man_doc_title);
                 formData.append('man_doc_adviser', formValues.man_doc_adviser);
-                // authorsArray.forEach(author => formData.append('man_doc_author[]', author));
 
                 users.forEach(user => formData.append('name[]', user));
                 tags.forEach(tag => formData.append('tags_name[]', tag));
@@ -276,15 +259,6 @@ const UploadCapstone = () => {
                             />
                             {errors.man_doc_title && <div className="text-red-600 text-sm mb-2">{errors.man_doc_title}</div>}
 
-                            {/* <textarea
-                                name="man_doc_author"
-                                placeholder="Authors (Last Name, First Name)"
-                                className="w-full p-2 border rounded mb-2"
-                                value={formValues.man_doc_author.join('\n')}
-                                onChange={handleAuthorChange}
-                                rows={3}
-                            />
-                            {errors.man_doc_author && <div className="text-red-600 text-sm mb-2">{errors.man_doc_author}</div>} */}
 
                             <input
                                 type="text"

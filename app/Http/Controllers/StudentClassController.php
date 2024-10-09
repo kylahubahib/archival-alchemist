@@ -38,8 +38,9 @@ class StudentClassController extends Controller
             $validatedData = $request->validate([
                 'man_doc_title' => 'required|string|max:255',
                 'man_doc_adviser' => 'required|string|max:255',
-                'man_doc_author' => 'nullable|array',
-                'man_doc_author.*' => '.string|max:255',
+                'name' => 'nullable|array',
+'name.*' => 'string|max:255',
+
                 'tags_name' => 'nullable|array', // Change this line to match your input key
                 'tags_name.*' => 'string|max:255', // Validate individual tag names
                 'man_doc_content' => 'required|file|mimes:pdf,docx|max:10240',
@@ -53,11 +54,6 @@ class StudentClassController extends Controller
 
             // Store the file
             $filePath = $request->file('man_doc_content')->store('capstone_files');
-
-            // Convert author array to string
-            // $author = $request->input('man_doc_author');
-            // $authorsString = implode(', ', $author);
-
             // Create the manuscript project
             $manuscriptProject = ManuscriptProject::create([
                 'man_doc_title' => $validatedData['man_doc_title'],
@@ -106,8 +102,6 @@ class StudentClassController extends Controller
                     'tag_id' => $tagId,
                 ]);
             }
-
-
 
                         // Handle users and store them in the Author table
                         $userIds = []; // Array to hold the IDs of the users to be associated with the manuscript

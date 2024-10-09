@@ -1,5 +1,5 @@
-import { HiBadgeCheck } from "react-icons/hi"; 
-import { CgClose } from "react-icons/cg"; 
+import { HiBadgeCheck } from "react-icons/hi";
+import { CgClose } from "react-icons/cg";
 import { useForm } from "@inertiajs/inertia-react";
 import axios from "axios";
 import { useEffect, useState } from "react";
@@ -15,16 +15,16 @@ export default function ViewCSV({ isOpen, onClose, file, ins_sub}) {
     const [errorMessage, setErrorMessage] = useState('');
 
     useEffect(() => {
-        
+
         axios.get('/institution/read-csv', {
-            params: { filePath : ins_sub.insub_content }, 
+            params: { filePath : ins_sub.insub_content },
         })
         .then(response => {
             if (response.data.success) {
                 setCsvData(response.data.csvData);
                 //console.log(response.data.csvData);
                 //console.log('data:', response.data.csvData[0]);
-                
+
             } else {
                 showToast('info', response.data.message);
             }
@@ -40,29 +40,29 @@ export default function ViewCSV({ isOpen, onClose, file, ins_sub}) {
         // Validate the file type if it is a CSV or not
         if (file && file.type !== 'text/csv' && file.name.split('.').pop().toLowerCase() !== 'csv') {
             setErrorMessage('Please upload a valid CSV file.');
-            setSelectedFile(null); 
+            setSelectedFile(null);
             return;
         }
 
         // Clear previous errors and set the selected file
         setErrorMessage('');
         setSelectedFile(file);
-        //console.log("Selected file:", file);  
+        //console.log("Selected file:", file);
     };
 
     const submit = (e) => {
         e.preventDefault();
-    
+
         if (!selectedFile) {
             showToast('warning', 'Please select a file.')
             return;
         }
-    
+
         const formData = new FormData();
-        formData.append('file', selectedFile);  
+        formData.append('file', selectedFile);
         formData.append('insubId', ins_sub.id);
         formData.append('university', ins_sub.university_branch.university.uni_name + ' ' + ins_sub.university_branch.uni_branch_name);
-    
+
         axios.post('/institution/upload-csv', formData, {
             headers: {
                 'Content-Type': 'multipart/form-data',
@@ -81,10 +81,10 @@ export default function ViewCSV({ isOpen, onClose, file, ins_sub}) {
             }
         });
     };
-    
 
-   
-    return ( 
+
+
+    return (
         <Modal show={isOpen} onClose={onClose} maxWidth="5xl">
 
             <div className="shadow-sm p-3 justify-between flex flex-row">
@@ -97,7 +97,7 @@ export default function ViewCSV({ isOpen, onClose, file, ins_sub}) {
 
             <div>
                 {(file != null) ? (
-                    <div> 
+                    <div>
                         <Table>
                             <TableHeader>
                                     <TableColumn>Id Number</TableColumn>
@@ -129,24 +129,24 @@ export default function ViewCSV({ isOpen, onClose, file, ins_sub}) {
                     <>
                     <form onSubmit={submit}>
                         <div className={`flex items-center justify-center w-full p-3`}>
-                            <label 
-                                htmlFor="dropzone-file" 
-                                className="flex flex-col items-center justify-center w-full h-64 border-2 
-                                border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 
+                            <label
+                                htmlFor="dropzone-file"
+                                className="flex flex-col items-center justify-center w-full h-64 border-2
+                                border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50
                                 hover:bg-gray-100">
                                 <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                                    <svg 
-                                        className="w-8 h-8 mb-4 text-gray-500" 
-                                        aria-hidden="true" 
-                                        xmlns="http://www.w3.org/2000/svg" 
-                                        fill="none" 
+                                    <svg
+                                        className="w-8 h-8 mb-4 text-gray-500"
+                                        aria-hidden="true"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        fill="none"
                                         viewBox="0 0 20 16"
                                     >
-                                        <path 
-                                            stroke="currentColor" 
-                                            strokeLinecap="round" 
-                                            strokeLinejoin="round" 
-                                            strokeWidth="2" 
+                                        <path
+                                            stroke="currentColor"
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth="2"
                                             d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"
                                         />
                                     </svg>
@@ -165,13 +165,13 @@ export default function ViewCSV({ isOpen, onClose, file, ins_sub}) {
                                         </p>
                                     )}
                                 </div>
-                                <input 
+                                <input
 
-                                    id="dropzone-file" 
-                                    type="file" 
-                                    className="hidden" 
-                                    accept=".csv, .xls, .xlsx"  
-                                    onChange={handleFileChange}  
+                                    id="dropzone-file"
+                                    type="file"
+                                    className="hidden"
+                                    accept=".csv, .xls, .xlsx"
+                                    onChange={handleFileChange}
                                 />
                             </label>
                         </div>
