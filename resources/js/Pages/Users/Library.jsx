@@ -89,13 +89,12 @@ export default function Library({ auth }) {
         <MainLayout
             user={auth.user}
             header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Library</h2>}
-            className="min-h-screen flex flex-col rounded-xl"
         >
             <Head title="Library" />
 
-            <div className="bg-white m-4 h-screen rounded-xl">
-                <div className="mx-auto sm:px-6 lg:px-8 h-screen bg-gray-100 pt-6">
-                    <div className="flex flex-col h-screen">
+            <div className="bg-white m-4 min-h-screen rounded-xl">
+                <div className="mx-auto sm:px-6 lg:px-8 bg-gray-100 h-screen pt-6">
+                    <div className="flex flex-col">
                         <div className="flex justify-between items-center mb-4">
                             <div className="flex">
                                 <button

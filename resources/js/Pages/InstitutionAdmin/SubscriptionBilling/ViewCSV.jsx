@@ -1,10 +1,8 @@
 import { HiBadgeCheck } from "react-icons/hi"; 
 import { CgClose } from "react-icons/cg"; 
-import { useForm } from "@inertiajs/inertia-react";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import Modal from "@/Components/Modal";
-import FileUpload from "@/Components/FileUpload";
 import { showToast } from "@/Components/Toast";
 import PrimaryButton from "@/Components/PrimaryButton";
 import { Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from "@nextui-org/react";
@@ -15,7 +13,6 @@ export default function ViewCSV({ isOpen, onClose, file, ins_sub}) {
     const [errorMessage, setErrorMessage] = useState('');
 
     useEffect(() => {
-        
         axios.get('/institution/read-csv', {
             params: { filePath : ins_sub.insub_content }, 
         })
@@ -96,7 +93,7 @@ export default function ViewCSV({ isOpen, onClose, file, ins_sub}) {
             </div>
 
             <div>
-                {(file != null) ? (
+                {(file != null || file != '') ? (
                     <div> 
                         <Table>
                             <TableHeader>

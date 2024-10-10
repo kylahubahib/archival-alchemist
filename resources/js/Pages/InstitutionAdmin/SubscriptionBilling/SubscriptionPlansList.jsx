@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Head } from '@inertiajs/react';
 import axios from 'axios';
 
-export default function SubscriptionPlansList({user, institutionalPlans=[], planFeatures = []}) {
+export default function SubscriptionPlansList({user, plans=[], planFeatures = []}) {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
 
@@ -42,7 +42,7 @@ export default function SubscriptionPlansList({user, institutionalPlans=[], plan
                     <div className="mt-8">
 
                         <div className="space-y-8 lg:grid lg:grid-cols-3 sm:gap-6 xl:gap-10 lg:space-y-0">
-                            {institutionalPlans.map((plan) => (
+                            {plans.map((plan) => (
                                 <div key={plan.id} className="flex flex-col p-6 mx-auto min-w-80 max-w-md text-center text-gray-900 bg-white rounded-lg border border-gray-100 shadow">
                                     <h3 className="mb-4 text-2xl font-semibold">{plan.plan_name}</h3>
                                     <p className="font-light text-gray-500 sm:text-lg">{plan.plan_text}</p>

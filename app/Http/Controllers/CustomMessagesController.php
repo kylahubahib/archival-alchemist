@@ -21,8 +21,14 @@ class CustomMessagesController extends Controller
         $customMessages = CustomContent::with('user')
             ->where('content_type', 'custom messages')
             ->get();
+
+        $billingAgreement = CustomContent::with('user')
+        ->where('content_type', 'billing agreement')
+        ->first();
+
         return Inertia::render('SuperAdmin/Advanced/CustomMessages/CustomMessages', [
             'customMessages' => $customMessages,
+            'billingAgreement' => $billingAgreement
         ]);
     }
 
@@ -63,7 +69,19 @@ class CustomMessagesController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $type = $request->get('content_type');
+        $content = $request->get('content_text');
+
+        if($type === 'billing agreement') {
+            $BillingAgreement = CustomContent::findOrFail($id);
+
+            $BillingAgreement->update([
+                'content_text' => $content
+            ]);
+
+        }
+
+        return redirect(route('manage-custom-messages.index'))->with('success', 'Updated successfully.');
     }
 
     /**

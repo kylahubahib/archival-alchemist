@@ -53,9 +53,9 @@ export default function Authenticated({ user, children, newProfile = null }) {
                     <SidebarItem icon={<SiGoogleclassroom size={20} />} text="Class" to="/studentclass" />
                 )}
                 <SidebarItem icon={<MdChatBubbleOutline size={20} />} text="Inbox" to="/inbox" />
-                <SidebarSeparator marginTop={60}/>
+                <SidebarSeparator marginTop={80}/>
 
-                <SidebarItem icon={<FaCrown size={20} color="#FFD700" />} text="Subscription" to="#" />
+                {/* <SidebarItem icon={<FaCrown size={20} color="#FFD700" />} text="Subscription" to="/subscription" /> */}
                 <SidebarItem icon={<RiMessengerLine size={20} color="#006AFF" />} text="Chat with us" to="https://m.me/432748959923780" externalLink/>
                 <SidebarItem icon={<BiEnvelope size={20} color="#294996" />} text="Give Feedback" onClick={openModal} isActiveModal={isModalOpen}/>
             </Sidebar>
@@ -63,7 +63,7 @@ export default function Authenticated({ user, children, newProfile = null }) {
             <GiveFeedbackModal isOpen={isModalOpen} onClose={closeModal} />
 
             <div className="flex-1 flex flex-col">
-                <nav className="bg-customBlue border-b rounded-xl m-3 sticky top-3">
+                <nav className="bg-customBlue border-b rounded-xl m-3 sticky top-3 z-50">
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                         <div className="flex justify-between h-16">
                             <div className="flex">

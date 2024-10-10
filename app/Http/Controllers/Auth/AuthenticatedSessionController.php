@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Http\Controllers\Auth;
-use Illuminate\Support\Facades\Log; // Add this line at the top of your controller
+use Illuminate\Support\Facades\Log; 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use Illuminate\Http\RedirectResponse;
@@ -41,21 +41,28 @@ class AuthenticatedSessionController extends Controller
         $request->session()->regenerate();
 
         //Get the data of the user and student table
-        $user = Auth::user()->load('student');
+        $user = Auth::user()->load(['student', 'faculty']);
 
         //Check if user is affiliated with an institution
         // $user->student->uni_branch_id : Eloquent way of retrieving data from the student table
         if($user->user_type != 'admin' && $user->user_type != 'superadmin')
         {
 
-            $checkInSub = InstitutionSubscription::where('uni_branch_id', $user->student->uni_branch_id)->first();
+            if($user->user_type == 'student') {
+                $checkInSub = InstitutionSubscription::where('uni_branch_id', $user->student->uni_branch_id)->first();
+            }
+
+            if($user->user_type == 'teacher') {
+                $checkInSub = InstitutionSubscription::where('uni_branch_id', $user->faculty->uni_branch_id)->first();
+            }
+
             //\Log::info('Check Subscription:', $checkInSub ? $checkInSub->toArray() : 'No subscription found');
 
             //\Log::info('Before checkinsub');
             //\Log::info($checkInSub->toArray());
 
             //Check if $checkInSub retrieve a data or is it null
-            if ($checkInSub != null) 
+            if ($checkInSub != null && $checkInSub->insub_content != null) 
             {
                 //\Log::info('Enter checkinsub ok');
 

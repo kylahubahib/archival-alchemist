@@ -92,10 +92,6 @@ export default function Register({ prevStep, handleChange, values, handleSubmit,
                 <div className="flex items-center justify-between mt-4">
                     <button type="button" onClick={prevStep}>Back</button>
                     <div>
-                        {/* <p className="text-default-500">
-                            Selected: {isSelected ? "true" : "false"}
-                        </p> */}
-                        
                         <PrimaryButton className="ms-4" disabled={!isSelected} type="submit">
                             Register
                         </PrimaryButton>

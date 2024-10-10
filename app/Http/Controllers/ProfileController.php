@@ -52,6 +52,7 @@ class ProfileController extends Controller
                     'user_aboutme' => $request->user()->user_aboutme,
                     'user_type' => $request->user()->user_type,
                     'user_pic' => $request->user()->user_pic,
+                    'is_premium' => $request->user()->is_premium
                     // 'user_pic' => $request->user()->user_pic ? asset('storage/profile_pics/' . $request->user()->user_pic) : null,
                 ]
             ]

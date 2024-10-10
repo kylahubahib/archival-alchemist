@@ -118,6 +118,7 @@ export function SidebarSeparator({ marginTop=56 }) {
     56: 'mt-56',
     60: 'mt-60',
     72: 'mt-72',
+    80: 'mt-80',
   }[marginTop] || '';
 
   return (

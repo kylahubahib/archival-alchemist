@@ -4,6 +4,7 @@ import LongTextInput from '@/Components/LongTextInput';
 import Modal from '@/Components/Modal';
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
+import { showToast } from '@/Components/Toast';
 import { Head, useForm } from '@inertiajs/react';
 import { useState } from 'react';
 
@@ -18,7 +19,7 @@ export default function Create({ isOpen, onClose }) {
         post(route('manage-terms-and-conditions.store'), {
             onSuccess: () => {
                 onClose();
-                alert('Success!');
+                showToast('success', 'Created Successfully!');
                 reset();
             },
         });

@@ -101,33 +101,39 @@ class PaymentSessionController extends Controller
                     'payment_method' => null
                 ]);
 
-                $institution = InstitutionAdmin::where('user_id', $user->id)
+                if($user->user_type === 'admin') {
+                    $institution = InstitutionAdmin::where('user_id', $user->id)
                     ->first();
 
-                $request->session()->put('ins_sub_id', $institution->insub_id);
+                    $request->session()->put('ins_sub_id', $institution->insub_id);
 
-                $institutionSubscription = InstitutionSubscription::find($institution->insub_id);
+                    $institutionSubscription = InstitutionSubscription::find($institution->insub_id);
 
-                //Updates the subscription plan
-                $institutionSubscription->update([
-                    'plan_id' => $plan->id,
-                    'insub_status' => 'Inactive',
-                    'total_amount' => $finalAmount,
-                    'insub_content' => null,
-                    'insub_num_user' => $plan->plan_user_num,
-                    'start_date' => null,
-                    'end_date' => null,
-                ]);
-
-                //Creates new item in personal subscription
-                // $personalSubscription = PersonalSubscription::create([
-                //     'user_id' => $user->id,
-                //     'plan_id' => $plan->id,
-                //     'persub_status' => 'Inactive',
-                //     'total_amount' => $finalAmount,
-                //     'start_date' => null,
-                //     'end_date' => null,
-                // ]);
+                    //Updates the subscription plan
+                    $institutionSubscription->update([
+                        'plan_id' => $plan->id,
+                        'insub_status' => 'Inactive',
+                        'total_amount' => $finalAmount,
+                        'insub_content' => null,
+                        'insub_num_user' => $plan->plan_user_num,
+                        'start_date' => null,
+                        'end_date' => null,
+                    ]);
+                }
+                elseif ($user->user_type === 'superadmin') {
+                    return response()->json();
+                }
+                else {
+                     // Creates new item in personal subscription
+                    $personalSubscription = PersonalSubscription::create([
+                        'user_id' => $user->id,
+                        'plan_id' => $plan->id,
+                        'persub_status' => 'Inactive',
+                        'total_amount' => $finalAmount,
+                        'start_date' => null,
+                        'end_date' => null,
+                    ]);
+                }
 
 
                 $checkoutUrl = $response->json('data.attributes.checkout_url');
@@ -194,21 +200,24 @@ class PaymentSessionController extends Controller
                         'trans_status' => $status
                     ]);
 
-                    //Updates the start date and end date once payment is successful
-                    $institutionSubscription = InstitutionSubscription::find($insub_id);
-                    $institutionSubscription->update([
-                        'start_date' => $currentDate->toDateString(),
-                        'end_date' => $endDate,
-                        'insub_status' => 'Active'
-                    ]);
+                    if($user->user_type === 'admin') {
+                        //Updates the start date and end date once payment is successful
+                        $institutionSubscription = InstitutionSubscription::find($insub_id);
+                        $institutionSubscription->update([
+                            'start_date' => $currentDate->toDateString(),
+                            'end_date' => $endDate,
+                            'insub_status' => 'Active'
+                        ]);
 
-                    // $personalSubscription = PersonalSubscription::where('user_id', Auth::id());
-                    // $personalSubscription->update([
-                    //     'start_date' => $currentDate->toDateString(),
-                    //     'end_date' => $endDate,
-                    //     'persub_status' => 'Active'
-                    // ]);
-
+                    } else {
+                        $personalSubscription = PersonalSubscription::where('user_id', Auth::id());
+                        $personalSubscription->update([
+                            'start_date' => $currentDate->toDateString(),
+                            'end_date' => $endDate,
+                            'persub_status' => 'Active'
+                        ]);
+                    }
+                    
                     //Updates user is_premium status
                     $user = Auth::user();
                     $user->update([

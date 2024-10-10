@@ -1,8 +1,25 @@
 import AdminLayout from '@/Layouts/AdminLayout';
 import { Head } from '@inertiajs/react';
 import AdvancedMenu from "../AdvancedMenu";
+import { Button, Card, CardHeader, CardBody, CardFooter, Divider, Link, Image, useDisclosure } from '@nextui-org/react';
 
-export default function CustomMessages({ auth }) {
+import BillingAgreement from './BillingAgreement';
+import { useState } from 'react';
+import { formatDate } from '@/Components/FormatDate';
+
+export default function CustomMessages({ auth, billingAgreement }) {
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
+    const openModal = () => {
+        //console.log('ok')
+        setIsModalOpen(true);
+    }
+
+    const closeModal = () => {
+        setIsModalOpen(false);
+    }
+
+
     return (
         
         <AdminLayout
@@ -11,13 +28,13 @@ export default function CustomMessages({ auth }) {
         > 
             <Head title="Advanced" />
 
-            <div className="py-8">
+            <div className="py-8 select-none">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
                     <div className=" space-x-4 pb-4">
                         <AdvancedMenu />
                     </div>
 
-                    <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                    <div className="overflow-hidden shadow-sm sm:rounded-lg">
                         <div className="flex flex-row justify-between m-3">
                             <div className="text-gray-800 text-2xl font-bold">Custom Messages</div>
                             <div className="relative">
@@ -34,12 +51,56 @@ export default function CustomMessages({ auth }) {
                                        
                                     />
                                 </div>
+
+                                
                         </div>
                        
-                        
+                       <div className="pt-5 space-y-7">
+                            {/* BILLING AGREEMENT */}
+                            <Card className=" shadow-md">
+                            <CardHeader className="flex gap-3">
+                                <h2 className="text-lg font-medium text-gray-900">Billing Agreement</h2>
+                            </CardHeader>
+                            <Divider/>
+                            <CardBody>
+                                <p className="mt-1 text-medium text-gray-600">
+                                This Billing Agreement is a binding contract between Archival Alchemist and any user or subscriber who 
+                                enrolls in a subscription-based service offered.
+                                </p>
+                                <p className="mt-3 text-sm text-gray-600">Last Modified At: {formatDate(billingAgreement.updated_at)}</p>
+                            </CardBody>
+                            <Divider/>
+                            <CardFooter>
+                                <Button onClick={openModal} size='sm' variant='bordered' className=" border-customBlue text-customBlue">Edit Billing Agreement</Button>
+                            </CardFooter>
+                            </Card>    
+                            
+                            {/* PRIVACY POLICY */}
+                            <Card className=" shadow-md">
+                                <CardHeader className="flex gap-3">
+                                    <h2 className="text-lg font-medium text-gray-900">Privacy Policy</h2>
+                                </CardHeader>
+                                <Divider/>
+                                <CardBody>
+                                    <p className="mt-1 text-medium text-gray-600">
+                                        This Privacy Policy outlines how Archival Alchemist collects, uses, discloses, and protects personal information and archival data from users and subscribers while using our platform.
+                                    </p>
+                                    <p className="mt-3 text-sm text-gray-600">Last Modified At: {formatDate(billingAgreement.updated_at)}</p>
+                                </CardBody>
+                                <Divider/>
+                                <CardFooter>
+                                    <Button onClick={openModal} size='sm' variant='bordered' className=" border-customBlue text-customBlue">Edit Privacy Policy </Button>
+                                </CardFooter>
+                            </Card>
+
+                            
+
+                        </div>
                     </div>
                 </div>
             </div>
+
+            <BillingAgreement isOpen={isModalOpen} onClose={closeModal} billAgreement={billingAgreement} />
             </AdminLayout>
     );
 }

@@ -9,7 +9,7 @@ use Illuminate\Support\Collection; // Handles collections of data
 use Illuminate\Support\Str; // Provides string-related helper methods
 use App\Models\User; // References the User model to interact with the users table in the database
 
-class usersImport implements ToCollection, WithHeadingRow
+class UsersImport implements ToCollection, WithHeadingRow
 {
     /**
      * Handles the imported data row by row as a collection.
@@ -20,8 +20,7 @@ class usersImport implements ToCollection, WithHeadingRow
     {
         // Iterate through each row in the imported collection
         foreach ($collection as $row) {
-
-            //Add some logics here like adding the data in the csv to your database like users
+            //Logics to create account based on the csv data
 
             // $pwd = Str::password();
             
