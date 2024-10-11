@@ -129,7 +129,7 @@ class AuthenticatedSessionController extends Controller
                 return redirect('/');
                 break;
         }
-
+//ok
 
     }
 
