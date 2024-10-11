@@ -48,6 +48,15 @@ class AuthenticatedSessionController extends Controller
 
         // if($user->user_type != 'admin' && $user->user_type != 'superadmin')
         // {
+            if($user->user_type == 'student') {
+                $checkInSub = InstitutionSubscription::where('uni_branch_id', $user->student->uni_branch_id)->first();
+            }
+
+            if($user->user_type == 'teacher') {
+                $checkInSub = InstitutionSubscription::where('uni_branch_id', $user->faculty->uni_branch_id)->first();
+            }
+
+            //\Log::info('Check Subscription:', $checkInSub ? $checkInSub->toArray() : 'No subscription found');
 
         //     if($user->user_type == 'student') {
         //         $checkInSub = InstitutionSubscription::where('uni_branch_id', $user->student->uni_branch_id)->first();
@@ -56,16 +65,21 @@ class AuthenticatedSessionController extends Controller
         //     if($user->user_type == 'teacher') {
         //         $checkInSub = InstitutionSubscription::where('uni_branch_id', $user->faculty->uni_branch_id)->first();
         //     }
+            //Check if $checkInSub retrieve a data or is it null
+            if ($checkInSub != null && $checkInSub->insub_content != null)
+            {
+                //\Log::info('Enter checkinsub ok');
 
         //     //\Log::info('Check Subscription:', $checkInSub ? $checkInSub->toArray() : 'No subscription found');
 
         //     //\Log::info('Before checkinsub');
         //     //\Log::info($checkInSub->toArray());
 
-            //Check if $checkInSub retrieve a data or is it null
-            if ($checkInSub != null)
-            {
-                //\Log::info('Enter checkinsub ok');
+        //     //Check if $checkInSub retrieve a data or is it null
+        //     //if ($checkInSub != null && $checkInSub->insub_content != null)
+        //    if ($checkInSub != null)
+        //     {
+        //         //\Log::info('Enter checkinsub ok');
 
         //         //Retrieve the path of the csv from the data stored in $checkInSub
         //         $filePath = $checkInSub->insub_content;
@@ -95,7 +109,7 @@ class AuthenticatedSessionController extends Controller
         //         }
         //     }
 
-        // }
+        }
 
         // Redirect based on user_type
         switch ($user->user_type) {
@@ -116,19 +130,21 @@ class AuthenticatedSessionController extends Controller
                 break;
         }
 
+
     }
 
     /**
      * Destroy an authenticated session.
      */
-    public function destroy(Request $request): RedirectResponse
-    {
-        Auth::guard('web')->logout();
+        public function destroy(Request $request): RedirectResponse
+        {
+            Auth::guard('web')->logout();
 
-        $request->session()->invalidate();
+            $request->session()->invalidate();
 
-        $request->session()->regenerateToken();
+            $request->session()->regenerateToken();
 
-        return redirect('/home');
-    }
+            return redirect('/home');
+        }
+
 }
