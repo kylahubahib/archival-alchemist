@@ -342,8 +342,6 @@ Route::get('/search', [SearchController::class, 'search']);
 Route::get('/searchlib', [SearchController::class, 'searchlib']);
 
 
-
-
 Route::middleware('auth')->group(function () {
     Route::get('/teacher/class', [TeacherClassController::class, 'index'])->name('teacher.class');
 });
