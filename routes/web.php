@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\StudentClassController;
+use App\Http\Controllers\TeacherClassController;
 use App\Models\Student;
 use App\Http\Controllers\TagController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
@@ -18,7 +19,8 @@ use App\Http\Controllers\DepartmentsController;
 use App\Http\Controllers\CoursesController;
 use App\Http\Controllers\SectionsController;
 use App\Http\Controllers\PaymentSessionController;
-use Illuminate\Support\Facades\Auth;use App\Http\Controllers\InstitutionSubscriptionController;
+use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\InstitutionSubscriptionController;
 
 
 
@@ -204,7 +206,7 @@ Route::middleware(['auth', 'verified', 'user-type:admin'])->prefix('institution'
 
     Route::get('/students', function () {
         return Inertia::render('InstitutionAdmin/Students');})->name('institution-students');
-        
+
     Route::resource('/subscription-billing', InstitutionSubscriptionController::class)->names('institution-subscription-billing');
 
     Route::post('/upload-csv', [InstitutionSubscriptionController::class, 'uploadCSV'])->name('upload-csv');
@@ -326,5 +328,11 @@ Route::post('/check-user-in-spreadsheet', [CheckSubscriptionController::class, '
 Route::get('/search', [SearchController::class, 'search']);
 Route::get('/searchlib', [SearchController::class, 'searchlib']);
 
+
+
+
+Route::middleware('auth')->group(function () {
+    Route::get('/teacher-courses', [TeacherClassController, 'getCourses'])->name('teacher.courses');
+});
 
 require __DIR__.'/auth.php';
