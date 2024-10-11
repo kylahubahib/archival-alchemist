@@ -20,14 +20,16 @@ class Course extends Model
         'added_by'
     ];
 
-    public function section(): HasMany
+    public function sections(): HasMany  // Renamed to sections
     {
-        return $this->hasMany(Section::class, 'course_id');
+        return $this->hasMany(Section::class, 'course_id'); // Ensure 'course_id' is correct here
     }
 
-    public function department(): BelongsTo 
+    public function department(): BelongsTo
     {
         return $this->belongsTo(Department::class, 'dept_id');
     }
+
+
 
 }

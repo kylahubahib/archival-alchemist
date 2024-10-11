@@ -332,7 +332,7 @@ Route::get('/searchlib', [SearchController::class, 'searchlib']);
 
 
 Route::middleware('auth')->group(function () {
-    Route::get('/teacher-courses', [TeacherClassController, 'getCourses'])->name('teacher.courses');
+    Route::get('/teacher/class', [TeacherClassController::class, 'index'])->name('teacher.class');
 });
 
 require __DIR__.'/auth.php';
