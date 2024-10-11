@@ -11,6 +11,8 @@ import Modal from '@/Components/Modal';
 import { MdMessage } from 'react-icons/md';
 import Repository from './Partials/Repository';
 import Posts from './Partials/Posts';
+import SubscriptionForm from './Partials/SubscriptionForm';
+import { Accordion, AccordionItem } from '@nextui-org/react';
 
 
 
@@ -87,7 +89,7 @@ export default function Edit({ auth, mustVerifyEmail, status }) {
             <Head title="Profile" />
 
             <div className="py-8 -z-0">
-                <div className="max-w-full mx-auto my-4 sm:px-6 lg:px-8 bg-white rounded-lg shadow-md "
+                <div className="max-w-full mx-8 my-4 sm:px-6 lg:px-8 bg-white rounded-lg shadow-md "
                      style={{ maxWidth: 'calc(100% - 16px)', transition: 'all 0.3s ease-in-out' }}>
                     <div className="flex items-start pt-8">
                         <div className="relative">
@@ -96,13 +98,7 @@ export default function Edit({ auth, mustVerifyEmail, status }) {
                                     <img
                                         src={profilePic}
                                         alt="Profile"
-                                        className="w-full h-full rounded-full object-cover"
-                                        // onError={(e) => {
-                                        //     console.log('Image failed to load:', e);
-                                        //     e.target.onerror = null;
-                                        //     e.target.src = '/path-to-default-image'; // Default image path
-                                        // }}
-                                    />
+                                        className="w-full h-full rounded-full object-cover" />
                                     <button
                                         className="absolute right-0 bottom-0 bg-gray-300 text-white rounded-full p-1 text-sm w-6 h-6 flex items-center justify-center"
                                         onClick={() => document.getElementById('profilePicInput').click()}
@@ -169,23 +165,31 @@ export default function Edit({ auth, mustVerifyEmail, status }) {
 
                 <div className="my-4">
                     {activeTab === 'accountSettings' && (
-                        <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
-                            <div className="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
-                                <UpdateProfileInformationForm
-                                    mustVerifyEmail={mustVerifyEmail}
-                                    status={status}
-                                    className="max-w-xl"
-                                />
+                        <>
+                        
+                        <div className="mx-auto sm:px-6 lg:px-10 space-y-4">
+                            <div className=" p-4 bg-white shadow sm:rounded-lg m-2">
+                                <SubscriptionForm className="max-w-xl" />
                             </div>
 
-                            <div className="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
-                                <UpdatePasswordForm className="max-w-xl" />
-                            </div>
-
-                            <div className="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
-                                <DeleteUserForm className="max-w-xl" />
-                            </div>
+                            <Accordion variant='splitted'>
+                                <AccordionItem key="1" aria-label="Profile Information" title="Profile Information">
+                                    <UpdateProfileInformationForm
+                                        mustVerifyEmail={mustVerifyEmail}
+                                        status={status}
+                                        className="max-w-xl"
+                                    />
+                                </AccordionItem>
+                                <AccordionItem key="3" aria-label="Password Information" title="Password Information">
+                                    <UpdatePasswordForm className="max-w-xl" />
+                                </AccordionItem> 
+                                <AccordionItem key="4" aria-label="Account Deletio" title="Account Deletion">
+                                    <DeleteUserForm className="max-w-xl" />
+                                </AccordionItem>  
+                            </Accordion>
                         </div>
+                        
+                        </>
                     )}
                 </div>
 

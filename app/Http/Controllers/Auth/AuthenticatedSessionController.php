@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Http\Controllers\Auth;
-use Illuminate\Support\Facades\Log; // Add this line at the top of your controller
+use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use Illuminate\Http\RedirectResponse;
@@ -62,11 +62,10 @@ class AuthenticatedSessionController extends Controller
         //     //\Log::info('Before checkinsub');
         //     //\Log::info($checkInSub->toArray());
 
-        //     //Check if $checkInSub retrieve a data or is it null
-        //     //if ($checkInSub != null && $checkInSub->insub_content != null)
-        //    if ($checkInSub != null)
-        //     {
-        //         //\Log::info('Enter checkinsub ok');
+            //Check if $checkInSub retrieve a data or is it null
+            if ($checkInSub != null)
+            {
+                //\Log::info('Enter checkinsub ok');
 
         //         //Retrieve the path of the csv from the data stored in $checkInSub
         //         $filePath = $checkInSub->insub_content;

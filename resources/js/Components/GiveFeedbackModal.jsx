@@ -72,7 +72,7 @@ export default function GiveFeedbackModal({ isOpen, onClose}) {
             <div className="shadow-sm p-3 justify-between flex flex-row">
                 <div></div>
                 <h2 className="text-xl text-gray-700 font-bold">Give Us Your Feedback</h2>
-                <button onClick={onClose} className="text-gray-600 text-xl hover:bg-gray-100">
+                <button onClick={onClose} className="text-gray-600 text-xl rounded-full hover:bg-gray-100">
                     <CgClose />
                 </button>
             </div>

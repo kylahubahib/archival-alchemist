@@ -26,7 +26,7 @@ export default function AdminLayout({ auth, user, header, children }) {
 
     return (
 
-    <div className="min-h-screen bg-customlightBlue flex">
+    <div className="min-h-screen bg-customlightBlue flex select-none">
 
         {user.user_type == 'superadmin' ? (
              //SIDEBAR FOR THE SUPER ADMIN

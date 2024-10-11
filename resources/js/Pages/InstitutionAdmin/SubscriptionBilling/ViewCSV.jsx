@@ -4,7 +4,6 @@ import { useForm } from "@inertiajs/inertia-react";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import Modal from "@/Components/Modal";
-import FileUpload from "@/Components/FileUpload";
 import { showToast } from "@/Components/Toast";
 import PrimaryButton from "@/Components/PrimaryButton";
 import { Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from "@nextui-org/react";

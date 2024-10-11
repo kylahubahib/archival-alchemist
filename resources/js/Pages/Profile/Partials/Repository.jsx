@@ -19,11 +19,11 @@ const Repository = () => {
             });
     }, []);
 
-    if (loading) return <div>Loading...</div>;
-    if (error) return <div>Error: {error}</div>;
-    if (manuscripts.length === 0) return <div>No approved manuscripts available.</div>;
+    if (loading) return <div className="min-h-screen">Loading...</div>;
+    if (error) return <div className="min-h-screen">Error: {error}</div>;
+    if (manuscripts.length === 0) return <div className="min-h-screen">No approved manuscripts available.</div>;
 
-    return <div><Manuscript manuscripts={manuscripts} /></div>;
+    return <div className="min-h-screen"><Manuscript manuscripts={manuscripts} /></div>;
 };
 
 export default Repository;

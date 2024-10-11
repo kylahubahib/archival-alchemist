@@ -5,6 +5,8 @@ use App\Http\Controllers\TeacherClassController;
 use App\Models\Student;
 use App\Http\Controllers\TagController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
+
+
 use App\Http\Controllers\UserReportController;
 use App\Http\Controllers\AdvancedTagsController;
 use App\Http\Controllers\TermsAndConditionController;
@@ -19,9 +21,10 @@ use App\Http\Controllers\DepartmentsController;
 use App\Http\Controllers\CoursesController;
 use App\Http\Controllers\SectionsController;
 use App\Http\Controllers\PaymentSessionController;
-use Illuminate\Support\Facades\Auth;
-use App\Http\Controllers\InstitutionSubscriptionController;
 
+use App\Http\Controllers\InstitutionSubscriptionController;
+use App\Http\Controllers\PersonalSubscriptionController;
+use App\Http\Controllers\LandingPageController;
 
 
 use App\Http\Middleware\CheckUserTypeMiddleware;
@@ -32,6 +35,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Response;
 use Inertia\Inertia;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 // Route::get('/', function () {
 //     return Inertia::render('Home', [
@@ -60,21 +64,21 @@ Route::get('/payment/cancel', [PaymentSessionController::class, "paymentCancel"]
 Route::post('/payment', [PaymentSessionController::class, 'PaymentSession'])->name('payment');
 
 
-Route::get('/library', function () {
-    $user = Auth::user(); // Get the currently authenticated user
-    Log::info('User accessing library:', ['user' => $user]); // Log user info
-    return Inertia::render('Users/Library', [
-        'user' => $user // Pass user data to the component
-    ]);
-})->middleware(['auth', 'user-type:student,teacher,guest'])->name('library');
-
-
-
-
-
 // Route::get('/library', function () {
-//     return Inertia::render('Users/Library');
-// })->middleware(['user-type:student,teacher,guest'])->name('library');
+//     $user = Auth::user(); // Get the currently authenticated user
+//     Log::info('User accessing library:', ['user' => $user]); // Log user info
+//     return Inertia::render('Users/Library', [
+//         'user' => $user // Pass user data to the component
+//     ]);
+// })->middleware(['auth', 'user-type:student,teacher,guest'])->name('library');
+
+
+
+
+
+Route::get('/library', function () {
+    return Inertia::render('Users/Library');
+})->middleware(['user-type:student,teacher,guest'])->name('library');
 
 Route::get('/forum', function () {
     return Inertia::render('Users/Forum');
@@ -87,7 +91,6 @@ Route::get('/studentclass', function () {
 Route::get('/teacherclass', function () {
     return Inertia::render('Users/Class/Teacher/TeacherClass');
 })->middleware(['auth', 'verified', 'user-type:teacher'])->name('teacherclass');
-
 
 Route::get('/authors', function () {
     return Inertia::render('Users/Authors');
@@ -113,12 +116,22 @@ Route::get('/tags', function () {
     return Inertia::render('Users/Tags');
 })->middleware(['auth', 'verified', 'user-type:student,teacher'])->name('tags');
 
+// Route::get('/subscription', function () {
+//     return Inertia::render('Users/UserSubscription');
+// })->middleware(['auth', 'verified', 'user-type:student,teacher'])->name('subscription');
+
+Route::get('/user-subscription', [PersonalSubscriptionController::class, 'index'])->name('user-subscription');
+
 
 Route::post('/feedback', [UserFeedbacksController::class, 'store'])->name('user-feedbacks.store');
 Route::post('/report', [UserReportController::class, 'store'])->name('user-reports.store');
 Route::get('/report-types', [UserReportController::class, 'reportTypeList']);
 Route::get('/check-feedback', [UserFeedbacksController::class, 'CheckIfFeedbackExist'])->name('check-feedback');
 Route::get('/check-university-subscription', [UniversityController::class, 'checkUniversitySubscription'])->name('check-university-subscription');
+Route::get('/landing-page', [LandingPageController::class, 'index'])->name('landing-page.index');
+
+
+
 
 
 //SUPERADMIN

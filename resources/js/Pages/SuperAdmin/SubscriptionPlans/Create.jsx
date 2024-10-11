@@ -4,6 +4,7 @@ import LongTextInput from '@/Components/LongTextInput';
 import Modal from '@/Components/Modal';
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
+import { showToast } from '@/Components/Toast';
 import { Head, useForm } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 
@@ -29,7 +30,7 @@ export default function Create({ isOpen, onClose, features = {}}) {
                 reset();
                 clearErrors();
                 onClose();
-                alert('Success!');
+                showToast('success', 'Successfully created plan!')
             },
         });
     };
@@ -63,7 +64,7 @@ export default function Create({ isOpen, onClose, features = {}}) {
     });
  
     return (
-        <Modal show={isOpen} onClose={closeClick} maxWidth='5xl'>
+        <Modal show={isOpen} onClose={closeClick} maxWidth='5xl' closeable={false}>
             <div className="bg-customBlue p-3" >
                 <h2 className="text-xl text-white font-bold">Add Subscription Plan</h2>
             </div>
@@ -126,7 +127,6 @@ export default function Create({ isOpen, onClose, features = {}}) {
                                         className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 rounded-md"
                                     >
                                         <option value="" disabled>Select a plan term</option>
-                                        <option value="per semester">per semester</option>
                                         <option value="monthly">monthly</option>
                                         <option value="yearly">yearly</option>
                                     </select>

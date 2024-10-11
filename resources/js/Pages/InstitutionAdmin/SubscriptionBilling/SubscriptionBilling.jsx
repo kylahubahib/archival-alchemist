@@ -112,7 +112,7 @@ export default function InsAdminSubscriptionBilling({ auth, ins_sub }) {
                 </div>
             </div>
             ) : (
-                <SubscriptionPlansList institutionalPlans={institutionalPlans} planFeatures={planFeatures}/>
+                <SubscriptionPlansList plans={institutionalPlans} planFeatures={planFeatures}/>
             )
             }
 
