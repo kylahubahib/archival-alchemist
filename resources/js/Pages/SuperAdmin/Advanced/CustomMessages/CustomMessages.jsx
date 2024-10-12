@@ -3,19 +3,24 @@ import { Head } from '@inertiajs/react';
 import AdvancedMenu from "../AdvancedMenu";
 import { Button, Card, CardHeader, CardBody, CardFooter, Divider, Link, Image, useDisclosure } from '@nextui-org/react';
 
-import BillingAgreement from './BillingAgreement';
 import { useState } from 'react';
 import { formatDate } from '@/Components/FormatDate';
+import HeroSection from './HeroSection';
+import ServicesSection from './ServicesSection';
+import TeamSection from './TeamSection';
 
-export default function CustomMessages({ auth, billingAgreement }) {
+export default function CustomMessages({ auth, billingAgreement, hero, services, team }) {
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [type, setType] = useState('');
 
-    const openModal = () => {
+    const openModal = (data) => {
         //console.log('ok')
+        setType(data);
         setIsModalOpen(true);
     }
 
     const closeModal = () => {
+        setType('');
         setIsModalOpen(false);
     }
 
@@ -35,72 +40,72 @@ export default function CustomMessages({ auth, billingAgreement }) {
                     </div>
 
                     <div className="overflow-hidden shadow-sm sm:rounded-lg">
-                        <div className="flex flex-row justify-between m-3">
-                            <div className="text-gray-800 text-2xl font-bold">Custom Messages</div>
-                            <div className="relative">
-                                    <div className="absolute inset-y-0 rtl:inset-r-0 start-0 flex items-center ps-3 pointer-events-none">
-                                        <svg className="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
-                                            <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
-                                        </svg>
-                                    </div>
-                                    <input 
-                                        type="text" 
-                                        id="table-search-users" 
-                                        className="block pt-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg w-80 bg-gray-50 focus:ring-blue-500 focus:border-blue-500" 
-                                        placeholder="Search" 
-                                       
-                                    />
-                                </div>
+                        <div className="space-y-5">
+                            <div className="flex flex-row justify-between">
+                                <div className="text-gray-800 text-2xl font-bold">Landing Page</div>
+                            </div>
 
-                                
-                        </div>
-                       
-                       <div className="pt-5 space-y-7">
-                            {/* BILLING AGREEMENT */}
                             <Card className=" shadow-md">
                             <CardHeader className="flex gap-3">
-                                <h2 className="text-lg font-medium text-gray-900">Billing Agreement</h2>
+                                <h2 className="text-lg font-medium text-gray-900">Hero Section</h2>
                             </CardHeader>
                             <Divider/>
                             <CardBody>
                                 <p className="mt-1 text-medium text-gray-600">
-                                This Billing Agreement is a binding contract between Archival Alchemist and any user or subscriber who 
-                                enrolls in a subscription-based service offered.
+                                The hero section of the page introduces Archival Alchemist as a transformative platform. It highlights the mission of turning capstone projects into discoverable knowledge, making it a hub for creativity, innovation, and collaboration. Users are invited to explore and participate in a community where sharing and discovering projects is seamless and intuitive.
                                 </p>
                                 <p className="mt-3 text-sm text-gray-600">Last Modified At: {formatDate(billingAgreement.updated_at)}</p>
                             </CardBody>
                             <Divider/>
                             <CardFooter>
-                                <Button onClick={openModal} size='sm' variant='bordered' className=" border-customBlue text-customBlue">Edit Billing Agreement</Button>
+                                <Button onClick={() => {openModal('hero')}} size='sm' variant='bordered' className=" border-customBlue text-customBlue">Edit Hero Section</Button>
                             </CardFooter>
-                            </Card>    
-                            
-                            {/* PRIVACY POLICY */}
-                            <Card className=" shadow-md">
-                                <CardHeader className="flex gap-3">
-                                    <h2 className="text-lg font-medium text-gray-900">Privacy Policy</h2>
-                                </CardHeader>
-                                <Divider/>
-                                <CardBody>
-                                    <p className="mt-1 text-medium text-gray-600">
-                                        This Privacy Policy outlines how Archival Alchemist collects, uses, discloses, and protects personal information and archival data from users and subscribers while using our platform.
-                                    </p>
-                                    <p className="mt-3 text-sm text-gray-600">Last Modified At: {formatDate(billingAgreement.updated_at)}</p>
-                                </CardBody>
-                                <Divider/>
-                                <CardFooter>
-                                    <Button onClick={openModal} size='sm' variant='bordered' className=" border-customBlue text-customBlue">Edit Privacy Policy </Button>
-                                </CardFooter>
-                            </Card>
+                            </Card> 
 
-                            
+                            <Card className=" shadow-md">
+                            <CardHeader className="flex gap-3">
+                                <h2 className="text-lg font-medium text-gray-900">Services Section</h2>
+                            </CardHeader>
+                            <Divider/>
+                            <CardBody>
+                                <p className="mt-1 text-medium text-gray-600">
+                                In this section, we showcase the core services Archival Alchemist offers. It outlines how users can upload their own work, explore a diverse range of projects across different fields, and connect with peers. The platform's features are designed to facilitate collaboration, learning, and networking, helping individuals unlock their potential and foster creative and academic growth.
+                                </p>
+                                <p className="mt-3 text-sm text-gray-600">Last Modified At: {formatDate(billingAgreement.updated_at)}</p>
+                            </CardBody>
+                            <Divider/>
+                            <CardFooter>
+                                <Button onClick={() => {openModal('services')}} size='sm' variant='bordered' className=" border-customBlue text-customBlue">Edit Services Section</Button>
+                            </CardFooter>
+                            </Card> 
+
+                            <Card className=" shadow-md">
+                            <CardHeader className="flex gap-3">
+                                <h2 className="text-lg font-medium text-gray-900">Team Section</h2>
+                            </CardHeader>
+                            <Divider/>
+                            <CardBody>
+                                <p className="mt-1 text-medium text-gray-600">
+                                This section introduces the team behind Archival Alchemist. It provides a glimpse into the people who are driving the platform’s vision of innovation and community. The focus here is on the expertise and dedication of the team members, emphasizing their commitment to creating a vibrant, supportive space for students, professionals, and institutions alike.
+                                </p>
+                                <p className="mt-3 text-sm text-gray-600">Last Modified At: {formatDate(billingAgreement.updated_at)}</p>
+                            </CardBody>
+                            <Divider/>
+                            <CardFooter>
+                                <Button onClick={() => {openModal('team')}} size='sm' variant='bordered' className=" border-customBlue text-customBlue">Edit Team Section</Button>
+                            </CardFooter>
+                            </Card> 
 
                         </div>
+
                     </div>
                 </div>
             </div>
 
-            <BillingAgreement isOpen={isModalOpen} onClose={closeModal} billAgreement={billingAgreement} />
+            {type === 'hero' && <HeroSection isOpen={isModalOpen} onClose={closeModal} heroSection={hero}/>}
+            {type === 'services' && <ServicesSection isOpen={isModalOpen} onClose={closeModal} services={services}/>}
+            {type === 'team' && <TeamSection isOpen={isModalOpen} onClose={closeModal} team={team}/>}
+
             </AdminLayout>
     );
 }

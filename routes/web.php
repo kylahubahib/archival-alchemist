@@ -164,6 +164,10 @@ Route::middleware(['auth', 'verified', 'user-type:superadmin'])->group(function 
 
     Route::resource('advanced/tags', AdvancedTagsController::class)->names('manage-tags');
 
+    Route::post('store-service', [CustomMessagesController::class, 'storeService'])->name('store-service');
+    Route::post('store-team', [CustomMessagesController::class, 'storeTeam'])->name('store-team');
+    Route::post('update-icon', [CustomMessagesController::class, 'updateIcon'])->name('update-icon');
+
     ///END ADVANCED ROUTES
 
     Route::resource('manage-terms-and-conditions', TermsAndConditionController::class);
@@ -179,8 +183,6 @@ Route::middleware(['auth', 'verified', 'user-type:superadmin'])->group(function 
     Route::get('filter-user-reports', [UserReportController::class, 'filterReports'])->name('filter-user-reports');
     Route::get('filter-feedbacks', [UserFeedbacksController::class, 'filterFeedbacks'])->name('filter-feedbacks');
     Route::get('get-branches', [UniversityController::class, 'getBranches'])->name('get-branches');
-
-
 
     // You can use put or patch. Put is used to update a resource entirely
     // while patch is used to update a single fields

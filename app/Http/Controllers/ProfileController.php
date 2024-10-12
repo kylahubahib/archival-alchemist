@@ -97,6 +97,9 @@ class ProfileController extends Controller
     public function updatePicture(Request $request): \Illuminate\Http\JsonResponse
     {
 
+        $file = $request->file('user_pic');
+        \Log::info('file:', ['file' => $file]);
+
         Log::info('User Profile');
         // Validate request
         $request->validate([
