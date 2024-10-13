@@ -6,10 +6,10 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import { showToast } from '@/Components/Toast';
 import { Head, useForm } from '@inertiajs/react';
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 
-export default function Create({ isOpen, onClose, features = {}}) {
-
+export default function Create({ isOpen, onClose, features }) {
+ 
     const { data, setData, post, processing, errors, clearErrors, reset } = useForm({
         plan_name: '',
         plan_price: '',
@@ -26,19 +26,18 @@ export default function Create({ isOpen, onClose, features = {}}) {
     const submit = (e) => {
         e.preventDefault();
         post(route('manage-subscription-plans.store'), {
+            ...data,
+            preserveScroll: true,
             onSuccess: () => {
                 reset();
                 clearErrors();
                 onClose();
-                showToast('success', 'Successfully created plan!')
+                showToast('success', 'Successfully updated the plan!')
+            },
+            onError: (errors) => {
+                console.error('Update failed', errors);
             },
         });
-    };
-
-    const closeClick = () => {
-        reset(); 
-        clearErrors(); 
-        onClose(); 
     };
 
     const addFeature = (featureId) => {
@@ -53,24 +52,20 @@ export default function Create({ isOpen, onClose, features = {}}) {
 
     const handleFeatureChange = (e) => {
         const featureId = parseInt(e.target.value);
-        
+
         if (featureId && !data.plan_features.includes(featureId)) {
             addFeature(featureId);
         }
     };
 
-    useEffect(() =>{
-        console.log(data.plan_features);
-    });
- 
     return (
-        <Modal show={isOpen} onClose={closeClick} maxWidth='5xl' closeable={false}>
-            <div className="bg-customBlue p-3" >
-                <h2 className="text-xl text-white font-bold">Add Subscription Plan</h2>
+        <Modal show={isOpen} onClose={onClose} maxWidth='5xl'>
+            <div className="bg-customBlue p-3">
+                <h2 className="text-xl text-white font-bold">View Subscription Plan</h2>
             </div>
-            
-            <form onSubmit={submit}>
-                <div className="p-6 space-y-5">
+
+            <div className="p-6 space-y-5">
+                <form onSubmit={submit}>
                     <div className="flex flex-row space-x-8">
                         <div className='space-y-5'>
                             <div className="flex flex-row space-x-10">
@@ -109,12 +104,11 @@ export default function Create({ isOpen, onClose, features = {}}) {
                                     id="plan_text"
                                     name="plan_text"
                                     value={data.plan_text}
-                                    className="mt-1 block w-full max-h-44"
+                                    className="mt-1 block w-full max-h-40"
                                     onChange={(e) => setData('plan_text', e.target.value)}
                                 />
                                 <InputError message={errors.plan_text} className="mt-2" />
                             </div>
-
 
                             <div className="flex flex-row space-x-10">
                                 <div className="flex flex-col">
@@ -127,6 +121,7 @@ export default function Create({ isOpen, onClose, features = {}}) {
                                         className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 rounded-md"
                                     >
                                         <option value="" disabled>Select a plan term</option>
+                                        <option value="per semester">per semester</option>
                                         <option value="monthly">monthly</option>
                                         <option value="yearly">yearly</option>
                                     </select>
@@ -144,8 +139,7 @@ export default function Create({ isOpen, onClose, features = {}}) {
                                     />
                                     <InputError message={errors.plan_price} className="mt-2" />
                                 </div>
-                            </div> 
-                        
+                            </div>
 
                             <div className="flex flex-row space-x-10">
                                 <div className="flex flex-col">
@@ -171,7 +165,6 @@ export default function Create({ isOpen, onClose, features = {}}) {
                                     />
                                 </div>
                             </div>
-                        
                         </div>
 
                         <div className="flex flex-col border border-gray-300 p-4 rounded-md shadow-sm space-y-2">
@@ -214,14 +207,12 @@ export default function Create({ isOpen, onClose, features = {}}) {
                             Save
                         </PrimaryButton>
                     </div>
-                </div>
+                </form>
+            </div>
 
-                <div className="bg-customBlue p-2 flex justify-end">
-                    <button type="button" onClick={closeClick} className="text-white text-right mr-5">
-                        Close
-                    </button>
-                </div>
-            </form>
+            <div className="bg-customBlue p-2 flex justify-end">
+                <button onClick={onClose} className="text-white text-right mr-5">Close</button>
+            </div>
         </Modal>
     );
 }

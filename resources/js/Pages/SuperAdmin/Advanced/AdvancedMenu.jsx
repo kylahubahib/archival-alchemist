@@ -30,7 +30,7 @@ export default function AdvancedMenu({auth}) {
                 <span className="font-semibold">MESSAGES</span>
             </Link>
 
-            <Link href="#" 
+            <Link href="/advanced/report-reason" 
                 className={`inline-flex items-center px-4 py-2 m-3 rounded-md space-x-2 text-white racking-widest ${isActive('/advanced/report-reason') ? 'bg-blue-950 border-t-3 border-yellow-500' : 'hover:bg-blue-900 bg-customBlue transition ease-in-out duration-150'}`}>
                 <span><FaFlag /></span>
                 <span className="font-semibold">REPORT REASON</span>

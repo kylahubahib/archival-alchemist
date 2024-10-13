@@ -66,7 +66,11 @@ class TermsAndConditionController extends Controller
         $request->validate([
             'content_title' => 'required|string|max:1000',
             'content_text' => 'required|string',
+        ], [], [
+            'content_title' => 'title',
+            'content_text' => 'text',
         ]);
+        
 
         CustomContent::create([
             'user_id' => Auth::id(),
@@ -124,6 +128,9 @@ class TermsAndConditionController extends Controller
         $request->validate([
             'content_title' => 'required|string|max:1000',
             'content_text' => 'required|string',
+        ], [], [
+            'content_title' => 'title',
+            'content_text' => 'text',
         ]);
 
         $data = CustomContent::find($id);
