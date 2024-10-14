@@ -22,6 +22,9 @@ return new class extends Migration
             // Make stud_id nullable
             $table->foreignId('stud_id')->nullable()->constrained('id')->on('users')->onDelete('cascade');
 
+            // Define foreign key for section_id
+            $table->foreignId('sec_id')->constrained('id')->on('users')->onDelete('cascade');
+
         });
     }
 

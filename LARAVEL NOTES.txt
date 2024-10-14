@@ -1,13 +1,13 @@
 
- 
- bootstrap/app.php - file has been revitalized as a code-first application configuration file. 
- From this file, you may now customize your application's routing, middleware, service providers, 
+
+ bootstrap/app.php - file has been revitalized as a code-first application configuration file.
+ From this file, you may now customize your application's routing, middleware, service providers,
  exception handling, and more.
 
- Laravel's default password hashing algorithm is bcrypt. The "work factor" for bcrypt hashes can be 
+ Laravel's default password hashing algorithm is bcrypt. The "work factor" for bcrypt hashes can be
  adjusted via the config/hashing.php configuration file or the BCRYPT_ROUNDS environment variable.
 
- Laravel Prompts is a PHP package for adding beautiful and user-friendly forms to your command-line 
+ Laravel Prompts is a PHP package for adding beautiful and user-friendly forms to your command-line
  applications, with browser-like features including placeholder text and validation.
 
  Installed package in npm
@@ -16,7 +16,7 @@
 ...
 
 
-**Carbon** is a popular date and time library in Laravel, built on top of PHP's **DateTime** class, 
+**Carbon** is a popular date and time library in Laravel, built on top of PHP's **DateTime** class,
 providing a wide range of methods for date manipulation. Here are some of the most commonly used methods in Carbon:
 
 ### 1. **Creation Methods**
@@ -205,9 +205,9 @@ These methods are used to format the date.
 
 ########################################################
 
-Eloquent provides a wide variety of methods for interacting with the database. 
-These methods can be grouped into categories based on their function, such as **retrieval**, 
-**insertion**, **deletion**, **updating**, **query building**, and **relationships**. 
+Eloquent provides a wide variety of methods for interacting with the database.
+These methods can be grouped into categories based on their function, such as **retrieval**,
+**insertion**, **deletion**, **updating**, **query building**, and **relationships**.
 Here’s a breakdown of the most commonly used **Eloquent** methods in Laravel:
 
 ### 1. **Retrieval Methods**
@@ -481,8 +481,8 @@ These methods are used to define and work with model relationships.
 ---
 
 ### Conclusion
-These are just some of the common **Eloquent methods** available in Laravel. Eloquent provides a rich set of methods 
-for managing your database and interacting with relationships, and the framework's flexibility allows for easy querying, 
+These are just some of the common **Eloquent methods** available in Laravel. Eloquent provides a rich set of methods
+for managing your database and interacting with relationships, and the framework's flexibility allows for easy querying,
 modifying, and handling of data.
 
 You can find the complete set of Eloquent methods in the [official Laravel documentation](https://laravel.com/docs/eloquent).
@@ -510,11 +510,68 @@ PHP extension php_xmlreader enabled
 PHP extension php_zlib enabled
 
 2. If all requirements are met, proceed to installation:
+composer remove phpoffice/phpexcel
+composer remove maatwebsite/excel
+
+composer clear-cache
+php artisan config:cache
+composer update --with-all-dependencies
 composer require maatwebsite/excel
+You sent
+ouh gi in ani nako
+
 
 3. Run this command to create the excel.php in the config folder:
 php artisan vendor:publish --provider="Maatwebsite\Excel\ExcelServiceProvider" --tag=config
+ composer require maatwebsite/excel:^3.1.35 --with-all-dependencies
 
-
-    
+composer clear cache
 //End How to install laravel-excel
+
+
+
+check the migration status
+php artisan migrate:status
+
+refresh the migration
+php artisan migrate:refresh
+
+do the migration
+php artisan migrate
+
+
+📌clearing caches and data's
+php artisan optimize:clear
+php artisan event:cache
+php artisan view:cache
+php artisan optimize
+php artisan config:cache
+php artisan config:clear
+php artisan cache:clear
+npm run build
+php artisan storage:link
+php artisan route:list
+
+
+PS C:\xampp\htdocs\archival-alchemist-main> composer require maatwebsite/excel:^3.1.35 --with-all-dependencies
+A connection timeout was encountered. If you intend to run Composer without connecting to the internet, run the command again prefixed with COMPOSER_DISABLE_NETWORK=1 to make Composer run in offline mode.
+https://repo.packagist.org could not be fully loaded (curl error 28 while downloading https://repo.packagist.org/packages.json: Resolving timed out after 10002 milliseconds), package information was loaded from the local cache and may be out of date
+./composer.json has been updated
+Running composer update maatwebsite/excel --with-all-dependencies
+Loading composer repositories with package information
+https://repo.packagist.org could not be fully loaded (curl error 6 while downloading https://repo.packagist.org/packages.json: Could not resolve host: repo.packagist.org), package information was loaded from the local cache and may be out of date
+
+Installation failed, reverting ./composer.json and ./composer.lock to their original content.
+The following exception probably indicates you are offline or have misconfigured DNS resolver(s)
+
+In CurlDownloader.php line 371:
+
+  curl error 6 while downloading https://repo.packagist.org/p2/illuminate/collections.json: Could not resolve host: repo.packagist.org
+
+
+require [--dev] [--dry-run] [--prefer-source] [--prefer-dist] [--prefer-install PREFER-INSTALL] [--fixed] [--no-suggest] [--no-progress] [--no-update] [--no-install] [--no-audit] [--audit-format AUDIT-FORMAT] [--update-no-dev] [-w|--update-with-dependencies] [-W|--update-with-all-dependencies] [--with-dependencies] [--with-all-dependencies] [--ignore-platform-req IGNORE-PLATFORM-REQ] [--ignore-platform-reqs] [--prefer-stable] [--prefer-lowest] [-m|--minimal-changes] [--sort-packages] [-o|--optimize-autoloader] [-a|--classmap-authoritative] [--apcu-autoloader] [--apcu-autoloader-prefix APCU-AUTOLOADER-PREFIX] [--] [<packages>...]
+
+PS C:\xampp\htdocs\archival-alchemist-main>
+
+
+composer require maatwebsite/excel:^3.1.35 --with-all-dependencies

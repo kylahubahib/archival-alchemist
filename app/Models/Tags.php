@@ -26,7 +26,10 @@ class Tags extends Model
     {
         return $this->belongsToMany(ManuscriptProject::class, 'manuscript_tag', 'tag_id', 'manuscript_id');
     }
-
+    /**
+     * Many-to-Many relationship with Manuscripts.
+     * A tag can be linked to multiple manuscripts.
+     */
     public function forum_tag(): HasMany
     {
         return $this->hasMany(ForumTag::class, 'tag_id');

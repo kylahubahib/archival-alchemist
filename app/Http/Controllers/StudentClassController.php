@@ -38,8 +38,8 @@ class StudentClassController extends Controller
             $validatedData = $request->validate([
                 'man_doc_title' => 'required|string|max:255',
                 'man_doc_adviser' => 'required|string|max:255',
-                'man_doc_author' => 'nullable|array',
-                'man_doc_author.*' => '.string|max:255',
+                'name' => 'nullable|array',
+                'name.*' => 'string|max:255',
                 'tags_name' => 'nullable|array', // Change this line to match your input key
                 'tags_name.*' => 'string|max:255', // Validate individual tag names
                 'man_doc_content' => 'required|file|mimes:pdf,docx|max:10240',
@@ -53,11 +53,6 @@ class StudentClassController extends Controller
 
             // Store the file
             $filePath = $request->file('man_doc_content')->store('capstone_files');
-
-            // Convert author array to string
-            // $author = $request->input('man_doc_author');
-            // $authorsString = implode(', ', $author);
-
             // Create the manuscript project
             $manuscriptProject = ManuscriptProject::create([
                 'man_doc_title' => $validatedData['man_doc_title'],
@@ -107,8 +102,6 @@ class StudentClassController extends Controller
                 ]);
             }
 
-
-
                         // Handle users and store them in the Author table
                         $userIds = []; // Array to hold the IDs of the users to be associated with the manuscript
 
@@ -157,74 +150,73 @@ class StudentClassController extends Controller
 
 
 
-public function checkClassCode(Request $request)
-{
-    $request->validate([
-        'class_code' => 'required|string',
-    ]);
-
-    $class = ClassModel::where('class_code', $request->class_code)->first();
-
-    if ($class) {
-        return response()->json([
-            'exists' => true,
-            'classDetails' => [
-                'class_name' => $class->class_name,
-                'ins_id' => $class->ins_id,
-            ],
+    public function checkClassCode(Request $request)
+    {
+        $request->validate([
+            'class_code' => 'required|string',
         ]);
-    } else {
-        return response()->json(['exists' => false]);
-    }
-}
 
-public function storeStudentClass(Request $request)
-{
-    $request->validate([
-        'class_code' => 'required|string',
-        'class_name' => 'required|string',
-        'ins_id' => 'required|integer',
-    ]);
+        $class = ClassModel::where('class_code', $request->class_code)->first();
 
-    $userId = Auth::id();
-    //$user
-
-    //\Log::info('in the student class');
-
-    try {
-        // Check if the user is already enrolled in the class
-        $existingEnrollment = ClassModel::where([
-            ['class_code', $request->class_code],
-            ['stud_id', $userId],
-        ])->first();
-
-        if ($existingEnrollment) {
-            // User is already enrolled
-            return response()->json(['success' => true, 'message' => 'Already enrolled']);
+        if ($class) {
+            return response()->json([
+                'exists' => true,
+                'classDetails' => [
+                    'class_name' => $class->class_name,
+                    'ins_id' => $class->ins_id,
+                ],
+            ]);
         } else {
-            // Check if the class exists
-            $class = ClassModel::where('class_code', $request->class_code)->first();
-
-            if ($class) {
-                // Insert the new enrollment
-                ClassModel::create([
-                    'class_code' => $request->class_code,
-                    'class_name' => $request->class_name,
-                    'ins_id' => $request->ins_id,
-                    'stud_id' => $userId, // Store the user ID
-                ]);
-
-                return response()->json(['success' => true, 'message' => 'Joined class successfully']);
-            } else {
-                return response()->json(['success' => false, 'message' => 'Class code not found']);
-            }
+            return response()->json(['exists' => false]);
         }
-    } catch (\Exception $e) {
-        // Log the error and return a response
-        Log::error('Error joining class: '.$e->getMessage());
-        return response()->json(['success' => false, 'message' => 'An error occurred while joining the class.'], 500);
     }
-}
+
+    public function storeStudentClass(Request $request)
+    {
+        $request->validate([
+            'class_code' => 'required|string',
+            'class_name' => 'required|string',
+            'ins_id' => 'required|integer',
+        ]);
+
+        $userId = Auth::id();
+
+        //\Log::info('in the student class');
+
+        try {
+            // Check if the user is already enrolled in the class
+            $existingEnrollment = ClassModel::where([
+                ['class_code', $request->class_code],
+                ['stud_id', $userId],
+            ])->first();
+
+            if ($existingEnrollment) {
+                // User is already enrolled
+                return response()->json(['success' => true, 'message' => 'Already enrolled']);
+            } else {
+                // Check if the class exists
+                $class = ClassModel::where('class_code', $request->class_code)->first();
+
+                if ($class) {
+                    // Insert the new enrollment
+                    ClassModel::create([
+                        'class_code' => $request->class_code,
+                        'class_name' => $request->class_name,
+                        'ins_id' => $request->ins_id,
+                        'stud_id' => $userId, // Store the user ID
+                    ]);
+
+                    return response()->json(['success' => true, 'message' => 'Joined class successfully']);
+                } else {
+                    return response()->json(['success' => false, 'message' => 'Class code not found']);
+                }
+            }
+        } catch (\Exception $e) {
+            // Log the error and return a response
+            Log::error('Error joining class: '.$e->getMessage());
+            return response()->json(['success' => false, 'message' => 'An error occurred while joining the class.'], 500);
+        }
+    }
 
 
 
@@ -259,39 +251,22 @@ public function storeStudentClass(Request $request)
 
 
 
-//check the class code if it exist in the class database
-// public function checkClassCode(Request $request)
-// {
-//     $classCode = $request->input('class_code');
-//     $class = ClassModel::where('class_code', $classCode)->first();
+    public function getApprovedManuscripts()
+    {
+        try {
+            // Fetch manuscripts with 'Y' status, associated tags, and authors
+            $manuscripts = ManuscriptProject::with(['tags', 'authors']) // Eager load both tags and authors relationships
+                ->where('is_publish', '1')
+                ->get();
 
-//     if ($class) {
-//         return response()->json(['exists' => true]);
-//     } else {
-//         return response()->json(['exists' => false], 404);
-//     }
-// }
+            // Log the fetched manuscripts for debugging
+            logger()->info('Fetched Manuscripts with Tags and Authors:', $manuscripts->toArray());
 
-
-
-
-
-public function getApprovedManuscripts()
-{
-    try {
-        // Fetch manuscripts with 'Y' status, associated tags, and authors
-        $manuscripts = ManuscriptProject::with(['tags', 'authors']) // Eager load both tags and authors relationships
-            ->where('is_publish', '1')
-            ->get();
-
-        // Log the fetched manuscripts for debugging
-        logger()->info('Fetched Manuscripts with Tags and Authors:', $manuscripts->toArray());
-
-        return response()->json($manuscripts, 200);
-    } catch (\Exception $e) {
-        return response()->json(['message' => 'Error fetching manuscripts.', 'errors' => $e->getMessage()], 500);
+            return response()->json($manuscripts, 200);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Error fetching manuscripts.', 'errors' => $e->getMessage()], 500);
+        }
     }
-}
 
 // SELECT *
 // FROM manuscripts mp
@@ -300,63 +275,35 @@ public function getApprovedManuscripts()
 // AND a.user_id = 31
 // LIMIT 0, 25;
 
-public function myApprovedManuscripts() {
-    $userId = Auth::id(); // Get the ID of the currently signed-in user
+    public function myApprovedManuscripts() {
+        $userId = Auth::id(); // Get the ID of the currently signed-in user
 
-    // Fetch approved manuscripts for the currently authenticated user, including tags and authors
-    $manuscripts = ManuscriptProject::with(['tags', 'authors']) // Eager load tags and authors relationships
-        ->join('author', 'manuscripts.id', '=', 'author.man_doc_id')
-        ->where('manuscripts.man_doc_status', 'Y') // Ensure only approved manuscripts are retrieved
-        ->where('author.user_id', $userId) // Filter by the current user
-        ->select('manuscripts.*') // Select fields from manuscripts table
-        ->get();
+        // Fetch approved manuscripts for the currently authenticated user, including tags and authors
+        $manuscripts = ManuscriptProject::with(['tags', 'authors']) // Eager load tags and authors relationships
+            ->join('author', 'manuscripts.id', '=', 'author.man_doc_id')
+            ->where('manuscripts.man_doc_status', 'Y') // Ensure only approved manuscripts are retrieved
+            ->where('author.user_id', $userId) // Filter by the current user
+            ->select('manuscripts.*') // Select fields from manuscripts table
+            ->get();
 
-    return response()->json($manuscripts, 200);
-}
+        return response()->json($manuscripts, 200);
+    }
 
-public function myfavoriteManuscripts()
-{
-    $userId = Auth::id(); // Get the ID of the currently signed-in user
+    public function myfavoriteManuscripts()
+    {
+        $userId = Auth::id(); // Get the ID of the currently signed-in user
 
-    // Fetch approved manuscripts for the currently authenticated user, including tags and authors
-    $manuscripts = ManuscriptProject::with(['tags', 'authors']) // Eager load tags and authors relationships
-        ->join('favorites', 'manuscripts.id', '=', 'favorites.man_doc_id')
-        ->where('manuscripts.man_doc_status', 'Y') // Ensure only approved manuscripts are retrieved
-        ->where('favorites.user_id', $userId) // Filter by the current user
-        ->select('manuscripts.*') // Select fields from manuscripts table
-        ->get();
+        // Fetch approved manuscripts for the currently authenticated user, including tags and authors
+        $manuscripts = ManuscriptProject::with(['tags', 'authors']) // Eager load tags and authors relationships
+            ->join('favorites', 'manuscripts.id', '=', 'favorites.man_doc_id')
+            ->where('manuscripts.man_doc_status', 'Y') // Ensure only approved manuscripts are retrieved
+            ->where('favorites.user_id', $userId) // Filter by the current user
+            ->select('manuscripts.*') // Select fields from manuscripts table
+            ->get();
 
-    return response()->json($manuscripts, 200);
-}
+        return response()->json($manuscripts, 200);
+    }
 
-
-    // public function storefavorites(Request $request)
-    // {
-    //     // Check if the user is authenticated
-    //     if (!Auth::check()) {
-    //         return response()->json(['message' => 'You need to be logged in to bookmark'], 401);
-    //     }
-
-    //     $user = Auth::user();
-    //     $manuscriptId = $request->input('man_doc_id');
-
-    //     // Check if the manuscript is already bookmarked
-    //     $alreadyBookmarked = Favorite::where('man_doc_id', $manuscriptId)
-    //         ->where('user_id', $user->id)
-    //         ->exists();
-
-    //     if ($alreadyBookmarked) {
-    //         return response()->json(['message' => 'Already bookmarked'], 200);
-    //     }
-
-    //     // Create the new bookmark
-    //     $favorite = new Favorite();
-    //     $favorite->man_doc_id = $manuscriptId;
-    //     $favorite->user_id = $user->id;
-    //     $favorite->save();
-
-    //     return response()->json(['message' => 'Manuscript bookmarked successfully!'], 201);
-    // }
 
 
    // Get the favorites of a user by ID
@@ -371,43 +318,43 @@ public function myfavoriteManuscripts()
     }
 
     return response()->json($favorites);
-}
+    }
 
 
 
 
     public function storefavorites(Request $request)
-{
-    // Check if the user is authenticated
-    if (!Auth::check()) {
-        return response()->json(['message' => 'You need to be logged in to bookmark'], 401);
+    {
+        // Check if the user is authenticated
+        if (!Auth::check()) {
+            return response()->json(['message' => 'You need to be logged in to bookmark'], 401);
+        }
+
+        // Validate input data
+        $request->validate([
+            'man_doc_id' => 'required|integer|exists:manuscripts,id',  // Assuming 'manuscripts' is your table
+        ]);
+
+        $user = Auth::user();
+        $manuscriptId = $request->input('man_doc_id');
+
+        // Check if the manuscript is already bookmarked
+        $alreadyBookmarked = Favorite::where('man_doc_id', $manuscriptId)
+            ->where('user_id', $user->id)
+            ->exists();
+
+        if ($alreadyBookmarked) {
+            return response()->json(['message' => 'Already bookmarked'], 200);
+        }
+
+        // Create the new bookmark
+        $favorite = new Favorite();
+        $favorite->man_doc_id = $manuscriptId;
+        $favorite->user_id = $user->id;
+        $favorite->save();
+
+        return response()->json(['message' => 'Manuscript bookmarked successfully!'], 201);
     }
-
-    // Validate input data
-    $request->validate([
-        'man_doc_id' => 'required|integer|exists:manuscripts,id',  // Assuming 'manuscripts' is your table
-    ]);
-
-    $user = Auth::user();
-    $manuscriptId = $request->input('man_doc_id');
-
-    // Check if the manuscript is already bookmarked
-    $alreadyBookmarked = Favorite::where('man_doc_id', $manuscriptId)
-        ->where('user_id', $user->id)
-        ->exists();
-
-    if ($alreadyBookmarked) {
-        return response()->json(['message' => 'Already bookmarked'], 200);
-    }
-
-    // Create the new bookmark
-    $favorite = new Favorite();
-    $favorite->man_doc_id = $manuscriptId;
-    $favorite->user_id = $user->id;
-    $favorite->save();
-
-    return response()->json(['message' => 'Manuscript bookmarked successfully!'], 201);
-}
 
 
 
