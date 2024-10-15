@@ -308,7 +308,9 @@ Route::get('/api/my-favorite-manuscripts', [StudentClassController::class, 'myfa
 Route::post('/api/addfavorites', [StudentClassController::class, 'storefavorites'])
     ->middleware(['auth', 'verified', 'user-type:student'])
     ->name('storefavorites');
-;
+    Route::get('/manuscript/{id}/download', [StudentClassController::class, 'downloadPdf'])->name('manuscript.download');
+
+   // Route::get('/manuscript/{id}/download', [StudentClassController::class, 'downloadPdf']);
 // Correct
 // Route::get('/user/{id}/favorites', [StudentClassController::class, 'getUserFavorites']);
 
@@ -332,6 +334,7 @@ Route::post('/check-user-in-spreadsheet', [CheckSubscriptionController::class, '
 //Search and filter
 Route::get('/search', [SearchController::class, 'search']);
 Route::get('/searchlib', [SearchController::class, 'searchlib']);
+
 
 
 Route::middleware('auth')->group(function () {

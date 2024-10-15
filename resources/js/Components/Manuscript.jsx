@@ -19,6 +19,34 @@ const Manuscript = ({user}) => {
         { user: 'Commenter 3', text: 'This is yet another comment.' },
     ]);
 
+
+    const handleDownload = async (manuscriptId, title) => {
+        console.log("Attempting to download manuscript ID:", manuscriptId); // Log manuscript ID
+        try {
+            const response = await axios.get(`/manuscript/${manuscriptId}/download`, { responseType: 'blob' });
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement('a');
+
+            // Set the filename with .pdf extension
+            const fileName = title ? `${title}.pdf` : 'file.pdf';
+            link.href = url;
+            link.setAttribute('download', fileName); // Use the title or a default file name
+            document.body.appendChild(link);
+            link.click();
+
+            // Clean up: remove the link after clicking
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url); // Optional: release memory
+        } catch (error) {
+            console.error('Error downloading the PDF:', error);
+            alert('There was an error downloading the file. Please try again.'); // Optional: user feedback
+        }
+    };
+
+
+
+
+
     // Log the updated favorites whenever it changes
     useEffect(() => {
         console.log('Updated Favorites:', favorites);
@@ -269,11 +297,15 @@ const Manuscript = ({user}) => {
                                     </button>
                                 </Tooltip>
 
-                    <Tooltip content="Download">
-                    <button className="text-gray-600 hover:text-gray-900">
-                        <FaFileDownload size={20} />
-                    </button></Tooltip>
-                </div>
+                            <Tooltip content="Download">
+                                <button
+                                    className="text-gray-600 hover:text-blue-500"
+                                    onClick={() => handleDownload(manuscript.id, manuscript.man_doc_title)}
+                                >
+                                    <FaFileDownload size={20} />
+                                </button>
+                            </Tooltip>
+            </div>
 
                 {showComments && (
                     <div className="mt-4 space-y-4">
