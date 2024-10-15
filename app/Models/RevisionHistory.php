@@ -15,9 +15,9 @@ class RevisionHistory extends Model
     protected $table = 'revision_history'; 
 
     protected $fillable = [
-        'comment',
+        'ins_comment',
         'man_doc_id',
-        'faculty_id',
+        'ins_id',
         'uploaded_at',
         'status'
     ];
@@ -40,7 +40,7 @@ class RevisionHistory extends Model
 
     public function faculty(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'faculty_id');
+        return $this->belongsTo(User::class, 'ins_id');
     }
     
 

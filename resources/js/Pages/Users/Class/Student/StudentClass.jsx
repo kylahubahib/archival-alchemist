@@ -23,6 +23,8 @@ export default function StudentClass({ auth }) {
             axios.get('/check-student-in-class')
             .then(response => {
                 setManuscript(response.data.manuscript);
+                setClassCode(response.data.class);
+                //console.log(response.data.class);
                 //console.log('manuscript', response.data.manuscript)
                 setJoinedClass(true);
                 setLoading(false);
@@ -186,7 +188,7 @@ export default function StudentClass({ auth }) {
                                     <div className="bg-gray-100 flex-grow rounded-b-lg w-full"> {/* Ensure this section grows */}
                                         {/* Conditionally Render Active Tab Component */}
                                         <div className="mt-6">
-                                            {activeTab === 'upload' && <UploadCapstone />}
+                                            {activeTab === 'upload' && <UploadCapstone class_code={classCode}  />}
                                             {activeTab === 'track' && <Track manuscript={manuscript}/>}
                                             {activeTab === 'approve' && <Approve />}
                                         </div>

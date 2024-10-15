@@ -139,7 +139,7 @@ class User extends Authenticatable
 
     public function revision_history()
     {
-        return $this->hasMany(RevisionHistory::class, 'faculty_id');
+        return $this->hasMany(RevisionHistory::class, 'ins_id');
     }
 
 }

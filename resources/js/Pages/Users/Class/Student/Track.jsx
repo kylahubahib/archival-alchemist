@@ -221,8 +221,8 @@ export default function Track({manuscript=[]}) {
                     </div>
 
                     <div className="mt-2">
-                        <p className="text-gray-700 mt-1">Advisers's Remarks: </p>
-                        <p className="text-gray-700 mt-1">{selectedData.comment}</p>
+                        <p className="text-gray-700 mt-1">Adviser's Remarks: </p>
+                        <p className="text-gray-700 mt-1">{selectedData.ins_comment}</p>
                     </div>
 
                 </div>
