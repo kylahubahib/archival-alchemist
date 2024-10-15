@@ -73,7 +73,7 @@ export default function AdminLayout({ auth, user, header, children }) {
 
         <div className="flex-1">
 
-            <nav className="bg-white sticky top-0 shadow-sm">
+            <nav className="bg-white sticky top-0 shadow-sm z-50">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-end h-14">
 

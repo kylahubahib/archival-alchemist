@@ -1,8 +1,9 @@
 <?php
 
 namespace App\Http\Controllers;
-
+use Illuminate\Support\Facades\Storage;
 use App\Models\Author;
+use Illuminate\Support\Facades\File;
 use Illuminate\Http\JsonResponse;
 use App\Models\ClassModel;
 use App\Models\ManuscriptProject;
@@ -10,10 +11,10 @@ use App\Models\ManuscriptTag;
 use App\Models\Favorite;
 use App\Models\Tags;
 use App\Models\User;
+use App\Models\RevisionHistory;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-
 
 
 class StudentClassController extends Controller
@@ -42,8 +43,12 @@ class StudentClassController extends Controller
                 'man_doc_author.*' => '.string|max:255',
                 'tags_name' => 'nullable|array', // Change this line to match your input key
                 'tags_name.*' => 'string|max:255', // Validate individual tag names
-                'man_doc_content' => 'required|file|mimes:pdf,docx|max:10240',
+                'man_doc_content' => 'required|file|mimes:pdf,docx|max:20480',
+
             ]);
+
+            //Get the class code using request
+            $classCode = $request->get('class_code');
 
             // Use the correct key to get tags from the request
             $tags = $request->get('tags_name', []); // Change from 'tags' to 'tags_name'
@@ -51,20 +56,16 @@ class StudentClassController extends Controller
             // Use the correct key to get tags from the request
             $users = $request->get('name', []); // Change from 'tags' to 'tags_name'
 
-            // Store the file
-            $filePath = $request->file('man_doc_content')->store('capstone_files');
+            // Store the file in the capstone_files directory
+            $filePath = $request->file('man_doc_content')->storeAs('capstone_files', time() . '_' . $request->file('man_doc_content')->getClientOriginalName(), 'public');
 
-            // Convert author array to string
-            // $author = $request->input('man_doc_author');
-            // $authorsString = implode(', ', $author);
 
             // Create the manuscript project
             $manuscriptProject = ManuscriptProject::create([
                 'man_doc_title' => $validatedData['man_doc_title'],
                 'man_doc_adviser' => $validatedData['man_doc_adviser'],
-                // 'man_doc_author' => $authorsString,
-                'man_doc_content' => $filePath,
-                'class_id' => $validatedData['class_id'] ?? null,
+                'man_doc_content' => 'storage/' . $filePath, // Save the path for database
+                'class_code' => $validatedData['class_id'] ?? null,
             ]);
 
             Log::info('Manuscript Project Created:', ['id' => $manuscriptProject->id]);
@@ -109,42 +110,57 @@ class StudentClassController extends Controller
 
 
 
-                        // Handle users and store them in the Author table
-                        $userIds = []; // Array to hold the IDs of the users to be associated with the manuscript
+            // Handle users and store them in the Author table
+            $userIds = []; // Array to hold the IDs of the users to be associated with the manuscript
 
-                        if (!empty($users) && is_array($users)) { // Ensure $users is an array and not empty
-                            foreach ($users as $userName) {
-                                // Convert name to lowercase for consistency and trim any whitespace
-                                $userName = strtolower(trim($userName));
+            if (!empty($users) && is_array($users)) { // Ensure $users is an array and not empty
+                foreach ($users as $userName) {
+                    // Convert name to lowercase for consistency and trim any whitespace
+                    $userName = strtolower(trim($userName));
 
-                                // Find the users by its name
-                                $user = User::where('name', $userName)->first();
+                    // Find the users by its name
+                    $user = User::where('name', $userName)->first();
 
-                                // If the users does not exist, create a new record and get its ID
-                                if (!$user) {
-                                    return response()->json(['message' => 'User does not exist.', 'errors'], 422);
-                                } else {
-                                    // $author = User::create(['name' => $userName]);
-                                    Log::info("Author '$userName' found with ID: " . $user->id);
-                                    // Store the Users ID for the Authors table
-                                    $userIds[] = $user->id;
-                                }
-                            }
-                        } else {
-                            Log::info('No users provided or users is not an array.');
-                        }
+                    // If the users does not exist, create a new record and get its ID
+                    if (!$user) {
+                        return response()->json(['message' => 'User does not exist.', 'errors'], 422);
+                    } else {
+                        // $author = User::create(['name' => $userName]);
+                        Log::info("Author '$userName' found with ID: " . $user->id);
+                        // Store the Users ID for the Authors table
+                        $userIds[] = $user->id;
+                    }
+                }
+            } else {
+                Log::info('No users provided or users is not an array.');
+            }
 
-                        // Insert the users into the author table
-                        foreach ($userIds as $userId) {
-                            Author::create([
-                                'man_doc_id' => $manuscriptProject->id, // The manuscript ID from the saved manuscript
-                                'user_id' => $userId, // The tag ID from the tags table
-                            ]);
-                            Log::info("Inserted into Authors Table:", [
-                                'man_doc_id' => $manuscriptProject->id,
-                                'user_id' => $userId,
-                            ]);
-                        }
+            // Insert the users into the author table
+            foreach ($userIds as $userId) {
+                Author::create([
+                    'man_doc_id' => $manuscriptProject->id, // The manuscript ID from the saved manuscript
+                    'user_id' => $userId, // The tag ID from the tags table
+                ]);
+                Log::info("Inserted into Authors Table:", [
+                    'man_doc_id' => $manuscriptProject->id,
+                    'user_id' => $userId,
+                ]);
+            }
+
+            if($manuscriptProject)
+            {
+                $class = ClassModel::where('class_code', $classCode)->first();
+                $faculty = $class->ins_id;
+                
+                RevisionHistory::create([
+                    'ins_comment' => null,
+                    'man_doc_id' => $manuscriptProject->id,
+                    'ins_id' => $faculty,
+                    'uploaded_at' => $manuscriptProject->created_at,
+                    'revision_content' => $manuscriptProject->man_doc_content,
+                    'status' => 'Started'
+                ]);
+            }
 
             return response()->json(['message' => 'Manuscript project uploaded successfully.'], 200);
 
@@ -437,6 +453,77 @@ public function myfavoriteManuscripts()
 
         return response()->json(['message' => 'Manuscript removed from bookmarks successfully!'], 200);
     }
+
+
+
+    /**
+     * Download the manuscript PDF.
+     *
+     * @param int $id
+     * @return \Symfony\Component\HttpFoundation\BinaryFileResponse|\Illuminate\Http\JsonResponse
+     */
+
+
+     public function downloadPdf($id)
+     {
+         $manuscript = ManuscriptProject::findOrFail($id);
+         $filename = $manuscript->man_doc_content; // Get the filename from the database
+
+         // Log the filename for debugging
+         \Log::info('Filename for download: ' . $filename);
+
+         // Ensure the filename has the correct extension
+         $filePath = storage_path('app/public/' . str_replace('storage/', '', $filename));
+
+         // Check if the file exists before attempting to download
+         if (!file_exists($filePath)) {
+             abort(404, 'File not found.');
+         }
+
+         // Get the actual filename to be downloaded
+         $originalName = basename($filename); // Extract original name from the path
+         $extension = pathinfo($originalName, PATHINFO_EXTENSION);
+
+         // Append .pdf if it's not already in the filename
+         if (strtolower($extension) !== 'pdf') {
+             $originalName .= '.pdf';
+         }
+
+         // Return the download response with the correct Content-Type
+         return response()->download($filePath, $originalName, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="' . $originalName . '"'
+        ]);
+
+     }
+
+
+
+
+    
+    public function checkStudentInClass()
+    {
+        // Load user with manuscripts that are not approved, including tags and revision history
+        $user = Auth::user()->load([
+            'manuscripts' => function ($query) {
+                $query->where('man_doc_status', 'X');
+            },
+            'manuscripts.tags',
+            'manuscripts.revision_history.faculty',
+            'manuscripts.authors'
+        ]);
+
+        \Log::info($user->toArray());
+
+        $studentClass = ClassModel::where('stud_id', $user->id)->first();
+
+        return response()->json([
+            'class' => $studentClass->class_code,
+            'manuscript' => $user->manuscripts
+        ]);
+    }
+
+
 
 }
 

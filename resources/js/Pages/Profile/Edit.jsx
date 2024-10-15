@@ -36,7 +36,7 @@ export default function Edit({ auth, mustVerifyEmail, status }) {
                 setProfilePic(URL.createObjectURL(file));
                 setData('user_pic', file);
                 setProfilePicChanged(true);
-                console.log(profilePic);
+                console.log(file);
             };
             reader.readAsDataURL(file);
         }
@@ -53,6 +53,7 @@ export default function Edit({ auth, mustVerifyEmail, status }) {
 
     const handleConfirmSave = () => {
         const formData = new FormData();
+        console.log('Confirm', data.user_pic);
         formData.append('user_pic', data.user_pic);
 
         axios.post(route('profile.updatePicture'), formData, {

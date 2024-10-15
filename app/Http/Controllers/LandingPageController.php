@@ -14,12 +14,13 @@ class LandingPageController extends Controller
 {
     public function index()
     {
-        $mainSection = CustomContent::where('content_type', 'homepage title')->get();
         $servicesSection = CustomContent::where('content_type', 'our services')->get();
         $teamSection = CustomContent::where('content_type', 'our team')->get();
+        $heroSection = CustomContent::where('content_type', 'hero page')->first();
+
 
         return response()->json([
-            'mainSection' => $mainSection,
+            'heroSection' => $heroSection,
             'servicesSection' => $servicesSection,
             'teamSection' => $teamSection
         ]);

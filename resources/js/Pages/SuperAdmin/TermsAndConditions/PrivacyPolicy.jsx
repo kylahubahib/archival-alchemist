@@ -6,18 +6,18 @@ import { CgClose } from 'react-icons/cg';
 import Modal from '@/Components/Modal';
 import { showToast } from '@/Components/Toast';
 
-export default function BillingAgreement({ isOpen, onClose, billAgreement = {} }) {
+export default function PrivacyPolicy({ isOpen, onClose, privacy = {} }) {
     const { data, setData, put, processing, errors, reset } = useForm({
-        content_text: billAgreement.content_text || '',
-        content_type: billAgreement.content_type || ''
+        content_text: privacy.content_text || '',
+        content_type: privacy.content_type || '',
+        content_title: privacy.content_title || ''
     });
 
     const submit = (e) => {
 
-        console.log('ok')
         e.preventDefault();
         
-        put(route('manage-custom-messages.update', billAgreement.id), {
+        put(route('manage-terms-and-conditions.update', privacy.id), {
             data, 
             preserveScroll: true,
             onSuccess: () => {
@@ -35,7 +35,7 @@ export default function BillingAgreement({ isOpen, onClose, billAgreement = {} }
 
         <Modal show={isOpen} onClose={onClose} maxWidth="5xl">
             <div className="p-3 flex justify-between">
-                <h2 className="text-xl text-gray-700 font-bold">Billing Agreement</h2>
+                <h2 className="text-xl text-gray-700 font-bold">Privacy Policy</h2>
 
                 <button onClick={onClose} className="text-gray-600 p-2 text-xl rounded-full hover:bg-gray-100">
                     <CgClose />

@@ -44,6 +44,9 @@ class FAQController extends Controller
         $request->validate([
             'content_title' => 'required|string|max:1000',
             'content_text' => 'required|string',
+        ], [], [
+            'content_title' => 'question',
+            'content_text' => 'answer',
         ]);
 
         CustomContent::create([
@@ -86,13 +89,17 @@ class FAQController extends Controller
      */
     public function update(Request $request, $id): RedirectResponse
     {
-        \Log::info('Update request received for faq ID: ' . $id);
-        \Log::info('Update request data: ', $request->all());
+        // \Log::info('Update request received for faq ID: ' . $id);
+        // \Log::info('Update request data: ', $request->all());
 
         $request->validate([
             'content_title' => 'required|string|max:1000',
             'content_text' => 'required|string',
+        ], [], [
+            'content_title' => 'question',
+            'content_text' => 'answer',
         ]);
+
 
         $faq = CustomContent::find($id);
 

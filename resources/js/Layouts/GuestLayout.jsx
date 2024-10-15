@@ -7,7 +7,7 @@ export default function GuestLayout({ user, children }) {
 
     return (
         <div className="min-h-screen bg-customlightBlue flex flex-col">
-            <nav className="bg-customlightBlue sticky top-0 z-50">
+            <nav className="bg-customlightBlue sticky top-0 z-50 select-none">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between h-16 items-center">
                         <h1 className="text-customBlue font-bold text-lg">Archival Alchemist</h1>

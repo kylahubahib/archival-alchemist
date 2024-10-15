@@ -15,9 +15,11 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
 
             // Foreign key to the manuscripts table (the manuscript being bookmarked)
-            $table->foreignId('man_doc_id')->constrained()->onDelete('cascade');
+            // $table->foreignId('man_doc_id')->constrained()->onDelete('cascade');
 
-            // Add timestamps to track when the manuscript was favorited
+            $table->foreignId('man_doc_id')->references('id')->on('manuscripts')->onDelete('cascade');
+
+            // Add timestamps to track when the manuscri
             $table->timestamps();
         });
     }

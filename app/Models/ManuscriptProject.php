@@ -11,7 +11,7 @@ class ManuscriptProject extends Model
 {
     use HasFactory;
 
-    protected $table = 'manuscripts'; // Explicitly specify the table name
+    protected $table = 'manuscripts'; 
 
     protected $fillable = [
         'man_doc_title',
@@ -42,8 +42,8 @@ class ManuscriptProject extends Model
     {
         return $this->belongsToMany(Tags::class, 'manuscript_tag', 'manuscript_id', 'tag_id');
     }
-// author: This refers to a method in the ManuscriptProject model that defines the relationship to the Author model.
-//  It's not referring to the author table directly; instead, it refers to the relationship method.
+    // author: This refers to a method in the ManuscriptProject model that defines the relationship to the Author model.
+    //  It's not referring to the author table directly; instead, it refers to the relationship method.
     public function authors(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'author', 'man_doc_id', 'user_id');
@@ -51,7 +51,12 @@ class ManuscriptProject extends Model
 
     public function favorites()
     {
-        return $this->hasMany(Favorite::class, 'ma_doc_id');
+        return $this->hasMany(Favorite::class, 'man_doc_id');
+    }
+
+    public function revision_history()
+    {
+        return $this->hasMany(RevisionHistory::class, 'man_doc_id');
     }
 
 
