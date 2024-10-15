@@ -1,12 +1,13 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head } from '@inertiajs/react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import axios from 'axios'; // Import axios for making HTTP requests
 import { BookOpenIcon } from '@heroicons/react/24/outline';
 import Modal from '@/Components/Modal';
 import UploadCapstone from '@/Pages/Users/Class/Student/UploadCapstone';
 import Track from '@/Pages/Users/Class/Student/Track';
 import Approve from '@/Pages/Users/Class/Student/Approved';
+import { Spinner } from '@nextui-org/react';
 
 export default function StudentClass({ auth }) {
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -15,6 +16,24 @@ export default function StudentClass({ auth }) {
     const [joinedClass, setJoinedClass] = useState(false);
     const [activeTab, setActiveTab] = useState(null);
     const [errorMessage, setErrorMessage] = useState(''); // Add state for error message
+    const [manuscript, setManuscript] = useState(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+            axios.get('/check-student-in-class')
+            .then(response => {
+                setManuscript(response.data.manuscript);
+                //console.log('manuscript', response.data.manuscript)
+                setJoinedClass(true);
+                setLoading(false);
+
+                if(response.data.manuscript){
+                    setActiveTab('track');
+                } else {
+                    setActiveTab('upload');
+                }
+            });
+    }, [])
 
     const openModal = () => {
         setIsModalOpen(true);
@@ -31,6 +50,9 @@ export default function StudentClass({ auth }) {
     const closeConfirmModal = () => {
         setIsConfirmModalOpen(false);
     };
+
+    
+   
 
     const handleJoinClass = () => {
         // Reset error message
@@ -99,6 +121,7 @@ export default function StudentClass({ auth }) {
 
     const buttonStyle = (tab) => `px-4 py-2 font-semibold rounded-t-lg border ${activeTab === tab ? 'bg-gray-200 border-b-2 border-b-blue-500 text-blue-500' : 'border-transparent text-gray-700 hover:text-blue-500'}`;
 
+    
     return (
         <AuthenticatedLayout
             user={auth.user}
@@ -108,6 +131,9 @@ export default function StudentClass({ auth }) {
             <Head title="Class for Student" />
 
             <div className="bg-white rounded m-4 min-h-screen"> {/* Use flex-grow to take available space */}
+
+            {!loading ? 
+            (
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
                     <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                         <div className="p-6 text-gray-900 min-h-screen"> {/* Adjust height to flex container */}
@@ -161,7 +187,7 @@ export default function StudentClass({ auth }) {
                                         {/* Conditionally Render Active Tab Component */}
                                         <div className="mt-6">
                                             {activeTab === 'upload' && <UploadCapstone />}
-                                            {activeTab === 'track' && <Track />}
+                                            {activeTab === 'track' && <Track manuscript={manuscript}/>}
                                             {activeTab === 'approve' && <Approve />}
                                         </div>
                                     </div>
@@ -170,6 +196,14 @@ export default function StudentClass({ auth }) {
                         </div>
                     </div>
                 </div>
+            ) : (
+                <div className="flex justify-center items-center min-h-screen space-y-3">
+                    <Spinner size='lg' />
+                </div>
+
+            )
+
+            }
             </div>
 
             <Modal show={isModalOpen} onClose={closeModal}>

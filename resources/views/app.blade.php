@@ -19,5 +19,10 @@
     </head>
     <body class="font-sans antialiased">
         @inertia
+
+
+        <!-- <div id="placeholder"></div>
+        <script type="text/javascript" src="http://your-server-ip/web-apps/apps/api/documents/api.js"></script> -->
+    
     </body>
 </html>

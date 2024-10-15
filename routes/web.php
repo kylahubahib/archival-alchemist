@@ -297,13 +297,12 @@ Route::post('/store-student-class', [StudentClassController::class, 'storeStuden
 // routes for checking the user premium subscription
 Route::post('/check-user-premium-status', [CheckSubscriptionController::class, 'is_premium']);
 
+Route::get('/check-student-in-class', [StudentClassController::class, 'checkStudentInClass']);
+
 
 
 Route::get('/api/approved-manuscripts', [StudentClassController::class, 'getApprovedManuscripts']);
-
-
 Route::get('/api/my-approved-manuscripts', [StudentClassController::class, 'myApprovedManuscripts']);
-
 Route::get('/api/my-favorite-manuscripts', [StudentClassController::class, 'myfavoriteManuscripts']);
 
 Route::post('/api/addfavorites', [StudentClassController::class, 'storefavorites'])

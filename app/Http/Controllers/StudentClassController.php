@@ -10,6 +10,7 @@ use App\Models\ManuscriptTag;
 use App\Models\Favorite;
 use App\Models\Tags;
 use App\Models\User;
+use App\Models\RevisionHistory;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -147,9 +148,6 @@ class StudentClassController extends Controller
         }
     }
 
-
-
-
     public function checkClassCode(Request $request)
     {
         $request->validate([
@@ -181,7 +179,7 @@ class StudentClassController extends Controller
 
         $userId = Auth::id();
 
-        //\Log::info('in the student class');
+        //\Log::info('in the student class'); 
 
         try {
             // Check if the user is already enrolled in the class
@@ -275,7 +273,8 @@ class StudentClassController extends Controller
 // AND a.user_id = 31
 // LIMIT 0, 25;
 
-    public function myApprovedManuscripts() {
+    public function myApprovedManuscripts() 
+    {
         $userId = Auth::id(); // Get the ID of the currently signed-in user
 
         // Fetch approved manuscripts for the currently authenticated user, including tags and authors
@@ -303,8 +302,6 @@ class StudentClassController extends Controller
 
         return response()->json($manuscripts, 200);
     }
-
-
 
    // Get the favorites of a user by ID
    public function getUserFavorites($id) {
@@ -384,6 +381,32 @@ class StudentClassController extends Controller
 
         return response()->json(['message' => 'Manuscript removed from bookmarks successfully!'], 200);
     }
+
+
+    
+    public function checkStudentInClass()
+    {
+        // Load user with manuscripts that are not approved, including tags and revision history
+        $user = Auth::user()->load([
+            'manuscripts' => function ($query) {
+                $query->where('man_doc_status', 'X');
+            },
+            'manuscripts.tags',
+            'manuscripts.revision_history.faculty',
+            'manuscripts.authors'
+        ]);
+
+        \Log::info($user->toArray());
+
+        $studentClass = ClassModel::where('stud_id', $user->id)->first();
+
+        return response()->json([
+            'class' => $studentClass->class_code,
+            'manuscript' => $user->manuscripts
+        ]);
+    }
+
+
 
 }
 

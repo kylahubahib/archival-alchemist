@@ -137,4 +137,9 @@ class User extends Authenticatable
         return $this->hasMany(Favorite::class, 'user_id');
     }
 
+    public function revision_history()
+    {
+        return $this->hasMany(RevisionHistory::class, 'faculty_id');
+    }
+
 }
