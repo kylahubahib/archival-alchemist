@@ -153,13 +153,15 @@ export default function TeacherClass({ auth }) {
                             {/* Render selected class information */}
                             {selectedClass && (
                                 <>
-                                    {/* <div className="flex justify-between items-center mb-4">
-                                        <div className="flex space-x-4">
-                                            <button className="border rounded px-4 py-2">Members</button>
-                                            <button className="border rounded px-4 py-2">Queue</button>
-                                            <button className="border rounded px-4 py-2">Records</button>
-                                        </div>
-                                    </div> */}
+<div className="flex items-center justify-between mb-4">
+    <h1 className="whitespace-nowrap text-2xl font-bold">CCICT Department</h1>
+    <div className="flex justify-end space-x-4">
+        <ClassDropdown />
+    </div>
+</div>
+
+
+
                                     <hr className="mb-4" />
 
                                     <div className="flex">
