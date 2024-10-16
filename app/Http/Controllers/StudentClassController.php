@@ -517,10 +517,17 @@ public function myfavoriteManuscripts()
 
         $studentClass = ClassModel::where('stud_id', $user->id)->first();
 
-        return response()->json([
-            'class' => $studentClass->class_code,
-            'manuscript' => $user->manuscripts
-        ]);
+        if($studentClass) {
+            return response()->json([
+                'class' => $studentClass->class_code,
+                'manuscript' => $user->manuscripts
+            ]);
+        }
+        else {
+            return response()->json();
+        }
+
+       
     }
 
 

@@ -5,9 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+use Illuminate\Notifications\Notifiable;
+
 class ClassModel extends Model
 {
-    use HasFactory;
+    use HasFactory, Notifiable;
      // Specify the table name if it does not follow Laravel's convention
     protected $table = 'class';
     // The attributes that are mass assignable.

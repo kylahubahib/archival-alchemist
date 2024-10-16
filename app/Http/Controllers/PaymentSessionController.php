@@ -28,6 +28,7 @@ class PaymentSessionController extends Controller
 
     public function PaymentSession(Request $request)
     {
+        \Log::info('in payment session');
         $request->validate([
             'plan_id' => 'required|exists:subscription_plans,id',
         ]);
@@ -59,7 +60,7 @@ class PaymentSessionController extends Controller
                             'billing' => [
                                 'name' => $user->name,
                                 'email' => $user->email,
-                                'phone' => $user->phone_number,
+                                'phone' => $user->user_pnum,
                             ],
                             'line_items' => [
                                 [
@@ -78,7 +79,7 @@ class PaymentSessionController extends Controller
                             ],
                             //'send_email_receipt' => false,
                             'success_url' => url('/payment/success'),
-                            'cancel_url' => url('/pricing'),
+                            'cancel_url' => url('/payment/cancel'),
 
                         ],
                     ],
@@ -91,49 +92,12 @@ class PaymentSessionController extends Controller
                 //Store checkout_id temporarily so that we can use it in paymentSuccess
                 $request->session()->put('checkout_id', $checkout_id);
 
-                $transaction = Transaction::create([
-                    'user_id' => $user->id,
-                    'plan_id' => $plan->id,
-                    'checkout_id' => $checkout_id,
-                    'reference_number' =>  null,
-                    'trans_amount' => $finalAmount,
-                    'trans_status' => 'pending',
-                    'payment_method' => null
-                ]);
-
-                if($user->user_type === 'admin') {
-                    $institution = InstitutionAdmin::where('user_id', $user->id)
+                $institution = InstitutionAdmin::where('user_id', $user->id)
                     ->first();
 
-                    $request->session()->put('ins_sub_id', $institution->insub_id);
-
-                    $institutionSubscription = InstitutionSubscription::find($institution->insub_id);
-
-                    //Updates the subscription plan
-                    $institutionSubscription->update([
-                        'plan_id' => $plan->id,
-                        'insub_status' => 'Inactive',
-                        'total_amount' => $finalAmount,
-                        'insub_content' => null,
-                        'insub_num_user' => $plan->plan_user_num,
-                        'start_date' => null,
-                        'end_date' => null,
-                    ]);
-                }
-                elseif ($user->user_type === 'superadmin') {
-                    return response()->json();
-                }
-                else {
-                     // Creates new item in personal subscription
-                    $personalSubscription = PersonalSubscription::create([
-                        'user_id' => $user->id,
-                        'plan_id' => $plan->id,
-                        'persub_status' => 'Inactive',
-                        'total_amount' => $finalAmount,
-                        'start_date' => null,
-                        'end_date' => null,
-                    ]);
-                }
+                $request->session()->put('ins_sub_id', $institution->insub_id);
+                $request->session()->put('plan', $plan);
+                $request->session()->put('finalAmount', $finalAmount);
 
 
                 $checkoutUrl = $response->json('data.attributes.checkout_url');
@@ -151,6 +115,10 @@ class PaymentSessionController extends Controller
 
         $checkoutId = $request->session()->get('checkout_id');
         $insub_id = $request->session()->get('ins_sub_id');
+        $plan = $request->session()->get('plan');
+        $finalAmount = $request->session()->get('finalAmount');
+        
+        $user = Auth::user();
 
         \Log::info('Checkout session id:'. $checkoutId);
 
@@ -164,10 +132,6 @@ class PaymentSessionController extends Controller
                 $checkoutDetails = $response->json('data.attributes');
 
                 \Log::info($checkoutDetails);
-
-                $transaction = Transaction::with('plan')
-                    ->where('checkout_id', $checkoutId)
-                    ->first();
 
                 $subscriptionInterval = $transaction->plan->plan_term;
                 $currentDate = Carbon::now();
@@ -188,49 +152,55 @@ class PaymentSessionController extends Controller
 
                 \Log::info('End Date: '. $endDate);
 
-                if ($transaction) {
-
                     $referenceNumber = $checkoutDetails['payments'][0]['id'] ?? null;
                     $status = $checkoutDetails['payments'][0]['attributes']['status'] ?? null;
 
-                    //Updates the transaction if payment is successful
-                    $transaction->update([
-                        'reference_number' => $referenceNumber,
+                    //Create the transaction if payment is successful
+                    $transaction = Transaction::create([
+                        'user_id' => $user->id,
+                        'plan_id' => $plan->id,
+                        'checkout_id' => $checkoutId,
+                        'reference_number' =>  $referenceNumber,
+                        'trans_amount' => $finalAmount,
+                        'trans_status' => $status,
                         'payment_method' => $checkoutDetails['payment_method_used'],
-                        'trans_status' => $status
                     ]);
 
                     if($user->user_type === 'admin') {
-                        //Updates the start date and end date once payment is successful
                         $institutionSubscription = InstitutionSubscription::find($insub_id);
+
+                        //Updates the subscription plan
                         $institutionSubscription->update([
+                            'plan_id' => $plan->id,
+                            'insub_status' => 'Active',
+                            'total_amount' => $finalAmount,
+                            'insub_content' => $institutionSubscription->insub_content,
+                            'insub_num_user' => $plan->plan_user_num,
                             'start_date' => $currentDate->toDateString(),
                             'end_date' => $endDate,
-                            'insub_status' => 'Active'
+                            'notify_renewal' => 1
                         ]);
 
                     } else {
-                        $personalSubscription = PersonalSubscription::where('user_id', Auth::id());
-                        $personalSubscription->update([
+                        $personalSubscription = PersonalSubscription::create([
+                            'user_id' => $user->id,
+                            'plan_id' => $plan->id,
+                            'persub_status' => 'Active',
+                            'total_amount' => $finalAmount,
                             'start_date' => $currentDate->toDateString(),
                             'end_date' => $endDate,
-                            'persub_status' => 'Active'
+                            'notify_renewal' => 1
                         ]);
                     }
                     
                     //Updates user is_premium status
-                    $user = Auth::user();
                     $user->update([
                         'is_premium' => 1
                     ]);
 
                     return redirect()->back();
 
-                } else {
-
-                    \Log::warning("No transaction found for checkout ID: $checkoutId");
-                    return response()->json(['error' => 'No transaction found']);
-                }
+                
             } else {
                 return response()->json(['error' => 'Failed to retrieve checkout session'], 500);
             }
@@ -241,6 +211,11 @@ class PaymentSessionController extends Controller
 
 
 
+    }
+
+    public function paymentCancel(Request $request)
+    {
+        return redirect()->back();
     }
 
 

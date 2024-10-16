@@ -16,24 +16,26 @@ export default function StudentClass({ auth }) {
     const [joinedClass, setJoinedClass] = useState(false);
     const [activeTab, setActiveTab] = useState(null);
     const [errorMessage, setErrorMessage] = useState(''); // Add state for error message
-    const [manuscript, setManuscript] = useState(null);
+    const [manuscript, setManuscript] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
             axios.get('/check-student-in-class')
             .then(response => {
-                setManuscript(response.data.manuscript);
-                setClassCode(response.data.class);
-                //console.log(response.data.class);
-                //console.log('manuscript', response.data.manuscript)
-                setJoinedClass(true);
-                setLoading(false);
+                if(response.data.class){
+                    setManuscript(response.data.manuscript);
+                    setClassCode(response.data.class);
+                    //console.log(response.data.class);
+                    //console.log('manuscript', response.data.manuscript)
+                    setJoinedClass(true);
 
-                if(response.data.manuscript){
-                    setActiveTab('track');
-                } else {
-                    setActiveTab('upload');
+                    if(response.data.manuscript == []){
+                        setActiveTab('track');
+                    } else {
+                        setActiveTab('upload');
+                    }
                 }
+                setLoading(false);
             });
     }, [])
 

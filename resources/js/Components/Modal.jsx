@@ -1,6 +1,6 @@
 import { Dialog, DialogPanel, Transition, TransitionChild } from '@headlessui/react';
 
-export default function Modal({ children, show = false, maxWidth = '2xl', closeable = true, onClose = () => {} }) {
+export default function Modal({ children, show = false, maxWidth = '2xl', closeable = true, onClose = () => {}, maxHeight = '2xl' }) {
 
     const maxWidthClass = {
         sm: 'sm:max-w-sm',
@@ -8,6 +8,8 @@ export default function Modal({ children, show = false, maxWidth = '2xl', closea
         lg: 'sm:max-w-lg',
         xl: 'sm:max-w-xl',
         '2xl': 'sm:max-w-2xl',
+        '3xl': 'sm:max-w-3xl',
+        '4xl': 'sm:max-w-4xl',
         '5xl': 'sm:max-w-5xl',
     }[maxWidth];
 
@@ -44,7 +46,7 @@ export default function Modal({ children, show = false, maxWidth = '2xl', closea
                     leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
                 >
                     <DialogPanel
-                        className={`relative bg-white rounded-lg shadow-xl m-5 overflow-hidden transform transition-all sm:w-full sm:mx-auto ${maxWidthClass} max-h-screen overflow-y-auto`}
+                        className={`relative bg-white rounded-lg shadow-xl m-5 transform transition-all sm:w-full sm:mx-auto ${maxWidthClass} max-h-[80vh] overflow-y-auto`}
                     >
                         {children}
                     </DialogPanel>

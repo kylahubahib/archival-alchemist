@@ -66,7 +66,7 @@ export default function Home({ auth }) {
     };
 
     return (
-        <>
+        <div className=" select-none">
             <GuestLayout user={auth.user}
                 header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Home</h2>}>
 
@@ -246,6 +246,6 @@ export default function Home({ auth }) {
                     </motion.button>
                 )}
             </GuestLayout>
-        </>
+        </div>
     );
 }

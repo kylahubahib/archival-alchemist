@@ -3,15 +3,18 @@
 namespace App\Http\Controllers;
 
 
-use App\Models\InstitutionSubscription;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Controller;
 use Illuminate\Validation\Rules;
-use App\Models\InstitutionAdmin;
 use Illuminate\Http\Request;
 use Inertia\Response;
 use Inertia\Inertia;
+
+use App\Models\Transaction;
+use App\Models\CustomContent;
+use App\Models\InstitutionAdmin;
+use App\Models\InstitutionSubscription;
 
 use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\UsersImport;
@@ -32,11 +35,18 @@ class InstitutionSubscriptionController extends Controller
                 ->where('id', $ins_admin->institution_subscription->id)
                 ->first();
         }
+
+        $agreement = CustomContent::where('content_type', 'billing agreement')->first();
+        $transactionHistory = Transaction::with(['user', 'plan'])
+            ->where('user_id', $user->id)
+            ->get();
         
         \Log::info('Institution Subscription', $ins_sub->toArray());
 
         return Inertia::render('InstitutionAdmin/SubscriptionBilling/SubscriptionBilling', [
-            'ins_sub' => $ins_sub
+            'ins_sub' => $ins_sub,
+            'agreement' => $agreement,
+            'transactionHistory' => $transactionHistory
         ]);
     }
 
@@ -77,59 +87,32 @@ class InstitutionSubscriptionController extends Controller
         //Excel::toArray purpose is to read the contents of an Excel or CSV file and convert it into an array format. 
         $csvData = Excel::toArray(new UsersImport, public_path($filePath));
 
+        // \Log::info('CSV Data:', $csvData[0]);
+
+
         return response()->json([
             'success' => true,
             'csvData' => $csvData[0], 
         ]);
     }
 
-
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function cancelSubscription(Request $request, string $id)
     {
-        //
+        //If user cancel their subscription, they won't be notify to renew their subscription since
+        //subscription is non recurring
+
+        $ins_sub = InstitutionSubscription::find($id);
+
+        $ins_sub->update([
+            'notify_renewal' => 0
+        ]);
+
+        return redirect(route('institution-subscription-billing.index'))->with('success', 'You canceled your subscription');
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+    public function renewSubscription(Request $request, string $id)
     {
-        //
+        
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
-    }
 }

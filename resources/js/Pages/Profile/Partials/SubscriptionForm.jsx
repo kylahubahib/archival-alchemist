@@ -2,16 +2,18 @@ import { Head } from '@inertiajs/react';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Button, Skeleton } from '@nextui-org/react';
-import { formatDate } from 'date-fns';
 
 export default function SubscriptionForm({}) {
-    const [personalSubscription, setPersonalSubscription] = useState(null);
+    const [personalSubscription, setPersonalSubscription] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         axios.get('/user-subscription')
         .then(response => {
+            if(response.data.per_sub){
             setPersonalSubscription(response.data.per_sub);
+            }
+            console.log(personalSubscription);
             setLoading(false); 
         })
         .catch(error => {
@@ -24,13 +26,12 @@ export default function SubscriptionForm({}) {
     };
 
 
-    // const formatDate = (dateString) => {
-    //     if (!dateString) return null;
-    //     const options = { year: 'numeric', month: 'long', day: 'numeric' };
-    //     return new Date(dateString).toLocaleDateString(undefined, options);
-    // };
+    const formatDate = (dateString) => {
+        if (!dateString) return null;
+        const options = { year: 'numeric', month: 'long', day: 'numeric' };
+        return new Date(dateString).toLocaleDateString(undefined, options);
+    };
 
-    const currentPlan = personalSubscription && personalSubscription.plan.id === 6;
 
     if (loading) return <div className="space-y-3">
         <header>
@@ -53,10 +54,10 @@ export default function SubscriptionForm({}) {
                         Manage the subscription and billing of your account
                     </p>
                 </header>
-                    {!currentPlan ? (
+                    {personalSubscription == [] ? (
                         <>  
                             <div className="flex justify-between">
-                                <div className="text-gray-700 text-2xl font-bold">{currentPlan.plan_name}</div>
+                                <div className="text-gray-700 text-2xl font-bold">{personalSubscription.plan_name}</div>
                                 <Button radius="large" variant='bordered' size='sm'>
                                     View Transaction
                                 </Button>

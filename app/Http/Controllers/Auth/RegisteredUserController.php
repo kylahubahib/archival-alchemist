@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Auth;
 
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Route;
@@ -20,6 +21,9 @@ use App\Models\Student;
 use App\Models\Faculty;
 use App\Models\InstitutionAdmin;
 use App\Models\InstitutionSubscription;
+
+use App\Notifications\InstitutionAdminRegistrationNotification;
+
 
 
 class RegisteredUserController extends Controller
@@ -41,7 +45,6 @@ class RegisteredUserController extends Controller
     {
 
         \Log::info('Register');
-
         $validatedData = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
@@ -50,18 +53,30 @@ class RegisteredUserController extends Controller
             'uni_branch_id' => 'nullable|integer',
             'uni_id_num' => 'nullable|string|max:50',
             'user_dob' => 'required|string|max:255',
-            'ins_admin_proof' => 'nullable|file|mimes:pdf,docx|max:10240'
+            'ins_admin_proof' => 'required_if:role,admin|file|mimes:pdf,jpg,png,docx|max:2048'
         ]);
-
+        
         \Log::info('Validated Data:', $validatedData);
-
-        $file = $request->file($validatedData['ins_admin_proof']);
-
-        if($file){
-            $fileName = $validatedData['name'] . '_' . time() . '.' . $file->extension(); 
-            $file->move(public_path('storage/admin_proof_files'), $fileName);
+        
+        $file = $request->file('ins_admin_proof');
+        
+        if ($file) {
+            \Log::info('File:', [
+                'name' => $file->getClientOriginalName(),
+                'mime_type' => $file->getClientMimeType(),
+                'size' => $file->getSize(),
+            ]);
+        
+            // Generate a unique file name
+            $fileName = time() . '_' . $file->getClientOriginalName();
+            
+            // Store the file in the 'admin_proof_files' directory
+            $file->storeAs('admin_proof_files', $fileName, 'public');
+            
+        } else {
+            \Log::info('No file uploaded for ins_admin_proof.');
         }
-       
+        
 
         //\Log::info('File:', $fileName);
         //Result: 09/01/2005
@@ -115,6 +130,7 @@ class RegisteredUserController extends Controller
                     'insub_num_user' => 100,
                     'start_date' => null,
                     'end_date' => null,
+                    'notify_renewal' => 0
                 ]);
 
                 $institutionAdmin = InstitutionAdmin::create([
@@ -124,6 +140,22 @@ class RegisteredUserController extends Controller
                 ]);
 
                 \Log::info('Institution Admin created:', ['ins_admin_id' => $institutionAdmin->id]);
+
+                if($institutionAdmin)
+                {
+                    $superadmins = User::where('user_type', 'superadmin')->get();
+
+                //Notify the superadmin for the newly registered institution admin
+                if ($superadmins->isNotEmpty()) {
+                    foreach ($superadmins as $superadmin) {
+                        $superadmin->notify(new InstitutionAdminRegistrationNotification($institutionAdmin));
+                    }
+                }
+                }
+
+                
+
+                
             }
 
     

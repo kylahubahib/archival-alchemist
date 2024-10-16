@@ -62,9 +62,12 @@ export default function ReportReason({ auth, reportReason = []}) {
             header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Report Reason</h2>}
         >
 
-            <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <div className="py-8 select-none">
 
-                <AdvancedMenu/>
+            <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
+                    <div className=" space-x-4 pb-4">
+                        <AdvancedMenu />
+                    </div>
 
                 <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg mt-5">
 
@@ -147,6 +150,8 @@ export default function ReportReason({ auth, reportReason = []}) {
                     </div>
                 </div>
                
+            </div>
+
             </div>
 
             {type == 'Create' && <Create isOpen={isModalOpen} onClose={closeModal}/>}

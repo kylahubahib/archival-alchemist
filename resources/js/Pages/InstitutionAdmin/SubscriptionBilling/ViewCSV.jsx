@@ -6,12 +6,13 @@ import { useEffect, useState } from "react";
 import Modal from "@/Components/Modal";
 import { showToast } from "@/Components/Toast";
 import PrimaryButton from "@/Components/PrimaryButton";
-import { Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from "@nextui-org/react";
+import { Spinner } from "@nextui-org/react";
 
 export default function ViewCSV({ isOpen, onClose, file, ins_sub}) {
     const [csvData, setCsvData] = useState([]);
     const [selectedFile, setSelectedFile] = useState(null);
     const [errorMessage, setErrorMessage] = useState('');
+    const [loading, setLoading] = useState(true)
 
     useEffect(() => {
 
@@ -21,15 +22,16 @@ export default function ViewCSV({ isOpen, onClose, file, ins_sub}) {
         .then(response => {
             if (response.data.success) {
                 setCsvData(response.data.csvData);
+                setLoading(false);
                 //console.log(response.data.csvData);
-                //console.log('data:', response.data.csvData[0]);
+                //console.log('data:', response.data.csvData);
 
             } else {
                 showToast('info', response.data.message);
             }
         })
         .catch(error => {
-            showToast('error', 'Failed to read CSV file.');
+            console.log('Failed to read CSV file.');
         });
     }, [ins_sub]);
 
@@ -70,6 +72,7 @@ export default function ViewCSV({ isOpen, onClose, file, ins_sub}) {
         .then(response => {
             if (response.data.success) {
                 showToast('success', 'CSV uploaded successfully!');
+                onClose();
             } else {
                 showToast('info', response.data.message);
             }
@@ -84,50 +87,60 @@ export default function ViewCSV({ isOpen, onClose, file, ins_sub}) {
 
 
     return (
-        <Modal show={isOpen} onClose={onClose} maxWidth="5xl">
+        <Modal show={isOpen} onClose={onClose} closeable={false} maxWidth='4xl'>
 
-            <div className="shadow-sm p-3 justify-between flex flex-row">
+            <div className="shadow-sm p-3 justify-between flex flex-row select-none">
                 <div></div>
                 <h2 className="text-xl text-gray-700 font-bold">Institution CSV List</h2>
-                <button onClick={onClose} className="text-gray-600 text-xl hover:bg-gray-100">
+                <button onClick={onClose} className="text-gray-600 text-xl hover:bg-gray-100 rounded-full h-7 w-7 flex justify-center pt-1">
                     <CgClose />
                 </button>
             </div>
 
             <div>
                 {(file != null) ? (
-                    <div>
-                        <Table>
-                            <TableHeader>
-                                    <TableColumn>Id Number</TableColumn>
-                                    <TableColumn>Name</TableColumn>
-                                    <TableColumn>Date of Birth</TableColumn>
-                                    <TableColumn>Email</TableColumn>
-                                    <TableColumn>Type</TableColumn>
-                            </TableHeader>
-                            <TableBody>
+                    <div className="p-3">
+                    {!loading ? (
+                        <table className="w-full text-sm text-left rtl:text-right text-gray-500 select-none">
+                            <thead className="text-xs text-gray-700 uppercase bg-gray-50">
+                                <tr>
+                                    <th scope="col" className="px-6 py-3">Id Number</th>
+                                    <th scope="col" className="px-6 py-3">Name</th>
+                                    <th scope="col" className="px-6 py-3">Date of Birth</th>
+                                    <th scope="col" className="px-6 py-3">Email</th>
+                                    <th scope="col" className="px-6 py-3">Type</th>
+                                </tr>
+                            </thead>
+                            <tbody>
                                 {csvData.length > 0 ? (
-                                    csvData.map((data) => (
-                                        <TableRow key={data}>
-                                            <TableCell>{data.id_number}</TableCell>
-                                            <TableCell>{data.name}</TableCell>
-                                            <TableCell>{data.dob}</TableCell>
-                                            <TableCell>{data.email}</TableCell>
-                                            <TableCell>{data.type}</TableCell>
-                                        </TableRow>
+                                    csvData.map((data, index) => (
+                                        <tr key={index} className="hover:bg-gray-50"> 
+                                            <td className="px-6 py-4">{data.id_number || 'N/A'}</td>
+                                            <td className="px-6 py-4">{data.name || 'N/A'}</td>
+                                            <td className="px-6 py-4">{data.dob || 'N/A'}</td>
+                                            <td className="px-6 py-4">{data.email || 'N/A'}</td>
+                                            <td className="px-6 py-4">{data.type || 'N/A'}</td>
+                                        </tr>
                                     ))
                                 ) : (
-                                    <TableRow>
-                                        <TableCell colSpan={5}>No data available</TableCell>
-                                    </TableRow>
+                                    <tr>
+                                        <td colSpan={5}>No data available</td>
+                                    </tr>
                                 )}
-                            </TableBody>
-                        </Table>
+                            </tbody>
+                        </table>
+                    ) : (
+                        <div className=" text-center m-40">
+                        <Spinner size="lg"/>
+                        </div>
+                    )
+                    }
                     </div>
+
                 ): (
                     <>
                     <form onSubmit={submit}>
-                        <div className={`flex items-center justify-center w-full p-3`}>
+                        <div className={`flec flex-col space-y-3 items-center justify-center w-full p-3`}>
                             <label
                                 htmlFor="dropzone-file"
                                 className="flex flex-col items-center justify-center w-full h-64 border-2
@@ -165,7 +178,6 @@ export default function ViewCSV({ isOpen, onClose, file, ins_sub}) {
                                     )}
                                 </div>
                                 <input
-
                                     id="dropzone-file"
                                     type="file"
                                     className="hidden"
@@ -173,11 +185,13 @@ export default function ViewCSV({ isOpen, onClose, file, ins_sub}) {
                                     onChange={handleFileChange}
                                 />
                             </label>
-                        </div>
 
+                            
                         <PrimaryButton type="submit">
                             UPLOAD
                         </PrimaryButton>
+                        </div>
+
                     </form>
                     </>
                 )

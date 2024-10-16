@@ -6,9 +6,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
 
+use Illuminate\Notifications\Notifiable;
+
 class CustomContent extends Model
 {
-    use HasFactory;
+    use HasFactory, Notifiable;
 
     protected $table = 'custom_contents';
 
