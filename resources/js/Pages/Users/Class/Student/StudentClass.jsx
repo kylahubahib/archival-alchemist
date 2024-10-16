@@ -8,7 +8,7 @@ import UploadCapstone from '@/Pages/Users/Class/Student/UploadCapstone';
 import Track from '@/Pages/Users/Class/Student/Track';
 import Approve from '@/Pages/Users/Class/Student/Approved';
 import { Spinner } from '@nextui-org/react';
-
+//gjf
 export default function StudentClass({ auth }) {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
