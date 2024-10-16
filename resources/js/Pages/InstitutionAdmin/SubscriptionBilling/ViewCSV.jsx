@@ -12,7 +12,7 @@ export default function ViewCSV({ isOpen, onClose, file, ins_sub}) {
     const [csvData, setCsvData] = useState([]);
     const [selectedFile, setSelectedFile] = useState(null);
     const [errorMessage, setErrorMessage] = useState('');
-    const [loading, setLoading] = useState(true)
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
 
@@ -50,6 +50,10 @@ export default function ViewCSV({ isOpen, onClose, file, ins_sub}) {
         setSelectedFile(file);
         //console.log("Selected file:", file);
     };
+
+    const uploadNewFile = () => {
+        setUploadFile(true);
+    }
 
     const submit = (e) => {
         e.preventDefault();
@@ -101,6 +105,7 @@ export default function ViewCSV({ isOpen, onClose, file, ins_sub}) {
                 {(file != null) ? (
                     <div className="p-3">
                     {!loading ? (
+                        <>
                         <table className="w-full text-sm text-left rtl:text-right text-gray-500 select-none">
                             <thead className="text-xs text-gray-700 uppercase bg-gray-50">
                                 <tr>
@@ -129,6 +134,7 @@ export default function ViewCSV({ isOpen, onClose, file, ins_sub}) {
                                 )}
                             </tbody>
                         </table>
+                        </>
                     ) : (
                         <div className=" text-center m-40">
                         <Spinner size="lg"/>
