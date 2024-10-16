@@ -53,7 +53,7 @@ class RegisteredUserController extends Controller
             'uni_branch_id' => 'nullable|integer',
             'uni_id_num' => 'nullable|string|max:50',
             'user_dob' => 'required|string|max:255',
-            'ins_admin_proof' => 'required_if:role,admin|file|mimes:pdf,jpg,png,docx|max:2048'
+            'ins_admin_proof' => 'nullable|file|mimes:pdf,jpg,png,docx|max:2048'
         ]);
         
         \Log::info('Validated Data:', $validatedData);

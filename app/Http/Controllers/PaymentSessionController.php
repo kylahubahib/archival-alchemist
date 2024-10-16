@@ -133,7 +133,7 @@ class PaymentSessionController extends Controller
 
                 \Log::info($checkoutDetails);
 
-                $subscriptionInterval = $transaction->plan->plan_term;
+                $subscriptionInterval = $plan->plan_term;
                 $currentDate = Carbon::now();
 
                 \Log::info('Start Date' . $currentDate);
