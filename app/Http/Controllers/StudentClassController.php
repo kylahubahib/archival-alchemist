@@ -11,10 +11,10 @@ use App\Models\ManuscriptTag;
 use App\Models\Favorite;
 use App\Models\Tags;
 use App\Models\User;
+use App\Models\RevisionHistory;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-
 
 
 class StudentClassController extends Controller
@@ -47,6 +47,9 @@ class StudentClassController extends Controller
 
             ]);
 
+            //Get the class code using request
+            $classCode = $request->get('class_code');
+
             // Use the correct key to get tags from the request
             $tags = $request->get('tags_name', []); // Change from 'tags' to 'tags_name'
 
@@ -62,7 +65,7 @@ class StudentClassController extends Controller
                 'man_doc_title' => $validatedData['man_doc_title'],
                 'man_doc_adviser' => $validatedData['man_doc_adviser'],
                 'man_doc_content' => 'storage/' . $filePath, // Save the path for database
-                'class_id' => $validatedData['class_id'] ?? null,
+                'class_code' => $validatedData['class_id'] ?? null,
             ]);
 
             Log::info('Manuscript Project Created:', ['id' => $manuscriptProject->id]);
@@ -107,42 +110,57 @@ class StudentClassController extends Controller
 
 
 
-                        // Handle users and store them in the Author table
-                        $userIds = []; // Array to hold the IDs of the users to be associated with the manuscript
+            // Handle users and store them in the Author table
+            $userIds = []; // Array to hold the IDs of the users to be associated with the manuscript
 
-                        if (!empty($users) && is_array($users)) { // Ensure $users is an array and not empty
-                            foreach ($users as $userName) {
-                                // Convert name to lowercase for consistency and trim any whitespace
-                                $userName = strtolower(trim($userName));
+            if (!empty($users) && is_array($users)) { // Ensure $users is an array and not empty
+                foreach ($users as $userName) {
+                    // Convert name to lowercase for consistency and trim any whitespace
+                    $userName = strtolower(trim($userName));
 
-                                // Find the users by its name
-                                $user = User::where('name', $userName)->first();
+                    // Find the users by its name
+                    $user = User::where('name', $userName)->first();
 
-                                // If the users does not exist, create a new record and get its ID
-                                if (!$user) {
-                                    return response()->json(['message' => 'User does not exist.', 'errors'], 422);
-                                } else {
-                                    // $author = User::create(['name' => $userName]);
-                                    Log::info("Author '$userName' found with ID: " . $user->id);
-                                    // Store the Users ID for the Authors table
-                                    $userIds[] = $user->id;
-                                }
-                            }
-                        } else {
-                            Log::info('No users provided or users is not an array.');
-                        }
+                    // If the users does not exist, create a new record and get its ID
+                    if (!$user) {
+                        return response()->json(['message' => 'User does not exist.', 'errors'], 422);
+                    } else {
+                        // $author = User::create(['name' => $userName]);
+                        Log::info("Author '$userName' found with ID: " . $user->id);
+                        // Store the Users ID for the Authors table
+                        $userIds[] = $user->id;
+                    }
+                }
+            } else {
+                Log::info('No users provided or users is not an array.');
+            }
 
-                        // Insert the users into the author table
-                        foreach ($userIds as $userId) {
-                            Author::create([
-                                'man_doc_id' => $manuscriptProject->id, // The manuscript ID from the saved manuscript
-                                'user_id' => $userId, // The tag ID from the tags table
-                            ]);
-                            Log::info("Inserted into Authors Table:", [
-                                'man_doc_id' => $manuscriptProject->id,
-                                'user_id' => $userId,
-                            ]);
-                        }
+            // Insert the users into the author table
+            foreach ($userIds as $userId) {
+                Author::create([
+                    'man_doc_id' => $manuscriptProject->id, // The manuscript ID from the saved manuscript
+                    'user_id' => $userId, // The tag ID from the tags table
+                ]);
+                Log::info("Inserted into Authors Table:", [
+                    'man_doc_id' => $manuscriptProject->id,
+                    'user_id' => $userId,
+                ]);
+            }
+
+            if($manuscriptProject)
+            {
+                $class = ClassModel::where('class_code', $classCode)->first();
+                $faculty = $class->ins_id;
+                
+                RevisionHistory::create([
+                    'ins_comment' => null,
+                    'man_doc_id' => $manuscriptProject->id,
+                    'ins_id' => $faculty,
+                    'uploaded_at' => $manuscriptProject->created_at,
+                    'revision_content' => $manuscriptProject->man_doc_content,
+                    'status' => 'Started'
+                ]);
+            }
 
             return response()->json(['message' => 'Manuscript project uploaded successfully.'], 200);
 
@@ -438,8 +456,6 @@ public function myfavoriteManuscripts()
 
 
 
-
-
     /**
      * Download the manuscript PDF.
      *
@@ -480,6 +496,41 @@ public function myfavoriteManuscripts()
         ]);
 
      }
+
+
+
+
+    
+    public function checkStudentInClass()
+    {
+        // Load user with manuscripts that are not approved, including tags and revision history
+        $user = Auth::user()->load([
+            'manuscripts' => function ($query) {
+                $query->where('man_doc_status', 'X');
+            },
+            'manuscripts.tags',
+            'manuscripts.revision_history.faculty',
+            'manuscripts.authors'
+        ]);
+
+        \Log::info($user->toArray());
+
+        $studentClass = ClassModel::where('stud_id', $user->id)->first();
+
+        if($studentClass) {
+            return response()->json([
+                'class' => $studentClass->class_code,
+                'manuscript' => $user->manuscripts
+            ]);
+        }
+        else {
+            return response()->json();
+        }
+
+       
+    }
+
+
 
 }
 

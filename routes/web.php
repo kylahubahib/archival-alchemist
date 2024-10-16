@@ -26,6 +26,8 @@ use App\Http\Controllers\PaymentSessionController;
 use App\Http\Controllers\InstitutionSubscriptionController;
 use App\Http\Controllers\PersonalSubscriptionController;
 use App\Http\Controllers\LandingPageController;
+use App\Http\Controllers\ReportReasonController;
+
 
 
 use App\Http\Middleware\CheckUserTypeMiddleware;
@@ -63,16 +65,6 @@ Route::get('/', function () {
 Route::get('/payment/success', [PaymentSessionController::class, "paymentSuccess"])->name('payment.success');
 Route::get('/payment/cancel', [PaymentSessionController::class, "paymentCancel"])->name('payment.cancel');
 Route::post('/payment', [PaymentSessionController::class, 'PaymentSession'])->name('payment');
-
-
-// Route::get('/library', function () {
-//     $user = Auth::user(); // Get the currently authenticated user
-//     Log::info('User accessing library:', ['user' => $user]); // Log user info
-//     return Inertia::render('Users/Library', [
-//         'user' => $user // Pass user data to the component
-//     ]);
-// })->middleware(['auth', 'user-type:student,teacher,guest'])->name('library');
-
 
 
 
@@ -155,9 +147,6 @@ Route::middleware(['auth', 'verified', 'user-type:superadmin'])->group(function 
     ///ADVANCED ROUTES
     ///Decided to create routes for the buttons in advanced page to simplify or easily create the crud functionality
 
-    Route::get('/advanced', function () {
-        return Inertia::render('SuperAdmin/Advanced/Advanced');})->name('advanced');
-
     Route::get('/advanced/forum', function () {
         return Inertia::render('SuperAdmin/Advanced/Forum/Forum');})->name('advanced-forum');
 
@@ -166,6 +155,12 @@ Route::middleware(['auth', 'verified', 'user-type:superadmin'])->group(function 
     Route::resource('advanced/universities', UniversityController::class)->names('manage-universities');
 
     Route::resource('advanced/tags', AdvancedTagsController::class)->names('manage-tags');
+
+    Route::resource('advanced/report-reason', ReportReasonController::class)->names('manage-report-reason');
+
+    Route::post('store-service', [CustomMessagesController::class, 'storeService'])->name('store-service');
+    Route::post('store-team', [CustomMessagesController::class, 'storeTeam'])->name('store-team');
+    Route::post('update-icon', [CustomMessagesController::class, 'updateIcon'])->name('update-icon');
 
     ///END ADVANCED ROUTES
 
@@ -182,8 +177,6 @@ Route::middleware(['auth', 'verified', 'user-type:superadmin'])->group(function 
     Route::get('filter-user-reports', [UserReportController::class, 'filterReports'])->name('filter-user-reports');
     Route::get('filter-feedbacks', [UserFeedbacksController::class, 'filterFeedbacks'])->name('filter-feedbacks');
     Route::get('get-branches', [UniversityController::class, 'getBranches'])->name('get-branches');
-
-
 
     // You can use put or patch. Put is used to update a resource entirely
     // while patch is used to update a single fields
@@ -305,13 +298,12 @@ Route::post('/store-student-class', [StudentClassController::class, 'storeStuden
 // routes for checking the user premium subscription
 Route::post('/check-user-premium-status', [CheckSubscriptionController::class, 'is_premium']);
 
+Route::get('/check-student-in-class', [StudentClassController::class, 'checkStudentInClass']);
+
 
 
 Route::get('/api/approved-manuscripts', [StudentClassController::class, 'getApprovedManuscripts']);
-
-
 Route::get('/api/my-approved-manuscripts', [StudentClassController::class, 'myApprovedManuscripts']);
-
 Route::get('/api/my-favorite-manuscripts', [StudentClassController::class, 'myfavoriteManuscripts']);
 
 Route::post('/api/addfavorites', [StudentClassController::class, 'storefavorites'])

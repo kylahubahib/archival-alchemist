@@ -3,7 +3,7 @@ import axios from 'axios';
 import Modal from '@/Components/Modal';
 
 
-const UploadCapstone = () => {
+const UploadCapstone = ({class_code}) => {
     const [tags, setTags] = useState([]);
     const [users, setAuthors] = useState([]);
     const [modalOpen, setModalOpen] = useState(false);
@@ -204,6 +204,9 @@ const UploadCapstone = () => {
                 tags.forEach(tag => formData.append('tags_name[]', tag));
                 formData.append('man_doc_content', formValues.man_doc_content);
                 formData.append('agreed', formValues.agreed);
+
+                //Add the class_code
+                formData.append('class_code', class_code);
 
                 // Submit the form data
                 const response = await axios.post('/api/capstone/upload', formData, {

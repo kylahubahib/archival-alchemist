@@ -28,11 +28,17 @@ class PersonalSubscriptionController extends Controller
                 ->first();
         }
 
-        \Log::info('Persub: ', $per_sub->toArray());
+        if($per_sub){
+            return response()->json([
+                'per_sub' => $per_sub
+            ]);
+        }
+
+        return response()->json();
+       
+        //\Log::info('Persub: ', $per_sub->toArray());
         
-        return response()->json([
-            'per_sub' => $per_sub
-        ]);
+       
     }
 
     /**

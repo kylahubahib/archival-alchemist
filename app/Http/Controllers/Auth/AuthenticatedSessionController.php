@@ -47,16 +47,6 @@ class AuthenticatedSessionController extends Controller
 
         // if($user->user_type != 'admin' && $user->user_type != 'superadmin')
         // {
-            if($user->user_type == 'student') {
-                $checkInSub = InstitutionSubscription::where('uni_branch_id', $user->student->uni_branch_id)->first();
-            }
-
-            if($user->user_type == 'teacher') {
-                $checkInSub = InstitutionSubscription::where('uni_branch_id', $user->faculty->uni_branch_id)->first();
-            }
-
-            //\Log::info('Check Subscription:', $checkInSub ? $checkInSub->toArray() : 'No subscription found');
-
         //     if($user->user_type == 'student') {
         //         $checkInSub = InstitutionSubscription::where('uni_branch_id', $user->student->uni_branch_id)->first();
         //     }
@@ -64,19 +54,9 @@ class AuthenticatedSessionController extends Controller
         //     if($user->user_type == 'teacher') {
         //         $checkInSub = InstitutionSubscription::where('uni_branch_id', $user->faculty->uni_branch_id)->first();
         //     }
-            //Check if $checkInSub retrieve a data or is it null
-            if ($checkInSub != null && $checkInSub->insub_content != null)
-            {
-                //\Log::info('Enter checkinsub ok');
-
-        //     //\Log::info('Check Subscription:', $checkInSub ? $checkInSub->toArray() : 'No subscription found');
-
-        //     //\Log::info('Before checkinsub');
-        //     //\Log::info($checkInSub->toArray());
 
         //     //Check if $checkInSub retrieve a data or is it null
-        //     //if ($checkInSub != null && $checkInSub->insub_content != null)
-        //    if ($checkInSub != null)
+        //     if ($checkInSub != null && $checkInSub->insub_content != null)
         //     {
         //         //\Log::info('Enter checkinsub ok');
 
@@ -88,7 +68,7 @@ class AuthenticatedSessionController extends Controller
         //         //Logging the data retrieved in Auth::user()
         //         Log::info('Auth ' . $user->uni_id_num . ' ' . $user->name . ' ' . $user->user_dob);
 
-        //         //Check if
+        //         //Check if csv is null or not
         //         if (!empty($csvData) && !empty($csvData[0])) {
         //             $data = $csvData[0];
         //             foreach ($data as $row) {
@@ -108,7 +88,7 @@ class AuthenticatedSessionController extends Controller
         //         }
         //     }
 
-        }
+        // }
 
         // Redirect based on user_type
         switch ($user->user_type) {

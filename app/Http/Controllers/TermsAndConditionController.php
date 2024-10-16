@@ -23,6 +23,14 @@ class TermsAndConditionController extends Controller
         $termsConditions = CustomContent::with('user')
             ->where('content_type', 'terms and conditions')
             ->paginate(100);
+        
+        $billingAgreement = CustomContent::with('user')
+            ->where('content_type', 'billing agreement')
+            ->first();
+
+        $privacyPolicy = CustomContent::with('user')
+            ->where('content_type', 'privacy policy')
+            ->first();
 
         
             //\Log::info('Terms ', $termsConditions->toArray());
@@ -30,6 +38,8 @@ class TermsAndConditionController extends Controller
 
         return Inertia::render('SuperAdmin/TermsAndConditions/TermsCondition', [
             'termsConditions' => $termsConditions,
+            'billingAgreement' => $billingAgreement,
+            'privacyPolicy' => $privacyPolicy,
         ]);
     }
 
@@ -56,7 +66,11 @@ class TermsAndConditionController extends Controller
         $request->validate([
             'content_title' => 'required|string|max:1000',
             'content_text' => 'required|string',
+        ], [], [
+            'content_title' => 'title',
+            'content_text' => 'text',
         ]);
+        
 
         CustomContent::create([
             'user_id' => Auth::id(),
@@ -114,12 +128,20 @@ class TermsAndConditionController extends Controller
         $request->validate([
             'content_title' => 'required|string|max:1000',
             'content_text' => 'required|string',
+        ], [], [
+            'content_title' => 'title',
+            'content_text' => 'text',
         ]);
 
-        $termsAndCondition = CustomContent::find($id);
+        $data = CustomContent::find($id);
+
+        // if($data->content_type === 'terms and conditions')
+        // {
+
+        // }
 
         // Update content_title and content_text
-        $termsAndCondition->update([
+        $data->update([
             'content_title' => $request->content_title,
             'content_text' => $request->content_text,
             'user_id' => Auth::id(),

@@ -22,14 +22,18 @@ export default function Home({ auth }) {
 
     // Back to Top button visibility state
     const [showButton, setShowButton] = useState(false);
+
+
     const [serviceData, setServiceData] = useState([]);
     const [team, setTeam] = useState([]);
+    const [hero, setHero] = useState([]);
 
     useEffect(() => {
         axios.get('/landing-page')
         .then(response => {
             setServiceData(response.data.servicesSection);
-            setTeam(response.data.teamSection)
+            setTeam(response.data.teamSection);
+            setHero(response.data.heroSection);
             //console.log(response.data.teamSection);
         })
         .catch(error => {
@@ -62,74 +66,99 @@ export default function Home({ auth }) {
     };
 
     return (
-        <>
+        <div className=" select-none">
             <GuestLayout user={auth.user}
                 header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Home</h2>}>
 
-                {/* HERO SECTION */}
+                            
+                {/* // HERO SECTION */}
                 <motion.section
-                    ref={heroRef}
-                    className="flex flex-col h-[700px] overflow-hidden bg-cover bg-center bg-no-repeat bg-[url('/images/img1.png')] bg-gray-700 bg-blend-multiply"
+                ref={heroRef}
+                className="flex flex-col min-h-screen overflow-hidden bg-cover bg-center bg-no-repeat bg-[url('/images/img1.png')] bg-gray-700 bg-blend-multiply"
+                >
+                <div className="flex-grow flex justify-center items-center mt-20 text-gray-50">
+                    <div className="mx-20 px-6 py-4 mb-16 text-center sm:rounded-t-lg align-middle">
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={isHeroInView ? { opacity: 1, scale: 1 } : {}}
+                        transition={{ duration: 1.5, delay: 0.5 }}
                     >
-                    <div className="flex-grow flex justify-center items-center mt-20 text-gray-50">
-                        <div className="mx-20 px-6 py-4 mb-16 text-center sm:rounded-t-lg align-middle">
-                            <motion.div
-                                initial={{ opacity: 0, scale: 0.9 }}
-                                animate={isHeroInView ? { opacity: 1, scale: 1 } : {}}
-                                transition={{ duration: 1.5, delay: 0.5 }}
-                            >
-                                <h6>LOGO HERE</h6>
-                                <h6 className="text-3xl md:text-5xl lg:text-7xl font-serif mt-6">
-                                    Transforming Capstone Into <br /><b>Discoverable Knowledge</b>
-                                </h6>
-                                <h4 className="mt-6">Our platform enables people to share, discover, collaborate, and learn in any workplace</h4>
-                            </motion.div>
+                        <h6 className="text-3xl md:text-5xl lg:text-7xl font-serif mt-6">
+                        {hero.content_title}
+                        </h6>
+                        <h4 className="mt-6">{hero.subject}</h4>
+                    </motion.div>
 
-                            <motion.p
-                                className="text-base md:text-lg p-10"
-                                initial={{ opacity: 0, y: 50 }}
-                                animate={isHeroInView ? { opacity: 1, y: 0 } : {}}
-                                transition={{ duration: 2, delay: 1 }}
-                            >
-                                Archival Alchemist is a vibrant platform where users can seamlessly browse a diverse array of projects, upload their own creations, and connect with like-minded individuals...
-                            </motion.p>
-                        </div>
+                    <motion.p
+                        className="text-base md:text-lg p-10"
+                        initial={{ opacity: 0, y: 50 }}
+                        animate={isHeroInView ? { opacity: 1, y: 0 } : {}}
+                        transition={{ duration: 2, delay: 1 }}
+                    >
+                        {hero.content_text}
+                    </motion.p>
                     </div>
+                </div>
                 </motion.section>
 
-                {/* OUR SERVICES */}
-                <motion.section
-                    ref={servicesRef}
-                    className="h-[700px]">
-                    <div className="flex-grow flex flex-col space-y-10 justify-center items-center mt-20 text-gray-700">
-                        <motion.h1 className="text-5xl font-semibold"
-                            initial={{ opacity: 0, y: -20 }}
-                            animate={isServicesInView ? { opacity: 1, y: 0 } : {}}
-                            transition={{ duration: 1, delay: 0.5 }}
+                {/* // SERVICES SECTION */}
+                <motion.section ref={servicesRef} className=" bg-customlightBlue py-20 min-h-screen">
+                <div className="flex-grow flex flex-col space-y-10 justify-center items-center text-gray-700">
+                    <motion.h1 className="text-5xl font-semibold"
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={isServicesInView ? { opacity: 1, y: 0 } : {}}
+                    transition={{ duration: 1, delay: 0.5 }}
+                    >
+                    OUR SERVICES
+                    </motion.h1>
+
+                    <div className="space-y-8 lg:grid lg:grid-cols-3 sm:gap-6 xl:gap-10 lg:space-y-0">
+                    {serviceData.length > 0 && serviceData.map((service, index) => (
+                        <motion.div  
+                        initial={{ opacity: 0, y: -20 }}
+                        animate={isServicesInView ? { opacity: 1, y: 0 } : {}}
+                        transition={{ duration: 1, delay: index * 0.3 }} 
+                        key={service.id}
                         >
-                            OUR SERVICES
-                        </motion.h1>
-
-                        <div className="space-y-8 lg:grid lg:grid-cols-3 sm:gap-6 xl:gap-10 lg:space-y-0">
-
-                        {serviceData.length > 0 ? (
-                            serviceData.map((service, index) => (
-                                <motion.div  
-                                    initial={{ opacity: 0, y: -20 }}
-                                    animate={isServicesInView ? { opacity: 1, y: 0 } : {}}
-                                    transition={{ duration: 1, delay: index * 0.7 }}  // Increment delay by index
-                                    key={service.id}>
-                                    <div className="flex flex-col p-6 mx-auto min-w-80 max-w-md space-y-4">
-                                        <img src={service.subject} className="h-16 w-16" />
-                                        <p className="text-2xl font-semibold">{service.content_title}</p>
-                                        <p>{service.content_text}</p>
-                                    </div>
-                                </motion.div>
-                            ))
-                        ) : null}
-
+                        <div className="flex flex-col p-6 mx-auto min-w-80 max-w-md space-y-4">
+                            <img src={service.subject} className="h-16 w-16" />
+                            <p className="text-2xl font-semibold">{service.content_title}</p>
+                            <p>{service.content_text}</p>
                         </div>
+                        </motion.div>
+                    ))}
                     </div>
+                </div>
+                </motion.section>
+
+                {/* // TEAM SECTION */}
+                <motion.section ref={teamRef} className="bg-white py-20 min-h-screen">
+                <div className="flex-grow flex flex-col justify-between items-center text-gray-700 space-y-16">
+                    <motion.h1 className="text-5xl font-semibold"
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={isTeamInView ? { opacity: 1, y: 0 } : {}}
+                    transition={{ duration: 1, delay: 0.5 }}
+                    >
+                    MEET OUR TEAM
+                    </motion.h1>
+
+                    <div className="space-y-8 lg:grid lg:grid-cols-4 sm:gap-5 xl:gap-7 lg:space-y-0">
+                    {team.length > 0 && team.map((team, index) => (
+                        <motion.div  
+                        initial={{ opacity: 0, y: -20 }}
+                        animate={isTeamInView ? { opacity: 1, y: 0 } : {}}
+                        transition={{ duration: 1, delay: index * 0.3 }}  
+                        key={team.id}
+                        >
+                        <div className="flex flex-col p-6 mx-auto items-center min-w-80 max-w-md space-y-4">
+                            <img className=" w-48 h-48 mb-3 rounded-full shadow-lg" src={team.subject}/>
+                            <h5 className="mb-1 text-xl font-medium text-gray-900">{team.content_title}</h5>
+                            <span className="text-sm text-gray-500 ">{team.content_text}</span>
+                        </div>
+                        </motion.div>
+                    ))}
+                    </div>
+                </div>
                 </motion.section>
 
                 {/* LEARN MORE ABOUT US
@@ -147,42 +176,7 @@ export default function Home({ auth }) {
                     </div>
                 </motion.section> */}
 
-                {/* OUR TEAM */}
-                <motion.section
-                    ref={teamRef}
-                    className="h-[700px] shadow-inner">
-                    <div className="flex-grow flex flex-col justify-between items-center mt-20 text-gray-700 space-y-16">
-                        <motion.h1 className="text-5xl font-semibold"
-                            initial={{ opacity: 0, y: -20 }}
-                            animate={isTeamInView ? { opacity: 1, y: 0 } : {}}
-                            transition={{ duration: 1, delay: 0.5 }}
-                        >
-                            MEET OUR TEAM
-                        </motion.h1>
-
-                        <div className="space-y-8 lg:grid lg:grid-cols-4 sm:gap-5 xl:gap-7 lg:space-y-0">
-
-                        {team.length > 0 ? (
-                            team.map((team, index) => (
-                                <motion.div  
-                                    initial={{ opacity: 0, y: -20 }}
-                                    animate={isTeamInView ? { opacity: 1, y: 0 } : {}}
-                                    transition={{ duration: 1, delay: index * 0.6 }}  
-                                    key={team.id}>
-                                    <div className="flex flex-col p-6 mx-auto items-center min-w-80 max-w-md space-y-4">
-                                        <img className=" w-48 h-48 mb-3 rounded-full shadow-lg" src={team.subject}/>
-                                        <h5 className="mb-1 text-xl font-medium text-gray-900">{team.content_title}</h5>
-                                        <span className="text-sm text-gray-500 ">{team.content_text}</span>
-                                    </div>
-                                </motion.div>
-                            ))
-                        ) : null}
-                        </div>
-
-
-                    </div>
-
-                </motion.section>
+              
 
                {/* FOOTER */}
                 <motion.footer
@@ -252,6 +246,6 @@ export default function Home({ auth }) {
                     </motion.button>
                 )}
             </GuestLayout>
-        </>
+        </div>
     );
 }
