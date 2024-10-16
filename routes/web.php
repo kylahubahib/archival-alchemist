@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\StudentClassController;
 use App\Http\Controllers\TeacherClassController;
+
 use App\Models\Student;
 use App\Http\Controllers\TagController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
@@ -349,4 +350,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/teacher/class', [TeacherClassController::class, 'index'])->name('teacher.class');
 });
 
+
+
+
+//Teacher Activity API routes
+Route::post('/store-newGroupClass', [TeacherClassController::class, 'newGroupClass']);
 require __DIR__.'/auth.php';

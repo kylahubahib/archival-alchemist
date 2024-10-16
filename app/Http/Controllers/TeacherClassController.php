@@ -6,8 +6,11 @@ use App\Models\Faculty;
 use App\Models\Department;
 use App\Models\Course;
 use App\Models\Section;
+use App\Models\ClassModel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
+
 class TeacherClassController extends Controller
 {
     //create class
@@ -61,4 +64,55 @@ class TeacherClassController extends Controller
                 'courses' => $courses,
             ]);
         }
+
+
+
+        public function newGroupClass(Request $request)
+        {
+            $request->validate([
+                'class_name' => 'required|string',
+            ]);
+
+            $userId = Auth::id(); // Get the currently logged-in user's ID
+
+            try {
+                // Check if the class name already exists
+                $existingClass = ClassModel::where('class_name', $request->class_name)->first();
+
+                if ($existingClass) {
+                    // If the class name already exists
+                    return response()->json(['success' => false, 'message' => 'Group class already exists']);
+                } else {
+                    // Generate a unique class code
+                    $classCode = $this->generateUniqueClassCode();
+
+                    // Insert the new class with the generated class code
+                    ClassModel::create([
+                        'class_code' => $classCode,
+                        'class_name' => $request->class_name,
+                        'ins_id' => $userId,
+                    ]);
+
+                    return response()->json(['success' => true, 'message' => 'Group class successfully added']);
+                }
+            } catch (\Exception $e) {
+                // Log the error and return a response
+                Log::error('Error adding the class: '.$e->getMessage());
+                return response()->json(['success' => false, 'message' => 'An error occurred while adding the group class.'], 500);
+            }
+        }
+
+        /**
+         * Generate a unique class code (6-8 alphanumeric characters) and ensure it doesn't already exist.
+         */
+        private function generateUniqueClassCode()
+        {
+            do {
+                // Generate a random code between 6-8 characters, using letters and numbers
+                $classCode = strtoupper(Str::random(rand(6, 8)));
+            } while (ClassModel::where('class_code', $classCode)->exists());
+
+            return $classCode;
+        }
+
 }
