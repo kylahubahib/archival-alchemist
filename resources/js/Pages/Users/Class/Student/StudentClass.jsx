@@ -20,24 +20,28 @@ export default function StudentClass({ auth }) {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-            axios.get('/check-student-in-class')
-            .then(response => {
-                if(response.data.class){
-                    setManuscript(response.data.manuscript);
-                    setClassCode(response.data.class);
-                    //console.log(response.data.class);
-                    //console.log('manuscript', response.data.manuscript)
-                    setJoinedClass(true);
+        axios.get('http://127.0.0.1:8000/check-student-in-class') // Make sure the URL is correct
+        .then(response => {
+            if (response.data.class) {
+                setManuscript(response.data.manuscript);
+                setClassCode(response.data.class);
+                setJoinedClass(true);
 
-                    if(response.data.manuscript == []){
-                        setActiveTab('track');
-                    } else {
-                        setActiveTab('upload');
-                    }
+                // Check if manuscript array is empty
+                if (response.data.manuscript.length === 0) {
+                    setActiveTab('track');
+                } else {
+                    setActiveTab('upload');
                 }
-                setLoading(false);
-            });
-    }, [])
+            }
+            setLoading(false);
+        })
+        .catch(error => {
+            console.error('Error fetching student class info:', error);
+            setLoading(false); // Ensure loading is stopped even on error
+        });
+    }, []);
+
 
     const openModal = () => {
         setIsModalOpen(true);
@@ -55,8 +59,8 @@ export default function StudentClass({ auth }) {
         setIsConfirmModalOpen(false);
     };
 
-    
-   
+
+
 
     const handleJoinClass = () => {
         // Reset error message
@@ -125,7 +129,7 @@ export default function StudentClass({ auth }) {
 
     const buttonStyle = (tab) => `px-4 py-2 font-semibold rounded-t-lg border ${activeTab === tab ? 'bg-gray-200 border-b-2 border-b-blue-500 text-blue-500' : 'border-transparent text-gray-700 hover:text-blue-500'}`;
 
-    
+
     return (
         <AuthenticatedLayout
             user={auth.user}
@@ -136,7 +140,7 @@ export default function StudentClass({ auth }) {
 
             <div className="bg-white rounded m-4 min-h-screen"> {/* Use flex-grow to take available space */}
 
-            {!loading ? 
+            {!loading ?
             (
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
                     <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
