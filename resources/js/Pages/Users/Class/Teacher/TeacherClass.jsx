@@ -4,7 +4,7 @@ import { Head } from '@inertiajs/react';
 import axios from 'axios';
 import ClassDropdown from "@/Components/ClassDropdown";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFolder, faUsers, faUser } from '@fortawesome/free-solid-svg-icons';
+import { faFolder, faUsers, faUser, faEllipsisV } from '@fortawesome/free-solid-svg-icons'; // Import the three dots icon
 import { Button, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, useDisclosure } from "@nextui-org/react";
 
 // Ensure Axios includes the CSRF token in every request by default
@@ -19,7 +19,31 @@ export default function TeacherClass({ auth }) {
     const [className, setClassName] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const [message, setMessage] = useState(''); // For success/error messages
+    const [classes, setClasses] = useState([]); // Add this line
+    const [manuscripts, setManuscripts] = useState([]); // Add this line for manuscripts
+    const handleStatusChange = async (id, status) => {
+        try {
+            const response = await axios.put(`/manuscripts/${id}/update-status`, {
+                status: status // 'Y' for Approve, 'X' for Decline
+            });
 
+            // Show success message or refresh data if needed
+            setMessage(`Manuscript status updated: ${response.data.message}`);
+
+            // Optionally reload manuscripts to reflect the updated status
+            axios.get('/manuscripts/class', {
+                params: {
+                    class_code: selectedClass.class_code // Fetch updated manuscripts
+                }
+            }).then(response => {
+                setClasses(response.data);
+            });
+
+        } catch (error) {
+            // Handle error
+            setMessage(`Failed to update status: ${error.response?.data?.message || error.message}`);
+        }
+    };
     // Handle form submission to create a new group class
     const handleCreate = async () => {
         setIsLoading(true);
@@ -40,21 +64,46 @@ export default function TeacherClass({ auth }) {
         };
     };
 
-
     const handleModalClose = () => {
         setIsGroupModalOpen(false);
         setClassName(''); // Reset the class name
     };
 
+
     useEffect(() => {
         axios.get('/teacher/class')
             .then(response => {
                 setCourses(response.data.courses);
+                // Assuming you want to handle classes as well
+                setClasses(response.data.classes); // Store the classes if you need them
             })
             .catch(error => {
                 console.error("Error fetching courses:", error);
             });
     }, []);
+
+
+
+    useEffect(() => {
+        if (selectedClass) {
+            axios.get('/manuscripts/class', {
+                params: {
+                    class_code: selectedClass.class_code // Ensure this matches your class's property
+                }
+            })
+            .then(response => {
+                console.log(response.data); // Log the response to check its structure
+                setClasses(response.data); // Store the manuscripts data
+            })
+            .catch(error => {
+                console.error("Error fetching manuscripts:", error);
+            });
+        }
+    }, [selectedClass]);
+
+
+
+
 
     const getHeaderTitle = () => {
         if (selectedClass) return 'COURSE | SECTION | GROUP CLASS';
@@ -63,23 +112,65 @@ export default function TeacherClass({ auth }) {
     };
 
     const staticData = [
-        { id: 1, dateCreated: '2024-10-01', dateUpdated: '2024-10-02', status: 'approved', title: 'Capstone Project 1' },
-        { id: 2, dateCreated: '2024-10-03', dateUpdated: '2024-10-04', status: 'declined', title: 'Capstone Project 2' },
-        { id: 3, dateCreated: '2024-10-05', dateUpdated: '2024-10-06', status: 'pending', title: 'Capstone Project 3' },
+        { id: 1, dateCreated: '2024-10-01', dateUpdated: '2024-10-02', status: 'approved', title: 'ByteBuddies' },
+        { id: 2, dateCreated: '2024-10-03', dateUpdated: '2024-10-04', status: 'declined', title: 'GentleMatch' },
+        { id: 3, dateCreated: '2024-10-05', dateUpdated: '2024-10-06', status: 'pending', title: 'ITMan' },
+        { id: 4, dateCreated: '2024-10-07', dateUpdated: '2024-10-08', status: 'norecords', title: 'New ITMan' },
     ];
 
+
     const getStatusButton = (status) => {
-        switch (status) {
+        switch (status.toLowerCase()) {  // Make sure to handle case sensitivity
             case 'approved':
-                return <Button size="xs" color="success" radius="full">{status.charAt(0).toUpperCase() + status.slice(1)}</Button>;
+                return (
+                    <Button
+                        size="xs"
+                        color="success"
+                        radius="full"
+                        className="text-center text-[13px] p-1 h-auto min-h-0"
+                    >
+                        {status.charAt(0).toUpperCase() + status.slice(1)}
+                    </Button>
+                );
             case 'declined':
-                return <Button size="xs" color="danger" radius="full">{status.charAt(0).toUpperCase() + status.slice(1)}</Button>;
+                return (
+                    <Button
+                        size="xs"
+                        color="danger"
+                        radius="full"
+                        className="text-center text-[13px] p-1 h-auto min-h-0"
+                    >
+                        {status.charAt(0).toUpperCase() + status.slice(1)}
+                    </Button>
+                );
             case 'pending':
-                return <Button size="xs" color="warning" radius="full">{status.charAt(0).toUpperCase() + status.slice(1)}</Button>;
+                return (
+                    <Button
+                        size="xs"
+                        color="warning"
+                        radius="full"
+                        className="text-center text-[13px] p-1 h-auto min-h-0"
+                    >
+                        {status.charAt(0).toUpperCase() + status.slice(1)}
+                    </Button>
+                );
+            case 'no records':
+                return (
+                    <Button
+                        size="xs"
+                        color="gray"
+                        radius="full"
+                        className="text-center text-[13px] p-1 h-auto min-h-0"
+                    >
+                        {status.charAt(0).toUpperCase() + status.slice(1)}
+                    </Button>
+                );
             default:
                 return null;
         }
     };
+
+
 
     return (
         <AuthenticatedLayout
@@ -97,10 +188,10 @@ export default function TeacherClass({ auth }) {
         >
             <Head title={getHeaderTitle()} />
 
-            <div className="py-12">
-                <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <div className="h-screen bg-white rounded m-4 rounded-xl ">
+                <div className="w-full mx-auto sm:px-6 lg:px-8">
                     <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                        <div className="p-6 text-gray-900">
+                        <div className="p-6 text-gray-900 w-full">
                             <div className="flex justify-between items-center mb-4">
                                 <div className="text-xl">
                                     {selectedClass ? 'GROUP CLASS' : selectedCourse ? 'SECTIONS' : 'COURSES'}
@@ -131,40 +222,30 @@ export default function TeacherClass({ auth }) {
 
                             {/* Render sections for selected course */}
                             {selectedCourse && !selectedClass && (
-                                <div className="grid grid-cols-3 gap-4">
-                                    {(selectedCourse.sections || []).map((section, index) => (
-                                        <div
-                                            key={section.id + index}
-                                            className="border rounded-lg p-4 cursor-pointer"
-                                            onClick={() => setSelectedClass(section)}
-                                        >
-                                            <div className="flex justify-between items-center mb-2">
-                                                <span className="text-sm">10 Members</span>
-                                            </div>
-                                            <div className="flex justify-center mb-2">
-                                                <FontAwesomeIcon icon={faUsers} size="4x" />
-                                            </div>
-                                            <div className="text-center">{section.section_name}</div>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
+    <div className="grid grid-cols-3 gap-4">
+        {classes.map((classItem) => (
+            <div
+                key={classItem.id}
+                className="border rounded-lg p-4 cursor-pointer"
+                onClick={() => setSelectedClass(classItem)}
+            >
+                <div className="flex justify-between items-center mb-2">
+                    <span className="text-sm">10 Members</span> {/* Adjust as needed */}
+                </div>
+                <div className="flex justify-center mb-2">
+                    <FontAwesomeIcon icon={faUsers} size="4x" />
+                </div>
+                <div className="text-center">{classItem.class_name}</div>
+            </div>
+        ))}
+    </div>
+)}
+
 
                             {/* Render selected class information */}
                             {selectedClass && (
                                 <>
-<div className="flex items-center justify-between mb-4">
-    <h1 className="whitespace-nowrap text-2xl font-bold">CCICT Department</h1>
-    <div className="flex justify-end space-x-4">
-        <ClassDropdown />
-    </div>
-</div>
-
-
-
-                                    <hr className="mb-4" />
-
-                                    <div className="flex">
+                                    <div className="flex items-center justify-between mb-4">
                                         <div className="w-1/6">
                                             <Button
                                                 color="primary"
@@ -218,43 +299,55 @@ export default function TeacherClass({ auth }) {
                                                 </ModalContent>
                                             </Modal>
                                         </div>
+                                        <div className="flex justify-end space-x-4">
+                                            <ClassDropdown />
+                                        </div>
+                                    </div>
+                                    <hr className="mb-4" />
 
-                                        <div className="w-5/6">
+                                    <div className="flex">
+                                        <div className="w-full">
                                             <Table>
-                                                <TableHeader>
-                                                    <TableColumn>Title</TableColumn>
-                                                    <TableColumn>Status</TableColumn>
-                                                    <TableColumn>Created</TableColumn>
-                                                    <TableColumn>Updated</TableColumn>
-                                                    <TableColumn>Actions</TableColumn>
-                                                </TableHeader>
-                                                <TableBody>
-                                                    {staticData.map((data) => (
-                                                        <TableRow key={data.id}>
-                                                            <TableCell>{data.title}</TableCell>
-                                                            <TableCell>{getStatusButton(data.status)}</TableCell>
-                                                            <TableCell>{data.dateCreated}</TableCell>
-                                                            <TableCell>{data.dateUpdated}</TableCell>
-                                                            <TableCell>
-                                                                <Dropdown>
-                                                                    <DropdownTrigger>
-                                                                        <Button color="primary" auto flat>
-                                                                            Actions
-                                                                        </Button>
-                                                                    </DropdownTrigger>
-                                                                    <DropdownMenu aria-label="Actions">
+                                            <TableHeader>
+    <TableColumn className="w-[10%] text-left">Class Name</TableColumn>
+    <TableColumn className="w-[60%] text-center">Title</TableColumn>
+    <TableColumn className="text-center">Created</TableColumn>
+    <TableColumn className="text-center">Updated</TableColumn>
+    <TableColumn className="text-center">Status</TableColumn>
+    <TableColumn className="text-center">Actions</TableColumn>
+</TableHeader>
 
-                                                                        <DropdownItem key="add">Add Student</DropdownItem>
-                                                                        <DropdownItem key="approve">Approve</DropdownItem>
-                                                                        <DropdownItem key="decline">Decline</DropdownItem>
-                                                                        <DropdownItem key="edit">Edit</DropdownItem>
-                                                                        <DropdownItem key="delete" className="text-danger"  color="danger">Delete</DropdownItem>
-                                                                    </DropdownMenu>
-                                                                </Dropdown>
-                                                            </TableCell>
-                                                        </TableRow>
-                                                    ))}
-                                                </TableBody>
+<TableBody>
+    {classes.map((classItem) => (
+        <TableRow key={classItem.id}>
+            <TableCell className="w-[10%] text-left">{selectedClass.class_name}</TableCell>
+            <TableCell className="w-[60%] text-left">{classItem.man_doc_title || "N/A"}</TableCell>
+            <TableCell className="text-center">{new Date(classItem.created_at).toLocaleDateString() || "N/A"}</TableCell>
+            <TableCell className="text-center">{new Date(classItem.updated_at).toLocaleDateString() || "N/A"}</TableCell>
+            <TableCell className="text-center">{getStatusButton(classItem.man_doc_status || "norecords")}</TableCell>
+            <TableCell className="text-center">
+    <Dropdown>
+        <DropdownTrigger>
+            <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-300 text-white">
+                <FontAwesomeIcon icon={faEllipsisV} />
+            </div>
+        </DropdownTrigger>
+        <DropdownMenu aria-label="Actions">
+            <DropdownItem key="add">Add Student</DropdownItem>
+            <DropdownItem key="approve" onClick={() => handleStatusChange(classItem.id, 'Y')}>Approve</DropdownItem>
+            <DropdownItem key="decline" onClick={() => handleStatusChange(classItem.id, 'X')}>Decline</DropdownItem>
+            <DropdownItem key="edit">Edit</DropdownItem>
+            <DropdownItem key="delete" className="text-danger" color="danger">Delete</DropdownItem>
+        </DropdownMenu>
+    </Dropdown>
+</TableCell>
+        </TableRow>
+    ))}
+</TableBody>
+
+
+
+
                                             </Table>
                                         </div>
                                     </div>

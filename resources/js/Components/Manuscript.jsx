@@ -59,7 +59,7 @@ const Manuscript = ({user}) => {
     );
 
 
-    // Log user to see if it's being passed correctly
+    // Log user to see if it's being passed correctdownloadly
      // Fetch user favorites and store them in state
      useEffect(() => {
         const fetchFavorites = async () => {

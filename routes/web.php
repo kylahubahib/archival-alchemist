@@ -339,12 +339,21 @@ Route::get('/searchlib', [SearchController::class, 'searchlib']);
 
 
 Route::middleware('auth')->group(function () {
-    Route::get('/teacher/class', [TeacherClassController::class, 'index'])->name('teacher.class');
+   Route::get('/teacher/class', [TeacherClassController::class, 'index'])->name('teacher.class');
 });
+
+
+// Route::middleware('auth')->group(function () {
+//     Route::get('/display/groupclass', [TeacherClassController::class, 'DisplayGroupClass'])->name('teacher.class');
+// });
 
 
 
 
 //Teacher Activity API routes
 Route::post('/store-newGroupClass', [TeacherClassController::class, 'newGroupClass']);
+Route::get('/manuscripts/class', [TeacherClassController::class, 'getManuscriptsByClass']);
+// Route for updating manuscript status
+Route::put('/manuscripts/{id}/update-status', [TeacherClassController::class, 'updateManuscriptStatus']);
+
 require __DIR__.'/auth.php';

@@ -7,6 +7,7 @@ use App\Models\Department;
 use App\Models\Course;
 use App\Models\Section;
 use App\Models\ClassModel;
+use App\Models\ManuscriptProject;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
@@ -47,7 +48,16 @@ class TeacherClassController extends Controller
         //     ]);
         // }
 
+        public function DisplayGroupClass()
+        {
+            // Get the current authenticated user's ID
+            $userId = Auth::id();
 
+            // Fetch classes where ins_id matches the user's ID
+            $classes = ClassModel::where('ins_id', $userId)->get();
+
+            return response()->json(['classes' => $classes]);
+        }
 
         public function index()
         {
@@ -60,10 +70,15 @@ class TeacherClassController extends Controller
             // Get the courses in that department along with their sections
             $courses = Course::where('dept_id', $department->id)->with('sections')->get();
 
+            // Retrieve classes where ins_id matches the current user's ID
+            $classes = ClassModel::where('ins_id', Auth::id())->get();
+
             return response()->json([
                 'courses' => $courses,
+                'classes' => $classes, // Include the classes in the response
             ]);
         }
+
 
 
 
@@ -114,5 +129,71 @@ class TeacherClassController extends Controller
 
             return $classCode;
         }
+
+
+
+// In your controller
+public function getManuscriptsByClass(Request $request)
+{
+    $classCode = $request->input('class_code'); // Get the class code from the request
+
+    // Query to join manuscripts and class tables
+    $manuscripts = ManuscriptProject::from('manuscripts as m')
+        ->join('class as c', 'c.id', '=', 'm.class_code')
+        ->select('m.man_doc_title', 'm.man_doc_status', 'm.created_at', 'm.updated_at')
+        ->where('c.class_code', $classCode)
+        ->get();
+
+    // Transform the statuses into user-friendly labels
+    $manuscripts->transform(function ($manuscript) {
+        switch ($manuscript->man_doc_status) {
+            case 'Y':
+                $manuscript->man_doc_status = 'Approved';
+                break;
+            case 'P':
+                $manuscript->man_doc_status = 'Pending';
+                break;
+            case 'X':
+                $manuscript->man_doc_status = 'Declined';
+                break;
+            default:
+                $manuscript->man_doc_status = 'No Records';
+        }
+        return $manuscript;
+    });
+
+    return response()->json($manuscripts);
+}
+
+
+public function updateManuscriptStatus(Request $request, $id)
+{
+    // Validate the incoming request to ensure 'status' is present and valid
+    $request->validate([
+        'status' => 'required|string|in:Y,P,X'
+    ]);
+
+    try {
+        // Find the manuscript by ID
+        $manuscript = ManuscriptProject::findOrFail($id);
+
+        // Update the manuscript's status
+        $manuscript->man_doc_status = $request->input('status');
+        $manuscript->save();
+
+        // Return a success response
+        return response()->json([
+            'message' => 'Manuscript status updated successfully',
+            'status' => $manuscript->man_doc_status
+        ], 200);
+    } catch (\Exception $e) {
+        // Return an error response in case of failure
+        return response()->json([
+            'message' => 'Failed to update manuscript status',
+            'error' => $e->getMessage()
+        ], 500);
+    }
+}
+
 
 }
