@@ -1,9 +1,12 @@
 import { Head } from '@inertiajs/react';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Button, Skeleton } from '@nextui-org/react';
+import { Button, Skeleton, useDisclosure } from '@nextui-org/react';
+import AffiliateUniversity from './AffiliateUniversity';
+
 
 export default function SubscriptionForm({}) {
+    const {isOpen, onOpen, onOpenChange} = useDisclosure();
     const [personalSubscription, setPersonalSubscription] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -84,9 +87,11 @@ export default function SubscriptionForm({}) {
                             >
                                 Upgrade to Premium
                             </Button>
-                            <Button radius="large" variant='bordered' size='sm' className=" border-blue-400 text-blue-400 shadow">
+                            <Button radius="large" variant='bordered' size='sm' className=" border-blue-400 text-blue-400 shadow" onPress={onOpen}>
                                 Affiliate a university
                             </Button>
+
+                            <AffiliateUniversity isOpen={isOpen} onOpenChange={onOpenChange} />
                         </div>
                         </>
                     )}

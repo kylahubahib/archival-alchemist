@@ -2,16 +2,25 @@
 
 namespace App\Http\Controllers;
 
+
+use App\Traits\CheckSubscriptionTrait;
 use App\Http\Requests\ProfileUpdateRequest;
+
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
+
 use Inertia\Inertia;
 use Inertia\Response;
-use Illuminate\Support\Facades\Log;
+
+
+use App\Models\InstitutionSubscription;
+use App\Models\Student;
+
 
 
 class ProfileController extends Controller
@@ -185,4 +194,60 @@ class ProfileController extends Controller
 
         return Redirect::to('/');
     }
+
+    use CheckSubscriptionTrait;
+
+    public function affiliateUniversity(Request $request)
+    {
+        try {
+            $request->validate([
+                'uni_branch_id' => 'required|integer',
+                'uni_id_num' => 'required|string|max:20',
+            ]);
+
+            $user = Auth::user();
+
+            $user->update([
+                'uni_id_num' => $request->uni_id_num,
+                'is_affiliated' => true
+            ]);
+
+            $student = Student::where('user_id', $user->id)->first();
+            $student->update([
+                'uni_branch_id' => $request->uni_branch_id
+            ]);
+
+            
+
+            $subscriptionExist = InstitutionSubscription::where('uni_branch_id', $student->uni_branch_id)
+                ->where('insub_status', 'Active')
+                ->first();
+
+
+            if ($subscriptionExist == null) {
+                return response()->json([
+                    'message' => 'Your university currently does not have an active subscription. Please reach out to your institution for more information or updates.'
+                ]);
+            } else {
+                $result = $this->checkInstitutionSubscription($subscriptionExist, $user);
+
+                if ($result) {
+                    return response()->json([
+                        'message' => 'Congratulations! You successfully affiliated to the institution!'
+                    ]);
+                } else {
+                    return response()->json([
+                        'message' => 'Your information does not match the records provided by the institution or you are not included in the list of eligible students.'
+                    ]);
+                }
+            }
+        } catch (\Exception $e) {
+            // Catch all exceptions, including validation errors
+            return response()->json([
+                'message' => 'An error occurred.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
 }

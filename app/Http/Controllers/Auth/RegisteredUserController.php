@@ -85,6 +85,11 @@ class RegisteredUserController extends Controller
         //Result: 9/1/2005
         $formattedDate = Carbon::createFromFormat('Y-m-d',  $validatedData['user_dob'])->format('n/j/Y');
         
+        if($validatedData['uni_id_num'] != null && $validatedData['uni_branch_id'] != null)
+        {
+            $is_affiliated = true;
+        }
+        
         \Log::info($formattedDate);
 
         try {
@@ -98,6 +103,7 @@ class RegisteredUserController extends Controller
                 'user_status' => 'active',
                 'user_dob' => $formattedDate,
                 'is_premium' => false,
+                'is_affiliated' => $is_affiliated ?? false
             ]);
 
             \Log::info('User created:', $user->toArray());

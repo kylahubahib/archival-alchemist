@@ -122,7 +122,7 @@ Route::get('/report-types', [UserReportController::class, 'reportTypeList']);
 Route::get('/check-feedback', [UserFeedbacksController::class, 'CheckIfFeedbackExist'])->name('check-feedback');
 Route::get('/check-university-subscription', [UniversityController::class, 'checkUniversitySubscription'])->name('check-university-subscription');
 Route::get('/landing-page', [LandingPageController::class, 'index'])->name('landing-page.index');
-
+Route::post('/affiliate-university', [ProfileController::class, 'affiliateUniversity'])->name('affiliate-university');
 
 
 
