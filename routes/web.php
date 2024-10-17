@@ -7,6 +7,8 @@ use App\Models\Student;
 use App\Http\Controllers\TagController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 
+use App\Http\Controllers\GoogleDocsController;
+
 
 use App\Http\Controllers\UserReportController;
 use App\Http\Controllers\AdvancedTagsController;
@@ -67,8 +69,6 @@ Route::get('/payment/cancel', [PaymentSessionController::class, "paymentCancel"]
 Route::post('/payment', [PaymentSessionController::class, 'PaymentSession'])->name('payment');
 
 
-
-
 Route::get('/library', function () {
     return Inertia::render('Users/Library');
 })->middleware(['user-type:student,teacher,guest'])->name('library');
@@ -123,6 +123,12 @@ Route::get('/check-feedback', [UserFeedbacksController::class, 'CheckIfFeedbackE
 Route::get('/check-university-subscription', [UniversityController::class, 'checkUniversitySubscription'])->name('check-university-subscription');
 Route::get('/landing-page', [LandingPageController::class, 'index'])->name('landing-page.index');
 Route::post('/affiliate-university', [ProfileController::class, 'affiliateUniversity'])->name('affiliate-university');
+
+Route::get('/auth/google', [GoogleDocsController::class, 'redirectToGoogle'])->name('google.auth');
+Route::get('/auth/google/callback', [GoogleDocsController::class, 'handleGoogleCallback']);
+Route::get('/document/{fileId}/link', [GoogleDocsController::class, 'getGoogleDocLinkAPI']);
+
+
 
 
 

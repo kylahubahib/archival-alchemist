@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Modal from '@/Components/Modal';
 import { VerticalTimeline, VerticalTimelineElement } from 'react-vertical-timeline-component';
 import 'react-vertical-timeline-component/style.min.css';
 import {Card, CardFooter, Image, Button, ModalBody} from "@nextui-org/react";
+import axios from 'axios';
 
 export default function Track({manuscript=[]}) {
     const [expanded, setExpanded] = useState(false);
@@ -10,6 +11,23 @@ export default function Track({manuscript=[]}) {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedData, setSelectedData] = useState(null);
     const [revisionHistory, setRevisionHistory] = useState(null);
+    const [googleDocLink, setGoogleDocLink] = useState('');
+
+    useEffect(() => { 
+        // Call the API to get the Google Docs link
+        if(selectedData)
+        {
+            axios.get(`/api/document/${selectedData.class_code}/link`)
+            .then(response => {
+              setGoogleDocLink(response.data.doc_link); // Set the Google Docs link
+            })
+            .catch(error => {
+              console.error("Error fetching Google Docs link:", error);
+            });
+        }
+     
+      }, [selectedData]);
+    
 
     
 
@@ -165,6 +183,16 @@ export default function Track({manuscript=[]}) {
                             Notify me
                         </Button>
                         </CardFooter>
+
+                        <div>
+                        {googleDocLink ? (
+                            <a href={googleDocLink} target="_blank" rel="noopener noreferrer">
+                            Open Google Doc
+                            </a>
+                        ) : (
+                            <p>Loading Google Docs link...</p>
+                        )}
+                        </div>
                     </Card>
                     </div>
 
