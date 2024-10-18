@@ -26,6 +26,7 @@ use App\Http\Controllers\InstitutionSubscriptionController;
 use App\Http\Controllers\PersonalSubscriptionController;
 use App\Http\Controllers\LandingPageController;
 use App\Http\Controllers\ReportReasonController;
+use App\Http\Controllers\PostController;
 
 
 
@@ -340,5 +341,8 @@ Route::get('/searchlib', [SearchController::class, 'searchlib']);
 Route::middleware('auth')->group(function () {
     Route::get('/teacher/class', [TeacherClassController::class, 'index'])->name('teacher.class');
 });
+
+Route::get('/posts/{id}', [PostController::class, 'show']);
+
 
 require __DIR__.'/auth.php';

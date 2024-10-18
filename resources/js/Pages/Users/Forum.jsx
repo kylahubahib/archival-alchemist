@@ -8,6 +8,7 @@ import {
   Textarea
 } from '@nextui-org/react'; // NextUI components
 import SearchBar from '@/Components/SearchBar'; // Custom SearchBar
+import {Interia} from "@inertiajs/react";
 
 export default function Forum({ auth }) {
   const isAuthenticated = !!auth.user;
@@ -91,6 +92,12 @@ export default function Forum({ auth }) {
     }));
   };
 
+  const Forum = ({ posts }) => {
+    const openPost = (id) => {
+      // Redirect to the PostDetail page for the selected post
+      Inertia.get(`/posts/${id}`);
+    };
+
   return (
     <MainLayout
       user={auth.user}
@@ -165,50 +172,64 @@ export default function Forum({ auth }) {
 
               {/*Forum Posts*/}
               <div className="flex flex-col items-center -mt-32 ml-32">
-                {posts.length > 0 ? (
-                  posts.map((post) => (
-                    <div key={post.id} className="border-b pb-4 mb-4 w-3/4" onMouseEnter={() => incrementViewCount(post.id)}>
-                      <div className="flex items-start space-x-4">
-                        <img
-                          src={post.user.avatar || 'default-avatar-url'} // User avatar
-                          alt={`${post.user.name}'s avatar`}
-                          className="w-12 h-12 mr-8 rounded-full"
-                        />
-                        <div>
-                          <h3 className="text-2xl">{post.title}</h3>
-                          <p className="font-thin text-medium">{post.body}</p>
-                          <div className="flex items-center text-gray-500 text-sm mt-1">
-                            <div className="font-light"><span>{formatTimePassed(post.timestamp)}</span></div>
-                            <span className="ml-4">
-                              <i className="fas fa-eye"></i> {/* Eye icon for view count */}
-                              <span className="ml-1 font-thin">
-                                {post.viewCount || 0} {/* Display 0 if viewCount is falsy */}
-                                views
-                              </span>
-                            </span>
-                            <span className="ml-4">
-                              <i className="fas fa-comment"></i> {/* Comment icon for comment count */}
-                              <span className="ml-1 font-thin">
-                                {post.commentCount || 0} comments
-                              </span>
-                            </span>
-                            <span className="ml-4">
-                              Tags:
-                              {post.tags.map((tag, index) => (
-                                <span key={index} className="bg-blue-100 text-blue-800 border border-blue-300 font-extralight px-2 py-1 gap-2 rounded-lg mr-1 ml-2">
-                                  {tag}
-                                </span>
-                              ))}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <p>No posts yet.</p>
-                )}
+      {posts.length > 0 ? (
+        posts.map((post) => (
+          <div
+            key={post.id}
+            className="border-b pb-4 mb-4 w-3/4"
+            onMouseEnter={() => incrementViewCount(post.id)}
+          >
+            <div className="flex items-start space-x-4">
+              <img
+                src={post.user.avatar || "default-avatar-url"}
+                alt={`${post.user.name}'s avatar`}
+                className="w-12 h-12 mr-8 rounded-full"
+              />
+              <div>
+                <h3
+                  className="text-2xl text-blue-500 hover:underline cursor-pointer"
+                  onClick={() => openPost(post.id)} // Navigate to post detail on click
+                >
+                  {post.title}
+                </h3>
+                <p className="font-thin text-medium">{post.body}</p>
+                <div className="flex items-center text-gray-500 text-sm mt-1">
+                  <div className="font-light">
+                    <span>{formatTimePassed(post.timestamp)}</span>
+                  </div>
+                  <span className="ml-4">
+                    <i className="fas fa-eye"></i> {/* Eye icon */}
+                    <span className="ml-1 font-thin">
+                      {post.viewCount || 0} views
+                    </span>
+                  </span>
+                  <span className="ml-4">
+                    <i className="fas fa-comment"></i> {/* Comment icon */}
+                    <span className="ml-1 font-thin">
+                      {post.commentCount || 0} comments
+                    </span>
+                  </span>
+                  <span className="ml-4">
+                    Tags:
+                    {post.tags.map((tag, index) => (
+                      <span
+                        key={index}
+                        className="bg-blue-100 text-blue-800 border border-blue-300 font-extralight px-2 py-1 gap-2 rounded-lg mr-1 ml-2"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </span>
+                </div>
               </div>
+            </div>
+          </div>
+        ))
+      ) : (
+        <p>No posts yet.</p>
+      )}
+    </div>
+
             </div>
           </div>
          </div>
@@ -282,4 +303,5 @@ export default function Forum({ auth }) {
 
     </MainLayout>
   );
+}
 }
