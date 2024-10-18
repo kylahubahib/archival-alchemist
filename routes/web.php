@@ -123,8 +123,19 @@ Route::get('/check-feedback', [UserFeedbacksController::class, 'CheckIfFeedbackE
 Route::get('/check-university-subscription', [UniversityController::class, 'checkUniversitySubscription'])->name('check-university-subscription');
 Route::get('/landing-page', [LandingPageController::class, 'index'])->name('landing-page.index');
 Route::post('/affiliate-university', [ProfileController::class, 'affiliateUniversity'])->name('affiliate-university');
+Route::post('/remove-affiliation', [ProfileController::class, 'removeAffiliation'])->name('remove-affiliation');
 
+use App\Events\MessageSent;
 
+Route::post('/send-message', function (Request $request) {
+    // You can validate the request as needed
+    $message = $request->input('message'); // Assuming you send a message from the frontend
+
+    // Trigger the event
+    event(new MessageSent($message));
+
+    return response()->json(['status' => 'Message sent!']);
+});
 
 
 //SUPERADMIN

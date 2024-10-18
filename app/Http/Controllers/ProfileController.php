@@ -61,7 +61,10 @@ class ProfileController extends Controller
                     'user_aboutme' => $request->user()->user_aboutme,
                     'user_type' => $request->user()->user_type,
                     'user_pic' => $request->user()->user_pic,
-                    'is_premium' => $request->user()->is_premium
+                    'is_premium' => $request->user()->is_premium,
+                    'is_affiliated' => $request->user()->is_affiliated,
+                    'user_dob' => $request->user()->user_dob,
+                    'uni_id_num' => $request->user()->uni_id_num
                     // 'user_pic' => $request->user()->user_pic ? asset('storage/profile_pics/' . $request->user()->user_pic) : null,
                 ]
             ]
@@ -207,16 +210,9 @@ class ProfileController extends Controller
 
             $user = Auth::user();
 
-            $user->update([
-                'uni_id_num' => $request->uni_id_num,
-                'is_affiliated' => true
-            ]);
+           
 
             $student = Student::where('user_id', $user->id)->first();
-            $student->update([
-                'uni_branch_id' => $request->uni_branch_id
-            ]);
-
             
 
             $subscriptionExist = InstitutionSubscription::where('uni_branch_id', $student->uni_branch_id)
@@ -231,13 +227,23 @@ class ProfileController extends Controller
             } else {
                 $result = $this->checkInstitutionSubscription($subscriptionExist, $user);
 
-                if ($result) {
-                    return response()->json([
-                        'message' => 'Congratulations! You successfully affiliated to the institution!'
+                if ($result['status']  == true) {
+
+                    $user->update([
+                        'uni_id_num' => $request->uni_id_num
                     ]);
-                } else {
+
+                    $student->update([
+                        'uni_branch_id' => $request->uni_branch_id
+                    ]);
+
                     return response()->json([
-                        'message' => 'Your information does not match the records provided by the institution or you are not included in the list of eligible students.'
+                        'message' => $result['message']
+                    ]);
+                } 
+                else {
+                    return response()->json([
+                        'message' => $result['message']
                     ]);
                 }
             }
@@ -248,6 +254,22 @@ class ProfileController extends Controller
                 'error' => $e->getMessage(),
             ], 500);
         }
+    }
+
+    public function removeAffiliation(Request $request)
+    {
+        $user = Auth::user()->load(['student', 'faculty']);
+
+        $user->update([
+            'is_affiliated' => false
+        ]);
+
+        
+
+        return response()->json([
+            'is_affiliated' => $user->is_affiliated
+        ]);
+
     }
 
 }

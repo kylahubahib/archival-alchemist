@@ -33,7 +33,8 @@ export default function AffiliateUniversity({ isOpen, onOpenChange }) {
         axios.post('/affiliate-university', data)
             .then((response) => {
                 setMessage(response.data.message);
-                console.log('Success:', response.data.message);
+                ///console.log('Success:', response.data.message);
+
 
             })
             .catch((error) => {

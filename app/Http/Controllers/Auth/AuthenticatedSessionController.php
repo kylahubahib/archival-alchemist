@@ -59,7 +59,11 @@ class AuthenticatedSessionController extends Controller
                 $checkInSub = InstitutionSubscription::where('uni_branch_id', $user->faculty->uni_branch_id)->first();
             }
 
-            $this->checkInstitutionSubscription($checkInSub, $user);
+            if($user->is_affiliated)
+            {
+                $this->checkInstitutionSubscription($checkInSub, $user);
+            }
+           
 
         }
 

@@ -32,33 +32,52 @@ trait CheckSubscriptionTrait
                         Log::info($row['id_number'] . ' ' . $row['name'] . ' ' . $row['dob']);
                         if ($row['id_number'] == $user->uni_id_num && $row['name'] == $user->name && $row['dob'] == $user->user_dob) {
 
-                            //Check if subscription is active
-                            if($checkInSub->insub_status === 'Active'){
+                            // Check if subscription is active
+                            if ($checkInSub->insub_status === 'Active') {
                                 // Upgrade the user to premium if they match the CSV data
                                 $user->update([
-                                    'is_premium' => true
+                                    'is_premium' => true,
+                                    'is_affiliated' => true
                                 ]);
+
+                                Log::info('User upgraded to premium: ', $user->toArray());
+                                return [
+                                    'status' => true,
+                                    'message' => 'Congratulations! You successfully affiliated to the institution!'
+                                ];
                             } else {
-                                $user->update([
-                                    'is_premium' => false
-                                ]);
+                                if ($user->is_premium) {
+                                    $user->update([
+                                        'is_premium' => false
+                                    ]);
+                                }
+
+                                return [
+                                    'status' => false,
+                                    'message' => 'Your institution currently does not have an active subscription.'
+                                ];
                             }
-                            
-                            Log::info('User upgraded to premium: ', $user->toArray());
-    
-                            return true;  // Return true for successful upgrade
                         }
                     }
                 }
     
-                return false; // Return false if no match found
+                return [
+                    'status' => false,
+                    'message' => 'Your information does not match the records provided by the institution or you are not included in the list of eligible users.'
+                    
+                ];
             } else {
                 Log::warning('CSV data is empty or not in the expected format.');
-                return false; // Return false if CSV data is not valid
+                return [
+                    'status' => false,
+                    'message' => 'Your institution did not provide the list of eligible users yet.'
+                ];
             }
         }
     
-        return false; // Return false if no subscription content
+        return [
+            'status' => false,
+            'message' => 'No subscription content available.'
+        ];
     }
-    
 }
