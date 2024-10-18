@@ -5,12 +5,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
+use Illuminate\Notifications\Notifiable;
 
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class RevisionHistory extends Model
 {
-    use HasFactory;
+    use HasFactory, Notifiable;
 
     protected $table = 'revision_history'; 
 

@@ -11,12 +11,14 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Inertia\Response;
 
+use App\Traits\CheckSubscriptionTrait;
 use App\Models\InstitutionSubscription;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\UsersImport;
 
 class AuthenticatedSessionController extends Controller
 {
+
     /**
      * Display the login view.
      */
@@ -29,6 +31,8 @@ class AuthenticatedSessionController extends Controller
             'user' => $user // Pass the user data to the front end
         ]);
     }
+
+    use CheckSubscriptionTrait;
 
     /**
      * Handle an incoming authentication request.
@@ -43,52 +47,25 @@ class AuthenticatedSessionController extends Controller
         $user = Auth::user()->load(['student', 'faculty']);
 
         //Check if user is affiliated with an institution
-        // $user->student->uni_branch_id : Eloquent way of retrieving data from the student table
+        //$user->student->uni_branch_id : Eloquent way of retrieving data from the student table
 
-        // if($user->user_type != 'admin' && $user->user_type != 'superadmin')
-        // {
-        //     if($user->user_type == 'student') {
-        //         $checkInSub = InstitutionSubscription::where('uni_branch_id', $user->student->uni_branch_id)->first();
-        //     }
+        if($user->user_type != 'admin' && $user->user_type != 'superadmin')
+        {
+            if($user->user_type == 'student') {
+                $checkInSub = InstitutionSubscription::where('uni_branch_id', $user->student->uni_branch_id)->first();
+            }
 
-        //     if($user->user_type == 'teacher') {
-        //         $checkInSub = InstitutionSubscription::where('uni_branch_id', $user->faculty->uni_branch_id)->first();
-        //     }
+            if($user->user_type == 'teacher') {
+                $checkInSub = InstitutionSubscription::where('uni_branch_id', $user->faculty->uni_branch_id)->first();
+            }
 
-        //     //Check if $checkInSub retrieve a data or is it null
-        //     if ($checkInSub != null && $checkInSub->insub_content != null)
-        //     {
-        //         //\Log::info('Enter checkinsub ok');
+            if($user->is_affiliated)
+            {
+                $this->checkInstitutionSubscription($checkInSub, $user);
+            }
+           
 
-        //         //Retrieve the path of the csv from the data stored in $checkInSub
-        //         $filePath = $checkInSub->insub_content;
-        //         //Retrieve data from a CSV file and convert it into a PHP array using Laravel Excel
-        //         $csvData = Excel::toArray(new UsersImport, public_path($filePath));
-
-        //         //Logging the data retrieved in Auth::user()
-        //         Log::info('Auth ' . $user->uni_id_num . ' ' . $user->name . ' ' . $user->user_dob);
-
-        //         //Check if csv is null or not
-        //         if (!empty($csvData) && !empty($csvData[0])) {
-        //             $data = $csvData[0];
-        //             foreach ($data as $row) {
-        //                 if (count($row) >= 5) {
-        //                     Log::info($row['id_number'] . ' ' . $row['name'] . ' ' . $row['dob']);
-        //                     if ($row['id_number'] == $user->uni_id_num && $row['name'] == $user->name && $row['dob'] == $user->user_dob) {
-        //                         $user->update([
-        //                             'is_premium' => true
-        //                         ]);
-        //                         Log::info('User upgraded to premium: ', $user->toArray());
-        //                         break;
-        //                     }
-        //                 }
-        //             }
-        //         } else {
-        //             Log::warning('CSV data is empty or not in the expected format.');
-        //         }
-        //     }
-
-        // }
+        }
 
         // Redirect based on user_type
         switch ($user->user_type) {

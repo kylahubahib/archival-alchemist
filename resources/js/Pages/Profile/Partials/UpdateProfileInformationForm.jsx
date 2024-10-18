@@ -70,30 +70,6 @@ export default function UpdateProfileInformation({ mustVerifyEmail, status, clas
             </header>
 
             <form onSubmit={submit}  method="POST" encType="multipart/form-data" className="mt-6 space-y-6">
-                <div className="flex items-center space-x-4">
-                    <div className="relative w-20 h-20">
-                        {profilePic ? (
-                            <img
-                                src={profilePic}
-                                alt="Profile"
-                                className="w-full h-full rounded-full object-cover"
-                            />
-                        ) : (
-                            <FaUserCircle className="w-full h-full text-gray-400" />
-                        )}
-                    </div>
-                    <div>
-                        <InputLabel htmlFor="user_pic" value="Profile Picture" />
-                        <input
-                            type="file"
-                            id="user_pic"
-                            name="user_pic"
-                            onChange={handleFileChange}
-                            className="mt-1 block w-full"
-                        />
-                        <InputError className="mt-2" message={errors.user_pic} />
-                    </div>
-                </div>
 
                 <div>
                     <InputLabel htmlFor="name" value="Name" />

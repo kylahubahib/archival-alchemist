@@ -176,7 +176,7 @@ export default function TermsCondition({ auth, termsConditions = [], billingAgre
                             </thead>
                             <tbody>
                                 {filteredData.length > 0 ? (filteredData.map((tc) => (
-                                    <tr key={tc.id} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50">
+                                    <tr key={tc.id} className="bg-white border-b hover:bg-gray-50">
                                         <th scope="row" className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
                                             <div className="pl-3">
                                                 <div className="text-base font-semibol max-w-44 truncate">{tc.content_title}</div>

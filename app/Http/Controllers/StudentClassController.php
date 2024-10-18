@@ -173,74 +173,74 @@ class StudentClassController extends Controller
 
 
 
-public function checkClassCode(Request $request)
-{
-    $request->validate([
-        'class_code' => 'required|string',
-    ]);
-
-    $class = ClassModel::where('class_code', $request->class_code)->first();
-
-    if ($class) {
-        return response()->json([
-            'exists' => true,
-            'classDetails' => [
-                'class_name' => $class->class_name,
-                'ins_id' => $class->ins_id,
-            ],
+    public function checkClassCode(Request $request)
+    {
+        $request->validate([
+            'class_code' => 'required|string',
         ]);
-    } else {
-        return response()->json(['exists' => false]);
-    }
-}
 
-public function storeStudentClass(Request $request)
-{
-    $request->validate([
-        'class_code' => 'required|string',
-        'class_name' => 'required|string',
-        'ins_id' => 'required|integer',
-    ]);
+        $class = ClassModel::where('class_code', $request->class_code)->first();
 
-    $userId = Auth::id();
-    //$user
-
-    //\Log::info('in the student class');
-
-    try {
-        // Check if the user is already enrolled in the class
-        $existingEnrollment = ClassModel::where([
-            ['class_code', $request->class_code],
-            ['stud_id', $userId],
-        ])->first();
-
-        if ($existingEnrollment) {
-            // User is already enrolled
-            return response()->json(['success' => true, 'message' => 'Already enrolled']);
+        if ($class) {
+            return response()->json([
+                'exists' => true,
+                'classDetails' => [
+                    'class_name' => $class->class_name,
+                    'ins_id' => $class->ins_id,
+                ],
+            ]);
         } else {
-            // Check if the class exists
-            $class = ClassModel::where('class_code', $request->class_code)->first();
-
-            if ($class) {
-                // Insert the new enrollment
-                ClassModel::create([
-                    'class_code' => $request->class_code,
-                    'class_name' => $request->class_name,
-                    'ins_id' => $request->ins_id,
-                    'stud_id' => $userId, // Store the user ID
-                ]);
-
-                return response()->json(['success' => true, 'message' => 'Joined class successfully']);
-            } else {
-                return response()->json(['success' => false, 'message' => 'Class code not found']);
-            }
+            return response()->json(['exists' => false]);
         }
-    } catch (\Exception $e) {
-        // Log the error and return a response
-        Log::error('Error joining class: '.$e->getMessage());
-        return response()->json(['success' => false, 'message' => 'An error occurred while joining the class.'], 500);
     }
-}
+
+    public function storeStudentClass(Request $request)
+    {
+        $request->validate([
+            'class_code' => 'required|string',
+            'class_name' => 'required|string',
+            'ins_id' => 'required|integer',
+        ]);
+
+        $userId = Auth::id();
+        //$user
+
+        //\Log::info('in the student class');
+
+        try {
+            // Check if the user is already enrolled in the class
+            $existingEnrollment = ClassModel::where([
+                ['class_code', $request->class_code],
+                ['stud_id', $userId],
+            ])->first();
+
+            if ($existingEnrollment) {
+                // User is already enrolled
+                return response()->json(['success' => true, 'message' => 'Already enrolled']);
+            } else {
+                // Check if the class exists
+                $class = ClassModel::where('class_code', $request->class_code)->first();
+
+                if ($class) {
+                    // Insert the new enrollment
+                    ClassModel::create([
+                        'class_code' => $request->class_code,
+                        'class_name' => $request->class_name,
+                        'ins_id' => $request->ins_id,
+                        'stud_id' => $userId, // Store the user ID
+                    ]);
+
+                    return response()->json(['success' => true, 'message' => 'Joined class successfully']);
+                } else {
+                    return response()->json(['success' => false, 'message' => 'Class code not found']);
+                }
+            }
+        } catch (\Exception $e) {
+            // Log the error and return a response
+            Log::error('Error joining class: '.$e->getMessage());
+            return response()->json(['success' => false, 'message' => 'An error occurred while joining the class.'], 500);
+        }
+    }
 
 
 
@@ -517,10 +517,17 @@ public function myfavoriteManuscripts()
 
         $studentClass = ClassModel::where('stud_id', $user->id)->first();
 
-        return response()->json([
-            'class' => $studentClass->class_code,
-            'manuscript' => $user->manuscripts
-        ]);
+        if($studentClass) {
+            return response()->json([
+                'class' => $studentClass->class_code,
+                'manuscript' => $user->manuscripts
+            ]);
+        }
+        else {
+            return response()->json();
+        }
+
+       
     }
 
 

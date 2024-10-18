@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\StudentClassController;
 use App\Http\Controllers\TeacherClassController;
+
 use App\Models\Student;
 use App\Http\Controllers\TagController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
@@ -122,9 +123,20 @@ Route::get('/report-types', [UserReportController::class, 'reportTypeList']);
 Route::get('/check-feedback', [UserFeedbacksController::class, 'CheckIfFeedbackExist'])->name('check-feedback');
 Route::get('/check-university-subscription', [UniversityController::class, 'checkUniversitySubscription'])->name('check-university-subscription');
 Route::get('/landing-page', [LandingPageController::class, 'index'])->name('landing-page.index');
+Route::post('/affiliate-university', [ProfileController::class, 'affiliateUniversity'])->name('affiliate-university');
+Route::post('/remove-affiliation', [ProfileController::class, 'removeAffiliation'])->name('remove-affiliation');
 
+use App\Events\MessageSent;
 
+Route::post('/send-message', function (Request $request) {
+    // You can validate the request as needed
+    $message = $request->input('message'); // Assuming you send a message from the frontend
 
+    // Trigger the event
+    event(new MessageSent($message));
+
+    return response()->json(['status' => 'Message sent!']);
+});
 
 
 //SUPERADMIN
@@ -345,4 +357,9 @@ Route::middleware('auth')->group(function () {
 Route::get('/posts/{id}', [PostController::class, 'show']);
 
 
+
+
+
+//Teacher Activity API routes
+Route::post('/store-newGroupClass', [TeacherClassController::class, 'newGroupClass']);
 require __DIR__.'/auth.php';

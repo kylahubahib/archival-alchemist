@@ -8,12 +8,13 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
+use Illuminate\Notifications\Notifiable;
 
 
 
 class Transaction extends Model
 {
-    use HasFactory;
+    use HasFactory, Notifiable;
 
     protected $fillable = [
         'user_id',
@@ -25,9 +26,15 @@ class Transaction extends Model
         'trans_status'
     ];
 
+    
+    public function getUpdatedAtAttribute($value)
+    {
+        return Carbon::parse($value)->format('m/d/Y'); 
+    }
+    
     public function getCreatedAtAttribute($value)
     {
-        return Carbon::parse($value)->format('Y-m-d');
+        return Carbon::parse($value)->format('m/d/Y'); 
     }
 
 
