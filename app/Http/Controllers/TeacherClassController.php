@@ -141,7 +141,7 @@ public function getManuscriptsByClass(Request $request)
     // Query to join manuscripts and class tables
     $manuscripts = ManuscriptProject::from('class as c')
     ->leftJoin('manuscripts as m', 'c.id', '=', 'm.class_code')
-    ->select('c.id as id', 'c.class_code', 'm.id as id', 'm.man_doc_title', 'm.man_doc_status', 'm.created_at', 'm.updated_at')
+    ->select('c.id as id', 'c.class_code', 'c.class_name', 'm.id as id', 'm.man_doc_title', 'm.man_doc_status', 'm.created_at', 'm.updated_at')
     ->where('c.ins_id', $ins_id)
     ->get();
 
@@ -152,7 +152,7 @@ public function getManuscriptsByClass(Request $request)
             case 'Y':
                 $manuscript->man_doc_status = 'Approved';
                 break;
-            case 'P':
+            case 'I':
                 $manuscript->man_doc_status = 'In progress';
                 break;
             case 'X':
@@ -198,5 +198,10 @@ public function getManuscriptsByClass(Request $request)
         }
     }
 
+
+
+
+
+    // Class dropdown controller
 
 }

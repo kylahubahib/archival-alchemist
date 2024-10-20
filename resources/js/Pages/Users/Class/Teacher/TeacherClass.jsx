@@ -54,6 +54,10 @@ export default function TeacherClass({ auth }) {
                 class_name: className, // Ensure this matches the controller's expected key
             });
             setMessage(`Group class created successfully: ${response.data.message}`);
+                    // Close the modal and reset class name field after successful creation
+            setIsGroupModalOpen(false);
+            setClassName('');
+
         } catch (error) {
             // Improved error handling
             if (error.response) {
