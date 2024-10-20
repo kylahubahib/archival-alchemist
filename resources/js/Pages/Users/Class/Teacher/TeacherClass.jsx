@@ -21,7 +21,9 @@ export default function TeacherClass({ auth }) {
     const [message, setMessage] = useState(''); // For success/error messages
     const [classes, setClasses] = useState([]); // Add this line
     const [manuscripts, setManuscripts] = useState([]); // Add this line for manuscripts
+
     const handleStatusChange = async (id, status) => {
+        console.log("Class Item ID:", id);  // Debugging line for classItem.id
         try {
             const response = await axios.put(`/manuscripts/${id}/update-status`, {
                 status: status // 'Y' for Approve, 'X' for Decline
@@ -33,7 +35,7 @@ export default function TeacherClass({ auth }) {
             // Optionally reload manuscripts to reflect the updated status
             axios.get('/manuscripts/class', {
                 params: {
-                    class_code: selectedClass.class_code // Fetch updated manuscripts
+                    ins_id: selectedClass.ins_id // Fetch updated manuscripts
                 }
             }).then(response => {
                 setClasses(response.data);
@@ -84,11 +86,12 @@ export default function TeacherClass({ auth }) {
 
 
 
+
     useEffect(() => {
         if (selectedClass) {
             axios.get('/manuscripts/class', {
                 params: {
-                    class_code: selectedClass.class_code // Ensure this matches your class's property
+                    ins_id: selectedClass.ins_id // Ensure this matches your class's property
                 }
             })
             .then(response => {
@@ -114,7 +117,7 @@ export default function TeacherClass({ auth }) {
     const staticData = [
         { id: 1, dateCreated: '2024-10-01', dateUpdated: '2024-10-02', status: 'approved', title: 'ByteBuddies' },
         { id: 2, dateCreated: '2024-10-03', dateUpdated: '2024-10-04', status: 'declined', title: 'GentleMatch' },
-        { id: 3, dateCreated: '2024-10-05', dateUpdated: '2024-10-06', status: 'pending', title: 'ITMan' },
+        { id: 3, dateCreated: '2024-10-05', dateUpdated: '2024-10-06', status: 'in progress', title: 'ITMan' },
         { id: 4, dateCreated: '2024-10-07', dateUpdated: '2024-10-08', status: 'norecords', title: 'New ITMan' },
     ];
 
@@ -143,7 +146,7 @@ export default function TeacherClass({ auth }) {
                         {status.charAt(0).toUpperCase() + status.slice(1)}
                     </Button>
                 );
-            case 'pending':
+            case 'in progress':
                 return (
                     <Button
                         size="xs"
@@ -154,14 +157,14 @@ export default function TeacherClass({ auth }) {
                         {status.charAt(0).toUpperCase() + status.slice(1)}
                     </Button>
                 );
-            case 'no records':
+            case 'pending':
                 return (
                     <Button
                         size="xs"
                         color="gray"
                         radius="full"
-                        className="text-center text-[13px] p-1 h-auto min-h-0"
-                    >
+                        className="text-center text-[13px] p-1 h-auto min-h-0 bg-gray-500 text-white" // Gray background with white text
+                        >
                         {status.charAt(0).toUpperCase() + status.slice(1)}
                     </Button>
                 );
@@ -318,31 +321,44 @@ export default function TeacherClass({ auth }) {
 </TableHeader>
 
 <TableBody>
-    {classes.map((classItem) => (
-        <TableRow key={classItem.id}>
-            <TableCell className="w-[10%] text-left">{selectedClass.class_name}</TableCell>
-            <TableCell className="w-[60%] text-left">{classItem.man_doc_title || "N/A"}</TableCell>
-            <TableCell className="text-center">{new Date(classItem.created_at).toLocaleDateString() || "N/A"}</TableCell>
-            <TableCell className="text-center">{new Date(classItem.updated_at).toLocaleDateString() || "N/A"}</TableCell>
-            <TableCell className="text-center">{getStatusButton(classItem.man_doc_status || "norecords")}</TableCell>
-            <TableCell className="text-center">
-    <Dropdown>
-        <DropdownTrigger>
-            <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-300 text-white">
+  {classes.map((classItem) => {
+
+console.log("Class Item ID:", classItem.id);  // Debugging line for classItem.id
+  console.log('classItem:', classItem);
+console.log('selectedClass:', selectedClass);
+
+    return (
+      <TableRow key={classItem.id}>
+        <TableCell className="w-[10%] text-left">{classItem.class_name}</TableCell>
+        <TableCell className="w-[60%] text-left">{classItem.man_doc_title || "No manuscripts uploaded yet."}</TableCell>
+        <TableCell className="text-center">
+          {new Date(classItem.created_at).toLocaleDateString() || "N/A"}
+        </TableCell>
+        <TableCell className="text-center">
+          {new Date(classItem.updated_at).toLocaleDateString() || "N/A"}
+        </TableCell>
+        <TableCell className="text-center">
+          {getStatusButton(classItem.man_doc_status || "norecords")}
+        </TableCell>
+        <TableCell className="text-center">
+          <Dropdown>
+            <DropdownTrigger>
+              <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-300 text-white">
                 <FontAwesomeIcon icon={faEllipsisV} />
-            </div>
-        </DropdownTrigger>
-        <DropdownMenu aria-label="Actions">
-            <DropdownItem key="add">Add Student</DropdownItem>
-            <DropdownItem key="approve" onClick={() => handleStatusChange(classItem.id, 'Y')}>Approve</DropdownItem>
-            <DropdownItem key="decline" onClick={() => handleStatusChange(classItem.id, 'X')}>Decline</DropdownItem>
-            <DropdownItem key="edit">Edit</DropdownItem>
-            <DropdownItem key="delete" className="text-danger" color="danger">Delete</DropdownItem>
-        </DropdownMenu>
-    </Dropdown>
-</TableCell>
-        </TableRow>
-    ))}
+              </div>
+            </DropdownTrigger>
+            <DropdownMenu aria-label="Actions">
+              <DropdownItem key="add">Add Student</DropdownItem>
+              <DropdownItem key="approve" onClick={() => handleStatusChange(classItem.id, 'Y')}>Approve</DropdownItem>
+              <DropdownItem key="decline" onClick={() => handleStatusChange(classItem.id, 'X')}>Decline</DropdownItem>
+              <DropdownItem key="edit">Edit</DropdownItem>
+              <DropdownItem key="delete" className="text-danger" color="danger">Delete</DropdownItem>
+            </DropdownMenu>
+          </Dropdown>
+        </TableCell>
+      </TableRow>
+    );
+  })}
 </TableBody>
 
 

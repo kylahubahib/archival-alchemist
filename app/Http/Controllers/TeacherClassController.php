@@ -135,14 +135,16 @@ class TeacherClassController extends Controller
 // In your controller
 public function getManuscriptsByClass(Request $request)
 {
-    $classCode = $request->input('class_code'); // Get the class code from the request
+    // $classCode = $request->input('class_code'); // Get the class code from the request
+    $ins_id = $request->input('ins_id'); // Get the class code from the request
 
     // Query to join manuscripts and class tables
-    $manuscripts = ManuscriptProject::from('manuscripts as m')
-        ->join('class as c', 'c.id', '=', 'm.class_code')
-        ->select('m.man_doc_title', 'm.man_doc_status', 'm.created_at', 'm.updated_at')
-        ->where('c.class_code', $classCode)
-        ->get();
+    $manuscripts = ManuscriptProject::from('class as c')
+    ->leftJoin('manuscripts as m', 'c.id', '=', 'm.class_code')
+    ->select('c.id as id', 'c.class_code', 'm.id as id', 'm.man_doc_title', 'm.man_doc_status', 'm.created_at', 'm.updated_at')
+    ->where('c.ins_id', $ins_id)
+    ->get();
+
 
     // Transform the statuses into user-friendly labels
     $manuscripts->transform(function ($manuscript) {
@@ -151,13 +153,13 @@ public function getManuscriptsByClass(Request $request)
                 $manuscript->man_doc_status = 'Approved';
                 break;
             case 'P':
-                $manuscript->man_doc_status = 'Pending';
+                $manuscript->man_doc_status = 'In progress';
                 break;
             case 'X':
                 $manuscript->man_doc_status = 'Declined';
                 break;
             default:
-                $manuscript->man_doc_status = 'No Records';
+                $manuscript->man_doc_status = 'Pending';
         }
         return $manuscript;
     });
@@ -166,34 +168,35 @@ public function getManuscriptsByClass(Request $request)
 }
 
 
-public function updateManuscriptStatus(Request $request, $id)
-{
-    // Validate the incoming request to ensure 'status' is present and valid
-    $request->validate([
-        'status' => 'required|string|in:Y,P,X'
-    ]);
 
-    try {
-        // Find the manuscript by ID
-        $manuscript = ManuscriptProject::findOrFail($id);
+    public function updateManuscriptStatus(Request $request, $id)
+    {
+        // Validate the incoming request to ensure 'status' is present and valid
+        $request->validate([
+            'status' => 'required|string|in:Y,P,X'
+        ]);
 
-        // Update the manuscript's status
-        $manuscript->man_doc_status = $request->input('status');
-        $manuscript->save();
+        try {
+            // Find the manuscript by ID
+            $manuscript = ManuscriptProject::findOrFail($id);
 
-        // Return a success response
-        return response()->json([
-            'message' => 'Manuscript status updated successfully',
-            'status' => $manuscript->man_doc_status
-        ], 200);
-    } catch (\Exception $e) {
-        // Return an error response in case of failure
-        return response()->json([
-            'message' => 'Failed to update manuscript status',
-            'error' => $e->getMessage()
-        ], 500);
+            // Update the manuscript's status
+            $manuscript->man_doc_status = $request->input('status');
+            $manuscript->save();
+
+            // Return a success response
+            return response()->json([
+                'message' => 'Manuscript status updated successfully',
+                'status' => $manuscript->man_doc_status
+            ], 200);
+        } catch (\Exception $e) {
+            // Return an error response in case of failure
+            return response()->json([
+                'message' => 'Failed to update manuscript status',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
-}
 
 
 }
