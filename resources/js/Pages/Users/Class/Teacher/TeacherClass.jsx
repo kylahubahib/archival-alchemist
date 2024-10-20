@@ -22,8 +22,49 @@ export default function TeacherClass({ auth }) {
     const [classes, setClasses] = useState([]); // Add this line
     const [manuscripts, setManuscripts] = useState([]); // Add this line for manuscripts
 
+    const fetchUpdatedManuscripts = async () => {
+        try {
+            const response = await axios.get('/manuscripts/class', {
+                params: { ins_id: selectedClass.ins_id }
+            });
+            console.log(response.data); // Check that the new data is correct
+            setClasses(response.data); // Update the classes state
+        } catch (error) {
+            console.error("Error fetching updated manuscripts:", error);
+            setMessage("Failed to fetch updated manuscripts.");
+        }
+    };
+
+
+    // const handleStatusChange = async (id, status) => {
+    //     console.log("Class Item ID:", id);  // Debugging line for classItem.id
+    //     try {
+    //         const response = await axios.put(`/manuscripts/${id}/update-status`, {
+    //             status: status // 'Y' for Approve, 'X' for Decline
+    //         });
+
+    //         // Show success message or refresh data if needed
+    //         setMessage(`Manuscript status updated: ${response.data.message}`);
+
+    //         // Optionally reload manuscripts to reflect the updated status
+    //         axios.get('/manuscripts/class', {
+    //             params: {
+    //                 ins_id: selectedClass.ins_id // Fetch updated manuscripts
+    //             }
+    //         }).then(response => {
+    //             setClasses(response.data);
+    //         });
+
+    //     } catch (error) {
+    //         // Handle error
+    //         setMessage(`Failed to update status: ${error.response?.data?.message || error.message}`);
+    //     }
+    // };
+
+
+
+
     const handleStatusChange = async (id, status) => {
-        console.log("Class Item ID:", id);  // Debugging line for classItem.id
         try {
             const response = await axios.put(`/manuscripts/${id}/update-status`, {
                 status: status // 'Y' for Approve, 'X' for Decline
@@ -32,43 +73,45 @@ export default function TeacherClass({ auth }) {
             // Show success message or refresh data if needed
             setMessage(`Manuscript status updated: ${response.data.message}`);
 
-            // Optionally reload manuscripts to reflect the updated status
-            axios.get('/manuscripts/class', {
-                params: {
-                    ins_id: selectedClass.ins_id // Fetch updated manuscripts
-                }
-            }).then(response => {
-                setClasses(response.data);
-            });
-
+            // Call the fetch function to update the table
+            await fetchUpdatedManuscripts(); // Fetch updated data
         } catch (error) {
-            // Handle error
             setMessage(`Failed to update status: ${error.response?.data?.message || error.message}`);
         }
     };
-    // Handle form submission to create a new group class
-    const handleCreate = async () => {
-        setIsLoading(true);
-        try {
-            const response = await axios.post('/store-newGroupClass', {
-                class_name: className, // Ensure this matches the controller's expected key
-            });
-            setMessage(`Group class created successfully: ${response.data.message}`);
-                    // Close the modal and reset class name field after successful creation
-            setIsGroupModalOpen(false);
-            setClassName('');
+// Handle form submission to create a new group class
+const handleCreate = async () => {
+    setIsLoading(true);
+    try {
+        const response = await axios.post('/store-newGroupClass', {
+            class_name: className, // Ensure this matches the controller's expected key
+        });
+        setMessage(`Group class created successfully: ${response.data.message}`);
 
-        } catch (error) {
-            // Improved error handling
-            if (error.response) {
-                setMessage(`Error creating new group class: ${error.response.data.message}`);
-            } else {
-                setMessage(`Error creating new group class: ${error.message}`);
+        // Fetch the updated classes after creating a new one
+        const classesResponse = await axios.get('/manuscripts/class', {
+            params: {
+                ins_id: selectedClass.ins_id // Ensure this matches your class's property
             }
-        } finally {
-            setIsLoading(false);
-        };
-    };
+        });
+        setClasses(classesResponse.data); // Update classes state with new data
+        console.log('Classes:', classes); // Check the structure of classes to ensure ins_id exists
+
+        // Close the modal and reset class name field after successful creation
+        setIsGroupModalOpen(false);
+        setClassName('');
+    } catch (error) {
+        // Improved error handling
+        if (error.response) {
+            setMessage(`Error creating new group class: ${error.response.data.message}`);
+        } else {
+            setMessage(`Error creating new group class: ${error.message}`);
+        }
+    } finally {
+        setIsLoading(false);
+    }
+};
+
 
     const handleModalClose = () => {
         setIsGroupModalOpen(false);
@@ -93,6 +136,7 @@ export default function TeacherClass({ auth }) {
 
     useEffect(() => {
         if (selectedClass) {
+            console.log('Selected Class:', selectedClass); // Debugging line
             axios.get('/manuscripts/class', {
                 params: {
                     ins_id: selectedClass.ins_id // Ensure this matches your class's property
@@ -105,8 +149,11 @@ export default function TeacherClass({ auth }) {
             .catch(error => {
                 console.error("Error fetching manuscripts:", error);
             });
+        } else {
+            console.warn('selectedClass is undefined or null'); // Debugging line
         }
     }, [selectedClass]);
+
 
 
 
@@ -307,7 +354,8 @@ export default function TeacherClass({ auth }) {
                                             </Modal>
                                         </div>
                                         <div className="flex justify-end space-x-4">
-                                            <ClassDropdown />
+                                        <ClassDropdown ins_id={selectedClass.ins_id} onUpdate={fetchUpdatedManuscripts} />
+                                        {/* Pass the ins_id here */}
                                         </div>
                                     </div>
                                     <hr className="mb-4" />

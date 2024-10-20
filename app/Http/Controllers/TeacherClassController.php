@@ -132,21 +132,82 @@ class TeacherClassController extends Controller
 
 
 
-// In your controller
+// // In your controller
+// public function getManuscriptsByClass(Request $request)
+// {
+//     // $classCode = $request->input('class_code'); // Get the class code from the request
+//     $ins_id = $request->input('ins_id'); // Get the class code from the request
+
+//     // Query to join manuscripts and class tables
+//     $manuscripts = ManuscriptProject::from('class as c')
+//     ->leftJoin('manuscripts as m', 'c.id', '=', 'm.class_code')
+//     ->select('c.id as id', 'c.class_code', 'c.class_name', 'm.id as id', 'm.man_doc_title', 'm.man_doc_status', 'm.created_at', 'm.updated_at')
+//     ->where('c.ins_id', $ins_id)
+//     ->get();
+
+
+//     // Transform the statuses into user-friendly labels
+//     $manuscripts->transform(function ($manuscript) {
+//         switch ($manuscript->man_doc_status) {
+//             case 'Y':
+//                 $manuscript->man_doc_status = 'Approved';
+//                 break;
+//             case 'I':
+//                 $manuscript->man_doc_status = 'In progress';
+//                 break;
+//             case 'X':
+//                 $manuscript->man_doc_status = 'Declined';
+//                 break;
+//             default:
+//                 $manuscript->man_doc_status = 'Pending';
+//         }
+//         return $manuscript;
+//     });
+
+//     return response()->json($manuscripts);
+// }
+
+
+
 public function getManuscriptsByClass(Request $request)
 {
-    // $classCode = $request->input('class_code'); // Get the class code from the request
-    $ins_id = $request->input('ins_id'); // Get the class code from the request
+    $ins_id = $request->input('ins_id');
+    $filter = $request->input('filter', null); // Get the filter from the request, default to null
 
-    // Query to join manuscripts and class tables
-    $manuscripts = ManuscriptProject::from('class as c')
-    ->leftJoin('manuscripts as m', 'c.id', '=', 'm.class_code')
-    ->select('c.id as id', 'c.class_code', 'c.class_name', 'm.id as id', 'm.man_doc_title', 'm.man_doc_status', 'm.created_at', 'm.updated_at')
-    ->where('c.ins_id', $ins_id)
-    ->get();
+    // Base query to join manuscripts and class tables
+    $query = ManuscriptProject::from('class as c')
+        ->leftJoin('manuscripts as m', 'c.id', '=', 'm.class_code')
+        ->select('c.id as id', 'c.class_code', 'c.ins_id', 'c.class_name', 'm.id as id', 'm.man_doc_title', 'm.man_doc_status', 'm.created_at', 'm.updated_at')
+        ->where('c.ins_id', $ins_id);
 
+        //     // Query to join manuscripts and class tables
+//     $manuscripts = ManuscriptProject::from('class as c')
+//     ->leftJoin('manuscripts as m', 'c.id', '=', 'm.class_code')
+//     ->select('c.id as id', 'c.class_code', 'c.class_name', 'm.id as id', 'm.man_doc_title', 'm.man_doc_status', 'm.created_at', 'm.updated_at')
+//     ->where('c.ins_id', $ins_id)
+//     ->get();
 
-    // Transform the statuses into user-friendly labels
+    // Apply filter condition based on the filter, if set
+    if ($filter) {
+        switch ($filter) {
+            case 'approved':
+                $query->where('m.man_doc_status', 'Y');
+                break;
+            case 'declined':
+                $query->where('m.man_doc_status', 'X');
+                break;
+            case 'in_progress':
+                $query->where('m.man_doc_status', 'I');
+                break;
+            case 'pending':
+                $query->whereNull('m.id'); // Pending means no manuscript exists for that class
+                break;
+        }
+    }
+
+    $manuscripts = $query->get();
+
+    // Transform statuses into user-friendly labels
     $manuscripts->transform(function ($manuscript) {
         switch ($manuscript->man_doc_status) {
             case 'Y':
@@ -166,6 +227,7 @@ public function getManuscriptsByClass(Request $request)
 
     return response()->json($manuscripts);
 }
+
 
 
 

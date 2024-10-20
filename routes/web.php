@@ -355,5 +355,6 @@ Route::post('/store-newGroupClass', [TeacherClassController::class, 'newGroupCla
 Route::get('/manuscripts/class', [TeacherClassController::class, 'getManuscriptsByClass']);
 // Route for updating manuscript status
 Route::put('/manuscripts/{id}/update-status', [TeacherClassController::class, 'updateManuscriptStatus']);
+Route::get('/get-manuscripts', [TeacherClassController::class, 'getManuscriptsByClass']);
 
 require __DIR__.'/auth.php';
