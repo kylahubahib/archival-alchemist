@@ -9,7 +9,6 @@ import Dropdown from '@/Components/Dropdown';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
 import Sidebar, { SidebarItem, SidebarSeparator } from '@/Components/Sidebar';
 
-import SearchBar from '@/Components/SearchBar';
 import { FaCrown, FaEnvelope } from "react-icons/fa";
 import GiveFeedbackModal from "@/Components/GiveFeedbackModal";
 import ToastNotification, { showToast } from "@/Components/Toast";
@@ -137,8 +136,8 @@ export default function Authenticated({ user, children, newProfile = null }) {
 
                     <div className={(showingNavigationDropdown ? 'block' : 'hidden') + ' sm:hidden'}>
                         <div className="pt-2 pb-3 space-y-1">
-                            <ResponsiveNavLink href={route('dashboard')} active={route().current('dashboard')}>
-                                Dashboard
+                            <ResponsiveNavLink href={route('library')} active={route().current('library')}>
+                                Library
                             </ResponsiveNavLink>
                         </div>
 

@@ -1,28 +1,36 @@
 <?php
-
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Notifications\DatabaseNotification as BaseNotification;
+use Carbon\Carbon;
 
-
-class Notification extends Model
+class Notification extends BaseNotification
 {
     use HasFactory;
 
+    protected $table = 'notifications'; 
+
+    public $timestamps = true;
+
     protected $fillable = [
-        'user_id',
-        'notif_content',
-        'notif_type',
-        'notif_is_seen'
+        'type',
+        'notifiable_type',
+        'notifiable_id',
+        'data',
+        'read_at',
     ];
 
-    public function user(): BelongsTo
+    
+    public function notifiable()
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->morphTo();
     }
 
+    public function getCreatedAtAttribute($value)
+    {
+        return Carbon::parse($value)->timezone('Asia/Manila')->format('n/j/Y g:i A');
+
+    }
 }

@@ -209,16 +209,11 @@ class ProfileController extends Controller
             ]);
 
             $user = Auth::user();
-
-           
-
             $student = Student::where('user_id', $user->id)->first();
             
-
             $subscriptionExist = InstitutionSubscription::where('uni_branch_id', $student->uni_branch_id)
                 ->where('insub_status', 'Active')
                 ->first();
-
 
             if ($subscriptionExist == null) {
                 return response()->json([
@@ -227,6 +222,7 @@ class ProfileController extends Controller
             } else {
                 $result = $this->checkInstitutionSubscription($subscriptionExist, $user);
 
+                 //Return true if user exist in the csv file
                 if ($result['status']  == true) {
 
                     $user->update([
@@ -237,10 +233,13 @@ class ProfileController extends Controller
                         'uni_branch_id' => $request->uni_branch_id
                     ]);
 
+                   
                     return response()->json([
-                        'message' => $result['message']
+                        'message' => $result['message'],
+                        'is_affiliated' => $user->is_affiliated
                     ]);
                 } 
+                 //Return false if user exist does not exist or there's no uploaded csv or university does not have an active subscription
                 else {
                     return response()->json([
                         'message' => $result['message']

@@ -12,7 +12,7 @@ export default function SubscriptionForm({user}) {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        //console.log(user);
+        console.log(isAffiliated);
         axios.get('/user-subscription')
         .then(response => {
             if(response.data.per_sub){
@@ -106,7 +106,7 @@ export default function SubscriptionForm({user}) {
                                         Affiliate a university
                                     </Button>
 
-                                    <AffiliateUniversity isOpen={isOpen} onOpenChange={onOpenChange} />
+                                    <AffiliateUniversity isOpen={isOpen} onOpenChange={onOpenChange} setIsAffiliated={setIsAffiliated}/>
                                 </div>
                             </>
                         ) : (

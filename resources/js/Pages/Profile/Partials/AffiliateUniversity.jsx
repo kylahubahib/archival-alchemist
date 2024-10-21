@@ -8,7 +8,7 @@ import TextInput from '@/Components/TextInput';
 import InputError from '@/Components/InputError';
 import { showToast } from '@/Components/Toast';
 
-export default function AffiliateUniversity({ isOpen, onOpenChange }) {
+export default function AffiliateUniversity({ isOpen, onOpenChange, setIsAffiliated }) {
     const [universities, setUniversities] = useState([]);
     const [message, setMessage] = useState('');
     const { data, setData, post, processing, errors, reset } = useForm({
@@ -34,6 +34,9 @@ export default function AffiliateUniversity({ isOpen, onOpenChange }) {
             .then((response) => {
                 setMessage(response.data.message);
                 ///console.log('Success:', response.data.message);
+                console.log(response.data.is_affiliated);
+                setIsAffiliated(response.data.is_affiliated);
+
 
 
             })

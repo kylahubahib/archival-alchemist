@@ -10,16 +10,18 @@ import Modal from '@/Components/Modal';
 import { Divider } from '@nextui-org/react';
 import html2pdf from 'html2pdf.js';
 import { showToast } from '@/Components/Toast';
+import { formatDate, formatPrice } from '@/utils';
 
 export default function InsAdminSubscriptionBilling({ auth, ins_sub, transactionHistory, agreement }) {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [modalContent, setModalContent] = useState(null);
     const [institutionalPlans, setInstitutionalPlans] = useState([]);
-    const [planFeatures, setPlanFeatures] = useState([]); 
+    const [planFeatures, setPlanFeatures] = useState([]);  formatPrice
     const [viewPlans, setViewPlans] = useState(null);
     const [transaction, setTransaction] = useState(null);
 
     const handleRenewal = async (id) => {
+
         const currentDate = new Date();
         const subscriptionEndDate = new Date(ins_sub.end_date); 
         console.log(currentDate, ' and ', subscriptionEndDate  );
@@ -50,7 +52,7 @@ export default function InsAdminSubscriptionBilling({ auth, ins_sub, transaction
     const openModal = (content) => {
         setModalContent(content);
         setIsModalOpen(true);
-    }
+    } 
 
     const closeModal = () => {
         setModalContent(null);
@@ -66,10 +68,10 @@ export default function InsAdminSubscriptionBilling({ auth, ins_sub, transaction
         setTransaction(data);
     }
 
-    useEffect(() =>{
-        console.log(transactionHistory[0]);
-        console.log(agreement);
-    })
+    // useEffect(() =>{
+    //     console.log(transactionHistory[0]);
+    //     console.log(agreement);
+    // })
 
     const viewPlanList = async () => {
         try {
@@ -95,15 +97,7 @@ export default function InsAdminSubscriptionBilling({ auth, ins_sub, transaction
             .save(`Receipt_${transaction.reference_number}.pdf`);
     };
 
-    const numberFormat = (number, decimals = 2) => {
-        return Number(number).toLocaleString(undefined, {
-            minimumFractionDigits: decimals,
-            maximumFractionDigits: decimals,
-        });
-    };
 
-
-    
     
     return (
         <AdminLayout
@@ -121,8 +115,7 @@ export default function InsAdminSubscriptionBilling({ auth, ins_sub, transaction
                         <div className="flex flex-row justify-between px-2">
                             <div className="flex flex-col">
                                 <div className="text-gray-700 text-xl font-bold">{ins_sub.plan.plan_name}</div>
-                                <div className="text-gray-600 text-base"><span className="font-bold">Date Started:</span> {ins_sub.start_date}</div>
-                                <div className="text-gray-600 text-base"><span className="font-bold">Next Payment:</span> {ins_sub.end_date}</div>
+                                <div className="text-gray-600 text-base mt-3"><span className="font-bold">Your next bill is on</span> {formatDate(ins_sub.end_date)}</div>
                             </div>
                             <div className="flex flex-col">
                                 <div className="text-gray-800 text-4xl font-bold">{ins_sub.plan.plan_price}</div>
@@ -251,13 +244,13 @@ export default function InsAdminSubscriptionBilling({ auth, ins_sub, transaction
                                 <tbody>
                                     <tr>
                                         <td className="border border-gray-300 p-2">{transaction.plan.plan_name}</td>
-                                        <td className="border border-gray-300 p-2">{numberFormat(transaction.trans_amount, 2)}</td>
+                                        <td className="border border-gray-300 p-2">{formatPrice(transaction.trans_amount)}</td>
                                         <td className="border border-gray-300 p-2">{transaction.trans_status.charAt(0).toUpperCase() + transaction.trans_status.slice(1)}</td>
                                     </tr>
                                 </tbody>
                             </table>
                             <p className="font-semibold"><strong>Discount:</strong> {transaction.plan.plan_discount}</p>
-                            <p className="font-semibold"><strong>Total Amount:</strong> {numberFormat(transaction.trans_amount, 2)}</p>
+                            <p className="font-semibold"><strong>Total Amount:</strong> {formatPrice(transaction.trans_amount)}</p>
                         </div>
                         <PrimaryButton onClick={downloadReceipt} className='ml-4'>Download Receipt</PrimaryButton>
                         <PrimaryButton onClick={returnToTransaction} className='ml-4'>Go Back</PrimaryButton>

@@ -3,15 +3,19 @@ import { MdSpaceDashboard, MdSubscriptions } from "react-icons/md";
 import { CgOrganisation } from "react-icons/cg";
 import { FaScroll, FaFileContract, FaFlag, FaUsers, FaWrench, FaUserSecret, FaUserTie, FaUserGraduate, FaGraduationCap, FaBook, FaFacebookMessenger, FaEnvelope, FaEnvelopeOpen } from "react-icons/fa";
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Dropdown from '@/Components/Dropdown';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
 import SearchBar from '@/Components/SearchBar';
 import Sidebar, { SidebarItem, SidebarSeparator, SidebarTitle } from '@/Components/Sidebar';
 import GiveFeedbackModal from "@/Components/GiveFeedbackModal";
 import ToastNotification from "@/Components/Toast";
+import { FiBell } from "react-icons/fi";
+import Echo from 'laravel-echo';
 
-export default function AdminLayout({ auth, user, header, children }) {
+import SuperAdminNotification from "@/Components/Notifications/SuperAdminNotification";
+
+export default function AdminLayout({ user, header, children }) {
     const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -24,7 +28,34 @@ export default function AdminLayout({ auth, user, header, children }) {
         setIsModalOpen(false);
     }
 
-    return (
+    useEffect(() => {
+
+        // window.Echo = new Echo({
+        //     broadcaster: 'pusher',
+        //     key: import.meta.env.VITE_PUSHER_APP_KEY,
+        //     cluster: import.meta.env.VITE_PUSHER_APP_CLUSTER,
+        //     forceTLS: true
+        // });
+
+        // const channel = window.Echo.channel('superadmin-notifications');
+        // channel.listen('.notification', (data) => {
+        //     //showToast(JSON.stringify(data.message));
+        //     alert(JSON.stringify(data.message));
+        // });
+
+        // // Listen to the channel
+        // const channel = window.Echo.channel('my-channel');
+        // channel.listen('.my-event', (data) => {
+        //     alert(JSON.stringify(data));
+        // });
+
+        // // Clean up the listener on component unmount
+        // return () => {
+        //     channel.stopListening('.my-event');
+        // };
+    }, []); 
+
+    return ( 
 
     <div className="min-h-screen bg-customlightBlue flex select-none">
 
@@ -77,8 +108,14 @@ export default function AdminLayout({ auth, user, header, children }) {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-end h-14">
 
-                        <div className="hidden sm:flex sm:items-center sm:ml-6">
-                            <div className="ml-3 relative">
+                        <div className="flex items-center">
+                            {/* <FiBell size={24} className="ml-3 text-gray-500" /> */}
+                            <SuperAdminNotification />
+                        </div>
+                        
+
+                        <div className="hidden sm:flex sm:items-center sm:ml-5">
+                            <div className=" relative">
                                 <Dropdown>
                                     <Dropdown.Trigger>
                                         <span className="inline-flex rounded-md">

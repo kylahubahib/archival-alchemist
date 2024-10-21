@@ -23,12 +23,13 @@ use App\Http\Controllers\CoursesController;
 use App\Http\Controllers\SectionsController;
 use App\Http\Controllers\PaymentSessionController;
 
+
 use App\Http\Controllers\InstitutionSubscriptionController;
 use App\Http\Controllers\PersonalSubscriptionController;
 use App\Http\Controllers\LandingPageController;
 use App\Http\Controllers\ReportReasonController;
-
-
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\NotificationController;
 
 use App\Http\Middleware\CheckUserTypeMiddleware;
 use App\Http\Controllers\ProfileController;
@@ -137,11 +138,11 @@ Route::post('/send-message', function (Request $request) {
     return response()->json(['status' => 'Message sent!']);
 });
 
+Route::get('get-notifications', [NotificationController::class, 'getNotifications']);
+
 
 //SUPERADMIN
 Route::middleware(['auth', 'verified', 'user-type:superadmin'])->group(function () {
-    Route::get('/dashboard', function () {
-        return Inertia::render('SuperAdmin/Dashboard/Dashboard');})->name('dashboard');
 
     Route::get('/users', function () {
         return Inertia::render('SuperAdmin/Users');})->name('users');
@@ -151,9 +152,6 @@ Route::middleware(['auth', 'verified', 'user-type:superadmin'])->group(function 
 
     Route::get('/subscription-billing', function () {
         return Inertia::render('SuperAdmin/SubscriptionBilling');})->name('subscription-billing');
-
-    Route::get('/user-reports', function () {
-        return Inertia::render('SuperAdmin/UserReports/UserReports');})->name('user-reports');
 
     ///ADVANCED ROUTES
     ///Decided to create routes for the buttons in advanced page to simplify or easily create the crud functionality
@@ -180,6 +178,17 @@ Route::middleware(['auth', 'verified', 'user-type:superadmin'])->group(function 
     Route::resource('manage-faqs', FAQController::class);
 
     Route::resource('manage-subscription-plans', SubscriptionPlanController::class);
+
+    //DASHBOARD ROUTES
+
+    Route::resource('dashboard', DashboardController::class)->names('dashboard');
+    Route::get('get-weekly-manuscript', [DashboardController::class, 'getWeeklyManuscript']);
+    Route::get('get-monthly-manuscript', [DashboardController::class, 'getMonthlyManuscript']);
+    Route::get('get-yearly-manuscript', [DashboardController::class, 'getYearlyManuscript']);
+    Route::get('get-monthly-revenue', [DashboardController::class, 'getMonthlyRevenue']);
+    Route::get('get-yearly-revenue', [DashboardController::class, 'getYearlyRevenue']);
+
+    //END OF DASHBOARD ROUTES
 
     Route::resource('user-feedbacks', UserFeedbacksController::class)->names('user-feedbacks')->except(['store']);
 

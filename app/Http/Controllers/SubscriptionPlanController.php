@@ -7,7 +7,7 @@ use App\Models\Feature;
 use App\Models\PlanFeature;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Validation\Rules;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 use Illuminate\Support\Facades\Auth;
@@ -95,8 +95,15 @@ class SubscriptionPlanController extends Controller
         Log::info('Create request data: ', $request->all());
 
         $request->validate([
-            'plan_name' => 'required|string|max:255|unique:subscription_plans',
-            'plan_price' => 'required|numeric|between:0,99999.99',
+            'plan_name' => [
+                            'required',
+                            'string',
+                            'max:255',
+                            Rule::unique('subscription_plans')->where(function ($query) use ($request) {
+                                return $query->where('plan_type', $request->plan_type);
+                            }),
+                        ],
+            'plan_price' => 'required|numeric|between:0,999999.99',
             'plan_term' => 'required|string|max:255',
             'plan_type' => 'required|string|max:255',
             'plan_user_num' => 'nullable|integer|min:0',

@@ -22,7 +22,8 @@ use App\Models\Faculty;
 use App\Models\InstitutionAdmin;
 use App\Models\InstitutionSubscription;
 
-use App\Notifications\InstitutionAdminRegistrationNotification;
+//use App\Notifications\InstitutionAdminRegistrationNotification;
+use App\Notifications\SuperadminNotification;
 
 
 
@@ -151,12 +152,16 @@ class RegisteredUserController extends Controller
                 {
                     $superadmins = User::where('user_type', 'superadmin')->get();
 
-                //Notify the superadmin for the newly registered institution admin
-                if ($superadmins->isNotEmpty()) {
-                    foreach ($superadmins as $superadmin) {
-                        $superadmin->notify(new InstitutionAdminRegistrationNotification($institutionAdmin));
+                    //Notify the superadmin for the newly registered institution admin
+                    if ($superadmins->isNotEmpty()) {
+                        foreach ($superadmins as $superadmin) {
+                            $superadmin->notify(new SuperadminNotification([
+                                'message' => 'A new institution admin has registered and sent proof for validation',
+                                'admin_id' => $institutionAdmin->id,
+                                'proof_url' => $institutionAdmin->ins_admin_proof,
+                            ]));
+                        }
                     }
-                }
                 }
 
                 

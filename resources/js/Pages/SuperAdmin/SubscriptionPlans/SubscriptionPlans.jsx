@@ -151,6 +151,9 @@ export default function SubscriptionPlans({ auth, subscriptionPlans = [], featur
                                                 Plans
                                             </th>
                                             <th scope="col" className="px-6 py-3">
+                                                Type
+                                            </th>
+                                            <th scope="col" className="px-6 py-3">
                                                 Term
                                             </th>
                                             <th scope="col" className="px-6 py-3">
@@ -173,6 +176,7 @@ export default function SubscriptionPlans({ auth, subscriptionPlans = [], featur
                                                             <div className="text-base font-semibol max-w-44 truncate">{sp.plan_name}</div>
                                                         </div>
                                                     </th>
+                                                    <td className="px-6 py-4 max-w-60 truncate">{sp.plan_type}</td>
                                                     <td className="px-6 py-4 max-w-60 truncate">{sp.plan_term}</td>
                                                     <td className="px-6 py-4">{sp.plan_price}</td>
                                                     <td className="px-6 py-4">

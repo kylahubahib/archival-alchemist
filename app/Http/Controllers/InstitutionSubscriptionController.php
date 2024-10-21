@@ -50,27 +50,58 @@ class InstitutionSubscriptionController extends Controller
         ]);
     }
 
+    // public function uploadCSV(Request $request) 
+    // {
+    //     $file = $request->file('file'); 
+    //     $insubId = $request->get('insubId');
+    //     $university = $request->get('university');
+
+    //     $fileName = $university . '_' . time() . '.' . $file->getClientOriginalExtension(); 
+    //     $file->move(public_path('storage/csv_files'), $fileName);
+
+    //     $ins_sub = InstitutionSubscription::find($insubId);
+
+    //     $ins_sub->update([
+    //         'insub_content' => 'storage/csv_files/' . $fileName,
+    //     ]);
+
+    //     return redirect(route('institution-subscription-billing.index'))->with('success', 'Successfully uploaded.');
+    // }
+
+
     public function uploadCSV(Request $request) 
     {
+        // Validate the incoming request
+        $request->validate([
+            'file' => 'required|file|mimes:csv,txt|max:2048', // Add your desired validation rules
+            'insubId' => 'required|exists:institution_subscriptions,id', // Ensure the insubId exists
+            'university' => 'required|string|max:255', // Ensure university is a valid string
+        ]);
+
         $file = $request->file('file'); 
         $insubId = $request->get('insubId');
         $university = $request->get('university');
 
-        if (!$file) {
-            return response()->json(['success' => false, 'message' => 'No file uploaded'], 400);
-        }
-
+        // Generate a unique filename
         $fileName = $university . '_' . time() . '.' . $file->getClientOriginalExtension(); 
         $file->move(public_path('storage/csv_files'), $fileName);
 
         $ins_sub = InstitutionSubscription::find($insubId);
 
+        // Update the subscription record with the new file path
         $ins_sub->update([
             'insub_content' => 'storage/csv_files/' . $fileName,
         ]);
 
-        return response()->json(['success' => true, 'message' => 'File uploaded successfully']);
+        // Return a JSON response suitable for Inertia
+        return response()->json([
+            'success' => true,
+            'redirect_url' => route('institution-subscription-billing.index'), // Redirect URL for the frontend
+            'message' => 'Successfully uploaded.',
+            'file' => $ins_sub->insub_content
+        ]);
     }
+
 
     public function readCSV(Request $request)
     {

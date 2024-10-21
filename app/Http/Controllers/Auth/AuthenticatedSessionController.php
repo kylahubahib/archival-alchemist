@@ -59,10 +59,8 @@ class AuthenticatedSessionController extends Controller
                 $checkInSub = InstitutionSubscription::where('uni_branch_id', $user->faculty->uni_branch_id)->first();
             }
 
-            if($user->is_affiliated)
-            {
-                $this->checkInstitutionSubscription($checkInSub, $user);
-            }
+            
+            $this->checkInstitutionSubscription($checkInSub, $user);
            
 
         }
@@ -79,7 +77,7 @@ class AuthenticatedSessionController extends Controller
                 return redirect()->route('institution-students');
                 break;
             case 'superadmin':
-                return redirect()->route('dashboard');
+                return redirect()->route('dashboard.index');
                 break;
             default:
                 return redirect('/');

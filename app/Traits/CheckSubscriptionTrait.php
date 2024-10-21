@@ -48,7 +48,8 @@ trait CheckSubscriptionTrait
                             } else {
                                 if ($user->is_premium) {
                                     $user->update([
-                                        'is_premium' => false
+                                        'is_premium' => false, 
+                                        'is_affiliated' => true
                                     ]);
                                 }
 
