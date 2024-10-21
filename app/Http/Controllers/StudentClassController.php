@@ -151,7 +151,7 @@ class StudentClassController extends Controller
             {
                 $class = ClassModel::where('class_code', $classCode)->first();
                 $faculty = $class->ins_id;
-                
+
                 RevisionHistory::create([
                     'ins_comment' => null,
                     'man_doc_id' => $manuscriptProject->id,
@@ -500,7 +500,7 @@ public function myfavoriteManuscripts()
 
 
 
-    
+
     public function checkStudentInClass()
     {
         // Load user with manuscripts that are not approved, including tags and revision history
@@ -527,7 +527,7 @@ public function myfavoriteManuscripts()
             return response()->json();
         }
 
-       
+
     }
 
 
