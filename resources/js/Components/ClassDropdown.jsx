@@ -26,11 +26,11 @@ export const PendingIcon = (props) => (
     </svg>
 );
 
-export const CopyIcon = (props) => (
-    <svg aria-hidden="true" fill="none" focusable="false" height="1em" role="presentation" viewBox="0 0 24 24" width="1em" className="text-gray-500" {...props}>
-        <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm2 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h10v14z" fill="currentColor" />
-    </svg>
-);
+// export const CopyIcon = (props) => (
+//     <svg aria-hidden="true" fill="none" focusable="false" height="1em" role="presentation" viewBox="0 0 24 24" width="1em" className="text-gray-500" {...props}>
+//         <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm2 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h10v14z" fill="currentColor" />
+//     </svg>
+// );
 
 // Download Icon (Neutral)
 export const DownloadIcon = (props) => (
@@ -118,14 +118,14 @@ const ClassDropdown = ({ ins_id, onUpdate }) => {
                     >
                         Pending
                     </DropdownItem>
-                    <DropdownItem
+                    {/* <DropdownItem
                         key="copy"
                         showDivider
                         description="Copy & share code"
                         startContent={<CopyIcon className={iconClasses} />}
                     >
                         Copy & share code
-                    </DropdownItem>
+                    </DropdownItem> */}
                     <DropdownItem
                         key="download"
                         className="text-danger"

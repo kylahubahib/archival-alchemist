@@ -141,5 +141,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(RevisionHistory::class, 'ins_id');
     }
+    public function classes()
+    {
+        return $this->belongsToMany(ClassModel::class, 'class_student', 'stud_id', 'class_id');
+    }
 
 }

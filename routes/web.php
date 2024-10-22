@@ -356,5 +356,6 @@ Route::get('/manuscripts/class', [TeacherClassController::class, 'getManuscripts
 // Route for updating manuscript status
 Route::put('/manuscripts/{id}/update-status', [TeacherClassController::class, 'updateManuscriptStatus']);
 Route::get('/get-manuscripts', [TeacherClassController::class, 'getManuscriptsByClass']);
-
+Route::get('/students/search', [TeacherClassController::class, 'searchStudents']);
+Route::post('/classes/add-students', [TeacherClassController::class, 'addStudentsToClass']);
 require __DIR__.'/auth.php';

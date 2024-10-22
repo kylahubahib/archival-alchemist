@@ -15,12 +15,18 @@ class ClassModel extends Model
     // The attributes that are mass assignable.
 
     protected $fillable = ['class_code', 'class_name', 'ins_id', 'stud_id'];
-
+    // Ensure this is not set to false
+    public $timestamps = true;
 
 
     public function manuscripts()
 {
     return $this->hasMany(ManuscriptProject::class, 'class_code');
+}
+
+public function students()
+{
+    return $this->belongsToMany(User::class, 'class_student', 'class_id', 'stud_id');
 }
 
 }

@@ -8,9 +8,13 @@ use App\Models\Course;
 use App\Models\Section;
 use App\Models\ClassModel;
 use App\Models\ManuscriptProject;
+use App\Models\User;
+use App\Models\ClassStudent;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB; // Add this line
+use Illuminate\Support\Facades\Log;
 
 class TeacherClassController extends Controller
 {
@@ -265,5 +269,165 @@ public function getManuscriptsByClass(Request $request)
 
 
     // Class dropdown controller
+    // Fetch students based on search query
+    public function searchStudents(Request $request)
+    {
+        $name = $request->query('name');
+        $students = User::where('name', 'LIKE', "%{$name}%")->get(['id', 'name']); // Get id and name
+
+        return response()->json($students);
+    }
+
+
+    // public function addStudentsToClass(Request $request)
+    // {
+    //     $validatedData = $request->validate([
+    //         'class_name' => 'required|string',
+    //         'ins_id' => 'required|integer',
+    //         'students' => 'required|array',
+    //         'students.*' => 'integer',
+    //     ]);
+
+    //     $className = $request->input('class_name');
+    //     $instructorId = $request->input('ins_id');
+    //     $studentIds = $request->input('students');
+
+    //     DB::beginTransaction();
+    //     try {
+    //         // Find the class by instructor ID and class name
+    //         $class = ClassModel::where('ins_id', $instructorId)
+    //                           ->where('class_name', $className)
+    //                           ->first();
+
+    //         // Check if the class exists
+    //         if ($class) {
+    //             // Get existing student IDs from the class
+    //             $existingStudentIds = explode(',', $class->stud_id);
+
+    //             // Initialize a count for newly added students
+    //             $newlyAddedCount = 0;
+
+    //             foreach ($studentIds as $studentId) {
+    //                 // Check if the student is not already in the class
+    //                 if (!in_array($studentId, $existingStudentIds)) {
+    //                     $existingStudentIds[] = $studentId;
+    //                     $newlyAddedCount++;
+    //                 }
+    //             }
+
+    //             // Update the stud_id field with the new list of student IDs
+    //             $class->stud_id = implode(',', $existingStudentIds);
+    //             $class->save();
+
+    //             DB::commit();
+
+    //             return response()->json([
+    //                 'success' => true,
+    //                 'message' => "$newlyAddedCount student(s) added successfully."
+    //             ]);
+    //         } else {
+    //             \Log::error('Class not found for instructor ID: ' . $instructorId . ' and class name: ' . $className);
+    //             return response()->json(['message' => 'Class not found.'], 404);
+    //         }
+    //     } catch (\Exception $e) {
+    //         DB::rollBack();
+    //         \Log::error('Error adding students: ' . $e->getMessage());
+    //         return response()->json(['message' => 'An error occurred while adding students.'], 500);
+    //     }
+    // }
+
+
+    public function addStudentsToClass(Request $request)
+    {
+        // Validate the incoming request data
+        $validatedData = $request->validate([
+            'class_name' => 'required|string',
+            'class_code' => 'required|string',
+            'ins_id' => 'required|integer',
+            'students' => 'required|array',
+            'students.*' => 'string', // Expecting student names as strings
+        ]);
+
+        $className = $request->input('class_name');
+        $classCode = $request->input('class_code');
+        $instructorId = $request->input('ins_id');
+        $studentNames = $request->input('students'); // Array of student names
+
+        DB::beginTransaction();
+        try {
+            // Find the class by instructor ID and class name
+            $class = ClassModel::where('ins_id', $instructorId)
+                                ->where('class_name', $className)
+                                ->first();
+
+            if ($class) {
+                Log::info('Adding students to class', [
+                    'instructor_id' => $instructorId,
+                    'class_name' => $className,
+                    'class_code' => $classCode,
+                    'students' => $studentNames,
+                ]);
+
+                // Convert student names to their corresponding user IDs
+                $newStudentIds = $this->getUserIdsByNames($studentNames);
+
+                if (!$newStudentIds) {
+                    return response()->json(['message' => 'One or more students not found.'], 404);
+                }
+
+                // Insert into the class_students table using the ClassStudent model
+                foreach ($newStudentIds as $studentId) {
+                    // Check if the student is already in the class using Eloquent
+                    $exists = ClassStudent::where('class_id', $class->id)
+                                          ->where('stud_id', $studentId)
+                                          ->exists();
+
+                    if (!$exists) {
+                        ClassStudent::create([
+                            'class_id' => $class->id,
+                            'stud_id' => $studentId,
+                        ]);
+                    } else {
+                        Log::warning("Student already exists in class", [
+                            'class_id' => $class->id,
+                            'stud_id' => $studentId,
+                        ]);
+                    }
+                }
+
+                DB::commit();
+
+                return response()->json([
+                    'success' => true,
+                    'message' => count($newStudentIds) . " student(s) added successfully."
+                ]);
+            } else {
+                return response()->json(['message' => 'Class not found.'], 404);
+            }
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error adding students: ', ['exception' => $e]);
+            return response()->json(['message' => 'An error occurred while adding students.'], 500);
+        }
+    }
+
+    /**
+     * Convert an array of student names to their corresponding user IDs
+     */
+    private function getUserIdsByNames(array $studentNames)
+    {
+        $userIds = [];
+        foreach ($studentNames as $name) {
+            $user = User::where('name', $name)->first();
+            if ($user) {
+                $userIds[] = $user->id;
+            } else {
+                Log::error("User not found: " . $name);
+                return null; // Return null if any user is not found
+            }
+        }
+        Log::info('User IDs: ' . implode(',', $userIds)); // Logging the user IDs
+        return $userIds;
+    }
 
 }

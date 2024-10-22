@@ -11,6 +11,7 @@ use App\Models\ManuscriptTag;
 use App\Models\Favorite;
 use App\Models\Tags;
 use App\Models\User;
+use App\Models\ClassStudent;
 use App\Models\RevisionHistory;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
@@ -175,24 +176,29 @@ class StudentClassController extends Controller
 
     public function checkClassCode(Request $request)
     {
+        // Validate the incoming request to ensure 'class_code' is provided and is a string
         $request->validate([
             'class_code' => 'required|string',
         ]);
 
+        // Attempt to find a class in the database where the class_code matches the provided value
         $class = ClassModel::where('class_code', $request->class_code)->first();
 
+        // If a class is found, return a JSON response indicating that it exists
         if ($class) {
             return response()->json([
-                'exists' => true,
-                'classDetails' => [
-                    'class_name' => $class->class_name,
-                    'ins_id' => $class->ins_id,
+                'exists' => true, // Indicate that the class code exists
+                'classDetails' => [ // Provide additional details about the class
+                    'class_name' => $class->class_name, // The name of the class
+                    'ins_id' => $class->ins_id, // The instructor ID associated with the class
                 ],
             ]);
         } else {
+            // If no class is found, return a JSON response indicating that it does not exist
             return response()->json(['exists' => false]);
         }
     }
+
 
     public function storeStudentClass(Request $request)
     {
@@ -203,14 +209,18 @@ class StudentClassController extends Controller
         ]);
 
         $userId = Auth::id();
-        //$user
-
-        //\Log::info('in the student class');
 
         try {
+            // Check if the class exists
+            $class = ClassModel::where('class_code', $request->class_code)->first();
+
+            if (!$class) {
+                return response()->json(['success' => false, 'message' => 'Class code not found']);
+            }
+
             // Check if the user is already enrolled in the class
-            $existingEnrollment = ClassModel::where([
-                ['class_code', $request->class_code],
+            $existingEnrollment = ClassStudent::where([
+                ['class_id', $class->id],
                 ['stud_id', $userId],
             ])->first();
 
@@ -218,22 +228,13 @@ class StudentClassController extends Controller
                 // User is already enrolled
                 return response()->json(['success' => true, 'message' => 'Already enrolled']);
             } else {
-                // Check if the class exists
-                $class = ClassModel::where('class_code', $request->class_code)->first();
+                // Insert the new enrollment
+                ClassStudent::create([
+                    'class_id' => $class->id, // Use the class ID from ClassModel
+                    'stud_id' => $userId, // Store the user ID
+                ]);
 
-                if ($class) {
-                    // Insert the new enrollment
-                    ClassModel::create([
-                        'class_code' => $request->class_code,
-                        'class_name' => $request->class_name,
-                        'ins_id' => $request->ins_id,
-                        'stud_id' => $userId, // Store the user ID
-                    ]);
-
-                    return response()->json(['success' => true, 'message' => 'Joined class successfully']);
-                } else {
-                    return response()->json(['success' => false, 'message' => 'Class code not found']);
-                }
+                return response()->json(['success' => true, 'message' => 'Joined class successfully']);
             }
         } catch (\Exception $e) {
             // Log the error and return a response
@@ -241,6 +242,7 @@ class StudentClassController extends Controller
             return response()->json(['success' => false, 'message' => 'An error occurred while joining the class.'], 500);
         }
     }
+
 
 
 
@@ -501,41 +503,109 @@ public function myfavoriteManuscripts()
 
 
 
-    public function checkStudentInClass()
-    {
-        // Load user with manuscripts that are not approved, including tags and revision history
-        $user = Auth::user()->load([
-            'manuscripts' => function ($query) {
-                $query->where('man_doc_status', 'X');
-            },
-            'manuscripts.tags',
-            'manuscripts.revision_history.faculty',
-            'manuscripts.authors'
+//     public function checkStudentInClass()
+//     {
+//         // Load user with manuscripts that are not approved, including tags and revision history
+//         $user = Auth::user()->load([
+//             'manuscripts' => function ($query) {
+//                 $query->where('man_doc_status', 'X');
+//             },
+//             'manuscripts.tags',
+//             'manuscripts.revision_history.faculty',
+//             'manuscripts.authors'
+//         ]);
+
+//         \Log::info($user->toArray());
+
+//         $studentClass = ClassS::where('stud_id', $user->id)->first();
+
+//         if($studentClass) {
+//             return response()->json([
+//                 'class' => $studentClass->class_code,
+//                 'manuscript' => $user->manuscripts
+//             ]);
+//         }
+//         else {
+//             return response()->json();
+//         }
+//     }
+// }
+
+
+public function checkStudentInClass()
+{
+    // Get the authenticated user
+    $user = Auth::user();
+
+    // Check if the user is enrolled in any class
+    $studentClass = ClassStudent::where('stud_id', $user->id)->first();
+
+    if ($studentClass) {
+        return response()->json([
+            'class' => $studentClass->class_id, // Return the class code if enrolled
         ]);
-
-        \Log::info($user->toArray());
-
-        $studentClass = ClassModel::where('stud_id', $user->id)->first();
-
-        if($studentClass) {
-            return response()->json([
-                'class' => $studentClass->class_code,
-                'manuscript' => $user->manuscripts
-            ]);
-        }
-        else {
-            return response()->json();
-        }
-
-
+    } else {
+        return response()->json(); // Return an empty response if not enrolled
     }
-
-
-
+}
 }
 
 
 
 
 
+// public function storeManuscriptProject(Request $request)
+// {
+//     Log::info('Request Data:', $request->all());
+//     try {
+//         $validatedData = $request->validate([
+//             'man_doc_author' => 'nullable|array',
+//             'man_doc_author.*' => '.string|max:255',
+
+//         ]);
+
+//         // Handle users and store them in the Author table
+//         $userIds = []; // Array to hold the IDs of the users to be associated with the manuscript
+
+//         if (!empty($users) && is_array($users)) { // Ensure $users is an array and not empty
+//             foreach ($users as $userName) {
+//                 // Convert name to lowercase for consistency and trim any whitespace
+//                 $userName = strtolower(trim($userName));
+
+//                 // Find the users by its name
+//                 $user = User::where('name', $userName)->first();
+
+//                 // If the users does not exist, create a new record and get its ID
+//                 if (!$user) {
+//                     return response()->json(['message' => 'User does not exist.', 'errors'], 422);
+//                 } else {
+//                     // $author = User::create(['name' => $userName]);
+//                     Log::info("Author '$userName' found with ID: " . $user->id);
+//                     // Store the Users ID for the Authors table
+//                     $userIds[] = $user->id;
+//                 }
+//             }
+//         } else {
+//             Log::info('No users provided or users is not an array.');
+//         }
+
+//         // Insert the users into the author table
+//         foreach ($userIds as $userId) {
+//             Author::create([
+//                 'man_doc_id' => $manuscriptProject->id, // The manuscript ID from the saved manuscript
+//                 'user_id' => $userId, // The tag ID from the tags table
+//             ]);
+//             Log::info("Inserted into Authors Table:", [
+//                 'man_doc_id' => $manuscriptProject->id,
+//                 'user_id' => $userId,
+//             ]);
+//         }
+
+//         return response()->json(['message' => 'Manuscript project uploaded successfully.'], 200);
+
+//     } catch (\Exception $e) {
+//         Log::error('Error uploading manuscript project:', ['error' => $e->getMessage()]);
+//         return response()->json(['message' => 'Error uploading manuscript project.', 'errors' => $e->getMessage()], 422);
+//     }
+// }
 

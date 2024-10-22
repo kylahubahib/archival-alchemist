@@ -25,18 +25,72 @@ export default function TeacherClass({ auth }) {
     const [users, setAuthors] = useState([]);
     const [errors, setErrors] = useState({});
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [errorMessage, setErrorMessage] = useState(''); // Add state for error message
+    const [classCode, setClassCode] = useState('');
+    const [loading, setLoading] = useState(true);
+    const [selectedClassName, setSelectedClassName] = useState('');
+const [selectedClassCode, setSelectedClassCode] = useState('');
 
-    const openModal = () => {
+
+useEffect(() => {
+    // Fetch students from the database to display suggestions when typing
+    if (authorInputValue.length > 2) {
+        axios.get(`/students/search?name=${authorInputValue}`)
+            .then((response) => {
+                setAuthorSuggestions(response.data);
+            })
+            .catch((error) => {
+                console.error("Error fetching students:", error);
+            });
+    }
+}, [authorInputValue]);
+
+const handleAddStudent = async () => {
+    setIsLoading(true);
+    setErrorMessage(''); // Clear any previous error message
+
+    try {
+        const response = await axios.post('/classes/add-students', {
+            class_name: selectedClassName,
+            class_code: selectedClassCode,
+            ins_id: 32, // Pass the appropriate ins_id
+            students: users, // Assuming users is an array of student names
+        });
+
+        // Handle success response (e.g., close modal, refresh data)
+        closeModal();
+        setAuthors([]); // Clear authors after adding
+        setAuthorInputValue(''); // Clear input after adding
+
+        // You can also refresh the classes or show a success message
+    } catch (error) {
+        // Handle error (e.g., show error message)
+        console.error('Error adding students:', error);
+
+        // Check if error response exists and set the error message accordingly
+        if (error.response && error.response.data.message) {
+            setErrorMessage(error.response.data.message); // Set error message from the API
+        } else {
+            setErrorMessage('Failed to add students. Please try again.'); // Fallback error message
+        }
+    } finally {
+        setIsLoading(false);
+    }
+};
+
+
+    const openModal = (className, classCode) => {
+        setSelectedClassName(className);
+        setSelectedClassCode(classCode);
         setIsModalOpen(true);
     };
 
     const closeModal = () => {
         setIsModalOpen(false);
+        setAuthors([]); // Clear authors when closing modal
+        setAuthorInputValue(''); // Clear input when closing modal
     };
-
     // Other functions (handleAuthorKeyDown, fetchAuthorSuggestions, etc.) remain unchanged
-
-
 
     const handleAuthorKeyDown = (e) => {
         if (e.key === 'Enter' && e.target.value.trim() !== '') {
@@ -61,14 +115,26 @@ export default function TeacherClass({ auth }) {
         }
     };
 
+    // const fetchAuthorSuggestions = async (query) => {
+    //     try {
+    //         const response = await axios.get('/api/authors/suggestions', {
+    //             params: { query, users },
+    //         });
+    //         setAuthorSuggestions(response.data);
+    //     } catch (error) {
+    //         console.error('Error fetching Author suggestions:', error.response?.data || error.message);
+    //         setAuthorSuggestions([]);
+    //     }
+    // };
+
     const fetchAuthorSuggestions = async (query) => {
         try {
-            const response = await axios.get('/api/authors/suggestions', {
-                params: { query, users },
+            const response = await axios.get('/students/search', {
+                params: { name: query },
             });
-            setAuthorSuggestions(response.data);
+            setAuthorSuggestions(response.data); // response.data should be an array of { id, name }
         } catch (error) {
-            console.error('Error fetching Author suggestions:', error.response?.data || error.message);
+            console.error('Error fetching Author suggestions:', error);
             setAuthorSuggestions([]);
         }
     };
@@ -78,9 +144,6 @@ export default function TeacherClass({ auth }) {
         setAuthorInputValue('');
         setAuthorSuggestions([]);
     };
-
-
-
 
 
     const fetchUpdatedManuscripts = async () => {
@@ -144,63 +207,19 @@ export default function TeacherClass({ auth }) {
         }
     };
 
-
-    const handleAddStudent = () => {
-        setIsLoading(true);
-        // Reset error message
-        setErrorMessage('');
-
-        console.log('Checking user premium status...'); // Added log
-
-        // Check if the current user is premium
-        axios.post('/check-user-premium-status')
-            .then(response => {
-                const { is_premium } = response.data;
-
-                console.log('is_premium status:', is_premium); // Log the is_premium value
-
-                if (is_premium) {
-                    console.log('User is premium, checking class code...'); // Added log
-                    // Proceed to check the class code
-                    axios.post('/check-class-code', { class_code: classCode })
-                        .then(response => {
-                            if (response.data.exists) {
-                                const { class_name, ins_id } = response.data.classDetails;
-
-                                console.log('Class details found:', { class_name, ins_id }); // Added log
-
-                                // Perform insertion with class details
-                                axios.post('/store-student-class', { class_code: classCode, class_name, ins_id })
-                                    .then(() => {
-                                        setJoinedClass(true);
-                                        setActiveTab('track');  // Set active tab to 'upload'
-                                        console.log('Student added successfully'); // Added log
-                                        closeModal();
-                                    })
-                                    .catch(error => {
-                                        console.error('Error adding student:', error); // Log the error
-                                        setErrorMessage('An error occurred while adding the student');
-                                    });
-                            } else {
-                                setErrorMessage('Class code not found. Please try again.');
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error checking class code:', error); // Log the error
-                            setErrorMessage('An error occurred while checking the class code.');
-                        });
-                } else {
-                    setErrorMessage('Student must need to be a premium user.');
-                }
-            })
-            .catch(error => {
-                console.error('Error checking user premium status:', error); // Log the error
-                setErrorMessage('An error occurred while checking students premium status.');
-            })
-            .finally(() => {
-                setIsLoading(false); // Ensure loading state is reset
-            });
-    };
+    useEffect(() => {
+        axios.get('http://127.0.0.1:8000/check-student-in-class') // Make sure the URL is correct
+        .then(response => {
+            if (response.data.class) {
+                setClassCode(response.data.class);
+            }
+            setLoading(false);
+        })
+        .catch(error => {
+            console.error('Error fetching student class info:', error);
+            setLoading(false); // Ensure loading is stopped even on error
+        });
+    }, []);
 
 
 
@@ -463,14 +482,14 @@ export default function TeacherClass({ auth }) {
                                                                 {getStatusButton(classItem.man_doc_status || "norecords")}
                                                             </TableCell>
                                                             <TableCell className="text-center">
-                                                                <Dropdown>
+                                                                <Dropdown >
                                                                     <DropdownTrigger>
                                                                         <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-300 text-white">
                                                                             <FontAwesomeIcon icon={faEllipsisV} />
                                                                         </div>
                                                                     </DropdownTrigger>
-                                                                    <DropdownMenu aria-label="Actions">
-                                                                        <DropdownItem key="add" onClick={openModal}>Add Student</DropdownItem>
+                                                                    <DropdownMenu aria-label="Actions" >
+                                                                        <DropdownItem key="add" onClick={() => openModal(classItem.class_name, classItem.class_code)}>Add Student</DropdownItem>
                                                                         <DropdownItem key="approve" onClick={() => handleStatusChange(classItem.id, 'Y')}>Approve</DropdownItem>
                                                                         <DropdownItem key="decline" onClick={() => handleStatusChange(classItem.id, 'X')}>Decline</DropdownItem>
                                                                         <DropdownItem key="edit">Edit</DropdownItem>
@@ -498,6 +517,8 @@ export default function TeacherClass({ auth }) {
                                                                 onKeyDown={handleAuthorKeyDown}
                                                             />
                                                             {errors.users && <div className="text-red-600 text-sm mb-2">{errors.users}</div>}
+                            {errorMessage && <div className="text-red-600 text-sm mb-2">{errorMessage}</div>} {/* Error message display */}
+
                                                             {authorSuggestions.length > 0 && (
                                                                 <ul className="absolute bg-white border border-gray-300 mt-1 max-h-60 overflow-auto z-10 w-full">
                                                                     {authorSuggestions.map((suggestion, index) => (
@@ -529,7 +550,7 @@ export default function TeacherClass({ auth }) {
                                                         </div>
                                                     </ModalBody>
                                                     <ModalFooter>
-                                                        <Button color="primary" auto onClick={handleCreate} disabled={isLoading}>
+                                                        <Button color="primary" auto onClick={handleAddStudent} disabled={isLoading}>
                                                             {isLoading ? 'Adding...' : 'Add'}
                                                         </Button>
                                                         <Button auto onClick={closeModal}>Close</Button>

@@ -551,6 +551,8 @@ php artisan cache:clear
 npm run build
 php artisan storage:link
 php artisan route:list
+php artisan session:clear
+
 
 
 PS C:\xampp\htdocs\archival-alchemist-main> composer require maatwebsite/excel:^3.1.35 --with-all-dependencies
