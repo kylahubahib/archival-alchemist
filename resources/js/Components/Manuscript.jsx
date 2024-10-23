@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FaEye, FaComment, FaBookmark, FaFileDownload, FaFilter, FaStar } from 'react-icons/fa';
+import { FaEye, FaComment, FaBookmark, FaFileDownload, FaFilter, FaStar, FaQuoteLeft } from 'react-icons/fa';
 import RatingComponent from '@/Components/Ratings'
 import Modal from '@/Components/Modal'
 import axios from 'axios';
@@ -389,6 +389,14 @@ const handleClick = (value) => {
                                     onClick={() => handleRatings(manuscript)}
                                 >
                                     <FaStar size={20} />
+                                </button>
+                            </Tooltip>
+                            <Tooltip content="Cite">
+                                <button
+                                    className="text-gray-600 hover:text-blue-500"
+                                    //onClick={() => handleRatings(manuscript)}
+                                >
+                                    <FaQuoteLeft size={20} />
                                 </button>
                             </Tooltip>
 {/* Rendering the modal */}
