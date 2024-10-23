@@ -6,6 +6,7 @@ use App\Models\Author;
 use Illuminate\Support\Facades\File;
 use Illuminate\Http\JsonResponse;
 use App\Models\ClassModel;
+use App\Models\Rating;
 use App\Models\ManuscriptProject;
 use App\Models\ManuscriptTag;
 use App\Models\Favorite;
@@ -472,7 +473,7 @@ public function myfavoriteManuscripts()
          $filename = $manuscript->man_doc_content; // Get the filename from the database
 
          // Log the filename for debugging
-         \Log::info('Filename for download: ' . $filename);
+         Log::info('Filename for download: ' . $filename);
 
          // Ensure the filename has the correct extension
          $filePath = storage_path('app/public/' . str_replace('storage/', '', $filename));
@@ -502,36 +503,6 @@ public function myfavoriteManuscripts()
 
 
 
-
-//     public function checkStudentInClass()
-//     {
-//         // Load user with manuscripts that are not approved, including tags and revision history
-//         $user = Auth::user()->load([
-//             'manuscripts' => function ($query) {
-//                 $query->where('man_doc_status', 'X');
-//             },
-//             'manuscripts.tags',
-//             'manuscripts.revision_history.faculty',
-//             'manuscripts.authors'
-//         ]);
-
-//         \Log::info($user->toArray());
-
-//         $studentClass = ClassS::where('stud_id', $user->id)->first();
-
-//         if($studentClass) {
-//             return response()->json([
-//                 'class' => $studentClass->class_code,
-//                 'manuscript' => $user->manuscripts
-//             ]);
-//         }
-//         else {
-//             return response()->json();
-//         }
-//     }
-// }
-
-
 public function checkStudentInClass()
 {
     // Get the authenticated user
@@ -548,64 +519,61 @@ public function checkStudentInClass()
         return response()->json(); // Return an empty response if not enrolled
     }
 }
+
+
+
+public function storeRatings(Request $request)
+{
+    Log::info('Incoming request: ', $request->all());
+
+    try {
+        // Log request data before validation
+        Log::info('Request data: ', $request->all());
+
+        // Validate the request
+        $request->validate([
+            'manuscript_id' => 'required|exists:manuscripts,id',
+            'rating' => 'required|integer|between:1,5',
+        ]);
+
+        // Log user ID for debugging
+        $userId = Auth::id();
+        Log::info('User ID: ' . $userId);
+
+        // Check if the user has already rated this manuscript
+        $existingRating = Rating::where([
+            'user_id' => $userId,
+            'manuscript_id' => $request->manuscript_id,
+        ])->first();
+
+        if ($existingRating) {
+            return response()->json(['message' => 'You have already rated this manuscript.'], 409);
+        }
+
+        // Log data to be used in the updateOrCreate
+        Log::info('Creating rating with data:', [
+            'user_id' => $userId,
+            'manuscript_id' => $request->manuscript_id,
+            'rating' => $request->rating,
+        ]);
+
+        // Create the new rating
+        $rating = Rating::create([
+            'user_id' => $userId,
+            'manuscript_id' => $request->manuscript_id,
+            'rating' => $request->rating,
+        ]);
+
+        return response()->json(['message' => 'Rating submitted successfully!', 'rating' => $rating], 201);
+    } catch (\Exception $e) {
+        Log::error('Error submitting rating', [
+            'exception' => $e->getMessage(),
+            'stack' => $e->getTraceAsString(),
+            'request' => $request->all(),
+        ]);
+        return response()->json(['error' => 'Failed to submit rating.'], 500);
+    }
 }
 
 
-
-
-
-// public function storeManuscriptProject(Request $request)
-// {
-//     Log::info('Request Data:', $request->all());
-//     try {
-//         $validatedData = $request->validate([
-//             'man_doc_author' => 'nullable|array',
-//             'man_doc_author.*' => '.string|max:255',
-
-//         ]);
-
-//         // Handle users and store them in the Author table
-//         $userIds = []; // Array to hold the IDs of the users to be associated with the manuscript
-
-//         if (!empty($users) && is_array($users)) { // Ensure $users is an array and not empty
-//             foreach ($users as $userName) {
-//                 // Convert name to lowercase for consistency and trim any whitespace
-//                 $userName = strtolower(trim($userName));
-
-//                 // Find the users by its name
-//                 $user = User::where('name', $userName)->first();
-
-//                 // If the users does not exist, create a new record and get its ID
-//                 if (!$user) {
-//                     return response()->json(['message' => 'User does not exist.', 'errors'], 422);
-//                 } else {
-//                     // $author = User::create(['name' => $userName]);
-//                     Log::info("Author '$userName' found with ID: " . $user->id);
-//                     // Store the Users ID for the Authors table
-//                     $userIds[] = $user->id;
-//                 }
-//             }
-//         } else {
-//             Log::info('No users provided or users is not an array.');
-//         }
-
-//         // Insert the users into the author table
-//         foreach ($userIds as $userId) {
-//             Author::create([
-//                 'man_doc_id' => $manuscriptProject->id, // The manuscript ID from the saved manuscript
-//                 'user_id' => $userId, // The tag ID from the tags table
-//             ]);
-//             Log::info("Inserted into Authors Table:", [
-//                 'man_doc_id' => $manuscriptProject->id,
-//                 'user_id' => $userId,
-//             ]);
-//         }
-
-//         return response()->json(['message' => 'Manuscript project uploaded successfully.'], 200);
-
-//     } catch (\Exception $e) {
-//         Log::error('Error uploading manuscript project:', ['error' => $e->getMessage()]);
-//         return response()->json(['message' => 'Error uploading manuscript project.', 'errors' => $e->getMessage()], 422);
-//     }
-// }
-
+}

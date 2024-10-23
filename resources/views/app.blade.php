@@ -3,6 +3,10 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
+        <head>
+            <!-- Other head elements -->
+            <meta name="csrf-token" content="{{ csrf_token() }}">
+        </head>
 
         <title inertia>{{ config('app.name', 'Archival Alchemist') }}</title>
 
@@ -23,6 +27,6 @@
 
         <!-- <div id="placeholder"></div>
         <script type="text/javascript" src="http://your-server-ip/web-apps/apps/api/documents/api.js"></script> -->
-    
+
     </body>
 </html>

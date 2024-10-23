@@ -1,10 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { FaEye, FaComment, FaBookmark, FaFileDownload, FaFilter  } from 'react-icons/fa';
+import { FaEye, FaComment, FaBookmark, FaFileDownload, FaFilter, FaStar } from 'react-icons/fa';
+import RatingComponent from '@/Components/Ratings'
+import Modal from '@/Components/Modal'
 import axios from 'axios';
 import SearchBar from '@/Components/SearchBars/LibrarySearchBar'; // Import the LibrarySearchBar component
 import { Tooltip, Button } from '@nextui-org/react';
-// import {Button} from "@nextui-org/react";
 import {Dropdown, DropdownTrigger, DropdownMenu, DropdownItem} from "@nextui-org/react";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
+
 const Manuscript = ({user}) => {
     const [favorites, setFavorites] = useState(new Set());
      const [userId, setUserId] = useState(null); // Store the current logged-in user ID
@@ -18,6 +23,64 @@ const Manuscript = ({user}) => {
         { user: 'Commenter 2', text: 'This is another comment.' },
         { user: 'Commenter 3', text: 'This is yet another comment.' },
     ]);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedRating, setSelectedRating] = useState(0); // Store the rating value
+    const [selectedManuscript, setSelectedManuscript] = useState(null); // Track selected manuscript
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+    const resetRating = () => {
+        setSelectedRating(0); // Reset the rating to 0 (or whatever your default is)
+    };
+
+
+     // Handle opening the modal and setting the title
+     const handleRatings = (manuscript) => {
+        setSelectedManuscript(manuscript); // Store the manuscript for later use
+        setIsModalOpen(true);
+    };
+// Rating Component Reset Logic
+const handleClick = (value) => {
+    onRatingChange(value);
+    resetRating(); // This can be called if you need a specific reset behavior
+};
+    // Handle the rating submission
+    const handleSubmit = async () => {
+        if (!selectedManuscript || selectedRating === 0) {
+            toast.error('Please select a rating before submitting.');
+            return;
+        }
+
+        try {
+            const response = await fetch('/ratings', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken },
+                body: JSON.stringify({ manuscript_id: selectedManuscript.id, rating: selectedRating }),
+            });
+
+            if (response.status === 409) {
+                const data = await response.json();
+                toast.error(data.message || 'You have already rated this manuscript.');
+                resetRating(); // Reset rating after successful submission
+                setIsModalOpen(false); // Close the modal after submission
+                return;
+            }
+
+            if (response.status === 422) {
+                const errorData = await response.json();
+                toast.error(errorData.message || 'Validation error.');
+                return;
+            }
+
+            if (!response.ok) throw new Error('Failed to submit rating');
+
+            toast.info('Rating submitted successfully!');
+            resetRating(); // Reset rating after successful submission
+            setIsModalOpen(false); // Close the modal after submission
+        } catch (error) {
+            console.error(error);
+            toast.error('Error submitting rating.');
+        }
+    };
 
 
     const handleDownload = async (manuscriptId, title) => {
@@ -305,6 +368,46 @@ const Manuscript = ({user}) => {
                                     <FaFileDownload size={20} />
                                 </button>
                             </Tooltip>
+
+                            <Tooltip content="Ratings">
+                                <button
+                                    className="text-gray-600 hover:text-blue-500"
+                                    onClick={() => handleRatings(manuscript)}
+                                >
+                                    <FaStar size={20} />
+                                </button>
+                            </Tooltip>
+{/* Rendering the modal */}
+
+{isModalOpen && (
+    <Modal show={isModalOpen} onClose={() => setIsModalOpen(false)}>
+        <div className="flex flex-col items-center justify-center p-6 rounded-lg shadow-md">
+            <h2 className="text-2xl font-bold mb-4 text-center text-gray-800">
+                 {selectedManuscript ? selectedManuscript.man_doc_title : ''}
+            </h2>
+
+            {/* Ratings component */}
+            <RatingComponent
+                rating={selectedRating}
+                onRatingChange={(newRating) => {
+                    setSelectedRating(newRating);
+
+                }} // Capture rating
+            />
+
+            {/* Submit button */}
+            <button
+                className="mt-4 bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition duration-200"
+                onClick={handleSubmit}
+            >
+                Submit
+            </button>
+        </div>
+    </Modal>
+)}
+
+
+
             </div>
 
                 {showComments && (
@@ -320,7 +423,18 @@ const Manuscript = ({user}) => {
             </div>
             </div>
 ))}
-
+            <ToastContainer // Include ToastContainer for displaying toasts
+                position="bottom-center"
+                autoClose={2000}
+                hideProgressBar={false}
+                newestOnTop={false}
+                closeOnClick
+                rtl={false}
+                pauseOnFocusLoss
+                draggable
+                pauseOnHover
+                theme="colored"
+            />
         </section>
     );
 }

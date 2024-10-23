@@ -2,7 +2,7 @@
 
 use App\Http\Controllers\StudentClassController;
 use App\Http\Controllers\TeacherClassController;
-
+use Illuminate\Support\Facades\Route;
 use App\Models\Student;
 use App\Http\Controllers\TagController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
@@ -33,7 +33,6 @@ use App\Http\Controllers\ReportReasonController;
 use App\Http\Middleware\CheckUserTypeMiddleware;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
-use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Response;
 use Inertia\Inertia;
@@ -358,4 +357,12 @@ Route::put('/manuscripts/{id}/update-status', [TeacherClassController::class, 'u
 Route::get('/get-manuscripts', [TeacherClassController::class, 'getManuscriptsByClass']);
 Route::get('/students/search', [TeacherClassController::class, 'searchStudents']);
 Route::post('/classes/add-students', [TeacherClassController::class, 'addStudentsToClass']);
+
+
+//Ratings
+// Route::post('/ratings', [StudentClassController::class, 'storeRatings'])
+// ->middleware(['auth', 'verified', 'user-type:student, teacher'])->name('storeRatings');
+
+//Ratings
+Route::post('/ratings', [StudentClassController::class, 'storeRatings']);
 require __DIR__.'/auth.php';

@@ -4,6 +4,7 @@ import { Head } from '@inertiajs/react';
 import { FaBookmark } from 'react-icons/fa';
 import axios from 'axios'; // Import Axios
 import Manuscript from '@/Components/Manuscripts/MyFavoriteManuscript';
+import {Skeleton} from "@nextui-org/skeleton";
 
 export default function SavedList({ auth }) {
     const isAuthenticated = !!auth.user; // Check if user is authenticated

@@ -146,4 +146,10 @@ class User extends Authenticatable
         return $this->belongsToMany(ClassModel::class, 'class_student', 'stud_id', 'class_id');
     }
 
+
+    //A user can have many ratings.
+    public function ratings()
+    {
+        return $this->hasMany(Rating::class);
+    }
 }
