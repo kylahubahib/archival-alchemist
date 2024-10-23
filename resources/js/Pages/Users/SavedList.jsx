@@ -28,12 +28,13 @@ export default function SavedList({ auth }) {
     }, []);
 
     if (loading) {
-        return <div>Loading...</div>;
+        return <Skeleton height="100px" />;
     }
 
     if (error) {
         return <div>{error}</div>;
     }
+
 
     return (
         <MainLayout

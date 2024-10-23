@@ -6,6 +6,7 @@ import ClassDropdown from "@/Components/ClassDropdown";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFolder, faUsers, faUser, faEllipsisV } from '@fortawesome/free-solid-svg-icons';
 import { Button, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, useDisclosure } from "@nextui-org/react";
+import { Skeleton } from '@nextui-org/skeleton'; // Import Skeleton
 
 axios.defaults.headers.common['X-CSRF-TOKEN'] = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
 
@@ -31,6 +32,23 @@ export default function TeacherClass({ auth }) {
     const [selectedClassName, setSelectedClassName] = useState('');
 const [selectedClassCode, setSelectedClassCode] = useState('');
 
+const renderSkeleton = () => (
+    <div className="grid grid-cols-3 gap-4">
+        {Array.from({ length: 3 }).map((_, index) => (
+            <div key={index} className="border rounded-lg p-4 cursor-not-allowed">
+                <div className="flex justify-between items-center mb-2">
+                    <Skeleton className="h-4 w-1/3" />
+                </div>
+                <div className="flex justify-center mb-2">
+                    <Skeleton className="h-20 w-20" />
+                </div>
+                <div className="text-center">
+                    <Skeleton className="h-4 w-2/3" />
+                </div>
+            </div>
+        ))}
+    </div>
+);
 
 useEffect(() => {
     // Fetch students from the database to display suggestions when typing
@@ -115,17 +133,6 @@ const handleAddStudent = async () => {
         }
     };
 
-    // const fetchAuthorSuggestions = async (query) => {
-    //     try {
-    //         const response = await axios.get('/api/authors/suggestions', {
-    //             params: { query, users },
-    //         });
-    //         setAuthorSuggestions(response.data);
-    //     } catch (error) {
-    //         console.error('Error fetching Author suggestions:', error.response?.data || error.message);
-    //         setAuthorSuggestions([]);
-    //     }
-    // };
 
     const fetchAuthorSuggestions = async (query) => {
         try {
@@ -229,16 +236,20 @@ const handleAddStudent = async () => {
     };
 
     useEffect(() => {
+        setIsLoading(true); // Set loading to true when the component mounts
         axios.get('/teacher/class')
             .then(response => {
                 setCourses(response.data.courses);
-                // Assuming you want to handle classes as well
                 setClasses(response.data.classes); // Store the classes if you need them
             })
             .catch(error => {
                 console.error("Error fetching courses:", error);
+            })
+            .finally(() => {
+                setIsLoading(false); // Set loading to false after data is fetched
             });
     }, []);
+
 
     useEffect(() => {
         if (selectedClass) {
@@ -347,9 +358,13 @@ const handleAddStudent = async () => {
                                 </div>
                             </div>
                             <hr className="mb-4" />
-
+                            {isLoading ? (
+                            renderSkeleton()  // Call the skeleton function here
+                        ) : (
+                            <>
                             {/* Render course options */}
                             {!selectedCourse && (
+
                                 <div className="grid grid-cols-3 gap-4">
                                     {courses.map(course => (
                                         <div
@@ -558,7 +573,8 @@ const handleAddStudent = async () => {
                                                 </ModalContent>
                                             </Modal>
                                         </div>
-                                    </div>
+                                    </div></>
+                            )}
                                 </>
                             )}
                         </div>

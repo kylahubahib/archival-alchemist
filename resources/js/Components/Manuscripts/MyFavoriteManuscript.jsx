@@ -3,6 +3,7 @@ import { FaEye, FaComment, FaBookmark, FaFileDownload } from 'react-icons/fa';
 import axios from 'axios';
 import { Tooltip } from '@nextui-org/react';
 import { Button } from "@nextui-org/react";
+import { Skeleton } from '@nextui-org/skeleton';
 
 const Manuscript = ({ user }) => {
     const [favorites, setFavorites] = useState(new Set());
@@ -120,11 +121,28 @@ const Manuscript = ({ user }) => {
     };
 
     if (loading) {
-        return <Button color="primary" isLoading>Loading</Button>;
+        return (
+            <section className="w-full mx-auto my-4 mt-10 pt-10">
+                {[...Array(3)].map((_, index) => (
+                    <div key={index} className="w-full bg-white shadow-lg flex mb-4">
+                        <Skeleton className="rounded w-40 h-full" />
+                        <div className="flex-1 p-4">
+                            <Skeleton className="h-6 mb-2" />
+                            <Skeleton className="h-4 mb-2" />
+                            <Skeleton className="h-4 mb-2" />
+                            <Skeleton className="h-4 mb-4" />
+                            <Skeleton className="h-6" />
+                        </div>
+                    </div>
+                ))}
+            </section>
+        );
     }
 
     if (error) {
-        return <div>Error: {error}</div>;
+        return (
+            <div className="text-red-500">Error: {error}</div>
+        );
     }
 
     const manuscriptsToDisplay = searchResults.length > 0 ? searchResults : manuscripts;

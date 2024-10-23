@@ -8,6 +8,7 @@ import UploadCapstone from '@/Pages/Users/Class/Student/UploadCapstone';
 import Track from '@/Pages/Users/Class/Student/Track';
 import Approve from '@/Pages/Users/Class/Student/Approved';
 import { Spinner } from '@nextui-org/react';
+import { Skeleton } from '@nextui-org/skeleton'; // Import Skeleton
 //gjf
 export default function StudentClass({ auth }) {
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -243,14 +244,30 @@ export default function StudentClass({ auth }) {
                     </div>
                 </div>
             ) : (
-                <div className="flex justify-center items-center min-h-screen space-y-3">
-                    <Spinner size='lg' />
+                <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
+                <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                    <div className="p-6 text-gray-900 min-h-screen flex flex-col">
+                        <div className="flex flex-col items-center justify-center m-20">
+                            <Skeleton className="h-32 w-32 rounded-full" />
+                            <Skeleton className="mt-4 h-10 w-48 rounded-md" />
+                        </div>
+                        <div className="flex justify-between items-center mt-6">
+                            <div className="flex">
+                                <Skeleton className="h-10 w-20 rounded-md mr-2" />
+                                <Skeleton className="h-10 w-20 rounded-md mr-2" />
+                                <Skeleton className="h-10 w-20 rounded-md" />
+                            </div>
+                            <Skeleton className="h-10 w-32 rounded-md" />
+                        </div>
+                        <div className="border-b border-gray-300 w-full mt-4"></div>
+                        <div className="bg-gray-100 flex-grow rounded-b-lg w-full mt-4">
+                            <Skeleton className="h-48 w-full rounded-md" />
+                        </div>
+                    </div>
                 </div>
-
-            )
-
-            }
             </div>
+        )}
+    </div>
 
             <Modal show={isModalOpen} onClose={closeModal}>
                 <div className="p-6">

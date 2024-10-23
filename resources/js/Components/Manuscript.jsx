@@ -8,7 +8,7 @@ import { Tooltip, Button } from '@nextui-org/react';
 import {Dropdown, DropdownTrigger, DropdownMenu, DropdownItem} from "@nextui-org/react";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-
+import { Skeleton } from '@nextui-org/skeleton'; // Import Skeleton
 
 const Manuscript = ({user}) => {
     const [favorites, setFavorites] = useState(new Set());
@@ -241,12 +241,26 @@ const handleClick = (value) => {
 
 
 
+
     if (loading) {
         return (
-            <Button color="primary" isLoading>
-              Loading
-            </Button>
-          );
+            <section className="w-full mx-auto my-4">
+                {[...Array(3)].map((_, index) => (
+                    <div key={index} className="w-full bg-white shadow-lg flex mb-4">
+                        <div className="rounded w-40 h-full bg-gray-200 flex items-center justify-center">
+                            <Skeleton className="w-36 h-46 rounded" />
+                        </div>
+                        <div className="flex-1 p-4">
+                            <Skeleton className="h-6 mb-2" />
+                            <Skeleton className="h-4 mb-2" />
+                            <Skeleton className="h-4 mb-2" />
+                            <Skeleton className="h-4 mb-4" />
+                            <Skeleton className="h-6" />
+                        </div>
+                    </div>
+                ))}
+            </section>
+        );
     }
 
     if (error) {
