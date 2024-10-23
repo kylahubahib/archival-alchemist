@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head } from '@inertiajs/react';
 import axios from 'axios';
+import ShowMemersModal from '@/Components/Modal';
 import ClassDropdown from "@/Components/ClassDropdown";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFolder, faUsers, faUser, faEllipsisV } from '@fortawesome/free-solid-svg-icons';
@@ -31,6 +32,18 @@ export default function TeacherClass({ auth }) {
     const [loading, setLoading] = useState(true);
     const [selectedClassName, setSelectedClassName] = useState('');
 const [selectedClassCode, setSelectedClassCode] = useState('');
+const [isShowMembersModalOpen, setIsShowMembersModalOpen] = useState(false);
+const [hoveredClass, setHoveredClass] = useState(null);
+
+const handleMouseEnter = (classItem) => {
+    setHoveredClass(classItem);
+    setIsShowMembersModalOpen(true);
+};
+
+const handleModalClose2 = () => {
+    setIsShowMembersModalOpen(false);
+    setHoveredClass(null);
+};
 
 const renderSkeleton = () => (
     <div className="grid grid-cols-3 gap-4">
@@ -485,9 +498,14 @@ const handleAddStudent = async () => {
                                                 <TableBody>
                                                     {classes.map((classItem) => (
                                                         <TableRow key={classItem.id}>
-                                                            <TableCell className="w-[10%] text-left">{classItem.class_name}</TableCell>
-                                                            <TableCell className="w-[60%] text-left">{classItem.man_doc_title || "No manuscripts uploaded yet."}</TableCell>
-                                                            <TableCell className="text-center">
+                                                    <TableCell className="w-[10%] text-left">
+                                <span
+                                    className="cursor-pointer text-blue-500 hover:underline"
+                                    onMouseEnter={() => handleMouseEnter(classItem)}
+                                >
+                                    {classItem.class_name}
+                                </span>
+                            </TableCell>                                       <TableCell className="text-center">
                                                                 {new Date(classItem.created_at).toLocaleDateString() || "N/A"}
                                                             </TableCell>
                                                             <TableCell className="text-center">
@@ -572,6 +590,29 @@ const handleAddStudent = async () => {
                                                     </ModalFooter>
                                                 </ModalContent>
                                             </Modal>
+
+
+                                            {isShowMembersModalOpen && hoveredClass && (
+                <Modal isOpen={isShowMembersModalOpen} onClose={handleModalClose2}>
+                    <ModalContent>                <button
+                Disable='true'
+                className="bg-gray-300 text-gray py-2 px-4 font-bold rounded w-full"
+                // onClick={handleSubmit}
+            >
+                Members
+            </button>
+                        <div className="flex flex-col items-center justify-center p-6 rounded-lg shadow-md">
+                            <h5 className="mb-4 text-center font-bold text-gray-800">
+                                {hoveredClass.man_doc_title || "No manuscript submission from the group."}
+                            </h5>
+                                <p className="mb-2 text-gray-600">Jeylsie Caro</p>
+                                <p className="mb-2 text-gray-600">Kyla Huahib</p>
+                                <p className="mb-2 text-gray-600">Tabada Carmel</p>
+                                <p className="mb-2 text-gray-600">Basnillo David</p>
+                        </div>
+                    </ModalContent>
+                </Modal>
+            )}
                                         </div>
                                     </div></>
                             )}

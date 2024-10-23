@@ -24,6 +24,7 @@ const Manuscript = ({user}) => {
         { user: 'Commenter 3', text: 'This is yet another comment.' },
     ]);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isCiteModalOpen, setIsCiteModalOpen] = useState(false);
     const [selectedRating, setSelectedRating] = useState(0); // Store the rating value
     const [selectedManuscript, setSelectedManuscript] = useState(null); // Track selected manuscript
     const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
@@ -37,6 +38,12 @@ const Manuscript = ({user}) => {
      const handleRatings = (manuscript) => {
         setSelectedManuscript(manuscript); // Store the manuscript for later use
         setIsModalOpen(true);
+    };
+
+
+    const handleCitations = (manuscript) => {
+        setSelectedManuscript(manuscript); // Store the manuscript for later use
+        setIsCiteModalOpen(true);
     };
 // Rating Component Reset Logic
 const handleClick = (value) => {
@@ -394,7 +401,7 @@ const handleClick = (value) => {
                             <Tooltip content="Cite">
                                 <button
                                     className="text-gray-600 hover:text-blue-500"
-                                    //onClick={() => handleRatings(manuscript)}
+                                    onClick={() => handleCitations(manuscript)}
                                 >
                                     <FaQuoteLeft size={20} />
                                 </button>
@@ -427,6 +434,55 @@ const handleClick = (value) => {
         </div>
     </Modal>
 )}
+
+
+
+{/* Rendering the citation modal */}
+
+{isCiteModalOpen && (
+    <Modal show={isCiteModalOpen} onClose={() => setIsCiteModalOpen(false)}>
+                <button
+                Disable='true'
+                className="bg-gray-300 text-gray py-2 px-4 rounded w-full"
+                // onClick={handleSubmit}
+            >
+                Cite
+            </button>
+        <div className="flex flex-col items-left justify-left p-6 rounded-lg shadow-md">
+
+            {/* <button
+                Disable='true'
+                className="mt-4 bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition duration-200"
+                // onClick={handleSubmit}
+            >
+                Citation
+            </button> */}
+            <h4 className="text-1xl font-bold mb-4 text-left text-gray-800">
+                Title:  Archival Alchemist: Transforming Capstone Into Discoverable Knowledge
+            </h4>
+            <p className="mb-2 text-gray-600">
+                <strong>Year Published:</strong> 2024
+            </p>
+            <p className="mb-2 text-gray-600">
+                <strong>Author:</strong> Greg, Emerson
+            </p>
+            <p className="mb-2 text-gray-600">
+                <strong>Adviser:</strong> Narcissan S. Galamiton
+            </p>
+            <p className="mb-2 text-gray-600">
+                <strong>Tags:</strong> Capstone, Knowledge Management, Discovery
+            </p>
+            <p className="text-gray-600 mt-4 text-center">
+                <strong>Abstract:</strong> This manuscript delves into the transformative journey of capstone projects as they evolve into valuable, discoverable knowledge assets. Through the integration of modern knowledge management techniques and advanced technologies, the study showcases how capstone projects can transcend their original scope, becoming accessible and impactful resources for future research and practical application. By addressing key challenges in knowledge discovery, the manuscript emphasizes the importance of turning student projects into lasting contributions to academic and professional fields.
+            </p>
+
+            <p className="mb-2 text-gray-600">
+                <strong>APA Citation:</strong> Greg, Emerson (1985). Archival Alchemist: Transforming Capstone Into Discoverable Knowledge, 7(1-3), 85-107.
+            </p>
+        </div>
+    </Modal>
+)}
+
 
 
 
