@@ -410,8 +410,15 @@ const handleClick = (value) => {
 
 {isModalOpen && (
     <Modal show={isModalOpen} onClose={() => setIsModalOpen(false)}>
+        <button
+                Disable='true'
+                className="bg-gray-300 text-gray-500 py-4 px-4 font-bold rounded w-full"
+                // onClick={handleSubmit}
+            >
+                We systematically review all ratings to enhance our services, and we highly value them.
+            </button>
         <div className="flex flex-col items-center justify-center p-6 rounded-lg shadow-md">
-            <h2 className="text-2xl font-bold mb-4 text-center text-gray-800">
+            <h2 className="text-2xl font-bold mb-4  text-center text-gray-500">
                  {selectedManuscript ? selectedManuscript.man_doc_title : ''}
             </h2>
 
@@ -443,7 +450,7 @@ const handleClick = (value) => {
     <Modal show={isCiteModalOpen} onClose={() => setIsCiteModalOpen(false)}>
                 <button
                 Disable='true'
-                className="bg-gray-300 text-gray py-2 px-4 rounded w-full"
+                className="bg-gray-300 text-gray py-4 px-4 font-bold text-gray-500 rounded w-full"
                 // onClick={handleSubmit}
             >
                 Cite
@@ -460,23 +467,23 @@ const handleClick = (value) => {
             <h4 className="text-1xl font-bold mb-4 text-left text-gray-800">
                 Title:  Archival Alchemist: Transforming Capstone Into Discoverable Knowledge
             </h4>
-            <p className="mb-2 text-gray-600">
+            <p className="mb-2 text-gray-500">
                 <strong>Year Published:</strong> 2024
             </p>
-            <p className="mb-2 text-gray-600">
+            <p className="mb-2 text-gray-500">
                 <strong>Author:</strong> Greg, Emerson
             </p>
-            <p className="mb-2 text-gray-600">
+            <p className="mb-2 text-gray-500">
                 <strong>Adviser:</strong> Narcissan S. Galamiton
             </p>
-            <p className="mb-2 text-gray-600">
+            <p className="mb-2 text-gray-500">
                 <strong>Tags:</strong> Capstone, Knowledge Management, Discovery
             </p>
-            <p className="text-gray-600 mt-4 text-center">
+            <p className="text-gray-500 mt-4 text-left">
                 <strong>Abstract:</strong> This manuscript delves into the transformative journey of capstone projects as they evolve into valuable, discoverable knowledge assets. Through the integration of modern knowledge management techniques and advanced technologies, the study showcases how capstone projects can transcend their original scope, becoming accessible and impactful resources for future research and practical application. By addressing key challenges in knowledge discovery, the manuscript emphasizes the importance of turning student projects into lasting contributions to academic and professional fields.
             </p>
 
-            <p className="mb-2 text-gray-600">
+            <p className="mb-2 text-gray-500">
                 <strong>APA Citation:</strong> Greg, Emerson (1985). Archival Alchemist: Transforming Capstone Into Discoverable Knowledge, 7(1-3), 85-107.
             </p>
         </div>

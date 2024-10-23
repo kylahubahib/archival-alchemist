@@ -596,13 +596,13 @@ const handleAddStudent = async () => {
                 <Modal isOpen={isShowMembersModalOpen} onClose={handleModalClose2}>
                     <ModalContent>                <button
                 Disable='true'
-                className="bg-gray-300 text-gray py-2 px-4 font-bold rounded w-full"
+                className="bg-gray-300 text-gray py-2 text-gray-500 px-4 font-bold rounded w-full"
                 // onClick={handleSubmit}
             >
                 Members
             </button>
                         <div className="flex flex-col items-center justify-center p-6 rounded-lg shadow-md">
-                            <h5 className="mb-4 text-center font-bold text-gray-800">
+                            <h5 className="mb-4 text-center font-bold text-gray-500">
                                 {hoveredClass.man_doc_title || "No manuscript submission from the group."}
                             </h5>
                                 <p className="mb-2 text-gray-600">Jeylsie Caro</p>
