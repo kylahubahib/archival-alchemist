@@ -365,4 +365,5 @@ Route::post('/classes/add-students', [TeacherClassController::class, 'addStudent
 
 //Ratings
 Route::post('/ratings', [StudentClassController::class, 'storeRatings']);
+Route::get('/groupmembers/{manuscriptId}', [TeacherClassController::class, 'ViewGroupMembers']);
 require __DIR__.'/auth.php';

@@ -9,6 +9,7 @@ use App\Models\Section;
 use App\Models\ClassModel;
 use App\Models\ManuscriptProject;
 use App\Models\User;
+use App\Models\Author;
 use App\Models\ClassStudent;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -429,5 +430,61 @@ public function getManuscriptsByClass(Request $request)
         Log::info('User IDs: ' . implode(',', $userIds)); // Logging the user IDs
         return $userIds;
     }
+
+
+
+
+    //     /**
+    //  * Display the group members by manuscript ID.
+    //  *
+    //  * @param int $manuscriptId
+    //  * @return \Illuminate\Http\JsonResponse
+    //  */
+    // public function ViewGroupMembers($manuscriptId)
+    // {
+    //     // Retrieve authors by manuscript ID
+    //     // $authors = Author::join('users', 'author.user_id', '=', 'users.id')
+    //     // ->where('author.man_doc_id', 13)
+    //     // ->select('author.*', 'users.name as author_name')
+    //     // ->get();
+
+
+
+    //     // Check if authors were found
+    //     if ($authors->isEmpty()) {
+    //         return response()->json(['message' => 'No group members found for this manuscript.'], 404);
+    //     }
+
+    //     // Return the authors as JSON
+    //     return response()->json($authors);
+    // }
+
+
+    public function ViewGroupMembers($manuscriptId)
+{
+    Log::info("Fetching group members for manuscript ID: $manuscriptId");
+
+    try {
+        $authors = Author::with('user')
+            ->where('man_doc_id', $manuscriptId)
+            ->get();
+
+        Log::info("Number of authors retrieved: " . $authors->count());
+
+        if ($authors->isEmpty()) {
+            Log::warning("No group members found for manuscript ID: $manuscriptId");
+            return response()->json(['message' => 'No group members found for this manuscript.'], 404);
+        }
+
+        return response()->json($authors);
+    } catch (\Exception $e) {
+        Log::error("Error fetching group members: " . $e->getMessage());
+        return response()->json(['message' => 'An error occurred while fetching group members.'], 500);
+    }
+}
+
+
+
+
 
 }

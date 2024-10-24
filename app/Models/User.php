@@ -152,4 +152,10 @@ class User extends Authenticatable
     {
         return $this->hasMany(Rating::class);
     }
+
+    // Define the relationship with the Author model
+    public function authors(): HasMany
+    {
+        return $this->hasMany(Author::class, 'user_id');
+    }
 }

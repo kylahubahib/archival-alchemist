@@ -34,6 +34,47 @@ export default function TeacherClass({ auth }) {
 const [selectedClassCode, setSelectedClassCode] = useState('');
 const [isShowMembersModalOpen, setIsShowMembersModalOpen] = useState(false);
 const [hoveredClass, setHoveredClass] = useState(null);
+const [members, setMembers] = useState([]);
+const [error, setError] = useState('');
+const [isMembersLoading, setIsMembersLoading] = useState(false);
+
+
+
+// useEffect(() => {
+//     if (isShowMembersModalOpen && hoveredClass?.id) {
+//         const fetchMembers = async () => {
+//             try {
+//                 const response = await axios.get(`/groupmembers/${hoveredClass.id}`);
+//                 setMembers(response.data);
+//                 setError(''); // Clear any previous error
+//             } catch (err) {
+//                 setError('Failed to load members.'); // Handle error
+//             }
+//         };
+//         fetchMembers();
+//     }
+// }, [isShowMembersModalOpen, hoveredClass]);
+
+
+// Fetch members whenever hoveredClass changes
+useEffect(() => {
+    const fetchMembers = async () => {
+        setIsMembersLoading(true); // Set loading state to true before fetching
+        try {
+            const response = await axios.get(`/groupmembers/${hoveredClass.id}`);
+            setMembers(response.data);
+            // setError(''); // Clear any previous error
+        } catch (err) {
+            // setError('Failed to load members.'); // Handle error
+        } finally {
+            setIsMembersLoading(false); // Set loading state to false after fetching
+        }
+    };
+
+    if (hoveredClass) {
+        fetchMembers();
+    }
+}, [hoveredClass]); // Only depend on hoveredClass
 
 const handleMouseEnter = (classItem) => {
     setHoveredClass(classItem);
@@ -505,7 +546,11 @@ const handleAddStudent = async () => {
                                 >
                                     {classItem.class_name}
                                 </span>
-                            </TableCell>                                       <TableCell className="text-center">
+                            </TableCell>
+                            <TableCell className="text-left">
+                                                                {classItem.man_doc_title|| "No manuscript submission from the group."}
+                                                            </TableCell>
+                                                                                 <TableCell className="text-center">
                                                                 {new Date(classItem.created_at).toLocaleDateString() || "N/A"}
                                                             </TableCell>
                                                             <TableCell className="text-center">
@@ -525,7 +570,6 @@ const handleAddStudent = async () => {
                                                                         <DropdownItem key="add" onClick={() => openModal(classItem.class_name, classItem.class_code)}>Add Student</DropdownItem>
                                                                         <DropdownItem key="approve" onClick={() => handleStatusChange(classItem.id, 'Y')}>Approve</DropdownItem>
                                                                         <DropdownItem key="decline" onClick={() => handleStatusChange(classItem.id, 'X')}>Decline</DropdownItem>
-                                                                        <DropdownItem key="edit">Edit</DropdownItem>
                                                                         <DropdownItem key="delete" className="text-danger" color="danger">Delete</DropdownItem>
                                                                     </DropdownMenu>
                                                                 </Dropdown>
@@ -593,26 +637,42 @@ const handleAddStudent = async () => {
 
 
                                             {isShowMembersModalOpen && hoveredClass && (
-                <Modal isOpen={isShowMembersModalOpen} onClose={handleModalClose2}>
-                    <ModalContent>                <button
-                Disable='true'
+    <Modal isOpen={isShowMembersModalOpen} onClose={handleModalClose2}>
+        <ModalContent>
+            <button
+                disabled={true}
                 className="bg-gray-300 text-gray py-2 text-gray-500 px-4 font-bold rounded w-full"
-                // onClick={handleSubmit}
             >
                 Members
             </button>
-                        <div className="flex flex-col items-center justify-center p-6 rounded-lg shadow-md">
-                            <h5 className="mb-4 text-center font-bold text-gray-500">
-                                {hoveredClass.man_doc_title || "No manuscript submission from the group."}
-                            </h5>
-                                <p className="mb-2 text-gray-600">Jeylsie Caro</p>
-                                <p className="mb-2 text-gray-600">Kyla Huahib</p>
-                                <p className="mb-2 text-gray-600">Tabada Carmel</p>
-                                <p className="mb-2 text-gray-600">Basnillo David</p>
-                        </div>
-                    </ModalContent>
-                </Modal>
-            )}
+            <div className="flex flex-col items-center justify-center p-6 rounded-lg shadow-md">
+                <h5 className="mb-4 text-center font-bold text-gray-500">
+                    {hoveredClass.man_doc_title || "No manuscript submission from the group."}
+                </h5>
+                {error && <p className="text-red-500">{error}</p>}
+                {isMembersLoading ? (
+                    // Customized Skeleton
+                    <div className="flex flex-col space-y-2 w-full">
+                        {/* Title Skeleton */}
+                        <Skeleton className="mb-2 w-full h-6" />
+                        <Skeleton className="mb-2 w-full h-6" />
+                        <Skeleton className="mb-2 w-full h-6" />
+                        <Skeleton className="mb-2 w-full h-6" />
+                        <Skeleton className="mb-2 w-full h-6" />
+                    </div>
+                ) : members.length > 0 ? (
+                    members.map(member => (
+                        <p key={member.user.id} className="mb-2 text-gray-600">{member.user.name}</p>
+                    ))
+                ) : (
+                    <p className="mb-2 text-gray-600">No members found.</p>
+                )}
+            </div>
+        </ModalContent>
+    </Modal>
+)}
+
+
                                         </div>
                                     </div></>
                             )}
