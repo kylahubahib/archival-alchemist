@@ -3,6 +3,7 @@
 use App\Http\Controllers\StudentClassController;
 use App\Http\Controllers\TeacherClassController;
 
+use App\Models\Forum;
 use App\Models\Student;
 use App\Http\Controllers\TagController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
@@ -22,6 +23,7 @@ use App\Http\Controllers\DepartmentsController;
 use App\Http\Controllers\CoursesController;
 use App\Http\Controllers\SectionsController;
 use App\Http\Controllers\PaymentSessionController;
+use App\Http\Controllers\ForumPostController;
 
 use App\Http\Controllers\InstitutionSubscriptionController;
 use App\Http\Controllers\PersonalSubscriptionController;
@@ -354,12 +356,18 @@ Route::middleware('auth')->group(function () {
     Route::get('/teacher/class', [TeacherClassController::class, 'index'])->name('teacher.class');
 });
 
-Route::get('/posts/{id}', [PostController::class, 'show']);
-
-
-
-
 
 //Teacher Activity API routes
 Route::post('/store-newGroupClass', [TeacherClassController::class, 'newGroupClass']);
+
+
+// Route for displaying a specific post
+Route::middleware(['web'])->group(function () {
+    Route::get('/forum-posts', [ForumPostController::class, 'index']);
+    Route::post('/forum-posts', [ForumPostController::class, 'store']);
+    Route::get('/posts/{id}', [ForumPostController::class, 'show'])->name('posts.show');
+    Route::delete('/forum-posts/{id}', [ForumPostController::class, 'destroy'])->name('forum.posts.destroy');
+
+});
 require __DIR__.'/auth.php';
+

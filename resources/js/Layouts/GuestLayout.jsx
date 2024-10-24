@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import NavLink from '@/Components/NavLink';
+import React from 'react';
 
 export default function GuestLayout({ user, children }) {
     const [showMobileMenu, setShowMobileMenu] = useState(false);

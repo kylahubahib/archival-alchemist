@@ -6,8 +6,9 @@ import { createRoot } from 'react-dom/client';
 import { createInertiaApp } from '@inertiajs/react';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { NextUIProvider } from '@nextui-org/react';
-import Forum from './Pages/Users/Forum';
+//import Forum from './Pages/Users/Forum';
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
+import PostDetail from './Pages/PostDetail';
 
 createInertiaApp({
     title: (title) => `${appName}`,

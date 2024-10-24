@@ -52,7 +52,7 @@ export default function Authenticated({ user, children, newProfile = null }) {
                 ) : (
                     <SidebarItem icon={<SiGoogleclassroom size={20} />} text="Class" to="/studentclass" />
                 )}
-                <SidebarItem icon={<MdChatBubbleOutline size={20} />} text="Inbox" to="/inbox" />
+                <SidebarItem icon={<MdChatBubbleOutline size={20} />} text="Inbox" to="/chatify" />
                 <SidebarSeparator marginTop={80}/>
 
                 {/* <SidebarItem icon={<FaCrown size={20} color="#FFD700" />} text="Subscription" to="/subscription" /> */}

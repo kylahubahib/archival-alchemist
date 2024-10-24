@@ -6,6 +6,7 @@ import { BookOpenIcon } from '@heroicons/react/24/outline';
 import Modal from '@/Components/Modal';
 import Manuscript from '@/Components/Manuscript';
 import SearchBar from '@/Components/SearchBars/LibrarySearchBar';
+import React from 'react';
 
 export default function Library({ auth }) {
     const isAuthenticated = !!auth.user; // Check if user is authenticated
@@ -157,3 +158,5 @@ export default function Library({ auth }) {
         </MainLayout>
     );
 }
+
+

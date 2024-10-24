@@ -143,4 +143,7 @@ class User extends Authenticatable
         return $this->hasMany(RevisionHistory::class, 'ins_id');
     }
 
+    
+
+
 }
