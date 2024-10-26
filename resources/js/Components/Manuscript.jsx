@@ -130,7 +130,7 @@ const handleClick = (value) => {
     useEffect(() => {
         console.log('Updated Favorites:', favorites);
     }, [favorites]);
-    const [selectedKeys, setSelectedKeys] = React.useState(new Set(["Search By"]));
+    const [selectedKeys, setSelectedKeys] = React.useState(new Set(["Search By: Title"]));
 
     const selectedValue = React.useMemo(
       () => Array.from(selectedKeys).join(", ").replaceAll("_", " "),
@@ -315,9 +315,9 @@ const handleClick = (value) => {
                             onSelectionChange={setSelectedKeys}
                         >
                             {/* Remove the "Search by" option from the choices */}
-                            <DropdownItem key="Title">Title</DropdownItem>
-                            <DropdownItem key="Tags">Tags</DropdownItem>
-                            <DropdownItem key="Authors">Authors</DropdownItem>
+                            <DropdownItem key="Search By: Title">Title</DropdownItem>
+                            <DropdownItem key="Search By: Tags">Tags</DropdownItem>
+                            <DropdownItem key="Search By: Authors">Authors</DropdownItem>
                         </DropdownMenu>
                     </Dropdown>
                 </div>
@@ -416,7 +416,7 @@ const handleClick = (value) => {
                                 </button>
                             </Tooltip>
 
-                {/* Rendering the modal */}
+                {/* Rendering the ratings modal */}
                 {isModalOpen && (
                     <Modal show={isModalOpen} onClose={() => setIsModalOpen(false)}>
                         <button
@@ -507,9 +507,6 @@ const handleClick = (value) => {
                                 </div>
 
                                 <div className="mt-4 w-full">
-                                    <p className="text-gray-800 text-sm">
-                                        <strong>Adviser:</strong> {selectedManuscript ? selectedManuscript.man_doc_adviser : 'Not available'}
-                                    </p>
                                     <p className="text-gray-700 mt-2 text-sm">
                                         <strong>Abstract:</strong> {selectedManuscript ? selectedManuscript.man_doc_description : 'Not available'}
                                     </p>
