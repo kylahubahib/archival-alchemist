@@ -41,10 +41,19 @@ const Manuscript = ({user}) => {
     };
 
 
-    const handleCitations = (manuscript) => {
+
+    const resetCitation = () => {
+        setSelectedRating(0); // Reset the rating to 0 (or whatever your default is)
+    };
+
+
+     // Handle opening the modal and setting the title
+     const handleCitation = (manuscript) => {
         setSelectedManuscript(manuscript); // Store the manuscript for later use
         setIsCiteModalOpen(true);
     };
+
+
 // Rating Component Reset Logic
 const handleClick = (value) => {
     onRatingChange(value);
@@ -401,97 +410,114 @@ const handleClick = (value) => {
                             <Tooltip content="Cite">
                                 <button
                                     className="text-gray-600 hover:text-blue-500"
-                                    onClick={() => handleCitations(manuscript)}
+                                    onClick={() => handleCitation(manuscript)}
                                 >
                                     <FaQuoteLeft size={20} />
                                 </button>
                             </Tooltip>
-{/* Rendering the modal */}
 
-{isModalOpen && (
-    <Modal show={isModalOpen} onClose={() => setIsModalOpen(false)}>
-        <button
-                Disable='true'
-                className="bg-gray-300 text-gray-500 py-4 px-4 font-bold rounded w-full"
-                // onClick={handleSubmit}
-            >
-                We systematically review all ratings to enhance our services, and we highly value them.
-            </button>
-        <div className="flex flex-col items-center justify-center p-6 rounded-lg shadow-md">
-            <h2 className="text-2xl font-bold mb-4  text-center text-gray-500">
-                 {selectedManuscript ? selectedManuscript.man_doc_title : ''}
-            </h2>
+                {/* Rendering the modal */}
+                {isModalOpen && (
+                    <Modal show={isModalOpen} onClose={() => setIsModalOpen(false)}>
+                        <button
+                                Disable='true'
+                                className="bg-gray-300 text-gray-500 py-4 px-4 font-bold rounded w-full"
+                                // onClick={handleSubmit}
+                            >
+                                We systematically review all ratings to enhance our services, and we highly value them.
+                            </button>
+                        <div className="flex flex-col items-center justify-center p-6 rounded-lg shadow-md">
+                            <h2 className="text-2xl font-bold mb-4  text-center text-gray-500">
+                                {selectedManuscript ? selectedManuscript.man_doc_title : ''}
+                            </h2>
 
-            {/* Ratings component */}
-            <RatingComponent
-                rating={selectedRating}
-                onRatingChange={(newRating) => {
-                    setSelectedRating(newRating);
+                            {/* Ratings component */}
+                            <RatingComponent
+                                rating={selectedRating}
+                                onRatingChange={(newRating) => {
+                                    setSelectedRating(newRating);
 
-                }} // Capture rating
-            />
+                                }} // Capture rating
+                            />
 
-            {/* Submit button */}
-            <button
-                className="mt-4 bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition duration-200"
-                onClick={handleSubmit}
-            >
-                Submit
-            </button>
-        </div>
-    </Modal>
-)}
-
-
-
-{/* Rendering the citation modal */}
-
-{isCiteModalOpen && (
-    <Modal show={isCiteModalOpen} onClose={() => setIsCiteModalOpen(false)}>
-                <button
-                Disable='true'
-                className="bg-gray-300 text-gray py-4 px-4 font-bold text-gray-500 rounded w-full"
-                // onClick={handleSubmit}
-            >
-                Cite
-            </button>
-        <div className="flex flex-col items-left justify-left p-6 rounded-lg shadow-md">
-
-            {/* <button
-                Disable='true'
-                className="mt-4 bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition duration-200"
-                // onClick={handleSubmit}
-            >
-                Citation
-            </button> */}
-            <h4 className="text-1xl font-bold mb-4 text-left text-gray-800">
-                Title:  Archival Alchemist: Transforming Capstone Into Discoverable Knowledge
-            </h4>
-            <p className="mb-2 text-gray-500">
-                <strong>Year Published:</strong> 2024
-            </p>
-            <p className="mb-2 text-gray-500">
-                <strong>Author:</strong> Greg, Emerson
-            </p>
-            <p className="mb-2 text-gray-500">
-                <strong>Adviser:</strong> Narcissan S. Galamiton
-            </p>
-            <p className="mb-2 text-gray-500">
-                <strong>Tags:</strong> Capstone, Knowledge Management, Discovery
-            </p>
-            <p className="text-gray-500 mt-4 text-left">
-                <strong>Abstract:</strong> This manuscript delves into the transformative journey of capstone projects as they evolve into valuable, discoverable knowledge assets. Through the integration of modern knowledge management techniques and advanced technologies, the study showcases how capstone projects can transcend their original scope, becoming accessible and impactful resources for future research and practical application. By addressing key challenges in knowledge discovery, the manuscript emphasizes the importance of turning student projects into lasting contributions to academic and professional fields.
-            </p>
-
-            <p className="mb-2 text-gray-500">
-                <strong>APA Citation:</strong> Greg, Emerson (1985). Archival Alchemist: Transforming Capstone Into Discoverable Knowledge, 7(1-3), 85-107.
-            </p>
-        </div>
-    </Modal>
-)}
+                            {/* Submit button */}
+                            <button
+                                className="mt-4 bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition duration-200"
+                                onClick={handleSubmit}
+                            >
+                                Submit
+                            </button>
+                        </div>
+                    </Modal>
+                )}
 
 
+                {/* Rendering the citation modal */}
+                {isCiteModalOpen && (
+                    <Modal
+                        show={isCiteModalOpen}
+                        onClose={() => setIsCiteModalOpen(false)}
+                        className="w-full bg-black bg-opacity-50"
+                    >
+                        <div className="rounded shadow-2xl p-8 w-full transform transition-all ease-in-out duration-300">
+                            <h2 className="text-2xl font-semibold text-gray-800 mb-4">Cite This Manuscript</h2>
+                            <div className="flex flex-col items-start p-6 bg-gray-50 border-l-4 border-blue-500 rounded-lg shadow-md">
+                                <div className="w-full">
+                                    <div className="bg-blue-100 p-4 rounded-md w-full relative">
+                                        <p className="text-gray-800 text-sm">
+                                            <strong>APA Citation:</strong>
+                                        </p>
+                                        <p className="text-gray-700 mt-1 text-sm italic">
+                                            {selectedManuscript ? (() => {
+                                                const authors = selectedManuscript.authors.map(author => author.name);
+                                                const year = new Date(selectedManuscript.created_at).getFullYear();
+                                                const title = selectedManuscript.man_doc_title;
 
+                                                // Constructing the citation
+                                                if (authors.length === 1) {
+                                                    return `${authors[0]} (${year}). ${title}.`;
+                                                } else if (authors.length === 2) {
+                                                    return `${authors[0]} & ${authors[1]} (${year}). ${title}.`;
+                                                } else if (authors.length >= 3) {
+                                                    return `${authors[0]} et al. (${year}). ${title}.`;
+                                                }
+                                            })() : ''}
+                                        </p>
+
+                                        <Tooltip content="Copy Citation">
+                                            <button
+                                                className="absolute top-2 right-2 p-1 text-blue-600 rounded-full hover:bg-blue-200 transition-colors"
+                                                onClick={() => {
+                                                    const authors = selectedManuscript.authors.map(author => author.name).join(', ');
+                                                    const citationText = `${authors}. (${new Date(selectedManuscript.created_at).getFullYear()}). ${selectedManuscript.man_doc_title}.`;
+                                                    navigator.clipboard.writeText(citationText);
+                                                }}
+                                            >
+                                                <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    className="h-5 w-5"
+                                                    viewBox="0 0 24 24"
+                                                    fill="currentColor"
+                                                >
+                                                    <path d="M16 1H8C6.9 1 6 1.9 6 3v2H5C3.9 5 3 5.9 3 7v13c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2v-1h1c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3V3c0-1.1-.9-2-2-2zm-8 2h8v2H8V3zm8 17H6V7h10v13zm2-3h-1V8h1v9z" />
+                                                </svg>
+                                            </button>
+                                        </Tooltip>
+                                    </div>
+                                </div>
+
+                                <div className="mt-4 w-full">
+                                    <p className="text-gray-800 text-sm">
+                                        <strong>Adviser:</strong> {selectedManuscript ? selectedManuscript.man_doc_adviser : 'Not available'}
+                                    </p>
+                                    <p className="text-gray-700 mt-2 text-sm">
+                                        <strong>Abstract:</strong> {selectedManuscript ? selectedManuscript.man_doc_description : 'Not available'}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </Modal>
+                )}
 
             </div>
 
