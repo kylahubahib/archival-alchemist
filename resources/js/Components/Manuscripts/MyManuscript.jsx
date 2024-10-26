@@ -56,8 +56,8 @@ const handleClick = (value) => {
     onRatingChange(value);
     resetRating(); // This can be called if you need a specific reset behavior
 };
-    // Handle the rating submission
-    const handleSubmit = async () => {
+     // Handle the rating submission
+     const handleSubmit = async () => {
         if (!selectedManuscript || selectedRating === 0) {
             toast.error('Please select a rating before submitting.');
             return;
@@ -66,32 +66,50 @@ const handleClick = (value) => {
         try {
             const response = await fetch('/ratings', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken },
-                body: JSON.stringify({ manuscript_id: selectedManuscript.id, rating: selectedRating }),
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken
+                },
+                body: JSON.stringify({
+                    manuscript_id: selectedManuscript.id,
+                    rating: selectedRating
+                }),
             });
+
+            if (response.status === 401) {
+                toast.error('To submit a rating, please log in.');
+                resetRating(); // Reset rating after successful submission
+                return;
+            }
 
             if (response.status === 409) {
                 const data = await response.json();
                 toast.error(data.message || 'You have already rated this manuscript.');
                 resetRating(); // Reset rating after successful submission
-                setIsModalOpen(false); // Close the modal after submission
                 return;
             }
 
             if (response.status === 422) {
                 const errorData = await response.json();
+                resetRating(); // Reset rating after successful submission
                 toast.error(errorData.message || 'Validation error.');
                 return;
             }
 
-            if (!response.ok) throw new Error('Failed to submit rating');
+            if (!response.ok) {
+                const errorData = await response.json();
+                toast.error(errorData.error || 'Failed to submit rating');
+                resetRating(); // Reset rating after successful submission
+                return;
+            }
 
+            const data = await response.json();
             toast.info('Rating submitted successfully!');
             resetRating(); // Reset rating after successful submission
             setIsModalOpen(false); // Close the modal after submission
         } catch (error) {
             console.error(error);
-            toast.error('Error submitting rating.');
+            toast.error('Error submitting rating: ' + error.message);
         }
     };
 
@@ -300,7 +318,7 @@ const handleClick = (value) => {
                     <Modal
                         show={isCiteModalOpen}
                         onClose={() => setIsCiteModalOpen(false)}
-                        className="w-full bg-black bg-opacity-50"
+                        className="w-full "
                     >
                         <div className="rounded shadow-2xl p-8 w-full transform transition-all ease-in-out duration-300">
                             <h2 className="text-2xl font-semibold text-gray-800 mb-4">Cite This Manuscript</h2>
@@ -372,6 +390,18 @@ const handleClick = (value) => {
                     </div>
                 </div>
             ))}
+                        <ToastContainer // Include ToastContainer for displaying toasts
+                position="bottom-center"
+                autoClose={2000}
+                hideProgressBar={false}
+                newestOnTop={false}
+                closeOnClick
+                rtl={false}
+                pauseOnFocusLoss
+                draggable
+                pauseOnHover
+                theme="colored"
+            />
         </section>
     );
 }

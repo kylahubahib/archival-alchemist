@@ -361,7 +361,7 @@ Route::post('/classes/add-students', [TeacherClassController::class, 'addStudent
 
 //Ratings
 // Route::post('/ratings', [StudentClassController::class, 'storeRatings'])
-// ->middleware(['auth', 'verified', 'user-type:student, teacher'])->name('storeRatings');
+// ->middleware(['auth', 'user-type:student, teacher'])->name('storeRatings');
 
 //Ratings
 Route::post('/ratings', [StudentClassController::class, 'storeRatings']);

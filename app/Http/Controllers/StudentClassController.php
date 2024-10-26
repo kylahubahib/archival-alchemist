@@ -527,6 +527,10 @@ public function storeRatings(Request $request)
     Log::info('Incoming request: ', $request->all());
 
     try {
+                // Check if the user is authenticated
+        if (!Auth::check()) {
+            return response()->json(['error' => 'To submit a rating, please log in.'], 401);
+        }
         // Log request data before validation
         Log::info('Request data: ', $request->all());
 
@@ -556,6 +560,11 @@ public function storeRatings(Request $request)
             'manuscript_id' => $request->manuscript_id,
             'rating' => $request->rating,
         ]);
+        Log::info('Creating rating with data:', [
+            'user_id' => $userId,
+            'manuscript_id' => $request->manuscript_id,
+            'rating' => $request->rating,
+        ]);
 
         // Create the new rating
         $rating = Rating::create([
@@ -571,9 +580,70 @@ public function storeRatings(Request $request)
             'stack' => $e->getTraceAsString(),
             'request' => $request->all(),
         ]);
-        return response()->json(['error' => 'Failed to submit rating.'], 500);
+        return response()->json(['error' => 'Failed to submit rating: ' . $e->getMessage()], 500);
     }
+
 }
+
+
+
+// public function storeRatings(Request $request)
+// {
+//     Log::info('Incoming request: ', $request->all());
+
+//     try {
+//         // Check if the user is authenticated
+//         if (!Auth::check()) {
+//             return response()->json(['error' => 'You need to log in first.'], 401);
+//         }
+
+//         // Log request data before validation
+//         Log::info('Request data: ', $request->all());
+
+//         // Validate the request
+//         $request->validate([
+//             'manuscript_id' => 'required|exists:manuscripts,id',
+//             'rating' => 'required|integer|between:1,5',
+//         ]);
+
+//         // Log user ID for debugging
+//         $userId = Auth::id();
+//         Log::info('User ID: ' . $userId);
+
+//         // Check if the user has already rated this manuscript
+//         $existingRating = Rating::where([
+//             'user_id' => $userId,
+//             'manuscript_id' => $request->manuscript_id,
+//         ])->first();
+
+//         if ($existingRating) {
+//             return response()->json(['message' => 'You have already rated this manuscript.'], 409);
+//         }
+
+//         // Log data to be used in the updateOrCreate
+//         Log::info('Creating rating with data:', [
+//             'user_id' => $userId,
+//             'manuscript_id' => $request->manuscript_id,
+//             'rating' => $request->rating,
+//         ]);
+
+//         // Create the new rating
+//         $rating = Rating::create([
+//             'user_id' => $userId,
+//             'manuscript_id' => $request->manuscript_id,
+//             'rating' => $request->rating,
+//         ]);
+
+//         return response()->json(['message' => 'Rating submitted successfully!', 'rating' => $rating], 201);
+//     } catch (\Exception $e) {
+//         Log::error('Error submitting rating', [
+//             'exception' => $e->getMessage(),
+//             'stack' => $e->getTraceAsString(),
+//             'request' => $request->all(),
+//         ]);
+//         return response()->json(['error' => 'Failed to submit rating.'], 500);
+//     }
+// }
 
 
 }

@@ -69,32 +69,50 @@ const handleClick = (value) => {
         try {
             const response = await fetch('/ratings', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken },
-                body: JSON.stringify({ manuscript_id: selectedManuscript.id, rating: selectedRating }),
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken
+                },
+                body: JSON.stringify({
+                    manuscript_id: selectedManuscript.id,
+                    rating: selectedRating
+                }),
             });
+
+            if (response.status === 401) {
+                toast.error('To submit a rating, please log in.');
+                resetRating(); // Reset rating after successful submission
+                return;
+            }
 
             if (response.status === 409) {
                 const data = await response.json();
                 toast.error(data.message || 'You have already rated this manuscript.');
                 resetRating(); // Reset rating after successful submission
-                setIsModalOpen(false); // Close the modal after submission
                 return;
             }
 
             if (response.status === 422) {
                 const errorData = await response.json();
+                resetRating(); // Reset rating after successful submission
                 toast.error(errorData.message || 'Validation error.');
                 return;
             }
 
-            if (!response.ok) throw new Error('Failed to submit rating');
+            if (!response.ok) {
+                const errorData = await response.json();
+                toast.error(errorData.error || 'Failed to submit rating');
+                resetRating(); // Reset rating after successful submission
+                return;
+            }
 
+            const data = await response.json();
             toast.info('Rating submitted successfully!');
             resetRating(); // Reset rating after successful submission
             setIsModalOpen(false); // Close the modal after submission
         } catch (error) {
             console.error(error);
-            toast.error('Error submitting rating.');
+            toast.error('Error submitting rating: ' + error.message);
         }
     };
 
