@@ -43,7 +43,7 @@ class TagController extends Controller
     /**
      * Display the specified tag.
      *
-     * @param  \App\Models\Tag  $tag
+     * @param  \App\Models\Tags  $tag
      * @return \Illuminate\Http\Response
      */
     public function show(Tags $tag)
@@ -74,7 +74,7 @@ class TagController extends Controller
     /**
      * Remove the specified tag from storage.
      *
-     * @param  \App\Models\Tag  $tag
+     * @param  \App\Models\Tags  $tag
      * @return \Illuminate\Http\Response
      */
     public function destroy(Tags $tag)

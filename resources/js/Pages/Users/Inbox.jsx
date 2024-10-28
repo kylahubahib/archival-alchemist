@@ -5,6 +5,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, useForm } from '@inertiajs/react';
 import { useEffect } from 'react';
 
+
 export default function Inbox({ auth }) {
     const { data, setData, post, processing, errors, reset } = useForm({
         message: ''
