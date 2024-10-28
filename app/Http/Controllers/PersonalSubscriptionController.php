@@ -3,6 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\PersonalSubscription;
+use App\Models\CustomContent;
+use App\Models\Transaction;
+
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Controller;
@@ -26,19 +29,45 @@ class PersonalSubscriptionController extends Controller
                 ->where('user_id', $user->id)
                 ->where('persub_status', 'Active')
                 ->first();
+
+            $agreement = CustomContent::where('content_type', 'billing agreement')->first();
+            $transactionHistory = Transaction::with(['user', 'plan'])
+                ->where('user_id', $user->id)
+                ->get();
         }
+        
+        \Log::info($per_sub);
 
         if($per_sub){
             return response()->json([
-                'per_sub' => $per_sub
+                'per_sub' => $per_sub,
+                'transactionHistory' => $transactionHistory,
+                'agreement' => $agreement
             ]);
         }
 
-        return response()->json();
+        return response()->json([
+            'agreement' => $agreement
+        ]);
        
         //\Log::info('Persub: ', $per_sub->toArray());
         
        
+    }
+
+
+    public function cancelSubscription(Request $request, string $id)
+    {
+        //If user cancel their subscription, they won't be notify to renew their subscription since
+        //subscription is non recurring
+
+        $per_sub = PersonalSubscription::find($id);
+
+        $per_sub->update([
+            'notify_renewal' => 0
+        ]);
+
+        return redirect(route('user-subscription'))->with('success', 'You canceled your subscription');
     }
 
     /**

@@ -12,6 +12,7 @@ import Sidebar, { SidebarItem, SidebarSeparator } from '@/Components/Sidebar';
 import { FaCrown, FaEnvelope } from "react-icons/fa";
 import GiveFeedbackModal from "@/Components/GiveFeedbackModal";
 import ToastNotification, { showToast } from "@/Components/Toast";
+import UserNotification from "@/Components/Notifications/UserNotification";
 
 export default function Authenticated({ user, children, newProfile = null }) {
     const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
@@ -77,9 +78,13 @@ export default function Authenticated({ user, children, newProfile = null }) {
                                     <span>{user.user_type.charAt(0).toUpperCase() + user.user_type.slice(1).toLowerCase()}</span>
                                 </button>
 
-                                <FiBell size={24} className="ml-3 text-white" />
+                                {/* <FiBell size={24} className="ml-3 text-white" /> */}
 
-                                <div className="ml-3 relative">
+                                <div className="flex items-center mx-3">
+                                        <UserNotification user={user} />
+                                </div>
+
+                                <div className=" relative">
                                     <Dropdown>
                                         <Dropdown.Trigger>
                                             <span className="inline-flex rounded-md">

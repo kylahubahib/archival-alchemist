@@ -127,20 +127,36 @@ class InstitutionSubscriptionController extends Controller
         ]);
     }
 
-    public function cancelSubscription(Request $request, string $id)
+
+    public function cancelSubscription(Request $request)
     {
         //If user cancel their subscription, they won't be notify to renew their subscription since
         //subscription is non recurring
 
+        $id = $request->get('id');
+
         $ins_sub = InstitutionSubscription::find($id);
 
-        $ins_sub->update([
-            'notify_renewal' => 0
-        ]);
+        if($ins_sub->notify_renewal === 1)
+        {
+            $ins_sub->update([
+                'notify_renewal' => 0
+            ]);
 
-        return redirect(route('institution-subscription-billing.index'))->with('success', 'You canceled your subscription');
+            $message = "You have canceled your subscription.";
+        }
+        else 
+        {
+            $message = "You've already canceled your subscription";
+        }
+
+        
+        return response()->json([
+            'message' => $message
+        ]);
     }
 
+    
     public function renewSubscription(Request $request, string $id)
     {
         

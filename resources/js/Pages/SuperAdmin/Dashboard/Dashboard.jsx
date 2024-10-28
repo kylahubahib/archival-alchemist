@@ -76,7 +76,7 @@ export default function Dashboard({ auth, topManuscripts = [], counts, chartData
         >
         
             <Head title="Dashboard" />
-            <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 py-8 m-5 space-y-10">
+            <div className=" min-h-screen mx-auto sm:px-6 lg:px-8 py-8 m-5 space-y-10">
             {/* Stats Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3"> 
                 <div className="bg-white p-5 border rounded-lg shadow mb-3">
@@ -113,18 +113,18 @@ export default function Dashboard({ auth, topManuscripts = [], counts, chartData
 
             </div>
 
-            <div className="flex flex-row space-x-10 justify-between mt-8 w-full">
+            <div  className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-2 gap-5">
                 {/* Left side div */}
-                <div className="flex flex-col space-y-10 w-full">
-                    <div className="flex flex-row space-x-10 w-full">
+                <div className="flex flex-col space-y-10 max-w-full">
+                    <div  className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-2 gap-5">
 
-                        <div className="bg-white p-5 space-y-3 shadow-sm sm:rounded-lg w-full">
+                        <div className="bg-white p-5 space-y-3 shadow-sm sm:rounded-lg max-w-full">
                             <div className=" text-gray-700 font-semibold">Registered Users</div>
                             <div className="p-5">
                             <Doughnut data={chartData.usersData} options={options} />
                             </div> 
                         </div> 
-                        <div className="bg-white p-5 space-y-3 shadow-sm sm:rounded-lg w-full">
+                        <div className="bg-white p-5 space-y-3 shadow-sm sm:rounded-lg max-w-full">
                             <div className=" text-gray-700 font-semibold">Users Premium Status</div>
                             <div className="p-5">
                             <Doughnut data={chartData.subscriptionData} options={options} />
@@ -133,7 +133,7 @@ export default function Dashboard({ auth, topManuscripts = [], counts, chartData
 
                     </div>
 
-                    <div className="bg-white overflow-hidden space-y-3 shadow-sm sm:rounded-lg p-7 w-full">
+                    <div className="bg-white overflow-hidden space-y-3 shadow-sm sm:rounded-lg p-7 max-w-full">
                         <div className="flex justify-between items-center">
                         <div className=" text-gray-700 font-semibold text-2xl">Manuscript Statistics</div>
                         <Select
@@ -155,7 +155,7 @@ export default function Dashboard({ auth, topManuscripts = [], counts, chartData
                 </div>
 
                 {/* Right side div */}
-                <div className="flex flex-col space-y-3 w-full">
+                <div className="flex flex-col space-y-3 max-w-full">
                     <div className="bg-white overflow-hidden p-5 flex flex-row justify-between items-center shadow-sm sm:rounded-lg max-w-xl">
                     
                     <div className=" space-y-4">
@@ -185,7 +185,7 @@ export default function Dashboard({ auth, topManuscripts = [], counts, chartData
                 </div>
             </div>
 
-            <div  className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            <div  className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-4 gap-5">
                 <div className="bg-white p-5 border rounded-lg shadow mb-3">
                 <div className="border-b-2 pb-2 border-yellow-600 text-customBlue font-bold">Personal</div>
                 <div className="flex flex-row justify-between pt-2">
@@ -219,9 +219,10 @@ export default function Dashboard({ auth, topManuscripts = [], counts, chartData
                 </div>
 
             </div>
-
-            <div className="bg-white p-10 space-y-3 shadow-sm sm:rounded-lg w-full">
-            <div className="flex justify-between items-center">
+            
+            
+            <div className="bg-white overflow-hidden space-y-3 shadow-sm sm:rounded-lg p-7 max-w-full">
+                <div className="flex justify-between items-center">
                 <div className=" text-gray-700 font-semibold text-2xl">Subscription Revenue Statistics</div>
                 <Select
                 labelPlacement="inside"
@@ -239,9 +240,7 @@ export default function Dashboard({ auth, topManuscripts = [], counts, chartData
                 </Select>
                 </div>
 
-                <div className="p-5">
-                    <Line data={revenueData} options={options} />
-                </div> 
+                <Line data={revenueData} options={options} />
             </div>
 
             </div>

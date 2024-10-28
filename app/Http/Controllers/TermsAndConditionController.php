@@ -4,12 +4,16 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\CustomContent;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rules;
 use Inertia\Inertia;
 use Inertia\Response;
 use Illuminate\Support\Facades\Auth;
+
+use App\Notifications\InstitutionAdminNotification;
+use App\Notifications\UserNotification;
 
 class TermsAndConditionController extends Controller
 {
@@ -72,13 +76,40 @@ class TermsAndConditionController extends Controller
         ]);
         
 
-        CustomContent::create([
+        $data = CustomContent::create([
             'user_id' => Auth::id(),
             'content_type' => 'terms and conditions',
             'content_title' => $request->content_title,
             'content_text' => $request->content_text,
             'subject' => null,
         ]);
+
+
+        if ($data) 
+        {
+            $insAdmins = User::where('user_type', 'admin')->get();
+        
+            if ($insAdmins->isNotEmpty()) {
+                foreach ($insAdmins as $admin) {
+                    $admin->notify(new InstitutionAdminNotification([
+                        'message' => 'We have updated our terms and conditions. Please review the changes in on our website.',
+                        'user_id' => $admin->id
+                    ]));
+                }
+            }
+        
+            $users = User::whereIn('user_type', ['student', 'teacher'])->get();
+        
+            if ($users->isNotEmpty()) {
+                foreach ($users as $user) {
+                    $user->notify(new UserNotification([
+                        'message' => 'We have updated our terms and conditions. Please review the changes on our website.',
+                        'user_id' => $user->id
+                    ]));
+                }
+            }
+
+        }
 
         return redirect(route('manage-terms-and-conditions.index'))->with('success', 'Terms and conditions created successfully.');
     }
@@ -135,17 +166,89 @@ class TermsAndConditionController extends Controller
 
         $data = CustomContent::find($id);
 
-        // if($data->content_type === 'terms and conditions')
-        // {
-
-        // }
-
         // Update content_title and content_text
         $data->update([
             'content_title' => $request->content_title,
             'content_text' => $request->content_text,
             'user_id' => Auth::id(),
         ]);
+
+
+        if ($data->content_type === 'billing agreement') {
+            $insAdmins = User::where('user_type', 'admin')->get();
+        
+            if ($insAdmins->isNotEmpty()) {
+                foreach ($insAdmins as $admin) {
+                    $admin->notify(new InstitutionAdminNotification([
+                        'message' => 'We have updated our billing agreement. Please review the changes in your account settings or on our website.',
+                        'user_id' => $admin->id
+                    ]));
+                }
+            }
+        
+            $users = User::with('personal_subscription')
+                ->whereIn('user_type', ['student', 'teacher'])
+                ->get();
+        
+            if ($users->isNotEmpty()) {
+                foreach ($users as $user) {
+                    $user->notify(new UserNotification([
+                        'message' => 'We have updated our billing agreement. Please review the changes in your account settings or on our website.',
+                        'user_id' => $user->id
+                    ]));
+                }
+            }
+        }
+
+        if ($data->content_type === 'privacy policy') {
+            $insAdmins = User::where('user_type', 'admin')->get();
+        
+            if ($insAdmins->isNotEmpty()) {
+                foreach ($insAdmins as $admin) {
+                    $admin->notify(new InstitutionAdminNotification([
+                        'message' => 'We have updated our privacy policy. Please review the changes in on our website.',
+                        'user_id' => $admin->id
+                    ]));
+                }
+            }
+        
+            $users = User::whereIn('user_type', ['student', 'teacher'])->get();
+        
+            if ($users->isNotEmpty()) {
+                foreach ($users as $user) {
+                    $user->notify(new UserNotification([
+                        'message' => 'We have updated our privacy policy. Please review the changes on our website.',
+                        'user_id' => $user->id
+                    ]));
+                }
+            }
+        }
+
+        if ($data->content_type === 'terms and conditions') {
+            $insAdmins = User::where('user_type', 'admin')->get();
+        
+            if ($insAdmins->isNotEmpty()) {
+                foreach ($insAdmins as $admin) {
+                    $admin->notify(new InstitutionAdminNotification([
+                        'message' => 'We have updated our terms and conditions. Please review the changes in on our website.',
+                        'user_id' => $admin->id
+                    ]));
+                }
+            }
+        
+            $users = User::whereIn('user_type', ['student', 'teacher'])->get();
+        
+            if ($users->isNotEmpty()) {
+                foreach ($users as $user) {
+                    $user->notify(new UserNotification([
+                        'message' => 'We have updated our terms and conditions. Please review the changes on our website.',
+                        'user_id' => $user->id
+                    ]));
+                }
+            }
+        }
+        
+        
 
         return redirect(route('manage-terms-and-conditions.index'))->with('success', 'Terms and conditions updated successfully.');
 
@@ -161,6 +264,7 @@ class TermsAndConditionController extends Controller
 
         return redirect(route('manage-terms-and-conditions.index'))->with('success', 'Terms and conditions deleted successfully.');
     }
+    
 
     public function change_status(Request $request, $id): RedirectResponse
     {

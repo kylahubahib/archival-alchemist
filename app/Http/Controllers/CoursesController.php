@@ -17,21 +17,18 @@ use Illuminate\Support\Facades\DB;
 class CoursesController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Display the courses under a specific department
      */
-    public function index()
+    public function getCourses(Request $request)
     {
-        //
-    }
+        $id = $request->get('id');
 
-    
+        $courses = Course::with('department')
+            ->where('dept_id', $id)->paginate(100);
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
+        return response()->json([
+            'courses' => $courses
+        ]);
     }
 
     /**
@@ -57,12 +54,12 @@ class CoursesController extends Controller
                     // If the department exists, add conditions to the query
                     if ($department) {
                         return $query->where('dept_id', $request->dept_id)
-                                     ->whereExists(function ($subQuery) use ($department) {
-                                         $subQuery->select(DB::raw(1))
-                                             ->from('departments')
-                                             ->whereColumn('departments.id', 'courses.dept_id')
-                                             ->where('departments.uni_branch_id', $department->uni_branch_id);
-                                     });
+                            ->whereExists(function ($subQuery) use ($department) {
+                                $subQuery->select(DB::raw(1))
+                                    ->from('departments')
+                                    ->whereColumn('departments.id', 'courses.dept_id')
+                                    ->where('departments.uni_branch_id', $department->uni_branch_id);
+                            });
                     }
         
                     // If the department doesn't exist, just return the query
@@ -81,23 +78,12 @@ class CoursesController extends Controller
             'added_by' => Auth::user()->name
         ]);
 
-        return redirect(route('manage-departments.index'))->with('success', 'Courses created successfully.');
-    }
+        //return redirect(route('manage-departments.index'))->with('success', 'Courses created successfully.');
+        // return response()->json([
+        //     'message' => 'Successfully created course!'
+        // ]);
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
+        return redirect()->back()->with(['success' => true]);
     }
 
     /**
@@ -115,7 +101,9 @@ class CoursesController extends Controller
             'course_name' =>  $request->course_name
         ]);
 
-        return redirect(route('manage-departments.index'))->with('success', 'Courses updated successfully.');
+        return response()->json([
+            'message' => 'Successfully updated course!'
+        ]);
     }
 
     /**
@@ -125,6 +113,10 @@ class CoursesController extends Controller
     {
         Course::find($id)->delete();
 
-        return redirect(route('manage-departments.index'))->with('success', 'Courses deleted successfully.');
+        return redirect()->back()->with(['success' => true]);
+
+        // return response()->json([
+        //     'message' => 'Successfully deleted course!'
+        // ]);
     }
 }

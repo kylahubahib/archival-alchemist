@@ -67,6 +67,7 @@ Route::get('/payment/success', [PaymentSessionController::class, "paymentSuccess
 Route::get('/payment/cancel', [PaymentSessionController::class, "paymentCancel"])->name('payment.cancel');
 Route::post('/payment', [PaymentSessionController::class, 'PaymentSession'])->name('payment');
 
+Route::post('/cancel-subscription',[InstitutionSubscriptionController::class, 'cancelSubscription']);
 
 
 
@@ -138,7 +139,28 @@ Route::post('/send-message', function (Request $request) {
     return response()->json(['status' => 'Message sent!']);
 });
 
+use App\Mail\SubscriptionInquiryMail;
+use App\Mail\NewAccountMail;
+use Illuminate\Support\Facades\Mail;
+
+Route::post('/send-to-email', function (Request $request) {
+
+    $message = $request->input('message'); 
+    $user = Auth::user();
+    $data = [
+        'name' => $user->name,
+        'message' => $message
+    ];
+
+    //Mail::to($user->email)->send(new SubscriptionInquiryMail($data));
+    Mail::to($user->email)->send(new NewAccountMail(['name' => $user->name]));
+
+    return response()->json(['status' => 'Message sent!']);
+});
+
 Route::get('get-notifications', [NotificationController::class, 'getNotifications']);
+Route::post('mark-as-read', [NotificationController::class, 'markAsRead']);
+Route::post('clear-notifications', [NotificationController::class, 'clearNotifications']);
 
 
 //SUPERADMIN
@@ -224,8 +246,11 @@ Route::middleware(['auth', 'verified', 'user-type:admin'])->prefix('institution'
 
     Route::resource('/departments', DepartmentsController::class)->names('manage-departments');
 
+    Route::get('/get-courses', [CoursesController::class, 'getCourses'])->name('get-courses');
     Route::resource('/courses', CoursesController::class)->names('manage-courses');
 
+    
+    Route::get('/get-sections', [SectionsController::class, 'getSections'])->name('get-sections');
     Route::resource('/sections', SectionsController::class)->names('manage-sections');
 
     Route::get('/faculties', function () {
@@ -367,4 +392,5 @@ Route::middleware('auth')->group(function () {
 
 //Teacher Activity API routes
 Route::post('/store-newGroupClass', [TeacherClassController::class, 'newGroupClass']);
+
 require __DIR__.'/auth.php';

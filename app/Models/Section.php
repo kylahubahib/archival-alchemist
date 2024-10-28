@@ -13,7 +13,7 @@ class Section extends Model
     protected $table = 'sections';
 
     protected $fillable = [
-        'course_id',  // Corrected spelling here
+        'course_id',  
         'section_name',
         'added_by'
     ];

@@ -14,6 +14,7 @@ import { FiBell } from "react-icons/fi";
 import Echo from 'laravel-echo';
 
 import SuperAdminNotification from "@/Components/Notifications/SuperAdminNotification";
+import InsAdminNotification from "@/Components/Notifications/InsAdminNotification";
 
 export default function AdminLayout({ user, header, children }) {
     const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
@@ -27,6 +28,8 @@ export default function AdminLayout({ user, header, children }) {
     const closeModal = () => {
         setIsModalOpen(false);
     }
+
+    
 
     useEffect(() => {
 
@@ -59,6 +62,7 @@ export default function AdminLayout({ user, header, children }) {
 
     <div className="min-h-screen bg-customlightBlue flex select-none">
 
+        <div className="sm:block hidden">
         {user.user_type == 'superadmin' ? (
              //SIDEBAR FOR THE SUPER ADMIN
             <Sidebar color="customBlue" borderRadius="none" margin="0">
@@ -97,6 +101,7 @@ export default function AdminLayout({ user, header, children }) {
                 <SidebarItem icon={<FaEnvelope size={20} className="text-white group-hover:text-gray-600" />} text="Give Feedback" color="white" onClick={openModal} isActiveModal={isModalOpen}/>
             </Sidebar>
         )}
+        </div>
 
         <GiveFeedbackModal isOpen={isModalOpen} onClose={closeModal} />
 
@@ -108,9 +113,15 @@ export default function AdminLayout({ user, header, children }) {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-end h-14">
 
-                        <div className="flex items-center">
+                        <div className="flex items-center mx-3">
                             {/* <FiBell size={24} className="ml-3 text-gray-500" /> */}
-                            <SuperAdminNotification />
+
+                            {user.user_type == 'superadmin' ? (
+                                    <SuperAdminNotification />
+                                ) : (
+                                    <InsAdminNotification user={user} />
+                                )
+                            }
                         </div>
                         
 
@@ -188,10 +199,39 @@ export default function AdminLayout({ user, header, children }) {
                         </div>
 
                         <div className="mt-3 space-y-1">
-                            <ResponsiveNavLink href={route('profile.edit')}>Profile</ResponsiveNavLink>
-                            <ResponsiveNavLink method="post" href={route('logout')} as="button">
-                                Log Out
-                            </ResponsiveNavLink>
+                        {user.user_type == 'superadmin' ? (
+                                    <>
+                                    <ResponsiveNavLink href={route('dashboard.index')}>Dashboard</ResponsiveNavLink>
+                                    <ResponsiveNavLink href={route('users')}>Users</ResponsiveNavLink>
+                                    <ResponsiveNavLink href={route('archives')}>Archives</ResponsiveNavLink>
+                                    <ResponsiveNavLink href={route('subscription-billing')}>Subscription & Billing</ResponsiveNavLink>
+                                    <ResponsiveNavLink href={route('user-reports.index')}>User Reports</ResponsiveNavLink>
+                                    <ResponsiveNavLink href={route('user-feedbacks.index')}>User Feedbacks</ResponsiveNavLink>
+                                    <ResponsiveNavLink href={route('manage-terms-and-conditions.index')}>Terms & Conditions</ResponsiveNavLink>
+                                    <ResponsiveNavLink href={route('manage-subscription-plans.index')}>Subscription Plans</ResponsiveNavLink>
+                                    <ResponsiveNavLink href={route('manage-faqs.index')}>FAQs</ResponsiveNavLink>
+                                    <ResponsiveNavLink href={route('advanced-forum')}>Advanced</ResponsiveNavLink>
+                                    </>
+                            ) : (
+                                    <> 
+                                    <ResponsiveNavLink href={route('institution-students')}>Students</ResponsiveNavLink>
+                                    <ResponsiveNavLink href={route('institution-faculties')}>Faculties</ResponsiveNavLink>
+                                    <ResponsiveNavLink href={route('institution-coadmins')}>Co-admins</ResponsiveNavLink>
+                                    <ResponsiveNavLink href={route('manage-departments.index')}>Departments</ResponsiveNavLink>
+                                    <ResponsiveNavLink href={route('institution-archives')}>Archives</ResponsiveNavLink>
+                                    <ResponsiveNavLink href={route('institution-subscription-billing.index')}>Subscription & Billing</ResponsiveNavLink>
+                                    <ResponsiveNavLink href="https://m.me/432748959923780" externalLink>Chat With Us</ResponsiveNavLink>
+                                    <a onClick={openModal} className={`w-full flex font-medium items-start ps-3 pe-4 py-2 border-l-4 text-base focus:outline-none transition duration-150 ease-in-out
+                                    text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300`}>
+                                        Give Feedback 
+                                    </a>
+                                    </>
+        
+                                )}
+                                <ResponsiveNavLink href={route('profile.edit')}>Profile</ResponsiveNavLink>
+                                <ResponsiveNavLink method="post" href={route('logout')} as="button">
+                                    Log Out
+                                </ResponsiveNavLink>
                         </div>
                     </div>
                 </div>

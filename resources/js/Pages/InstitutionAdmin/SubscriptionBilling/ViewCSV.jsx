@@ -7,6 +7,7 @@ import Modal from "@/Components/Modal";
 import { showToast } from "@/Components/Toast";
 import PrimaryButton from "@/Components/PrimaryButton";
 import { Spinner } from "@nextui-org/react";
+import { router } from "@inertiajs/react";
 
 export default function ViewCSV({ isOpen, onClose, file, ins_sub}) {
     const [insubContent, setInsubContent] = useState(ins_sub.insub_content);
@@ -16,7 +17,8 @@ export default function ViewCSV({ isOpen, onClose, file, ins_sub}) {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        if (insubContent) {
+        console.log(insubContent);
+        if (insubContent != null) {
            axios.get('/institution/read-csv', {
             params: { filePath : insubContent },
         })
@@ -35,6 +37,8 @@ export default function ViewCSV({ isOpen, onClose, file, ins_sub}) {
             console.log('Failed to read CSV file.');
         });
 
+        } else {
+            setLoading(false);
         }
     }, [insubContent]); // Runs when insubContent changes
 
@@ -81,7 +85,8 @@ export default function ViewCSV({ isOpen, onClose, file, ins_sub}) {
                 onClose();
                 showToast('success', 'CSV uploaded successfully!');
                 // Perform the redirect after successful upload
-                window.location.href = response.data.redirect_url;
+                //window.location.href = response.data.redirect_url;
+                router.reload();
             } else {
                 showToast('info', response.data.message);
             }
@@ -112,7 +117,7 @@ export default function ViewCSV({ isOpen, onClose, file, ins_sub}) {
                 {!loading ? (
                     <>
                     <form onSubmit={submit}>
-                    <div className={`flex flex-row justify-between space-x-5 items-center w-full p-3`}>
+                    <div className={`flex flex-row justify-between space-x-5 items-center w-full px-3`}>
                     <label
                         htmlFor="dropzone-file"
                         className="flex items-center justify-center w-full h-10 border-2
@@ -161,7 +166,7 @@ export default function ViewCSV({ isOpen, onClose, file, ins_sub}) {
                     </PrimaryButton>
                     </div>
                     {errorMessage && (
-                        <p className="text-sm text-red-500 mt-2">
+                        <p className="text-sm text-red-500 my-2 text-center">
                             {errorMessage}
                         </p>
                     )}
@@ -189,8 +194,10 @@ export default function ViewCSV({ isOpen, onClose, file, ins_sub}) {
                                     </tr>
                                 ))
                             ) : (
-                                <tr>
-                                    <td colSpan={5}>No data available</td>
+                                <tr className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50">
+                                    <td colSpan="5" className="px-6 py-4 text-center text-gray-500">
+                                        No data available.
+                                    </td>
                                 </tr>
                             )}
                         </tbody>

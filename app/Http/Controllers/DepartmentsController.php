@@ -136,31 +136,7 @@ class DepartmentsController extends Controller
         Department::find($id)->delete();
 
         return redirect(route('manage-departments.index'))->with('success', 'Department deleted successfully.');
-    }
-
-    /**
-     * Display the courses under a specific department
-     */
-    public function getCourses(string $id)
-    {
-        $courses = Course::where('dept_id', $id)->get();
-
-        return Inertia::render('InstitutionAdmin/Departments/Departments', [
-            'courses' => $courses,
-        ]);
-    }
-
-     /**
-     * Display the sections under a specific course
-     */
-    public function getSections(string $id)
-    {
-        $sections = Section::where('course_id', $id)->get();
-
-        return Inertia::render('InstitutionAdmin/Departments/Departments', [
-            'sections' => $sections,
-        ]);
-    }
+    }    
 
     
 }

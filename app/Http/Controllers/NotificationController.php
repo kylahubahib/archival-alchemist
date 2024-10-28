@@ -10,6 +10,7 @@ use Inertia\Inertia;
 use Inertia\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Carbon\Carbon;
 
 
 class NotificationController extends Controller
@@ -43,6 +44,28 @@ class NotificationController extends Controller
         return response()->json([
             'notificationData' => $notificationData
         ]);
+    }
+
+
+    public function markAsRead()
+    {
+        $userId = Auth::id();
+    
+        Notification::where('notifiable_id', $userId)
+            ->whereNull('read_at')
+            ->update(['read_at' => Carbon::now()]);
+    
+        return response()->json(['message' => 'Notifications marked as read.']);
+    }
+
+    
+    public function clearNotifications()
+    {
+        $userId = Auth::id();
+
+        Notification::where('notifiable_id', $userId)->delete();
+
+        return response()->json(['message' => 'Notifications cleared.']);
     }
 
     

@@ -18,6 +18,7 @@ export default function UpdateProfileInformation({ mustVerifyEmail, status, clas
         uni_id_num: user.uni_id_num || '',
         user_pnum: user.user_pnum || '',
         user_aboutme: user.user_aboutme || '',
+        user_dob: user.user_dob || ''
     });
 
     const [profilePic, setProfilePic] = useState(user.user_pic);
@@ -124,6 +125,20 @@ export default function UpdateProfileInformation({ mustVerifyEmail, status, clas
                     />
                     <InputError className="mt-2" message={errors.user_pnum} />
                 </div>
+
+                <div>
+                    <InputLabel htmlFor="user_dob" value="Date of Birth" />
+                    <TextInput
+                        id="user_dob"
+                        type="date"
+                        name="user_dob"
+                        value={data.user_dob}
+                        className="my-1 block w-full"
+                        onChange={(e) => setData('user_dob', e.target.value)}
+                    />
+                    <InputError message={errors.user_dob} className="mt-2" />
+                </div>
+
 
                 <div>
                     <InputLabel htmlFor="user_aboutme" value="About Me" />

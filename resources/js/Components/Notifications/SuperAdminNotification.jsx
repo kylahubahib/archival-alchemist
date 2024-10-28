@@ -1,9 +1,8 @@
 import { Link } from '@inertiajs/inertia-react';
-import { Divider } from '@nextui-org/react';
+import { Divider, Spinner } from '@nextui-org/react';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
 import Echo from 'laravel-echo';
-import { Spinner } from 'flowbite-react';
 
 export default function SuperAdminNotification({}) {
     const [notificationData, setNotificationData] = useState([]);
@@ -21,29 +20,49 @@ export default function SuperAdminNotification({}) {
 
         const channel = window.Echo.channel('superadmin-notifications');
         channel.listen('.notification', (data) => {
-            setNotificationData((prev) => [...prev, data]); // Append new notification
+            //setNotificationData((prev) => [...prev, data]);
             setNotifying(true);
         });
     }, []);
 
     const handleClick = () => {
         if (!dropdownOpen) {
-            setLoading(true); // Show loading spinner when dropdown is opened
+            setLoading(true); 
 
             axios.get('/get-notifications')
                 .then(response => {
                     setNotificationData(response.data.notificationData);
-                    setLoading(false); // Stop spinner once data is loaded
-                    setNotifying(false); // Reset the notification indicator
+                    setLoading(false); 
+                    setNotifying(false); 
+
+                    axios.post('/mark-as-read');
                 })
                 .catch(error => {
                     console.error(error);
-                    setLoading(false); // Stop spinner even if there is an error
+                    setLoading(false); 
                 });
         }
 
-        setDropdownOpen(!dropdownOpen); // Toggle the dropdown state
+        setDropdownOpen(!dropdownOpen); 
     };
+
+    const clearNotifications = () => {
+        axios.post('/clear-notifications').then(response => {
+            setNotificationData([]);
+        })
+        .catch(error => {
+            console.error(error);
+        });
+    }
+
+    // const markAsRead = () => {
+    //     axios.post('/mark-as-read').then(response => {
+            
+    //     })
+    //     .catch(error => {
+    //         console.error(error);
+    //     });
+    // }
 
     return (
         <div className="relative">
@@ -73,30 +92,33 @@ export default function SuperAdminNotification({}) {
 
             {dropdownOpen && (
                 <div 
-                    className="absolute -right-[108px] mt-2.5 flex max-h-[550px] min-w-[350px] flex-col rounded-sm border pl-5 border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark sm:right-0 sm:w-[320px]"
+                    className="absolute -right-[108px] mt-2.5 flex max-h-[550px] min-w-[450px] flex-col rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark sm:right-0 sm:w-[320px]"
                 >
-                    <div className="px-4.5 py-3">
+                    <div className="px-8 pr-8 py-3 flex justify-between">
                         <h5 className="text-sm font-medium text-bodydark2">
                             Notification
                         </h5>
+                        {/* <button onClick={markAsRead} className={`text-sm font-medium text-gray-500 hover:text-blue-500}`}>
+                            Mark All As Read
+                        </button> */}
                     </div>
 
                     {loading ? (
                         <>
                             <Divider />
                             <div className="text-gray-500 flex justify-center py-3">
-                                <Spinner />
+                                <Spinner size='sm'/>
                             </div>
                         </>
                     ) : (
-                        <ul className="flex h-auto flex-col overflow-y-auto">
+                        <ul className="flex h-auto flex-col  overflow-y-auto">
                             {notificationData.length > 0 ? (
                                 notificationData.map((notif, index) => (
                                     <li key={index}>
                                         <div
-                                            className="flex flex-col gap-2.5 border-t border-stroke px-4.5 py-3 hover:bg-gray-2 dark:border-strokedark dark:hover:bg-meta-4"
-                                            to="#"
-                                        >
+                                            className={`flex px-5 flex-col gap-2.5 border-t border-stroke px-4.5 py-3 hover:bg-gray-2 dark:border-strokedark dark:hover:bg-meta-4
+                                            ${notif.read_at == null ? ' bg-gray-100' : 'bg-white'}`}
+                                           >
                                             <p className="text-sm">
                                                 <span className="text-black dark:text-white">
                                                     {notif.data.message}
@@ -116,6 +138,14 @@ export default function SuperAdminNotification({}) {
                             )}
                         </ul>
                     )}
+
+                    <div className="px-4.5">
+                        <Divider/>
+                        <button onClick={clearNotifications} disabled={notificationData ? true : false}  className={`text-sm font-medium p-2 ${!notificationData ? 'text-red-400 mt-2 hover:text-red-500' : 'text-gray-400'}`}>
+                            Clear Notifications
+                        </button>
+                    </div>
+
                 </div>
             )}
         </div>

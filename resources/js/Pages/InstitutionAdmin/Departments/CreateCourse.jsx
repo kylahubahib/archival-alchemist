@@ -4,7 +4,7 @@ import Modal from '@/Components/Modal';
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import { showToast } from '@/Components/Toast';
-import { useForm } from '@inertiajs/react';
+import { router, useForm } from '@inertiajs/react';
 
 export default function CreateCourse({isOpen, onClose, deptId, branchId}) {
 
@@ -17,10 +17,11 @@ export default function CreateCourse({isOpen, onClose, deptId, branchId}) {
     const createSubmit = (e) => {
         e.preventDefault();
         post(route('manage-courses.store'), {
-            onSuccess: () => {
-                onClose();
-                showToast('success', 'Successfully added course!')
-                reset();
+            onSuccess: (response) => {
+                    onClose();
+                    showToast('success', 'Successfully added course!')
+                    reset();
+                    //refreshTable(deptId);
             },
         });
     };
@@ -30,6 +31,15 @@ export default function CreateCourse({isOpen, onClose, deptId, branchId}) {
         clearErrors(); 
         onClose();
     };
+
+    const refreshTable = (id) => {
+        axios.get('get-courses', {
+            params: { id: id }
+        }).then(response => {
+            setFilteredData(response.data.courses.data); 
+            setCourses(response.data.courses.data); 
+        });
+    }
     
 
     return (

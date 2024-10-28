@@ -34,11 +34,8 @@ export default function AffiliateUniversity({ isOpen, onOpenChange, setIsAffilia
             .then((response) => {
                 setMessage(response.data.message);
                 ///console.log('Success:', response.data.message);
-                console.log(response.data.is_affiliated);
+                //console.log('affiliation', response.data.is_affiliated);
                 setIsAffiliated(response.data.is_affiliated);
-
-
-
             })
             .catch((error) => {
                 if (error.response) {

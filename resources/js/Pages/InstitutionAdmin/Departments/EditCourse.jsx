@@ -3,6 +3,7 @@ import InputLabel from '@/Components/InputLabel';
 import Modal from '@/Components/Modal';
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
+import { showToast } from '@/Components/Toast';
 import { useForm } from '@inertiajs/react';
 
 export default function EditCourse({isOpen, onClose, deptId, course}) {
@@ -18,7 +19,7 @@ export default function EditCourse({isOpen, onClose, deptId, course}) {
             preserveScroll: true,
             onSuccess: () => {
                 onClose();
-                alert('Successfully Updated!');
+                showToast('success', 'Successfully updated course!');
             },
             onError: (errors) => {
                 console.error('Update failed', errors);

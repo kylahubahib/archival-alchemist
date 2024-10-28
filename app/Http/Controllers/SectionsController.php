@@ -12,21 +12,23 @@ use Illuminate\Support\Facades\Auth;
 
 class SectionsController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index(string $id)
-    {
-       // 
-    }
-    
 
-    /**
-     * Show the form for creating a new resource.
+
+     /** 
+     * Display the sections under a specific course
      */
-    public function create()
+    public function getSections(Request $request)
     {
-        //
+        $id = $request->get('id');
+        
+        $sections = Section::with('course')
+            ->where('course_id', $id)->paginate(100);
+
+        \Log::info($sections);
+
+       return response()->json([
+            'sections' => $sections
+       ]);
     }
 
     /**
@@ -38,7 +40,7 @@ class SectionsController extends Controller
 
         $request->validate([
             'course_id' => 'required|integer',
-            'section_name' => 'required|string|unique:sections',
+            'section_name' => 'required|string',
         ]);
 
         \Log::info('New Section: ', $request->all());
@@ -49,23 +51,11 @@ class SectionsController extends Controller
             'added_by' => Auth::user()->name
         ]);
 
-        return redirect(route('manage-sections.index'))->with('success', 'Section created successfully.');
-    }
+        // return response()->json([
+        //     'message' => 'Successfully created a section!'
+        // ]);
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
+        return redirect()->back()->with(['success' => true]);
     }
 
     /**
@@ -74,18 +64,20 @@ class SectionsController extends Controller
     public function update(Request $request, string $id)
     {
         $request->validate([
-            'course_id' => 'required|integer',
             'section_name' => 'required|string',
         ]);
 
         $section = Section::find($id);
 
         $section->update([
-            'course_id' => $request->dept_id,
-            'course_name' =>  $request->course_name
+            'section_name' =>  $request->section_name
         ]);
 
-        return redirect(route('manage-sections.index'))->with('success', 'Section updated successfully.');
+        // return response()->json([
+        //     'message' => 'Successfully updated section!'
+        // ]);
+
+        return redirect()->back()->with(['success' => true]);
     }
 
     /**
@@ -95,6 +87,8 @@ class SectionsController extends Controller
     {
         Section::find($id)->delete();
 
-        return redirect(route('manage-sections.index'))->with('success', 'Section deleted successfully.');
+        return response()->json([
+            'message' => 'Successfully deleted section!'
+        ]);
     }
 }
