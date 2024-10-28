@@ -232,8 +232,6 @@ const UploadCapstone = ({class_code}) => {
         } else {
             window.scrollTo(0, 0);
         }
-
-
     };
 
     return (
@@ -414,3 +412,4 @@ const UploadCapstone = ({class_code}) => {
 };
 
 export default UploadCapstone;
+

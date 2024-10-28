@@ -6,11 +6,13 @@ use App\Models\Author;
 use Illuminate\Support\Facades\File;
 use Illuminate\Http\JsonResponse;
 use App\Models\ClassModel;
+use App\Models\Rating;
 use App\Models\ManuscriptProject;
 use App\Models\ManuscriptTag;
 use App\Models\Favorite;
 use App\Models\Tags;
 use App\Models\User;
+use App\Models\ClassStudent;
 use App\Models\RevisionHistory;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
@@ -151,7 +153,7 @@ class StudentClassController extends Controller
             {
                 $class = ClassModel::where('class_code', $classCode)->first();
                 $faculty = $class->ins_id;
-                
+
                 RevisionHistory::create([
                     'ins_comment' => null,
                     'man_doc_id' => $manuscriptProject->id,
@@ -175,24 +177,29 @@ class StudentClassController extends Controller
 
     public function checkClassCode(Request $request)
     {
+        // Validate the incoming request to ensure 'class_code' is provided and is a string
         $request->validate([
             'class_code' => 'required|string',
         ]);
 
+        // Attempt to find a class in the database where the class_code matches the provided value
         $class = ClassModel::where('class_code', $request->class_code)->first();
 
+        // If a class is found, return a JSON response indicating that it exists
         if ($class) {
             return response()->json([
-                'exists' => true,
-                'classDetails' => [
-                    'class_name' => $class->class_name,
-                    'ins_id' => $class->ins_id,
+                'exists' => true, // Indicate that the class code exists
+                'classDetails' => [ // Provide additional details about the class
+                    'class_name' => $class->class_name, // The name of the class
+                    'ins_id' => $class->ins_id, // The instructor ID associated with the class
                 ],
             ]);
         } else {
+            // If no class is found, return a JSON response indicating that it does not exist
             return response()->json(['exists' => false]);
         }
     }
+
 
     public function storeStudentClass(Request $request)
     {
@@ -203,14 +210,18 @@ class StudentClassController extends Controller
         ]);
 
         $userId = Auth::id();
-        //$user
-
-        //\Log::info('in the student class');
 
         try {
+            // Check if the class exists
+            $class = ClassModel::where('class_code', $request->class_code)->first();
+
+            if (!$class) {
+                return response()->json(['success' => false, 'message' => 'Class code not found']);
+            }
+
             // Check if the user is already enrolled in the class
-            $existingEnrollment = ClassModel::where([
-                ['class_code', $request->class_code],
+            $existingEnrollment = ClassStudent::where([
+                ['class_id', $class->id],
                 ['stud_id', $userId],
             ])->first();
 
@@ -218,22 +229,13 @@ class StudentClassController extends Controller
                 // User is already enrolled
                 return response()->json(['success' => true, 'message' => 'Already enrolled']);
             } else {
-                // Check if the class exists
-                $class = ClassModel::where('class_code', $request->class_code)->first();
+                // Insert the new enrollment
+                ClassStudent::create([
+                    'class_id' => $class->id, // Use the class ID from ClassModel
+                    'stud_id' => $userId, // Store the user ID
+                ]);
 
-                if ($class) {
-                    // Insert the new enrollment
-                    ClassModel::create([
-                        'class_code' => $request->class_code,
-                        'class_name' => $request->class_name,
-                        'ins_id' => $request->ins_id,
-                        'stud_id' => $userId, // Store the user ID
-                    ]);
-
-                    return response()->json(['success' => true, 'message' => 'Joined class successfully']);
-                } else {
-                    return response()->json(['success' => false, 'message' => 'Class code not found']);
-                }
+                return response()->json(['success' => true, 'message' => 'Joined class successfully']);
             }
         } catch (\Exception $e) {
             // Log the error and return a response
@@ -241,6 +243,7 @@ class StudentClassController extends Controller
             return response()->json(['success' => false, 'message' => 'An error occurred while joining the class.'], 500);
         }
     }
+
 
 
 
@@ -470,7 +473,7 @@ public function myfavoriteManuscripts()
          $filename = $manuscript->man_doc_content; // Get the filename from the database
 
          // Log the filename for debugging
-         \Log::info('Filename for download: ' . $filename);
+         Log::info('Filename for download: ' . $filename);
 
          // Ensure the filename has the correct extension
          $filePath = storage_path('app/public/' . str_replace('storage/', '', $filename));
@@ -500,42 +503,147 @@ public function myfavoriteManuscripts()
 
 
 
-    
-    public function checkStudentInClass()
-    {
-        // Load user with manuscripts that are not approved, including tags and revision history
-        $user = Auth::user()->load([
-            'manuscripts' => function ($query) {
-                $query->where('man_doc_status', 'X');
-            },
-            'manuscripts.tags',
-            'manuscripts.revision_history.faculty',
-            'manuscripts.authors'
+public function checkStudentInClass()
+{
+    // Get the authenticated user
+    $user = Auth::user();
+
+    // Check if the user is enrolled in any class
+    $studentClass = ClassStudent::where('stud_id', $user->id)->first();
+
+    if ($studentClass) {
+        return response()->json([
+            'class' => $studentClass->class_id, // Return the class code if enrolled
+        ]);
+    } else {
+        return response()->json(); // Return an empty response if not enrolled
+    }
+}
+
+
+
+public function storeRatings(Request $request)
+{
+    Log::info('Incoming request: ', $request->all());
+
+    try {
+                // Check if the user is authenticated
+        if (!Auth::check()) {
+            return response()->json(['error' => 'To submit a rating, please log in.'], 401);
+        }
+        // Log request data before validation
+        Log::info('Request data: ', $request->all());
+
+        // Validate the request
+        $request->validate([
+            'manuscript_id' => 'required|exists:manuscripts,id',
+            'rating' => 'required|integer|between:1,5',
         ]);
 
-        \Log::info($user->toArray());
+        // Log user ID for debugging
+        $userId = Auth::id();
+        Log::info('User ID: ' . $userId);
 
-        $studentClass = ClassModel::where('stud_id', $user->id)->first();
+        // Check if the user has already rated this manuscript
+        $existingRating = Rating::where([
+            'user_id' => $userId,
+            'manuscript_id' => $request->manuscript_id,
+        ])->first();
 
-        if($studentClass) {
-            return response()->json([
-                'class' => $studentClass->class_code,
-                'manuscript' => $user->manuscripts
-            ]);
+        if ($existingRating) {
+            return response()->json(['message' => 'You have already rated this manuscript.'], 409);
         }
-        else {
-            return response()->json();
-        }
 
-       
+        // Log data to be used in the updateOrCreate
+        Log::info('Creating rating with data:', [
+            'user_id' => $userId,
+            'manuscript_id' => $request->manuscript_id,
+            'rating' => $request->rating,
+        ]);
+        Log::info('Creating rating with data:', [
+            'user_id' => $userId,
+            'manuscript_id' => $request->manuscript_id,
+            'rating' => $request->rating,
+        ]);
+
+        // Create the new rating
+        $rating = Rating::create([
+            'user_id' => $userId,
+            'manuscript_id' => $request->manuscript_id,
+            'rating' => $request->rating,
+        ]);
+
+        return response()->json(['message' => 'Rating submitted successfully!', 'rating' => $rating], 201);
+    } catch (\Exception $e) {
+        Log::error('Error submitting rating', [
+            'exception' => $e->getMessage(),
+            'stack' => $e->getTraceAsString(),
+            'request' => $request->all(),
+        ]);
+        return response()->json(['error' => 'Failed to submit rating: ' . $e->getMessage()], 500);
     }
-
-
 
 }
 
 
 
+// public function storeRatings(Request $request)
+// {
+//     Log::info('Incoming request: ', $request->all());
+
+//     try {
+//         // Check if the user is authenticated
+//         if (!Auth::check()) {
+//             return response()->json(['error' => 'You need to log in first.'], 401);
+//         }
+
+//         // Log request data before validation
+//         Log::info('Request data: ', $request->all());
+
+//         // Validate the request
+//         $request->validate([
+//             'manuscript_id' => 'required|exists:manuscripts,id',
+//             'rating' => 'required|integer|between:1,5',
+//         ]);
+
+//         // Log user ID for debugging
+//         $userId = Auth::id();
+//         Log::info('User ID: ' . $userId);
+
+//         // Check if the user has already rated this manuscript
+//         $existingRating = Rating::where([
+//             'user_id' => $userId,
+//             'manuscript_id' => $request->manuscript_id,
+//         ])->first();
+
+//         if ($existingRating) {
+//             return response()->json(['message' => 'You have already rated this manuscript.'], 409);
+//         }
+
+//         // Log data to be used in the updateOrCreate
+//         Log::info('Creating rating with data:', [
+//             'user_id' => $userId,
+//             'manuscript_id' => $request->manuscript_id,
+//             'rating' => $request->rating,
+//         ]);
+
+//         // Create the new rating
+//         $rating = Rating::create([
+//             'user_id' => $userId,
+//             'manuscript_id' => $request->manuscript_id,
+//             'rating' => $request->rating,
+//         ]);
+
+//         return response()->json(['message' => 'Rating submitted successfully!', 'rating' => $rating], 201);
+//     } catch (\Exception $e) {
+//         Log::error('Error submitting rating', [
+//             'exception' => $e->getMessage(),
+//             'stack' => $e->getTraceAsString(),
+//             'request' => $request->all(),
+//         ]);
+//         return response()->json(['error' => 'Failed to submit rating.'], 500);
+//     }
+// }
 
 
-
+}

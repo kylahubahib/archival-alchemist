@@ -12,7 +12,7 @@ class ManuscriptProject extends Model
 {
     use HasFactory, Notifiable;
 
-    protected $table = 'manuscripts'; 
+    protected $table = 'manuscripts';
 
     protected $fillable = [
         'man_doc_title',
@@ -59,6 +59,14 @@ class ManuscriptProject extends Model
     {
         return $this->hasMany(RevisionHistory::class, 'man_doc_id');
     }
+    public function class()
+    {
+        return $this->belongsTo(ClassModel::class, 'class_code');
+    }
 
-
+    //A manuscript can have many ratings.
+    public function ratings()
+    {
+        return $this->hasMany(Rating::class);
+    }
 }

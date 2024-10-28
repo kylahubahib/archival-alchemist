@@ -15,7 +15,7 @@ return new class extends Migration
             // Define the columns
             $table->unsignedBigInteger('user_id');
             $table->unsignedBigInteger('man_doc_id');
-            
+
 
             // Set the composite primary key
             $table->primary(['user_id', 'man_doc_id']);

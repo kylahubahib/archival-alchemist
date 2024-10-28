@@ -142,5 +142,21 @@ class User extends Authenticatable
     {
         return $this->hasMany(RevisionHistory::class, 'ins_id');
     }
+    public function classes()
+    {
+        return $this->belongsToMany(ClassModel::class, 'class_student', 'stud_id', 'class_id');
+    }
 
+
+    //A user can have many ratings.
+    public function ratings()
+    {
+        return $this->hasMany(Rating::class);
+    }
+
+    // Define the relationship with the Author model
+    public function authors(): HasMany
+    {
+        return $this->hasMany(Author::class, 'user_id');
+    }
 }

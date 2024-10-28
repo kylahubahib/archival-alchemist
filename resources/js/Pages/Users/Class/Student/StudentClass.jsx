@@ -8,6 +8,7 @@ import UploadCapstone from '@/Pages/Users/Class/Student/UploadCapstone';
 import Track from '@/Pages/Users/Class/Student/Track';
 import Approve from '@/Pages/Users/Class/Student/Approved';
 import { Spinner } from '@nextui-org/react';
+import { Skeleton } from '@nextui-org/skeleton'; // Import Skeleton
 //gjf
 export default function StudentClass({ auth }) {
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -19,28 +20,66 @@ export default function StudentClass({ auth }) {
     const [manuscript, setManuscript] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        axios.get('http://127.0.0.1:8000/check-student-in-class') // Make sure the URL is correct
-        .then(response => {
-            if (response.data.class) {
-                setManuscript(response.data.manuscript);
-                setClassCode(response.data.class);
-                setJoinedClass(true);
+    // useEffect(() => {
+    //     // Fetch data from the specified URL
+    //     axios.get('http://127.0.0.1:8000/check-student-in-class') // Make sure the URL is correct
+    //     .then(response => {
+    //         // Check if the response contains class data
+    //         if (response.data.class) {
+    //             // Update state with the manuscript data
+    //             setManuscript(response.data.manuscript);
+    //             // Update state with the class code
+    //             setClassCode(response.data.class);
+    //             // Mark that the class has been joined
+    //             setJoinedClass(true);
 
-                // Check if manuscript array is empty
-                if (response.data.manuscript.length === 0) {
-                    setActiveTab('track');
-                } else {
-                    setActiveTab('upload');
-                }
-            }
-            setLoading(false);
-        })
-        .catch(error => {
-            console.error('Error fetching student class info:', error);
-            setLoading(false); // Ensure loading is stopped even on error
-        });
-    }, []);
+    //             // Check if the manuscript array is empty
+    //             if (response.data.manuscript.length === 0) {
+    //                 // If empty, set the active tab to 'track'
+    //                 setActiveTab('track');
+    //             } else {
+    //                 // If not empty, set the active tab to 'upload'
+    //                 setActiveTab('upload');
+    //             }
+    //         }
+    //         // Stop the loading state
+    //         setLoading(false);
+    //     })
+    //     .catch(error => {
+    //         // Log any errors that occur during the fetch
+    //         console.error('Error fetching student class info:', error);
+    //         // Ensure loading is stopped even if there's an error
+    //         setLoading(false);
+    //     });
+    // }, []);
+
+
+    useEffect(() => {
+    // Fetch data from the specified URL
+    axios.get('http://127.0.0.1:8000/check-student-in-class') // Ensure the URL is correct
+    .then(response => {
+        // Check if the response contains class data
+        if (response.data.class) {
+            // Update state with the class code
+            setClassCode(response.data.class);
+            // Mark that the class has been joined
+            setJoinedClass(true); // Student is already joined if class exists
+            setActiveTab('track');
+        } else {
+            // If no class data, set joinedClass to false
+            setJoinedClass(false); // Explicitly set to false
+        }
+        // Stop the loading state
+        setLoading(false);
+    })
+    .catch(error => {
+        // Log any errors that occur during the fetch
+        console.error('Error fetching student class info:', error);
+        // Ensure loading is stopped even if there's an error
+        setLoading(false);
+    });
+}, []);
+
 
 
     const openModal = () => {
@@ -205,14 +244,30 @@ export default function StudentClass({ auth }) {
                     </div>
                 </div>
             ) : (
-                <div className="flex justify-center items-center min-h-screen space-y-3">
-                    <Spinner size='lg' />
+                <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
+                <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                    <div className="p-6 text-gray-900 min-h-screen flex flex-col">
+                        <div className="flex flex-col items-center justify-center m-20">
+                            <Skeleton className="h-32 w-32 rounded-full" />
+                            <Skeleton className="mt-4 h-10 w-48 rounded-md" />
+                        </div>
+                        <div className="flex justify-between items-center mt-6">
+                            <div className="flex">
+                                <Skeleton className="h-10 w-20 rounded-md mr-2" />
+                                <Skeleton className="h-10 w-20 rounded-md mr-2" />
+                                <Skeleton className="h-10 w-20 rounded-md" />
+                            </div>
+                            <Skeleton className="h-10 w-32 rounded-md" />
+                        </div>
+                        <div className="border-b border-gray-300 w-full mt-4"></div>
+                        <div className="bg-gray-100 flex-grow rounded-b-lg w-full mt-4">
+                            <Skeleton className="h-48 w-full rounded-md" />
+                        </div>
+                    </div>
                 </div>
-
-            )
-
-            }
             </div>
+        )}
+    </div>
 
             <Modal show={isModalOpen} onClose={closeModal}>
                 <div className="p-6">

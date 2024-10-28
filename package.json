@@ -22,12 +22,16 @@
         "vite": "^5.0"
     },
     "dependencies": {
+        "@emotion/react": "^11.13.3",
+        "@emotion/styled": "^11.13.0",
         "@fortawesome/fontawesome-svg-core": "^6.6.0",
         "@fortawesome/free-solid-svg-icons": "^6.6.0",
         "@fortawesome/react-fontawesome": "^0.2.2",
         "@heroicons/react": "^2.1.5",
         "@inertiajs/inertia": "^0.11.1",
         "@inertiajs/inertia-react": "^0.8.1",
+        "@mui/material": "^6.1.5",
+        "@mui/styled-engine-sc": "^6.1.5",
         "@nextui-org/react": "^2.4.8",
         "browser-image-compression": "^2.0.2",
         "chart.js": "^4.4.5",
@@ -40,7 +44,8 @@
         "pdfjs-dist": "^4.6.82",
         "react-chartjs-2": "^5.2.0",
         "react-icons": "^5.2.1",
-        "react-toastify": "^10.0.5",
-        "react-vertical-timeline-component": "^3.6.0"
+        "react-toastify": "^10.0.6",
+        "react-vertical-timeline-component": "^3.6.0",
+        "styled-components": "^6.1.13"
     }
 }

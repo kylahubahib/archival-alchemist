@@ -23,11 +23,17 @@ class Author extends Model
         return $this->belongsToMany(ManuscriptProject::class, 'man_doc_id');
     }
 
-    //One to may relationship
-    public function user(): BelongsToMany
-    {
-        return $this->belongsToMany(User::class, 'user_id');
-    }
+    // //One to may relationship
+    // public function user(): BelongsToMany
+    // {
+    //     return $this->belongsToMany(User::class, 'user_id');
+    // }
+
+    // In Author.php model
+public function user()
+{
+    return $this->belongsTo(User::class, 'user_id', 'id'); // Ensure correct mapping
+}
 
 
 }

@@ -2,7 +2,7 @@
 
 use App\Http\Controllers\StudentClassController;
 use App\Http\Controllers\TeacherClassController;
-
+use Illuminate\Support\Facades\Route;
 use App\Models\Student;
 use App\Http\Controllers\TagController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
@@ -34,7 +34,6 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Middleware\CheckUserTypeMiddleware;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
-use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Response;
 use Inertia\Inertia;
@@ -352,7 +351,7 @@ Route::get('/api/my-approved-manuscripts', [StudentClassController::class, 'myAp
 Route::get('/api/my-favorite-manuscripts', [StudentClassController::class, 'myfavoriteManuscripts']);
 
 Route::post('/api/addfavorites', [StudentClassController::class, 'storefavorites'])
-    ->middleware(['auth', 'verified', 'user-type:student'])
+    ->middleware(['auth', 'verified', 'user-type:student, teacher'])
     ->name('storefavorites');
     Route::get('/manuscript/{id}/download', [StudentClassController::class, 'downloadPdf'])->name('manuscript.download');
 
@@ -362,13 +361,13 @@ Route::post('/api/addfavorites', [StudentClassController::class, 'storefavorites
 
 // Add the correct middleware if needed
 Route::get('/user/{id}/favorites', [StudentClassController::class, 'getUserFavorites'])
-->middleware(['auth', 'verified', 'user-type:student'])
+->middleware(['auth', 'verified', 'user-type:student, teacher'])
 ->name('getUserFavorites');
 
 
 // Route for removing a favorite
 Route::delete('/api/removefavorites', [StudentClassController::class, 'removeFavorite'])
-    ->middleware(['auth', 'verified', 'user-type:student'])
+    ->middleware(['auth', 'verified', 'user-type:student,teacher'])
     ->name('removeFavorite');
 
 
@@ -384,13 +383,32 @@ Route::get('/searchlib', [SearchController::class, 'searchlib']);
 
 
 Route::middleware('auth')->group(function () {
-    Route::get('/teacher/class', [TeacherClassController::class, 'index'])->name('teacher.class');
+   Route::get('/teacher/class', [TeacherClassController::class, 'index'])->name('teacher.class');
 });
+
+
+// Route::middleware('auth')->group(function () {
+//     Route::get('/display/groupclass', [TeacherClassController::class, 'DisplayGroupClass'])->name('teacher.class');
+// });
 
 
 
 
 //Teacher Activity API routes
 Route::post('/store-newGroupClass', [TeacherClassController::class, 'newGroupClass']);
+Route::get('/manuscripts/class', [TeacherClassController::class, 'getManuscriptsByClass']);
+// Route for updating manuscript status
+Route::put('/manuscripts/{id}/update-status', [TeacherClassController::class, 'updateManuscriptStatus']);
+Route::get('/get-manuscripts', [TeacherClassController::class, 'getManuscriptsByClass']);
+Route::get('/students/search', [TeacherClassController::class, 'searchStudents']);
+Route::post('/classes/add-students', [TeacherClassController::class, 'addStudentsToClass']);
 
+
+//Ratings
+// Route::post('/ratings', [StudentClassController::class, 'storeRatings'])
+// ->middleware(['auth', 'user-type:student, teacher'])->name('storeRatings');
+
+//Ratings
+Route::post('/ratings', [StudentClassController::class, 'storeRatings']);
+Route::get('/groupmembers/{manuscriptId}', [TeacherClassController::class, 'ViewGroupMembers']);
 require __DIR__.'/auth.php';
