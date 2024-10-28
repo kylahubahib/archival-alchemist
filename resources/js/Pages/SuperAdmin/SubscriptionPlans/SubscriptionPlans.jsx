@@ -53,7 +53,7 @@ export default function SubscriptionPlans({ auth, subscriptionPlans = [], featur
             router.delete(route('manage-subscription-plans.destroy', id), {
                 preserveScroll: true,
                 onSuccess: () => {
-                    alert('Successfully deleted!');
+                    alert('Successfully deleted plan!');
                 },
             });
         }

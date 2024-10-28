@@ -4,7 +4,7 @@ use App\Http\Controllers\StudentClassController;
 use App\Http\Controllers\TeacherClassController;
 
 use App\Models\Forum;
-use App\Models\Student;
+use App\Models\Student; 
 use App\Http\Controllers\TagController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 

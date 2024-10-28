@@ -225,8 +225,9 @@ class UserReportController extends Controller
                     \Log::info('Content: ', $content->toArray());
                 
                     $content->update([
-                        'forum_status' => 'Hidden'
+                        'forum_status' => 'Hidden',
                     ]);
+
                 
                     $user = User::find($content->user_id);
                     if ($user) {
