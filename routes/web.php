@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\Route;
 use App\Models\Forum;
 use App\Models\Student;
 use App\Http\Controllers\TagController;
+
+use App\Http\Controllers\ForumPostController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 
 

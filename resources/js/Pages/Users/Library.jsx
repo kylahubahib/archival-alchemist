@@ -9,6 +9,12 @@ import RecManuscript from '@/Components/Manuscripts/RecommendedManuscript';
 import SearchBar from '@/Components/SearchBars/LibrarySearchBar';
 import React from 'react';
 
+const currentYear = new Date().getFullYear(); // Get the current year
+const yearOptions = Array.from(
+    { length: currentYear - 2024 + 1 },
+    (_, i) => currentYear - i
+  ); // Generates years from current year down to 2024
+
 export default function Library({ auth }) {
     const isAuthenticated = !!auth.user; // Check if user is authenticated
     const MainLayout = isAuthenticated ? AuthenticatedLayout : GuestLayout;
@@ -17,6 +23,14 @@ export default function Library({ auth }) {
     const [activeTab, setActiveTab] = useState('AllBooks');
     const [manuscripts, setManuscripts] = useState([]); // State for manuscripts
     const [searchQuery, setSearchQuery] = useState('');
+
+
+
+    const [startYear, setStartYear] = useState(yearOptions[0]); // Default to current year
+    const [endYear, setEndYear] = useState(yearOptions[0]); // Default to current year
+
+
+
 
     const handleSearch = (e) => {
         e.preventDefault();
@@ -99,6 +113,17 @@ const renderActiveTabContent = () => {
     }
 };
 
+const handleEndYearChange = (e) => {
+    const selectedYear = parseInt(e.target.value, 10);
+
+    // Check if the selected end year is less than or equal to the start year
+    if (selectedYear <= startYear) {
+      alert("End Year must be greater than Start Year");
+    } else {
+      setEndYear(selectedYear); // Update end year only if it's valid
+    }
+  };
+
 
     return (
         <MainLayout
@@ -131,32 +156,45 @@ const renderActiveTabContent = () => {
                                     University
                                 </button>
                             </div>
-                            <div className="flex items-center space-x-4">
-                                Year
-                                <input
-                                    type="text"
-                                    value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                    onKeyDown={handleKeyDown}
-                                    placeholder="Start"
-                                    className="mx-4 px-4 py-2 border border-gray-300 rounded-md"
-                                    style={{ width: '70px' }} // Custom width
-                                />-
-                                <input
-                                    type="text"
-                                    value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                    onKeyDown={handleKeyDown}
-                                    placeholder="End"
-                                    className="mx-4 px-4 py-2 border border-gray-300 rounded-md"
-                                    style={{ width: '70px' }} // Custom width
-                                />
-                                <button
-                                    onClick={handleSearch}
-                                    className="px-4 py-2 bg-blue-500 text-white font-semibold rounded-md"
-                                >
-                                    Search
-                                </button>
+
+                            <div className="flex items-center space-x-2">
+      <div className="flex items-center justify-between">
+        <div className="flex flex-col">
+          <label className="text-sm">Start Year:</label>
+          <select
+            value={startYear}
+            onChange={(e) => setStartYear(parseInt(e.target.value, 10))}
+            className="px-2 py-1 rounded text-sm" // Reduced padding and font size
+            style={{ width: "80px" }} // Set a fixed width for the dropdown
+          >
+            {yearOptions.map((year) => (
+              <option key={year} value={year}>
+                {year}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="flex flex-col ml-4">
+          <label className="text-sm">End Year:</label>
+          <select
+            value={endYear}
+            onChange={handleEndYearChange} // Use the new handler
+            className="px-2 py-1 rounded text-sm" // Reduced padding and font size
+            style={{ width: "80px" }} // Set a fixed width for the dropdown
+          >
+            {yearOptions.map((year) => (
+              <option key={year} value={year}>
+                {year}
+              </option>
+            ))}
+          </select>
+        </div>
+
+      {/* <p className="text-default-500 text-sm">
+        Selected range: {startYear} - {endYear}
+      </p> */}
+    </div>
                             </div>
                         </div>
                         <div className="border-b border-gray-300 w-full -mx-6"></div>
