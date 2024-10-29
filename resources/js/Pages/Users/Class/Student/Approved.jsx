@@ -23,9 +23,9 @@ const Approved = () => {
 
     }, []);
 
-    if (loading) return <div>Loading...</div>;
+    //if (loading) return <div>Loading...</div>;
     if (error) return <div>Error: {error}</div>;
-    if (manuscripts.length === 0) return <div>No approved manuscripts available.</div>;
+    //if (manuscripts.length === 0) return <div>No approved manuscripts available.</div>;
 
     return <div className="h-screen bg-white rounded m-4 rounded-xl "><Manuscript manuscripts={manuscripts} /></div>;
 };

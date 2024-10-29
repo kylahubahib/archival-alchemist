@@ -19,9 +19,11 @@ class Rating extends Model
         return $this->belongsTo(User::class);
     }
     //A rating belongs to a manuscript.
+
     public function manuscript()
-    {
-        return $this->belongsTo(ManuscriptProject::class);
-    }
+{
+    return $this->belongsTo(ManuscriptProject::class, 'manuscript_id', 'id'); // Ensure this points to the correct foreign key
+}
+
 
 }

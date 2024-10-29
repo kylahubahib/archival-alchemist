@@ -42,9 +42,9 @@ export default function UpdateProfileInformation({ mustVerifyEmail, status, clas
         formData.append('uni_id_num', data.uni_id_num);
         formData.append('user_pnum', data.user_pnum);
         formData.append('user_aboutme', data.user_aboutme);
-        if (data.user_pic) {
-            formData.append('user_pic', data.user_pic);
-        }
+        // if (data.user_pic) {
+        //     formData.append('user_pic', data.user_pic);
+        // }
 
         try {
             await axios.patch(route('profile.update'), formData, {
@@ -70,7 +70,7 @@ export default function UpdateProfileInformation({ mustVerifyEmail, status, clas
             </header>
 
             <form onSubmit={submit}  method="POST" encType="multipart/form-data" className="mt-6 space-y-6">
-                <div className="flex items-center space-x-4">
+                {/* <div className="flex items-center space-x-4">
                     <div className="relative w-20 h-20">
                         {profilePic ? (
                             <img
@@ -93,7 +93,7 @@ export default function UpdateProfileInformation({ mustVerifyEmail, status, clas
                         />
                         <InputError className="mt-2" message={errors.user_pic} />
                     </div>
-                </div>
+                </div> */}
 
                 <div>
                     <InputLabel htmlFor="name" value="Name" />

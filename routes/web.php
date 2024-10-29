@@ -301,7 +301,9 @@ Route::get('/check-student-in-class', [StudentClassController::class, 'checkStud
 
 
 
-Route::get('/api/approved-manuscripts', [StudentClassController::class, 'getApprovedManuscripts']);
+Route::get('/api/published-manuscripts', [StudentClassController::class, 'getPublishedManuscripts']);
+Route::get('/api/publishedRec-manuscripts', [StudentClassController::class, 'getPublishedRecManuscripts']);
+//Route::get('/api/published-manuscripts/{choice}', [StudentClassController::class, 'getPublishedManuscripts']);
 Route::get('/api/my-approved-manuscripts', [StudentClassController::class, 'myApprovedManuscripts']);
 Route::get('/api/my-favorite-manuscripts', [StudentClassController::class, 'myfavoriteManuscripts']);
 

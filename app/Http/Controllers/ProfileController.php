@@ -16,17 +16,6 @@ use Illuminate\Support\Facades\Log;
 
 class ProfileController extends Controller
 {
-    /**
-     * Display the user's profile form.
-     */
-    // public function edit(Request $request): Response
-    // {
-    //     return Inertia::render('Profile/Edit', [
-    //         'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
-    //         'status' => session('status'),
-    //     ]);
-    // }
-
 
     public function showProfilePic($filename)
     {
@@ -118,57 +107,12 @@ class ProfileController extends Controller
 
         Log::info($user->toArray());
 
-        // Handle file upload
-        // if ($request->hasFile('user_pic')) {
-        //     // Delete old profile picture if it exists
-        //     if ($user->user_pic) {
-        //         Storage::disk('public')->delete('profile_pics/' . $user->user_pic);
-        //     }
-
-        //     // Store new profile picture
-        //     $path = $request->file('user_pic')->store('profile_pics', 'public');
-        //     $user->user_pic = basename($path);
-        //     $user->save();
-        // }
-
         // Return JSON response
         return response()->json(['message' => 'Profile picture updated successfully!']);
     }
 
 
-    /**
-     * Update the user's profile picture.
-     */
-    // public function updatePicture(Request $request): \Illuminate\Http\JsonResponse
-    // {
-    //     \Log::info('User Profile');
 
-    //     // Validate request
-    //     $request->validate([
-    //         'user_pic' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
-    //     ]);
-
-    //     $user = Auth::user();
-
-    //     // Store the uploaded picture in the 'profiles' directory on the public disk
-    //     $path = $request->user_pic->store('profiles', 'public');
-
-    //     // Update the user's profile picture path
-    //     $user->update([
-    //         'user_pic' => $path, // This stores the path relative to the 'public/storage' directory
-    //     ]);
-
-    //     \Log::info($user->toArray());
-
-    //     // Return JSON response
-    //     return response()->json(['message' => 'Profile picture updated successfully!']);
-    // }
-
-
-
-    /**
-     * Delete the user's account.
-     */
     public function destroy(Request $request): RedirectResponse
     {
         $request->validate([

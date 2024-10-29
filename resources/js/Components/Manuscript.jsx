@@ -54,11 +54,11 @@ const Manuscript = ({user}) => {
     };
 
 
-// Rating Component Reset Logic
-const handleClick = (value) => {
-    onRatingChange(value);
-    resetRating(); // This can be called if you need a specific reset behavior
-};
+    // Rating Component Reset Logic
+    const handleClick = (value) => {
+        onRatingChange(value);
+        resetRating(); // This can be called if you need a specific reset behavior
+    };
     // Handle the rating submission
     const handleSubmit = async () => {
         if (!selectedManuscript || selectedRating === 0) {
@@ -234,7 +234,7 @@ const handleClick = (value) => {
 
     useEffect(() => {
         console.log('Fetching manuscripts...');
-        axios.get('/api/approved-manuscripts')
+        axios.get('/api/published-manuscripts')
         .then(response => {
             console.log('Fetched manuscripts with tags:', response.data);
             const data = response.data;

@@ -9,6 +9,8 @@ use App\Models\ClassModel;
 use App\Models\Rating;
 use App\Models\ManuscriptProject;
 use App\Models\ManuscriptTag;
+
+use Illuminate\Support\Facades\DB;
 use App\Models\Favorite;
 use App\Models\Tags;
 use App\Models\User;
@@ -295,13 +297,99 @@ class StudentClassController extends Controller
 
 
 
-public function getApprovedManuscripts()
+// public function getPublishedManuscripts()
+// {
+//     try {
+//         // Fetch manuscripts with 'Y' status, associated tags, and authors
+//         $manuscripts = ManuscriptProject::with(['tags', 'authors']) // Eager load both tags and authors relationships
+//             ->where('is_publish', '1')
+//             ->get();
+
+//         // Log the fetched manuscripts for debugging
+//         logger()->info('Fetched Manuscripts with Tags and Authors:', $manuscripts->toArray());
+
+//         return response()->json($manuscripts, 200);
+//     } catch (\Exception $e) {
+//         return response()->json(['message' => 'Error fetching manuscripts.', 'errors' => $e->getMessage()], 500);
+//     }
+// }
+
+
+//get ratings
+// SELECT
+//     manuscript_id,
+//     ROUND(SUM(user_total_ratings) / COUNT(DISTINCT user_id), 2) AS average_total_rating,
+//     ROUND((SUM(user_total_ratings) / COUNT(DISTINCT user_id)) * 5, 2) AS final_rating
+// FROM (
+//     SELECT
+//         manuscript_id,
+//         user_id,
+//         SUM(rating) / 5 AS user_total_ratings
+//     FROM
+//         ratings
+//     GROUP BY
+//         manuscript_id, user_id
+// ) AS user_ratings
+// GROUP BY
+//     manuscript_id
+// ORDER BY
+//     final_rating DESC;
+
+// public function getPublishedManuscripts()
+// {
+//     try {
+//         // Fetch manuscripts with 'Y' status, associated tags, and authors
+//         $manuscripts = ManuscriptProject::with(['tags', 'authors']) // Eager load both tags and authors relationships
+//             ->where('is_publish', '1')
+//             ->get();
+
+//         // Log the fetched manuscripts for debugging
+//         logger()->info('Fetched Manuscripts with Tags and Authors:', $manuscripts->toArray());
+
+//         return response()->json($manuscripts, 200);
+//     } catch (\Exception $e) {
+//         return response()->json(['message' => 'Error fetching manuscripts.', 'errors' => $e->getMessage()], 500);
+//     }
+// }
+
+//recommended ratings
+// SELECT
+//     m.id,
+//     m.man_doc_title,
+//     m.man_doc_content,
+//     m.man_doc_description,
+//     m.man_doc_status,
+//     m.man_doc_adviser,
+//     m.man_doc_view_count,
+//     m.is_publish,
+//     m.created_at,
+//     m.updated_at,
+//     m.class_code,
+//     ROUND(SUM(r.rating / 5) / COUNT(DISTINCT r.user_id), 2) AS average_total_rating, -- Divides each user's rating by 5 before summing
+//     ROUND((SUM(r.rating / 5) / COUNT(DISTINCT r.user_id)) * 5, 2) AS final_rating -- Final rating scaled to 5
+// FROM
+//     manuscripts AS m
+// INNER JOIN
+//     ratings AS r ON m.id = r.manuscript_id
+// GROUP BY
+//     m.id
+// HAVING
+//     COUNT(DISTINCT r.user_id) > 0 -- Ensure there are ratings before calculating
+// ORDER BY
+//     final_rating DESC;
+
+public function getPublishedManuscripts(Request $request)
 {
     try {
-        // Fetch manuscripts with 'Y' status, associated tags, and authors
-        $manuscripts = ManuscriptProject::with(['tags', 'authors']) // Eager load both tags and authors relationships
-            ->where('is_publish', '1')
-            ->get();
+        //Retrieve the 'choice' query parameter
+        $choice = $request->query('choice');
+        Log::info('My choice: ' . $choice);
+        // Determine relationships to load based on choice
+
+            $manuscripts = ManuscriptProject::with(['tags', 'authors']) // Exclude ratings if choice is 'R' or any other value
+                ->where('is_publish', '1')
+                ->get();
+
 
         // Log the fetched manuscripts for debugging
         logger()->info('Fetched Manuscripts with Tags and Authors:', $manuscripts->toArray());
@@ -311,6 +399,40 @@ public function getApprovedManuscripts()
         return response()->json(['message' => 'Error fetching manuscripts.', 'errors' => $e->getMessage()], 500);
     }
 }
+
+
+public function getPublishedRecManuscripts(Request $request)
+{
+    try {
+        //Retrieve the 'choice' query parameter
+        $choice = $request->query('choice');
+        Log::info('My choice: ' . $choice);
+        // Determine relationships to load based on choice
+
+            $manuscripts = ManuscriptProject::with(['ratings', 'authors', 'tags'])
+            ->select('manuscripts.id', 'manuscripts.man_doc_title', 'manuscripts.man_doc_description', 'manuscripts.man_doc_content',
+                     'manuscripts.man_doc_adviser', 'manuscripts.man_doc_view_count',
+                     'manuscripts.is_publish', DB::raw('SUM(ratings.rating) as total_rating'),
+                     DB::raw('COUNT(ratings.id) as rating_count'))
+            ->join('ratings', 'manuscripts.id', '=', 'ratings.manuscript_id')
+            ->leftJoin('author', 'manuscripts.id', '=', 'author.man_doc_id')
+            ->leftJoin('manuscript_tag', 'manuscripts.id', '=', 'manuscript_tag.manuscript_id')
+            ->leftJoin('tags', 'manuscript_tag.tag_id', '=', 'tags.id')
+            ->groupBy('manuscripts.id', 'manuscripts.man_doc_title', 'manuscripts.man_doc_description', 'manuscripts.man_doc_content',
+                      'manuscripts.man_doc_adviser', 'manuscripts.man_doc_view_count',
+                      'manuscripts.is_publish')
+            ->havingRaw('COUNT(ratings.id) > 0 AND (SUM(ratings.rating) / COUNT(ratings.id)) >= 3')
+            ->orderBy(DB::raw('SUM(ratings.rating) / COUNT(ratings.id)'), 'DESC')
+            ->get();
+        // Log the fetched manuscripts for debugging
+        logger()->info('Fetched Manuscripts with Tags and Authors:', $manuscripts->toArray());
+
+        return response()->json($manuscripts, 200);
+    } catch (\Exception $e) {
+        return response()->json(['message' => 'Error fetching manuscripts.', 'errors' => $e->getMessage()], 500);
+    }
+}
+
 
 // SELECT *
 // FROM manuscripts mp

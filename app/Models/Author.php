@@ -1,11 +1,12 @@
 <?php
 
 namespace App\Models;
-
+use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Author extends Model
 {
@@ -30,10 +31,16 @@ class Author extends Model
     // }
 
     // In Author.php model
-public function user()
+// public function user()
+// {
+//     return $this->belongsTo(User::class, 'user_id', 'id'); // Ensure correct mapping
+// }
+
+public function user(): BelongsTo
 {
-    return $this->belongsTo(User::class, 'user_id', 'id'); // Ensure correct mapping
+    return $this->belongsTo(User::class, 'user_id', 'id');
 }
+
 
 
 }

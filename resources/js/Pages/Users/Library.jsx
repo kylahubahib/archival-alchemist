@@ -4,7 +4,8 @@ import { Head } from '@inertiajs/react';
 import { useState } from 'react';
 import { BookOpenIcon } from '@heroicons/react/24/outline';
 import Modal from '@/Components/Modal';
-import Manuscript from '@/Components/Manuscript';
+import AllManuscript from '@/Components/Manuscripts/AllManuacript';
+import RecManuscript from '@/Components/Manuscripts/RecommendedManuscript';
 import SearchBar from '@/Components/SearchBars/LibrarySearchBar';
 
 export default function Library({ auth }) {
@@ -45,45 +46,58 @@ export default function Library({ auth }) {
 
     const buttonStyle = (tab) => `px-4 py-2 font-semibold rounded-t-lg border ${activeTab === tab ? 'bg-gray-200 border-b-2 border-b-blue-500 text-blue-500' : 'border-transparent text-gray-700 hover:text-blue-500'}`;
 
-    const renderActiveTabContent = () => {
-        switch (activeTab) {
-            case 'AllBooks':
-                return (
-                    <Manuscript
-                        title="All Capstone Manuscripts"
-                        description="A list of all available capstone manuscripts."
-                        manuscripts={manuscripts} // Pass manuscripts to Manuscript
-                        user={auth.user} // Pass the user to Manuscript
-                    />
-                );
-            case 'Recommended':
-                return (
-                    <Manuscript
-                        title="Recommended Manuscripts"
-                        description="A selection of manuscripts recommended for you."
-                        manuscripts={manuscripts} // Update this with actual data as needed
-                        user={auth.user} // Pass the user to Manuscript
-                    />
-                );
-            case 'ByUniversity':
-                return (
-                    <Manuscript
-                        title="Manuscripts by University"
-                        description="Manuscripts categorized by university."
-                        manuscripts={manuscripts} // Update this with actual data as needed
-                        user={auth.user} // Pass the user to Manuscript
-                    />
-                );
-            default:
-                return (
-                    <Manuscript
-                        title="Welcome"
-                        description="Select a tab to view manuscripts."
-                        user={auth.user} // Pass the user to Manuscript
-                    />
-                );
+const renderActiveTabContent = () => {
+    switch (activeTab) {
+        case 'AllBooks': {
+            const choice = 'A';
+            return (
+                <AllManuscript
+                    title="All Capstone Manuscripts"
+                    description="A list of all available capstone manuscripts."
+                    manuscripts={manuscripts} // Pass manuscripts to Manuscript
+                    user={auth.user} // Pass the user to Manuscript
+                    choice={choice} // Pass choice to Manuscript
+                />
+            );
         }
-    };
+        case 'Recommended': {
+            const choice = 'R';
+            return (
+                <RecManuscript
+                    title="Recommended Manuscripts"
+                    description="A selection of manuscripts recommended for you."
+                    manuscripts={manuscripts} // Update this with actual data as needed
+                    user={auth.user} // Pass the user to Manuscript
+                    choice={choice} // Pass choice to Manuscript
+                />
+            );
+        }
+        case 'ByUniversity': {
+            const choice = 'U';
+            return (
+                <Manuscript
+                    title="Manuscripts by University"
+                    description="Manuscripts categorized by university."
+                    manuscripts={manuscripts} // Update this with actual data as needed
+                    user={auth.user} // Pass the user to Manuscript
+                    choice={choice} // Pass choice to Manuscript
+                />
+            );
+        }
+        default: {
+            const choice = 'Default';
+            return (
+                <Manuscript
+                    title="Welcome"
+                    description="Select a tab to view manuscripts."
+                    user={auth.user} // Pass the user to Manuscript
+                    choice={choice} // Pass choice to Manuscript
+                />
+            );
+        }
+    }
+};
+
 
     return (
         <MainLayout
