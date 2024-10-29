@@ -34,7 +34,8 @@ class User extends Authenticatable
         'user_status',
         'is_premium',
         'user_pic',
-        'user_dob'
+        'user_dob',
+        'is_affiliated'
     ];
 
     /**

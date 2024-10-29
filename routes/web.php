@@ -3,6 +3,8 @@
 use App\Http\Controllers\StudentClassController;
 use App\Http\Controllers\TeacherClassController;
 use Illuminate\Support\Facades\Route;
+
+use App\Models\Forum;
 use App\Models\Student;
 use App\Http\Controllers\TagController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
@@ -349,8 +351,6 @@ Route::middleware('auth')->group(function () {
 // });
 
 
-
-
 //Teacher Activity API routes
 Route::post('/store-newGroupClass', [TeacherClassController::class, 'newGroupClass']);
 Route::get('/manuscripts/class', [TeacherClassController::class, 'getManuscriptsByClass']);
@@ -368,4 +368,14 @@ Route::post('/classes/add-students', [TeacherClassController::class, 'addStudent
 //Ratings
 Route::post('/ratings', [StudentClassController::class, 'storeRatings']);
 Route::get('/groupmembers/{manuscriptId}', [TeacherClassController::class, 'ViewGroupMembers']);
+
+
+// Route for displaying a specific post
+Route::middleware(['web'])->group(function () {
+    Route::get('/forum-posts', [ForumPostController::class, 'index']);
+    Route::post('/forum-posts', [ForumPostController::class, 'store']);
+    Route::get('/posts/{id}', [ForumPostController::class, 'show'])->name('posts.show');
+    Route::delete('/forum-posts/{id}', [ForumPostController::class, 'destroy'])->name('forum.posts.destroy');
+
+});
 require __DIR__.'/auth.php';

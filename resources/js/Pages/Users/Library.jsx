@@ -7,6 +7,7 @@ import Modal from '@/Components/Modal';
 import AllManuscript from '@/Components/Manuscripts/AllManuacript';
 import RecManuscript from '@/Components/Manuscripts/RecommendedManuscript';
 import SearchBar from '@/Components/SearchBars/LibrarySearchBar';
+import React from 'react';
 
 export default function Library({ auth }) {
     const isAuthenticated = !!auth.user; // Check if user is authenticated
@@ -171,3 +172,5 @@ const renderActiveTabContent = () => {
         </MainLayout>
     );
 }
+
+

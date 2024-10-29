@@ -12,20 +12,11 @@ class ForumTag extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'tag_id',
-        'forum_id'
-    ];
+    protected $table = 'forum_tags_table';
+    protected $fillable = ['name'];
 
-    public function forum(): BelongsTo
+    public function posts()
     {
-        return $this->belongsTo(Forum::class, 'forum_id');
+        return $this->belongsToMany(ForumPost::class, 'forum_post_tags_table');
     }
-
-    public function tag(): BelongsTo
-    {
-        return $this->belongsTo(Tag::class, 'tag_id');
-    }
-
-
 }

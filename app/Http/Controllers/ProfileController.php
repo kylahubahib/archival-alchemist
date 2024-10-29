@@ -2,16 +2,25 @@
 
 namespace App\Http\Controllers;
 
+
+use App\Traits\CheckSubscriptionTrait;
 use App\Http\Requests\ProfileUpdateRequest;
+
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
+
 use Inertia\Inertia;
 use Inertia\Response;
-use Illuminate\Support\Facades\Log;
+
+
+use App\Models\InstitutionSubscription;
+use App\Models\Student;
+
 
 
 class ProfileController extends Controller
@@ -41,7 +50,10 @@ class ProfileController extends Controller
                     'user_aboutme' => $request->user()->user_aboutme,
                     'user_type' => $request->user()->user_type,
                     'user_pic' => $request->user()->user_pic,
-                    'is_premium' => $request->user()->is_premium
+                    'is_premium' => $request->user()->is_premium,
+                    'is_affiliated' => $request->user()->is_affiliated,
+                    'user_dob' => $request->user()->user_dob,
+                    'uni_id_num' => $request->user()->uni_id_num
                     // 'user_pic' => $request->user()->user_pic ? asset('storage/profile_pics/' . $request->user()->user_pic) : null,
                 ]
             ]
@@ -129,4 +141,79 @@ class ProfileController extends Controller
 
         return Redirect::to('/');
     }
+
+    use CheckSubscriptionTrait;
+
+    public function affiliateUniversity(Request $request)
+    {
+        try {
+            $request->validate([
+                'uni_branch_id' => 'required|integer',
+                'uni_id_num' => 'required|string|max:20',
+            ]);
+
+            $user = Auth::user();
+
+           
+
+            $student = Student::where('user_id', $user->id)->first();
+            
+
+            $subscriptionExist = InstitutionSubscription::where('uni_branch_id', $student->uni_branch_id)
+                ->where('insub_status', 'Active')
+                ->first();
+
+
+            if ($subscriptionExist == null) {
+                return response()->json([
+                    'message' => 'Your university currently does not have an active subscription. Please reach out to your institution for more information or updates.'
+                ]);
+            } else {
+                $result = $this->checkInstitutionSubscription($subscriptionExist, $user);
+
+                if ($result['status']  == true) {
+
+                    $user->update([
+                        'uni_id_num' => $request->uni_id_num
+                    ]);
+
+                    $student->update([
+                        'uni_branch_id' => $request->uni_branch_id
+                    ]);
+
+                    return response()->json([
+                        'message' => $result['message']
+                    ]);
+                } 
+                else {
+                    return response()->json([
+                        'message' => $result['message']
+                    ]);
+                }
+            }
+        } catch (\Exception $e) {
+            // Catch all exceptions, including validation errors
+            return response()->json([
+                'message' => 'An error occurred.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function removeAffiliation(Request $request)
+    {
+        $user = Auth::user()->load(['student', 'faculty']);
+
+        $user->update([
+            'is_affiliated' => false
+        ]);
+
+        
+
+        return response()->json([
+            'is_affiliated' => $user->is_affiliated
+        ]);
+
+    }
+
 }

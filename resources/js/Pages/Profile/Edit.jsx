@@ -170,7 +170,7 @@ export default function Edit({ auth, mustVerifyEmail, status }) {
 
                         <div className="mx-auto sm:px-6 lg:px-10 space-y-4">
                             <div className=" p-4 bg-white shadow sm:rounded-lg m-2">
-                                <SubscriptionForm className="max-w-xl" />
+                                <SubscriptionForm className="max-w-xl" user={auth.user}/>
                             </div>
 
                             <Accordion variant='splitted'>

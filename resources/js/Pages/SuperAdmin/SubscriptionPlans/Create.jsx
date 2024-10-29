@@ -121,7 +121,6 @@ export default function Create({ isOpen, onClose, features }) {
                                         className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 rounded-md"
                                     >
                                         <option value="" disabled>Select a plan term</option>
-                                        <option value="per semester">per semester</option>
                                         <option value="monthly">monthly</option>
                                         <option value="yearly">yearly</option>
                                     </select>
