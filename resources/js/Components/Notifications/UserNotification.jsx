@@ -30,6 +30,19 @@ export default function UserNotification({user}) {
         });
     }, []);
 
+    useEffect(() => {
+        axios.get('/get-notifications')
+            .then(response => {
+                //console.log(response.data.unreadNotif)
+                if(response.data.unreadNotif != []) {
+                    setNotifying(true); 
+                };
+            })
+            .catch(error => {
+                console.error(error);
+            });
+    }, [setNotifying])
+
     const handleClick = () => {
         if (!dropdownOpen) {
             setLoading(true); 

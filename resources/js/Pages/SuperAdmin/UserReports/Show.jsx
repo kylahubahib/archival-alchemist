@@ -2,9 +2,10 @@ import { CgArrowsExchangeAltV } from "react-icons/cg";
 import Modal from '@/Components/Modal';
 import { router, useForm } from "@inertiajs/react";
 import { useEffect, useState } from "react";
-import { formatDate, formatPrice } from '@/utils';
+import { formatDate, capitalize } from '@/utils';
 import { Button, Divider } from "@nextui-org/react";
 import TextInput from "@/Components/TextInput";
+import { showToast } from "@/Components/Toast";
 
 export default function Show({ isOpen, onClose, report, content}) {
     const { data, setData, processing, errors, reset } = useForm({
@@ -15,8 +16,8 @@ export default function Show({ isOpen, onClose, report, content}) {
     const [suspend, setSuspend] = useState(true);
 
     useEffect(() => {
-        // console.log(report); 
-        // console.log(content);
+            // console.log('Report: ', report); 
+            // console.log('Content: ', content);
     })
 
     const inputDuration = () => {
@@ -24,9 +25,27 @@ export default function Show({ isOpen, onClose, report, content}) {
         setData('status', 'Solved');
     }
 
-    const warnUser= () => {
+    const warnUser = () => {
         setData('status', 'Dropped');
+    
+        const reportedUser = (content.user ? content.user.id : content.id);
+        
+        //console.log('Reported User Id: ', reportedUser);
+    
+        axios.post(route('user-reports.warning', report.id), {
+            status: data.status,
+            reportedUser: reportedUser
+        })
+        .then(response => {
+            onClose();
+            showToast('success', 'Report reviewed successfully!')
+        })
+        .catch(error => {
+            onClose();
+            showToast('error', 'There was an error.')
+        });
     }
+    
 
     const submit = (e) => {
         e.preventDefault(); 
@@ -37,10 +56,12 @@ export default function Show({ isOpen, onClose, report, content}) {
             reportedId: content.id
         })
         .then(response => {
-            console.log('Report updated successfully:', response.data);
+            onClose();
+            showToast('success', 'Report reviewed successfully!')
         })
         .catch(error => {
-            console.error('Error updating report:', error);
+            onClose();
+            showToast('error', 'There was an error.')
         });
     };
 
@@ -112,12 +133,11 @@ export default function Show({ isOpen, onClose, report, content}) {
                     </div>
                     
                     <form onSubmit={submit}>
+                    {report.report_status === 'Pending' &&
                     <div className="flex flex-row justify-between mt-5">
-                     
-                        
                         {suspend ? (
                             <div className="space-x-3">
-                            <Button color="warning" radius="large" variant='bordered' size='md' onClick={() => {}}>
+                            <Button color="warning" radius="large" variant='bordered' size='md'  onClick={warnUser}>
                                 Warn User
                             </Button>
                             <Button color="danger" radius="large" variant='bordered' size='md' onClick={inputDuration}>
@@ -140,9 +160,8 @@ export default function Show({ isOpen, onClose, report, content}) {
                             
                             </>
                         )}
-                        
                     </div>
-                   
+                    }
                     </form>
 
                 </div>
@@ -152,48 +171,56 @@ export default function Show({ isOpen, onClose, report, content}) {
                 <>
                 <div className=" p-5 bg-white">
             
-                <div className="mb-2">
-                    <span className="font-semibold">Reported User:</span> {content.name}
-                </div>
-                <div className="mb-2">
-                    <span className="font-semibold">Report Details:</span>
-                    {report.report_location === 'Forum' &&
-                    <div className="space-y-2">
-                        <span className="font-semibold">Title:</span> {content.forum_title}
-                        <div className="mb-2 flex flex-col space-y-1">
-                            <div className="font-semibold">Contents:</div>
-                            <div className="border border-gray-200 rounded-lg p-3">{content.forum_desc}</div>
-                        </div>
-                    </div>}
-                    {report.report_location === 'Post' &&
-                    <div className=" mb-2 flex flex-col space-y-2">\
-                            <div className="font-semibold">Contents:</div>
-                            <div className="border border-gray-200 rounded-lg p-3">{content.post_content}</div>
-                    </div>}
-                </div>
-
-                <div className="flex flex-row justify-between">
-                    <div>
-                    <Button radius="large" variant='bordered' size='sm' onClick={() => {}}>
-                        Warn User
-                    </Button>
-                    <Button radius="large" variant='bordered' size='sm' onClick={() => {}}>
-                        Suspend User
-                    </Button>
+                <div className="mb-5">
+                    <span className="font-semibold">Profile Summary:</span>
+                    <div className="space-y-1">
+                        <div><span className="font-semibold">Reported User:</span> {content.name}</div>
+                        <div><span className="font-semibold">Role:</span> {capitalize(content.user_type)}</div>
+                        <div><span className="font-semibold">Joined:</span> {formatDate(content.created_at)}</div>
                     </div>
                 </div>
+
+                {report.report_status === 'Pending' &&
+                <div className="flex flex-row justify-between">
+                    {suspend ? (
+                            <div className="space-x-3">
+                            <Button color="warning" radius="large" variant='bordered' size='md'  onClick={warnUser}>
+                                Warn User
+                            </Button>
+                            <Button color="danger" radius="large" variant='bordered' size='md' onClick={inputDuration}>
+                                Suspend User
+                            </Button>
+                            </div>
+                    ) : (
+                        <>
+                        <div className=" flex flex-col">
+                            <span>Suspension Duration: </span>
+                            <div className=" space-x-3">
+                            <TextInput 
+                                type="number"  
+                                value={data.duration}
+                                onChange={(e) => setData('duration', e.target.value)}/>
+                            <Button radius="large" variant='solid' size='md' className="bg-customBlue text-white"
+                                type="submit">Submit</Button>
+                            </div>
+                        </div>
+                        
+                        </>
+                    )}
+                </div> 
+                }
             
                 </div>
                 </>
             )}
 
-            <div className="bg-customBlue p-2 flex justify-end">
+            <div className="bg-customBlue p-2 py-2 flex justify-between items-center">
                 {report.closed_at && (
-                    <div className="mb-2">
-                    <span className="font-semibold">Closed At:</span> {new Date(report.closed_at).toLocaleString()}
+                    <div className=" text-white">
+                    <span className="font-medium">Closed At:</span> {formatDate(report.closed_at)}
                     </div>
                 )}
-                <button onClick={onClose} className="text-white text-right mr-5">Close</button>
+                <button onClick={onClose} className="text-white mr-5">Close</button>
             </div>
         </Modal>
     );

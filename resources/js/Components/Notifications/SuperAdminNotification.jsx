@@ -23,7 +23,21 @@ export default function SuperAdminNotification({}) {
             //setNotificationData((prev) => [...prev, data]);
             setNotifying(true);
         });
-    }, []);
+    }, [setNotifying]);
+
+
+    useEffect(() => {
+        axios.get('/get-notifications')
+            .then(response => {
+                //console.log(response.data.unreadNotif)
+                if(response.data.unreadNotif != []) {
+                    setNotifying(true); 
+                };
+            })
+            .catch(error => {
+                console.error(error);
+            });
+    }, [setNotifying])
 
     const handleClick = () => {
         if (!dropdownOpen) {

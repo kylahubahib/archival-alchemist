@@ -6,6 +6,7 @@ use App\Http\Controllers\TeacherClassController;
 use App\Models\Forum;
 use App\Models\Student; 
 use App\Http\Controllers\TagController;
+use App\Http\Controllers\SearchController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 
 
@@ -15,7 +16,6 @@ use App\Http\Controllers\TermsAndConditionController;
 use App\Http\Controllers\SubscriptionPlanController;
 use App\Http\Controllers\FAQController;
 use App\Http\Controllers\UniversityController;
-use App\Http\Controllers\SearchController;
 use App\Http\Controllers\CheckSubscriptionController;
 use App\Http\Controllers\UserFeedbacksController;
 use App\Http\Controllers\CustomMessagesController;
@@ -23,13 +23,15 @@ use App\Http\Controllers\DepartmentsController;
 use App\Http\Controllers\CoursesController;
 use App\Http\Controllers\SectionsController;
 use App\Http\Controllers\PaymentSessionController;
-use App\Http\Controllers\ForumPostController;
-
 use App\Http\Controllers\InstitutionSubscriptionController;
 use App\Http\Controllers\PersonalSubscriptionController;
 use App\Http\Controllers\LandingPageController;
 use App\Http\Controllers\ReportReasonController;
+use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\DashboardController;
+
 use App\Http\Controllers\PostController;
+use App\Http\Controllers\ForumPostController;
 
 
 
@@ -216,6 +218,7 @@ Route::middleware(['auth', 'verified', 'user-type:superadmin'])->group(function 
     Route::resource('user-feedbacks', UserFeedbacksController::class)->names('user-feedbacks')->except(['store']);
 
     Route::resource('user-reports', UserReportController::class)->names('user-reports')->except(['store']);
+    Route::post('warn-user/{id}', [UserReportController::class, 'warnUser'])->name('user-reports.warning');
 
     Route::get('filter-user-reports', [UserReportController::class, 'filterReports'])->name('filter-user-reports');
     Route::get('filter-feedbacks', [UserFeedbacksController::class, 'filterFeedbacks'])->name('filter-feedbacks');

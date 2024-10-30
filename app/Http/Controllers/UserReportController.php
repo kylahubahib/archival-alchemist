@@ -16,6 +16,9 @@ use Inertia\Response;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth; 
 
+use App\Notifications\InstitutionAdminNotification;
+use App\Notifications\UserNotification;
+
 class UserReportController extends Controller
 {
     /** 
@@ -205,7 +208,6 @@ class UserReportController extends Controller
     {
         $report = UserReport::find($id);
 
-
         if (!$report) {
             return redirect()->back()->with('error', 'Report not found.');
         }
@@ -214,8 +216,6 @@ class UserReportController extends Controller
         $duration = (int) $request->get('duration');
         $reportedId = $request->get('reportedId');
         $end_date = Carbon::now()->addDays($duration);
-
-
 
         switch ($report->report_location) {  
             case 'Forum':
@@ -228,7 +228,6 @@ class UserReportController extends Controller
                         'forum_status' => 'Hidden',
                     ]);
 
-                
                     $user = User::find($content->user_id);
                     if ($user) {
                         $user->update([
@@ -239,23 +238,46 @@ class UserReportController extends Controller
                     $report->update([
                         'report_status' => 'Solved',  
                         'suspension_start_date' => Carbon::now(),
-                        'suspension_end_date' => $end_date
+                        'suspension_end_date' => $end_date,
+                        'closed_at' => Carbon::now()
                     ]);
                 }
                 break;
 
             case 'Profile':
-                // 
+
+                $user = User::find($report->reported_id);
+                if ($user) {
+                    $user->update([
+                        'user_status' => 'Suspended'
+                    ]);
+
+                }
+
+                $report->update([
+                    'report_status' => 'Solved',  
+                    'suspension_start_date' => Carbon::now(),
+                    'suspension_end_date' => $end_date,
+                    'closed_at' => Carbon::now()
+                ]);
                 break;
-            case 'Post':
-                // 
-                break;
+            // case 'Post':
+            //     // 
+            //     break;
 
             default:
                 break;
         }
 
-        
+        $reporter = User::find($report->reporter_id);
+
+        if($reporter) {
+            $reporter->notify(new UserNotification([
+                'message' => 'Hello ' . $reporter->name. ', we wanted to inform you that action has been taken regarding your 
+                recent report on ' . $user->name . '. Thank you for helping us keep the Archival Alchemist community safe!',
+                'user_id' => $reporter->id
+            ]));
+        }
 
       return response()->json([]);
     }
@@ -267,5 +289,42 @@ class UserReportController extends Controller
     public function destroy(string $id)
     {
         //
+    }
+
+
+    public function warnUser(Request $request, string $id)
+    {
+
+        
+        $report = UserReport::find($id);
+
+        if (!$report) {
+            return redirect()->back()->with('error', 'Report not found.');
+        }
+
+        $status = $request->get('status');
+        $reportedUser = $request->get('reportedUser');;
+
+                
+        $user = User::find($reportedUser);
+        \Log::info($user);
+
+        if ($user) {
+            $user->notify(new UserNotification([
+                'message' => 'Hello ' . $user->name . ', we received a report about your recent activity on Archival Alchemist. 
+                After reviewing it, we could not find enough evidence to substantiate a violation. However, we encourage you 
+                to review our community guidelines and ensure that all interactions align with them to maintain a safe and positive 
+                environment.',
+                'user_id' => $user->id
+            ]));
+        }
+
+        $report->update([
+            'report_status' => 'Dropped',
+            'closed_at' => Carbon::now()
+        ]);
+                
+
+        return response()->json();
     }
 }
