@@ -1,7 +1,4 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import DeleteUserForm from './Partials/DeleteUserForm';
-import UpdatePasswordForm from './Partials/UpdatePasswordForm';
-import UpdateProfileInformationForm from './Partials/UpdateProfileInformationForm';
 import { Head, useForm } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 import { FaUserCircle } from 'react-icons/fa';
@@ -9,10 +6,10 @@ import axios from 'axios';
 import { format } from 'date-fns';
 import Modal from '@/Components/Modal';
 import { MdMessage } from 'react-icons/md';
-import Repository from './Partials/Repository';
-import Posts from './Partials/Posts';
-import SubscriptionForm from './Partials/SubscriptionForm';
 import { Accordion, AccordionItem } from '@nextui-org/react';
+import DeleteUserForm from '@/Pages/Profile/Partials/DeleteUserForm';
+import UpdatePasswordForm from '@/Pages/Profile/Partials/UpdatePasswordForm';
+import UpdateProfileInformationForm from '@/Pages/Profile/Partials/UpdateProfileInformationForm';
 
 
 
@@ -94,9 +91,6 @@ export default function Edit({ auth, mustVerifyEmail, status }) {
                 <div className="my-4">
                         
                         <div className="mx-auto sm:px-6 lg:px-10 space-y-4">
-                            <div className=" p-4 bg-white shadow sm:rounded-lg m-2">
-                                <SubscriptionForm className="max-w-xl" user={auth.user}/>
-                            </div>
 
                             <Accordion variant='splitted'>
                                 <AccordionItem key="1" aria-label="Profile Information" title="Profile Information">
