@@ -7,7 +7,7 @@ use App\Models\Student;
 use App\Http\Controllers\TagController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 
-use App\Http\Controllers\GoogleDocsController;
+use App\Http\Controllers\GoogleController;
 
 
 use App\Http\Controllers\UserReportController;
@@ -79,11 +79,11 @@ Route::get('/forum', function () {
 
 Route::get('/studentclass', function () {
     return Inertia::render('Users/Class/Student/StudentClass');
-})->middleware(['auth', 'verified', 'user-type:student'])->name('studentclass');
+})->middleware(['auth', 'verified', 'user-type:student', 'check-google' ])->name('studentclass');
 
 Route::get('/teacherclass', function () {
     return Inertia::render('Users/Class/Teacher/TeacherClass');
-})->middleware(['auth', 'verified', 'user-type:teacher'])->name('teacherclass');
+})->middleware(['auth', 'verified', 'user-type:teacher', 'check-google'])->name('teacherclass');
 
 Route::get('/authors', function () {
     return Inertia::render('Users/Authors');
@@ -124,9 +124,10 @@ Route::get('/check-university-subscription', [UniversityController::class, 'chec
 Route::get('/landing-page', [LandingPageController::class, 'index'])->name('landing-page.index');
 Route::post('/affiliate-university', [ProfileController::class, 'affiliateUniversity'])->name('affiliate-university');
 
-Route::get('/auth/google', [GoogleDocsController::class, 'redirectToGoogle'])->name('google.auth');
-Route::get('/auth/google/callback', [GoogleDocsController::class, 'handleGoogleCallback']);
-Route::get('/document/{fileId}/link', [GoogleDocsController::class, 'getGoogleDocLinkAPI']);
+Route::get('/auth/google', [GoogleController::class, 'redirectToGoogle'])->name('google.auth');
+Route::get('/auth/google/callback', [GoogleController::class, 'handleGoogleCallback']);
+Route::get('/connect/google', [GoogleController::class, 'promptGoogleConnection'])->name('prompt.google.connection');
+//Route::get('/document/{fileId}/link', [GoogleDocsController::class, 'getGoogleDocLinkAPI']);
 
 
 

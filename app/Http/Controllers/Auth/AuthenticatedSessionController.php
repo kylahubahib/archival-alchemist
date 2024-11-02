@@ -58,14 +58,14 @@ class AuthenticatedSessionController extends Controller
             $this->checkInstitutionSubscription($checkInSub, $user);
         }
 
-        // Check if the user has a Google account associated
-        if ($user->email) {
-            // If they have a Google account, check for the access token
-            if (!session()->has('google_access_token')) {
-                // Redirect to Google for authentication
-                return redirect()->route('google.auth');  // Define a route for Google authentication
-            }
-        }
+        // // Check if the user has a Google account associated
+        // if ($user->email) {
+        //     // If they have a Google account, check for the access token
+        //     if (!session()->has('google_access_token')) {
+        //         // Redirect to Google for authentication
+        //         return redirect()->route('google.auth');  // Define a route for Google authentication
+        //     }
+        // }
 
         // Redirect based on user_type
         switch ($user->user_type) {

@@ -6,11 +6,12 @@
     "license": "MIT",
     "require": {
         "php": "^8.2|^8.3",
-        "google/apiclient": "*",
+        "google/apiclient": "^2.18",
         "inertiajs/inertia-laravel": "^1.0",
         "intervention/image": "^3.7",
         "laravel/framework": "^11.0",
         "laravel/sanctum": "^4.0",
+        "laravel/socialite": "^5.16",
         "laravel/tinker": "^2.9",
         "maatwebsite/excel": "^3.1",
         "tightenco/ziggy": "^2.0"

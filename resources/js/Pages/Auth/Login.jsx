@@ -7,6 +7,7 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import { Head, Link, useForm } from '@inertiajs/react';
 import NavLink from '@/Components/NavLink';
+//import { GoogleLogin } from '@react-oauth/google';
 
 export default function Login({ status, canResetPassword }) {
     const { data, setData, post, processing, errors, reset } = useForm({
@@ -113,6 +114,8 @@ export default function Login({ status, canResetPassword }) {
                     <NavLink href={route('register')} className=" text-blue-500 font-semibold">REGISTER</NavLink> </span>
                 </div>
             </div>
+
+    
         </div>
         
         //</GuestLayout>

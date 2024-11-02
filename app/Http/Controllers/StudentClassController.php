@@ -15,8 +15,11 @@ use App\Models\RevisionHistory;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Carbon\Carbon;
 
-use App\Traits\GoogleDriveTrait;
+use Google\Client as GoogleClient;
+use Google\Service\Drive as GoogleDrive;
+use Google\Service\Drive\Permission;
 
 
 class StudentClassController extends Controller
@@ -33,8 +36,6 @@ class StudentClassController extends Controller
 
         return response()->json(['exists' => $exists]);
     }
-
-     use GoogleDriveTrait;
 
     
      public function storeManuscriptProject(Request $request)
@@ -69,7 +70,7 @@ class StudentClassController extends Controller
                  'man_doc_title' => $validatedData['man_doc_title'],
                  'man_doc_adviser' => $validatedData['man_doc_adviser'],
                  'man_doc_content' => 'storage/' . $filePath, // Save the path for database
-                 'class_code' => $fileId,
+                 'class_code' => $classCode,
                  //'class_code' => $validatedData['class_id'] ?? null,
              ]);
  
@@ -154,7 +155,20 @@ class StudentClassController extends Controller
  
              if($manuscriptProject)
              {
-                 $class = ClassModel::where('class_code', $classCode)->first();
+                
+                $class = ClassModel::where('class_code', $classCode)->first();
+                $authorIds = Author::whereIn('user_id', $users)->pluck('user_id')->toArray();
+                $teacherId = $class->ins_id; // Assuming this is how you get the teacher ID
+        
+                // Upload the file to Google Drive and get the Google Docs URL
+                $googleDocsUrl = $this->uploadToDrive($request->file('man_doc_content'), $authorIds, $teacherId);
+
+                if($googleDocsUrl) {
+                    $manuscriptProject->update([
+                        'man_doc_content' => $googleDocsUrl,
+                    ]);
+                }
+
                  $faculty = $class->ins_id;
                  
                  RevisionHistory::create([
@@ -174,10 +188,101 @@ class StudentClassController extends Controller
              return response()->json(['message' => 'Error uploading manuscript project.', 'errors' => $e->getMessage()], 422);
          }
      }
- 
 
 
+     public function uploadToDrive($file, $authorIds, $teacherId)
+    {
+        $user = Auth::user();
 
+        // Initialize Google Client
+        $client = new GoogleClient();
+        $client->setClientId(config('services.google.client_id'));
+        $client->setClientSecret(config('services.google.client_secret'));
+        $client->setRedirectUri(config('services.google.redirect'));
+        $client->setAccessType('offline');
+        $client->addScope(GoogleDrive::DRIVE);
+
+        // Set the access token
+        $accessToken = $user->google_access_token;
+
+        // Check if the access token is expired
+        if (Carbon::now()->greaterThanOrEqualTo(Carbon::parse($user->google_token_expiry))) {
+            $client->refreshToken($user->google_refresh_token);
+            $newAccessToken = $client->getAccessToken();
+
+            // Update the user's token and expiry in the database
+            $user->update([
+                'google_access_token' => $newAccessToken['access_token'],
+                'google_token_expiry' => Carbon::now()->addSeconds($newAccessToken['expires_in']),
+            ]);
+
+            $accessToken = $newAccessToken['access_token'];
+        }
+
+        $client->setAccessToken($accessToken);
+
+        // Initialize Google Drive Service
+        $driveService = new GoogleDrive($client);
+
+        // Upload the file to Google Drive
+        $driveFile = new GoogleDrive\DriveFile();
+        $driveFile->setName($file->getClientOriginalName());
+        $driveFile->setMimeType($file->getMimeType());
+
+        // Specify that the file should be converted to Google Docs format
+        $uploadOptions = [
+            'data' => file_get_contents($file->getRealPath()),
+            'mimeType' => $file->getMimeType(),
+            'uploadType' => 'multipart',
+            'fields' => 'id',
+        ];
+
+        $uploadedFile = $driveService->files->create($driveFile, $uploadOptions);
+
+        //Set permissions for users
+        $this->setPermissions($driveService, $uploadedFile->id, $authorIds, $teacherId);
+
+        return 'https://docs.google.com/document/d/' . $uploadedFile->id;
+    }
+
+
+    private function setPermissions($driveService, $fileId, $authorIds, $teacherId)
+    {
+        // Get author emails from the Author table
+        $authorEmails = User::whereIn('user_id', $authorIds)->pluck('email')->toArray();
+
+        // Add the teacher's email
+        $teacherEmail = User::find($teacherId)->email;
+
+        // Combine author emails and teacher email
+        $emails = array_merge($authorEmails, [$teacherEmail]);
+
+        // Set permissions for each user
+        foreach ($emails as $email) {
+
+            // Check if the email is valid
+            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                Log::warning('Invalid email address:', ['email' => $email]);
+                continue; 
+            }
+
+            $permission = new Permission();
+            $permission->setType('user');
+            $permission->setRole('writer'); 
+            $permission->setEmailAddress($email);
+
+            try {
+                $driveService->permissions->create($fileId, $permission);
+            } catch (Exception $e) {
+                Log::error('Error setting permissions:', [
+                    'email' => $email,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
+    }
+
+    
 
     public function checkClassCode(Request $request)
     {

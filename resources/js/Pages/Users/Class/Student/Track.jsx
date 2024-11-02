@@ -11,25 +11,6 @@ export default function Track({manuscript=[]}) {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedData, setSelectedData] = useState(null);
     const [revisionHistory, setRevisionHistory] = useState(null);
-    const [googleDocLink, setGoogleDocLink] = useState('');
-
-    useEffect(() => { 
-        // Call the API to get the Google Docs link
-        if(selectedData)
-        {
-            axios.get(`/api/document/${selectedData.class_code}/link`)
-            .then(response => {
-              setGoogleDocLink(response.data.doc_link); // Set the Google Docs link
-            })
-            .catch(error => {
-              console.error("Error fetching Google Docs link:", error);
-            });
-        }
-     
-      }, [selectedData]);
-    
-
-    
 
     const toggleTimeline = (data) => {
         setRevisionHistory(data);
@@ -48,6 +29,10 @@ export default function Track({manuscript=[]}) {
         setSelectedData(null);
         setModalContent('');
         setIsModalOpen(false);
+    };
+
+    const modifyDocument = (link) => {
+        window.open(link, '_blank', 'noopener,noreferrer');
     };
 
     return (
@@ -179,20 +164,10 @@ export default function Track({manuscript=[]}) {
                         />
                         <CardFooter className="justify-between before:bg-white/10 border-white/20 border-1 overflow-hidden py-1 absolute before:rounded-xl rounded-large bottom-1 w-[calc(100%_-_8px)] shadow-small ml-1 z-10">
                         <p className="text-tiny text-white/80">Available soon.</p>
-                        <Button className="text-tiny text-white bg-black/20" variant="flat" color="default" radius="lg" size="sm">
-                            Notify me
+                        <Button onClick={() => modifyDocument(selectedData.man_doc_content)} className="text-tiny text-white bg-black/20" variant="flat" color="default" radius="lg" size="sm">
+                            Open
                         </Button>
                         </CardFooter>
-
-                        <div>
-                        {googleDocLink ? (
-                            <a href={googleDocLink} target="_blank" rel="noopener noreferrer">
-                            Open Google Doc
-                            </a>
-                        ) : (
-                            <p>Loading Google Docs link...</p>
-                        )}
-                        </div>
                     </Card>
                     </div>
 

@@ -16,9 +16,11 @@ return Application::configure(basePath: dirname(__DIR__))
             \Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets::class
         ]);
         $middleware->alias([ 
-            'user-type' => \App\Http\Middleware\CheckUserTypeMiddleware::class
+            'user-type' => \App\Http\Middleware\CheckUserTypeMiddleware::class,
+            'check-google' => \App\Http\Middleware\CheckGoogleConnection::class
         ]);
         $middleware->append(\Illuminate\Http\Middleware\HandleCors::class);
+        
 
         //
     })
