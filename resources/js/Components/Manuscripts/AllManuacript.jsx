@@ -28,20 +28,28 @@ const Manuscript = ({user, choice}) => {
     const [isCiteModalOpen, setIsCiteModalOpen] = useState(false);
     const [selectedRating, setSelectedRating] = useState(0); // Store the rating value
     const [selectedManuscript, setSelectedManuscript] = useState(null); // Track selected manuscript
+
     const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
     const [titleInputValue, setTitleInputValue] = useState(''); // State for the title input
+    const [selectedSearchField, setSelectedSearchField] = useState("Title"); // Track selected search field
 
     const resetRating = () => {
         setSelectedRating(0); // Reset the rating to 0 (or whatever your default is)
     };
 
 
+    // Function to update search results
+    // Handler to receive the search input value
+    const handleSearch = (inputValue) => {
+        setTitleInputValue(inputValue); // Update the input value for display
+        fetchManuscripts(inputValue, selectedSearchField); // Perform the search
+    };
+
      // Handle opening the modal and setting the title
      const handleRatings = (manuscript) => {
         setSelectedManuscript(manuscript); // Store the manuscript for later use
         setIsModalOpen(true);
     };
-
 
 
     const resetCitation = () => {
@@ -61,7 +69,6 @@ const handleClick = (value) => {
     onRatingChange(value);
     resetRating(); // This can be called if you need a specific reset behavior
 };
-
 
 
     // Handle the rating submission
@@ -144,9 +151,6 @@ const handleClick = (value) => {
             alert('There was an error downloading the file. Please try again.'); // Optional: user feedback
         }
     };
-
-
-
 
 
     // Log the updated favorites whenever it changes
@@ -235,10 +239,7 @@ const handleClick = (value) => {
     };
 
 
-
-
     // useEffect to fetch manuscripts based on titleInputValue
-     // useEffect to fetch manuscripts based on titleInputValue
      // useEffect to fetch all manuscripts on mount
     // Effect to fetch all manuscripts on component mount
     useEffect(() => {
@@ -272,31 +273,27 @@ const handleClick = (value) => {
     }, []);
 
 
-    // Effect to fetch manuscripts based on title input
-    useEffect(() => {
-        const fetchManuscripts = async () => {
-            if (!titleInputValue) return; // Exit early if no title input
-            setLoading(true);
-            try {
-                const response = await axios.get(`/api/published-manuscripts?keyword=${titleInputValue}`);
-                setManuscripts(response.data);
-            } catch (error) {
-                console.error('Error fetching manuscripts:', error);
-                setError('An error occurred while fetching the data.');
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchManuscripts();
-    }, [titleInputValue]);
-
-
-    // Function to update search results
-    // Handler to receive the search input value
-    const handleSearch = (inputValue) => {
-        setTitleInputValue(inputValue); // Update state when search is performed
+    const fetchManuscripts = async (keyword, searchField) => {
+        if (!keyword) return; // Exit early if no keyword input
+        setLoading(true);
+        try {
+            // Construct the query with the selected search field
+            const response = await axios.get(`/api/published-manuscripts`, {
+                params: { keyword, searchField }
+            });
+            setManuscripts(response.data);
+        } catch (error) {
+            console.error('Error fetching manuscripts:', error);
+            setError('An error occurred while fetching the data.');
+        } finally {
+            setLoading(false);
+        }
     };
+
+// Update the dropdown selection handler
+const handleDropdownChange = (selectedKey) => {
+    setSelectedSearchField(selectedKey); // Set the selected key directly as a string
+};
 
 
     const toggleComments = () => {
@@ -341,8 +338,14 @@ const handleClick = (value) => {
         <section className="w-full mx-auto my-4">
             <div className="mb-6 w-full flex items-center gap-4"> {/* Adjusted to use flex and gap */}
             <div className="flex-grow">
-                    <SearchBar onSearch={handleSearch} value={titleInputValue} /> {/* Bind value to input */}
-                    {loading && <div>Loading...</div>}
+            <SearchBar
+    onSearch={handleSearch}
+    selectedSearchField={selectedSearchField}
+    titleInputValue={titleInputValue} // Maintain the value here
+    setTitleInputValue={setTitleInputValue} // Optionally, for managing the input state
+/>
+
+{loading && <div>Loading...</div>}
                     {error && <div>{error}</div>}
                     <div>
                         {manuscriptsToDisplay.length === 0 ? (
@@ -358,30 +361,30 @@ const handleClick = (value) => {
                     </div>
         </div>
                 <div className="w-[200px]"> {/* Set dropdown button width to 50px */}
-                    <Dropdown>
-                        <DropdownTrigger className="w-full">
-                            <Button
-                                variant="bordered"
-                                className="capitalize w-full flex justify-between items-center" // Flex to align text and icon
-                            >
-                                {selectedValue} {/* Default value displayed */}
-                                <FaFilter className="mr-2 text-gray-500" /> {/* Filter icon */}
-                            </Button>
-                        </DropdownTrigger>
-                        <DropdownMenu
-                            aria-label="Single selection example"
-                            variant="flat"
-                            disallowEmptySelection
-                            selectionMode="single"
-                            selectedKeys={selectedKeys}
-                            onSelectionChange={setSelectedKeys}
-                        >
-                            {/* Remove the "Search by" option from the choices */}
-                            <DropdownItem key="Search By: Title">Title</DropdownItem>
-                            <DropdownItem key="Search By: Tags">Tags</DropdownItem>
-                            <DropdownItem key="Search By: Authors">Authors</DropdownItem>
-                        </DropdownMenu>
-                    </Dropdown>
+                <Dropdown>
+                    <DropdownTrigger className="w-full">
+                        <Button variant="bordered" className="capitalize w-full flex justify-between items-center">
+                            {selectedSearchField}
+                            <FaFilter className="mr-2 text-gray-500" />
+                        </Button>
+                    </DropdownTrigger>
+                    <DropdownMenu
+    aria-label="Search Field Selection"
+    variant="flat"
+    disallowEmptySelection
+    selectionMode="single"
+    selectedKeys={new Set([selectedSearchField])}
+    onSelectionChange={(keys) => {
+        const selectedKey = Array.from(keys).join(""); // Convert Set to string
+        handleDropdownChange(selectedKey);
+    }}
+>
+    <DropdownItem key="Title">Title</DropdownItem>
+    <DropdownItem key="Tags">Tags</DropdownItem>
+    <DropdownItem key="Authors">Authors</DropdownItem>
+</DropdownMenu>
+
+                </Dropdown>
                 </div>
             </div>
 

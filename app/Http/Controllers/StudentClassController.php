@@ -401,32 +401,85 @@ class StudentClassController extends Controller
 // }
 
 
+// public function getPublishedManuscripts(Request $request)
+// {
+//     try {
+//         // Retrieve the 'keyword' query parameter
+//         $keyword = $request->query('keyword');
+//         Log::info('My keyword: ' . $keyword);
+
+//         // Determine relationships to load based on choice
+//         $manuscripts = ManuscriptProject::with(['tags', 'authors'])
+//             ->where('is_publish', '1');
+
+//         // If a keyword is provided, filter manuscripts by title
+//         if ($keyword) {
+//             $manuscripts = $manuscripts->where('man_doc_title', 'like', '%' . $keyword . '%');
+//         }
+
+//         $manuscripts = $manuscripts->get(); // Execute the query to get the results
+
+//         // Log the fetched manuscripts for debugging
+//         logger()->info('Fetched Manuscripts with Tags and Authors:', $manuscripts->toArray());
+
+//         return response()->json($manuscripts, 200);
+//     } catch (\Exception $e) {
+//         return response()->json(['message' => 'Error fetching manuscripts.', 'errors' => $e->getMessage()], 500);
+//     }
+// }
+
+
+
+
 public function getPublishedManuscripts(Request $request)
 {
     try {
-        // Retrieve the 'keyword' query parameter
+        // Retrieve the 'keyword' and 'searchField' query parameters
         $keyword = $request->query('keyword');
+        $searchField = $request->query('searchField', 'Title'); // Default to Title if not specified
         Log::info('My keyword: ' . $keyword);
+        Log::info('Search field: ' . $searchField);
 
-        // Determine relationships to load based on choice
+        // Initialize manuscripts query
         $manuscripts = ManuscriptProject::with(['tags', 'authors'])
             ->where('is_publish', '1');
 
-        // If a keyword is provided, filter manuscripts by title
+        // Filter manuscripts based on the selected search field
         if ($keyword) {
-            $manuscripts = $manuscripts->where('man_doc_title', 'like', '%' . $keyword . '%');
+            if ($searchField === 'Title') {
+                $manuscripts = $manuscripts->where('man_doc_title', 'like', '%' . $keyword . '%');
+            } elseif ($searchField === 'Tags') {
+                $manuscripts = $manuscripts->whereHas('tags', function ($query) use ($keyword) {
+                    $query->where('tags_name', 'like', '%' . $keyword . '%');
+                });
+            } elseif ($searchField === 'Authors') {
+                $manuscripts = $manuscripts->whereHas('authors', function ($query) use ($keyword) {
+                    $query->where('name', 'like', '%' . $keyword . '%');
+                });
+            }
         }
 
-        $manuscripts = $manuscripts->get(); // Execute the query to get the results
+        // Execute the query to get the results
+        $fetchedManuscripts = $manuscripts->get();
 
-        // Log the fetched manuscripts for debugging
-        logger()->info('Fetched Manuscripts with Tags and Authors:', $manuscripts->toArray());
+        // Log the number of manuscripts found
+        if ($fetchedManuscripts->isNotEmpty()) {
+            Log::info('Found manuscripts:', $fetchedManuscripts->toArray());
+        } else {
+            Log::info('No manuscripts found for the given keyword and search field.');
+        }
 
-        return response()->json($manuscripts, 200);
+        return response()->json($fetchedManuscripts, 200);
     } catch (\Exception $e) {
+        // Log the error details for debugging
+        Log::error('Error fetching manuscripts: ' . $e->getMessage(), [
+            'stack' => $e->getTraceAsString()
+        ]);
+
         return response()->json(['message' => 'Error fetching manuscripts.', 'errors' => $e->getMessage()], 500);
     }
 }
+
 
 
 
