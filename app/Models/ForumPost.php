@@ -12,17 +12,27 @@ class ForumPost extends Model
     protected $fillable = [
         'title',
         'body',
-        'tags',
-        'user_id',
+        'user_id', 
+        'viewCount',
     ];
 
-    protected $casts = [
-        'tags' => 'array', // Cast tags as an array
-    ];
+    // Removed 'tags' from fillable and casts since tags are managed through a pivot table.
+    // If you are storing tags directly in the posts table, keep the casts line.
+    // Otherwise, you can remove it.
+    
+    public function tags()
+    {
+        return $this->belongsToMany(ForumTag::class, 'forum_post_forum_tag', 'forum_post_id', 'forum_tag_id');
+    }
 
     public function user()
     {
-        return $this->belongsTo(User::class); // Assuming you have a User model
+        return $this->belongsTo(User::class); 
     }
-}
 
+    public function incrementViewCount()
+    {
+        $this->increment('viewCount');
+    }
+
+}
