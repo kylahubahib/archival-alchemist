@@ -17,6 +17,11 @@ use App\Models\RevisionHistory;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Carbon\Carbon;
+
+use Google\Client as GoogleClient;
+use Google\Service\Drive as GoogleDrive;
+use Google\Service\Drive\Permission;
 
 
 class StudentClassController extends Controller
@@ -34,146 +39,252 @@ class StudentClassController extends Controller
         return response()->json(['exists' => $exists]);
     }
 
-    public function storeManuscriptProject(Request $request)
-    {
-        Log::info('Request Data:', $request->all());
-        try {
-            $validatedData = $request->validate([
-                'man_doc_title' => 'required|string|max:255',
-                'man_doc_adviser' => 'required|string|max:255',
-                'man_doc_author' => 'nullable|array',
-                'man_doc_author.*' => '.string|max:255',
-                'tags_name' => 'nullable|array', // Change this line to match your input key
-                'tags_name.*' => 'string|max:255', // Validate individual tag names
-                'man_doc_content' => 'required|file|mimes:pdf,docx|max:20480',
-
-            ]);
-
-            //Get the class code using request
-            $classCode = $request->get('class_code');
-
-            // Use the correct key to get tags from the request
-            $tags = $request->get('tags_name', []); // Change from 'tags' to 'tags_name'
-
-            // Use the correct key to get tags from the request
-            $users = $request->get('name', []); // Change from 'tags' to 'tags_name'
-
-            // Store the file in the capstone_files directory
-            $filePath = $request->file('man_doc_content')->storeAs('capstone_files', time() . '_' . $request->file('man_doc_content')->getClientOriginalName(), 'public');
-
-
-            // Create the manuscript project
-            $manuscriptProject = ManuscriptProject::create([
-                'man_doc_title' => $validatedData['man_doc_title'],
-                'man_doc_adviser' => $validatedData['man_doc_adviser'],
-                'man_doc_content' => 'storage/' . $filePath, // Save the path for database
-                'class_code' => $validatedData['class_id'] ?? null,
-            ]);
-
-            Log::info('Manuscript Project Created:', ['id' => $manuscriptProject->id]);
-
-            // Handle tags and store them in the ManuscriptTag table
-            $tagIds = []; // Array to hold the IDs of the tags to be associated with the manuscript
-
-            if (!empty($tags) && is_array($tags)) { // Ensure $tags is an array and not empty
-                foreach ($tags as $tagName) {
-                    // Convert tag to lowercase for consistency and trim any whitespace
-                    $tagName = strtolower(trim($tagName));
-
-                    // Find the tag by its name
-                    $tag = Tags::where('tags_name', $tagName)->first();
-
-                    // If the tag does not exist, create a new record and get its ID
-                    if (!$tag) {
-                        $tag = Tags::create(['tags_name' => $tagName]);
-                        Log::info("Tag '$tagName' created with ID: " . $tag->id);
-                    } else {
-                        Log::info("Tag '$tagName' found with ID: " . $tag->id);
-                    }
-
-                    // Store the tag ID for the ManuscriptTag table
-                    $tagIds[] = $tag->id;
-                }
-            } else {
-                Log::info('No tags provided or tags is not an array.');
-            }
-
-            // Insert the tags into the ManuscriptTag table
-            foreach ($tagIds as $tagId) {
-                ManuscriptTag::create([
-                    'manuscript_id' => $manuscriptProject->id, // The manuscript ID from the saved manuscript
-                    'tag_id' => $tagId, // The tag ID from the tags table
-                ]);
-                Log::info("Inserted into ManuscriptTag:", [
-                    'manuscript_id' => $manuscriptProject->id,
-                    'tag_id' => $tagId,
-                ]);
-            }
-
-
-
-            // Handle users and store them in the Author table
-            $userIds = []; // Array to hold the IDs of the users to be associated with the manuscript
-
-            if (!empty($users) && is_array($users)) { // Ensure $users is an array and not empty
-                foreach ($users as $userName) {
-                    // Convert name to lowercase for consistency and trim any whitespace
-                    $userName = strtolower(trim($userName));
-
-                    // Find the users by its name
-                    $user = User::where('name', $userName)->first();
-
-                    // If the users does not exist, create a new record and get its ID
-                    if (!$user) {
-                        return response()->json(['message' => 'User does not exist.', 'errors'], 422);
-                    } else {
-                        // $author = User::create(['name' => $userName]);
-                        Log::info("Author '$userName' found with ID: " . $user->id);
-                        // Store the Users ID for the Authors table
-                        $userIds[] = $user->id;
-                    }
-                }
-            } else {
-                Log::info('No users provided or users is not an array.');
-            }
-
-            // Insert the users into the author table
-            foreach ($userIds as $userId) {
-                Author::create([
-                    'man_doc_id' => $manuscriptProject->id, // The manuscript ID from the saved manuscript
-                    'user_id' => $userId, // The tag ID from the tags table
-                ]);
-                Log::info("Inserted into Authors Table:", [
-                    'man_doc_id' => $manuscriptProject->id,
-                    'user_id' => $userId,
-                ]);
-            }
-
-            if($manuscriptProject)
-            {
+    
+     public function storeManuscriptProject(Request $request)
+     {
+         Log::info('Request Data:', $request->all());
+         try {
+             $validatedData = $request->validate([
+                 'man_doc_title' => 'required|string|max:255',
+                 'man_doc_adviser' => 'required|string|max:255',
+                 'man_doc_author' => 'nullable|array',
+                 'man_doc_author.*' => '.string|max:255',
+                 'tags_name' => 'nullable|array', // Change this line to match your input key
+                 'tags_name.*' => 'string|max:255', // Validate individual tag names
+                 'man_doc_content' => 'required|file|mimes:pdf,docx|max:20480',
+ 
+             ]);
+ 
+             //Get the class code using request
+             $classCode = $request->get('class_code');
+ 
+             // Use the correct key to get tags from the request
+             $tags = $request->get('tags_name', []); // Change from 'tags' to 'tags_name'
+ 
+             // Use the correct key to get tags from the request
+             $users = $request->get('name', []); // Change from 'tags' to 'tags_name'
+ 
+             // Store the file in the capstone_files directory
+             $filePath = $request->file('man_doc_content')->storeAs('capstone_files', time() . '_' . $request->file('man_doc_content')->getClientOriginalName(), 'public');
+ 
+             // Create the manuscript project
+             $manuscriptProject = ManuscriptProject::create([
+                 'man_doc_title' => $validatedData['man_doc_title'],
+                 'man_doc_adviser' => $validatedData['man_doc_adviser'],
+                 'man_doc_content' => 'storage/' . $filePath, // Save the path for database
+                 'class_code' => $classCode,
+                 //'class_code' => $validatedData['class_id'] ?? null,
+             ]);
+ 
+             Log::info('Manuscript Project Created:', ['id' => $manuscriptProject->id]);
+ 
+             // Handle tags and store them in the ManuscriptTag table
+             $tagIds = []; // Array to hold the IDs of the tags to be associated with the manuscript
+ 
+             if (!empty($tags) && is_array($tags)) { // Ensure $tags is an array and not empty
+                 foreach ($tags as $tagName) {
+                     // Convert tag to lowercase for consistency and trim any whitespace
+                     $tagName = strtolower(trim($tagName));
+ 
+                     // Find the tag by its name
+                     $tag = Tags::where('tags_name', $tagName)->first();
+ 
+                     // If the tag does not exist, create a new record and get its ID
+                     if (!$tag) {
+                         $tag = Tags::create(['tags_name' => $tagName]);
+                         Log::info("Tag '$tagName' created with ID: " . $tag->id);
+                     } else {
+                         Log::info("Tag '$tagName' found with ID: " . $tag->id);
+                     }
+ 
+                     // Store the tag ID for the ManuscriptTag table
+                     $tagIds[] = $tag->id;
+                 }
+             } else {
+                 Log::info('No tags provided or tags is not an array.');
+             }
+ 
+             // Insert the tags into the ManuscriptTag table
+             foreach ($tagIds as $tagId) {
+                 ManuscriptTag::create([
+                     'manuscript_id' => $manuscriptProject->id, // The manuscript ID from the saved manuscript
+                     'tag_id' => $tagId, // The tag ID from the tags table
+                 ]);
+                 Log::info("Inserted into ManuscriptTag:", [
+                     'manuscript_id' => $manuscriptProject->id,
+                     'tag_id' => $tagId,
+                 ]);
+             }
+ 
+ 
+ 
+             // Handle users and store them in the Author table
+             $userIds = []; // Array to hold the IDs of the users to be associated with the manuscript
+ 
+             if (!empty($users) && is_array($users)) { // Ensure $users is an array and not empty
+                 foreach ($users as $userName) {
+                     // Convert name to lowercase for consistency and trim any whitespace
+                     $userName = strtolower(trim($userName));
+ 
+                     // Find the users by its name
+                     $user = User::where('name', $userName)->first();
+ 
+                     // If the users does not exist, create a new record and get its ID
+                     if (!$user) {
+                         return response()->json(['message' => 'User does not exist.', 'errors'], 422);
+                     } else {
+                         // $author = User::create(['name' => $userName]);
+                         Log::info("Author '$userName' found with ID: " . $user->id);
+                         // Store the Users ID for the Authors table
+                         $userIds[] = $user->id;
+                     }
+                 }
+             } else {
+                 Log::info('No users provided or users is not an array.');
+             }
+ 
+             // Insert the users into the author table
+             foreach ($userIds as $userId) {
+                 Author::create([
+                     'man_doc_id' => $manuscriptProject->id, // The manuscript ID from the saved manuscript
+                     'user_id' => $userId, // The tag ID from the tags table
+                 ]);
+                 Log::info("Inserted into Authors Table:", [
+                     'man_doc_id' => $manuscriptProject->id,
+                     'user_id' => $userId,
+                 ]);
+             }
+ 
+             if($manuscriptProject)
+             {
+                
                 $class = ClassModel::where('class_code', $classCode)->first();
-                $faculty = $class->ins_id;
+                $authorIds = Author::whereIn('user_id', $users)->pluck('user_id')->toArray();
+                $teacherId = $class->ins_id; // Assuming this is how you get the teacher ID
+        
+                // Upload the file to Google Drive and get the Google Docs URL
+                $googleDocsUrl = $this->uploadToDrive($request->file('man_doc_content'), $authorIds, $teacherId);
 
-                RevisionHistory::create([
-                    'ins_comment' => null,
-                    'man_doc_id' => $manuscriptProject->id,
-                    'ins_id' => $faculty,
-                    'uploaded_at' => $manuscriptProject->created_at,
-                    'revision_content' => $manuscriptProject->man_doc_content,
-                    'status' => 'Started'
-                ]);
-            }
+                if($googleDocsUrl) {
+                    $manuscriptProject->update([
+                        'man_doc_content' => $googleDocsUrl,
+                    ]);
+                }
 
-            return response()->json(['message' => 'Manuscript project uploaded successfully.'], 200);
+                 $faculty = $class->ins_id;
+                 
+                 RevisionHistory::create([
+                     'ins_comment' => null,
+                     'man_doc_id' => $manuscriptProject->id,
+                     'ins_id' => $faculty,
+                     'uploaded_at' => $manuscriptProject->created_at,
+                     'revision_content' => $manuscriptProject->man_doc_content,
+                     'status' => 'Started'
+                 ]);
+             }
+ 
+             return response()->json(['message' => 'Manuscript project uploaded successfully.'], 200);
+ 
+         } catch (\Exception $e) {
+             Log::error('Error uploading manuscript project:', ['error' => $e->getMessage()]);
+             return response()->json(['message' => 'Error uploading manuscript project.', 'errors' => $e->getMessage()], 422);
+         }
+     }
 
-        } catch (\Exception $e) {
-            Log::error('Error uploading manuscript project:', ['error' => $e->getMessage()]);
-            return response()->json(['message' => 'Error uploading manuscript project.', 'errors' => $e->getMessage()], 422);
+
+     public function uploadToDrive($file, $authorIds, $teacherId)
+    {
+        $user = Auth::user();
+
+        // Initialize Google Client
+        $client = new GoogleClient();
+        $client->setClientId(config('services.google.client_id'));
+        $client->setClientSecret(config('services.google.client_secret'));
+        $client->setRedirectUri(config('services.google.redirect'));
+        $client->setAccessType('offline');
+        $client->addScope(GoogleDrive::DRIVE);
+
+        // Set the access token
+        $accessToken = $user->google_access_token;
+
+        // Check if the access token is expired
+        if (Carbon::now()->greaterThanOrEqualTo(Carbon::parse($user->google_token_expiry))) {
+            $client->refreshToken($user->google_refresh_token);
+            $newAccessToken = $client->getAccessToken();
+
+            // Update the user's token and expiry in the database
+            $user->update([
+                'google_access_token' => $newAccessToken['access_token'],
+                'google_token_expiry' => Carbon::now()->addSeconds($newAccessToken['expires_in']),
+            ]);
+
+            $accessToken = $newAccessToken['access_token'];
         }
+
+        $client->setAccessToken($accessToken);
+
+        // Initialize Google Drive Service
+        $driveService = new GoogleDrive($client);
+
+        // Upload the file to Google Drive
+        $driveFile = new GoogleDrive\DriveFile();
+        $driveFile->setName($file->getClientOriginalName());
+        $driveFile->setMimeType($file->getMimeType());
+
+        // Specify that the file should be converted to Google Docs format
+        $uploadOptions = [
+            'data' => file_get_contents($file->getRealPath()),
+            'mimeType' => $file->getMimeType(),
+            'uploadType' => 'multipart',
+            'fields' => 'id',
+        ];
+
+        $uploadedFile = $driveService->files->create($driveFile, $uploadOptions);
+
+        //Set permissions for users
+        $this->setPermissions($driveService, $uploadedFile->id, $authorIds, $teacherId);
+
+        return 'https://docs.google.com/document/d/' . $uploadedFile->id;
     }
 
 
+    private function setPermissions($driveService, $fileId, $authorIds, $teacherId)
+    {
+        // Get author emails from the Author table
+        $authorEmails = User::whereIn('user_id', $authorIds)->pluck('email')->toArray();
 
+        // Add the teacher's email
+        $teacherEmail = User::find($teacherId)->email;
+
+        // Combine author emails and teacher email
+        $emails = array_merge($authorEmails, [$teacherEmail]);
+
+        // Set permissions for each user
+        foreach ($emails as $email) {
+
+            // Check if the email is valid
+            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                Log::warning('Invalid email address:', ['email' => $email]);
+                continue; 
+            }
+
+            $permission = new Permission();
+            $permission->setType('user');
+            $permission->setRole('writer'); 
+            $permission->setEmailAddress($email);
+
+            try {
+                $driveService->permissions->create($fileId, $permission);
+            } catch (Exception $e) {
+                Log::error('Error setting permissions:', [
+                    'email' => $email,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
+    }
+
+    
 
     public function checkClassCode(Request $request)
     {

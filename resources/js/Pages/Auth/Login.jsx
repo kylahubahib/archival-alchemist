@@ -114,6 +114,8 @@ export default function Login({ status, canResetPassword }) {
                     <NavLink href={route('register')} className=" text-blue-500 font-semibold">REGISTER</NavLink> </span>
                 </div>
             </div>
+
+    
         </div>
         
         //</GuestLayout>

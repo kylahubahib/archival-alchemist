@@ -40,52 +40,52 @@ class AuthenticatedSessionController extends Controller
     public function store(LoginRequest $request): RedirectResponse
     {
         $request->authenticate();
-
         $request->session()->regenerate();
 
-        //Get the data of the user and student table
+        // Get the data of the user and student table
         $user = Auth::user()->load(['student', 'faculty']);
 
-        //Check if user is affiliated with an institution
-        //$user->student->uni_branch_id : Eloquent way of retrieving data from the student table
-
-        if($user->user_type != 'admin' && $user->user_type != 'superadmin')
-        {
-            if($user->user_type == 'student') {
+        // Check if user is affiliated with an institution
+        if ($user->user_type != 'admin' && $user->user_type != 'superadmin') {
+            if ($user->user_type == 'student') {
                 $checkInSub = InstitutionSubscription::where('uni_branch_id', $user->student->uni_branch_id)->first();
             }
 
-            if($user->user_type == 'teacher') {
+            if ($user->user_type == 'teacher') {
                 $checkInSub = InstitutionSubscription::where('uni_branch_id', $user->faculty->uni_branch_id)->first();
             }
 
-            
             $this->checkInstitutionSubscription($checkInSub, $user);
            
 
-        }
+        
+
+        // // Check if the user has a Google account associated
+        // if ($user->email) {
+        //     // If they have a Google account, check for the access token
+        //     if (!session()->has('google_access_token')) {
+        //         // Redirect to Google for authentication
+        //         return redirect()->route('google.auth');  // Define a route for Google authentication
+        //     }
+        // }
 
         // Redirect based on user_type
         switch ($user->user_type) {
             case 'student':
                 return redirect()->route('library')->with('user', $user);
-                break;
             case 'teacher':
                 return redirect()->route('library');
-                break;
             case 'admin':
                 return redirect()->route('institution-students');
-                break;
             case 'superadmin':
                 return redirect()->route('dashboard.index');
                 break;
             default:
                 return redirect('/');
-                break;
         }
-//ok
-
     }
+
+
 
     /**
      * Destroy an authenticated session.
