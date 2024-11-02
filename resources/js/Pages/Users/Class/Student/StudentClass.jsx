@@ -56,12 +56,14 @@ export default function StudentClass({ auth }) {
 
     useEffect(() => {
     // Fetch data from the specified URL
-    axios.get('http://127.0.0.1:8000/check-student-in-class') // Ensure the URL is correct
+    axios.get('/check-student-in-class') 
     .then(response => {
         // Check if the response contains class data
         if (response.data.class) {
+            setManuscript(response.data.manuscripts);
             // Update state with the class code
             setClassCode(response.data.class);
+
             // Mark that the class has been joined
             setJoinedClass(true); // Student is already joined if class exists
             setActiveTab('track');
@@ -97,8 +99,6 @@ export default function StudentClass({ auth }) {
     const closeConfirmModal = () => {
         setIsConfirmModalOpen(false);
     };
-
-
 
 
     const handleJoinClass = () => {
@@ -173,7 +173,7 @@ export default function StudentClass({ auth }) {
         <AuthenticatedLayout
             user={auth.user}
             header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Class</h2>}
-            className="h-screen flex flex-col"  // Ensure full height for parent layout
+            className="h-screen flex flex-col"  
         >
             <Head title="Class for Student" />
 

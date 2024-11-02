@@ -58,8 +58,6 @@ class AuthenticatedSessionController extends Controller
             $this->checkInstitutionSubscription($checkInSub, $user);
            
 
-        
-
         // // Check if the user has a Google account associated
         // if ($user->email) {
         //     // If they have a Google account, check for the access token

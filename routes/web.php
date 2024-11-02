@@ -170,7 +170,7 @@ Route::post('/send-to-email', function (Request $request) {
     return response()->json(['status' => 'Message sent!']);
 });
 
-Route::get('get-notifications', [NotificationController::class, 'getNotifications']);
+Route::get('get-notifications', [NotificationController::class, 'getNotifications'])->name('get-notifications');
 Route::post('mark-as-read', [NotificationController::class, 'markAsRead']);
 Route::post('clear-notifications', [NotificationController::class, 'clearNotifications']);
 

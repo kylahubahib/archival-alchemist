@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import Modal from '@/Components/Modal';
+import { router } from '@inertiajs/react';
 
 
 const UploadCapstone = ({class_code}) => {
@@ -215,6 +216,7 @@ const UploadCapstone = ({class_code}) => {
 
                 setMessage(response.data.message);
                 setSuccess(true);
+                router.reload();
             } catch (error) {
                 console.error('Error Details:', error);
                 if (error.response) {

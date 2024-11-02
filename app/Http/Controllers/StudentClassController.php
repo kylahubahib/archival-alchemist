@@ -616,18 +616,28 @@ public function myfavoriteManuscripts()
 
 public function checkStudentInClass()
 {
-    // Get the authenticated user
-    $user = Auth::user();
+
+     // Load user with manuscripts that are not approved, including tags and revision history
+     $user = Auth::user()->load([
+        'manuscripts' => function ($query) {
+            $query->where('man_doc_status', 'X');
+        },
+        'manuscripts.tags',
+        'manuscripts.revision_history.faculty',
+        'manuscripts.authors'
+    ]);
+
 
     // Check if the user is enrolled in any class
     $studentClass = ClassStudent::where('stud_id', $user->id)->first();
 
     if ($studentClass) {
         return response()->json([
-            'class' => $studentClass->class_id, // Return the class code if enrolled
+            'class' => $studentClass->class_id, 
+            'manuscripts' => $user->manuscripts
         ]);
     } else {
-        return response()->json(); // Return an empty response if not enrolled
+        return response()->json(); 
     }
 }
 

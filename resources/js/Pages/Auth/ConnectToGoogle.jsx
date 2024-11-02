@@ -3,7 +3,10 @@ import { FaGoogle } from 'react-icons/fa';
 export default function ConnectToGoogle() {
     return (
         <div className="flex flex-col items-center justify-center h-screen bg-gray-50 p-4 text-center">
-            <p className="mb-6 text-lg text-gray-700">
+            <div className="mb-5">
+                    <p className=" text-5xl font-bold text-customBlue text-center">ARCHIVAL <br/> ALCHEMIST</p>
+                </div>
+            <p className="mb-6 text-md text-gray-700 m-20">
                 To access this class, please connect your Google account. This connection enables the use of essential Google 
                 services required for a seamless collaboration experience. Once your account is connected, you’ll be able to upload and 
                 modify your capstone manuscripts.
