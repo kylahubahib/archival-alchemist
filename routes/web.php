@@ -35,9 +35,6 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\DashboardController;
 
 use App\Http\Controllers\PostController;
-use App\Http\Controllers\ForumPostController;
-
-
 
 use App\Http\Middleware\CheckUserTypeMiddleware;
 use App\Http\Controllers\ProfileController;
