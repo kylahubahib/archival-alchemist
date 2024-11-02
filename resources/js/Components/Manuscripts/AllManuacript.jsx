@@ -33,10 +33,6 @@ const Manuscript = ({user, choice}) => {
     const [titleInputValue, setTitleInputValue] = useState(''); // State for the title input
     const [selectedSearchField, setSelectedSearchField] = useState("Title"); // Track selected search field
 
-    const resetRating = () => {
-        setSelectedRating(0); // Reset the rating to 0 (or whatever your default is)
-    };
-
 
     // Function to update search results
     // Handler to receive the search input value
@@ -45,15 +41,16 @@ const Manuscript = ({user, choice}) => {
         fetchManuscripts(inputValue, selectedSearchField); // Perform the search
     };
 
+
+    const resetRating = () => {
+        setSelectedRating(0); // Reset the rating to 0 (or whatever your default is)
+    };
+
+
      // Handle opening the modal and setting the title
      const handleRatings = (manuscript) => {
         setSelectedManuscript(manuscript); // Store the manuscript for later use
         setIsModalOpen(true);
-    };
-
-
-    const resetCitation = () => {
-        setSelectedRating(0); // Reset the rating to 0 (or whatever your default is)
     };
 
 
@@ -62,13 +59,6 @@ const Manuscript = ({user, choice}) => {
         setSelectedManuscript(manuscript); // Store the manuscript for later use
         setIsCiteModalOpen(true);
     };
-
-
-// Rating Component Reset Logic
-const handleClick = (value) => {
-    onRatingChange(value);
-    resetRating(); // This can be called if you need a specific reset behavior
-};
 
 
     // Handle the rating submission
@@ -338,14 +328,11 @@ const handleDropdownChange = (selectedKey) => {
         <section className="w-full mx-auto my-4">
             <div className="mb-6 w-full flex items-center gap-4"> {/* Adjusted to use flex and gap */}
             <div className="flex-grow">
-            <SearchBar
-    onSearch={handleSearch}
-    selectedSearchField={selectedSearchField}
-    titleInputValue={titleInputValue} // Maintain the value here
+            <SearchBar onSearch={handleSearch} selectedSearchField={selectedSearchField} titleInputValue={titleInputValue} // Maintain the value here
     setTitleInputValue={setTitleInputValue} // Optionally, for managing the input state
 />
 
-{loading && <div>Loading...</div>}
+                {loading && <div>Loading...</div>}
                     {error && <div>{error}</div>}
                     <div>
                         {manuscriptsToDisplay.length === 0 ? (
@@ -359,7 +346,7 @@ const handleDropdownChange = (selectedKey) => {
                             ))
                         )}
                     </div>
-        </div>
+            </div>
                 <div className="w-[200px]"> {/* Set dropdown button width to 50px */}
                 <Dropdown>
                     <DropdownTrigger className="w-full">
@@ -369,20 +356,19 @@ const handleDropdownChange = (selectedKey) => {
                         </Button>
                     </DropdownTrigger>
                     <DropdownMenu
-    aria-label="Search Field Selection"
-    variant="flat"
-    disallowEmptySelection
-    selectionMode="single"
-    selectedKeys={new Set([selectedSearchField])}
-    onSelectionChange={(keys) => {
-        const selectedKey = Array.from(keys).join(""); // Convert Set to string
-        handleDropdownChange(selectedKey);
-    }}
->
-    <DropdownItem key="Title">Title</DropdownItem>
-    <DropdownItem key="Tags">Tags</DropdownItem>
-    <DropdownItem key="Authors">Authors</DropdownItem>
-</DropdownMenu>
+                        aria-label="Search Field Selection"
+                        variant="flat"
+                        disallowEmptySelection
+                        selectionMode="single"
+                        selectedKeys={new Set([selectedSearchField])}
+                        onSelectionChange={(keys) => {
+                            const selectedKey = Array.from(keys).join(""); // Convert Set to string
+                            handleDropdownChange(selectedKey);
+                        }}>
+                        <DropdownItem key="Title">Title</DropdownItem>
+                        <DropdownItem key="Tags">Tags</DropdownItem>
+                        <DropdownItem key="Authors">Authors</DropdownItem>
+                    </DropdownMenu>
 
                 </Dropdown>
                 </div>

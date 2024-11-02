@@ -28,6 +28,16 @@ const Manuscript = ({user, choice}) => {
     const [selectedRating, setSelectedRating] = useState(0); // Store the rating value
     const [selectedManuscript, setSelectedManuscript] = useState(null); // Track selected manuscript
     const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    const [titleInputValue, setTitleInputValue] = useState(''); // State for the title input
+    const [selectedSearchField, setSelectedSearchField] = useState("Title"); // Track selected search field
+
+
+    // Function to update search results
+    // Handler to receive the search input value
+    const handleSearch = (inputValue) => {
+        setTitleInputValue(inputValue); // Update the input value for display
+        fetchManuscripts(inputValue, selectedSearchField); // Perform the search
+    };
 
     const resetRating = () => {
         setSelectedRating(0); // Reset the rating to 0 (or whatever your default is)
@@ -42,11 +52,6 @@ const Manuscript = ({user, choice}) => {
 
 
 
-    const resetCitation = () => {
-        setSelectedRating(0); // Reset the rating to 0 (or whatever your default is)
-    };
-
-
      // Handle opening the modal and setting the title
      const handleCitation = (manuscript) => {
         setSelectedManuscript(manuscript); // Store the manuscript for later use
@@ -54,11 +59,6 @@ const Manuscript = ({user, choice}) => {
     };
 
 
-// Rating Component Reset Logic
-const handleClick = (value) => {
-    onRatingChange(value);
-    resetRating(); // This can be called if you need a specific reset behavior
-};
     // Handle the rating submission
     const handleSubmit = async () => {
         if (!selectedManuscript || selectedRating === 0) {
@@ -265,6 +265,33 @@ const handleClick = (value) => {
 
     }, []); // Empty dependency array ensures this runs only once
 
+
+
+    const fetchManuscripts = async (keyword, searchField) => {
+        if (!keyword) return; // Exit early if no keyword input
+        setLoading(true);
+        try {
+            // Construct the query with the selected search field
+            const response = await axios.get(`/api/published-manuscripts`, {
+                params: { keyword, searchField }
+            });
+            setManuscripts(response.data);
+        } catch (error) {
+            console.error('Error fetching manuscripts:', error);
+            setError('An error occurred while fetching the data.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+
+    // Update the dropdown selection handler
+const handleDropdownChange = (selectedKey) => {
+    setSelectedSearchField(selectedKey); // Set the selected key directly as a string
+};
+
+
+
     // Function to update search results
     const handleSearchResults = (results) => {
         setSearchResults(results);
@@ -311,34 +338,50 @@ const handleClick = (value) => {
     return (
         <section className="w-full mx-auto my-4">
             <div className="mb-6 w-full flex items-center gap-4"> {/* Adjusted to use flex and gap */}
-                <div className="flex-grow"> {/* SearchBar will take up the remaining space */}
-                    <SearchBar onSearchResults={handleSearchResults} /> {/* Add the search bar */}
-                </div>
+            <div className="flex-grow">
+            <SearchBar onSearch={handleSearch} selectedSearchField={selectedSearchField} titleInputValue={titleInputValue} // Maintain the value here
+    setTitleInputValue={setTitleInputValue} // Optionally, for managing the input state
+/>
+
+                {loading && <div>Loading...</div>}
+                    {error && <div>{error}</div>}
+                    <div>
+                        {manuscriptsToDisplay.length === 0 ? (
+                            <div>No manuscripts available.</div>
+                        ) : (
+                            manuscriptsToDisplay.map(manuscript => (
+                                <div key={manuscript.id}>
+                                    <h2>{manuscript.title}</h2>
+                                    {/* Add other manuscript details here */}
+                                </div>
+                            ))
+                        )}
+                    </div>
+            </div>
                 <div className="w-[200px]"> {/* Set dropdown button width to 50px */}
-                    <Dropdown>
-                        <DropdownTrigger className="w-full">
-                            <Button
-                                variant="bordered"
-                                className="capitalize w-full flex justify-between items-center" // Flex to align text and icon
-                            >
-                                {selectedValue} {/* Default value displayed */}
-                                <FaFilter className="mr-2 text-gray-500" /> {/* Filter icon */}
-                            </Button>
-                        </DropdownTrigger>
-                        <DropdownMenu
-                            aria-label="Single selection example"
-                            variant="flat"
-                            disallowEmptySelection
-                            selectionMode="single"
-                            selectedKeys={selectedKeys}
-                            onSelectionChange={setSelectedKeys}
-                        >
-                            {/* Remove the "Search by" option from the choices */}
-                            <DropdownItem key="Search By: Title">Title</DropdownItem>
-                            <DropdownItem key="Search By: Tags">Tags</DropdownItem>
-                            <DropdownItem key="Search By: Authors">Authors</DropdownItem>
-                        </DropdownMenu>
-                    </Dropdown>
+                <Dropdown>
+                    <DropdownTrigger className="w-full">
+                        <Button variant="bordered" className="capitalize w-full flex justify-between items-center">
+                            {selectedSearchField}
+                            <FaFilter className="mr-2 text-gray-500" />
+                        </Button>
+                    </DropdownTrigger>
+                    <DropdownMenu
+                        aria-label="Search Field Selection"
+                        variant="flat"
+                        disallowEmptySelection
+                        selectionMode="single"
+                        selectedKeys={new Set([selectedSearchField])}
+                        onSelectionChange={(keys) => {
+                            const selectedKey = Array.from(keys).join(""); // Convert Set to string
+                            handleDropdownChange(selectedKey);
+                        }}>
+                        <DropdownItem key="Title">Title</DropdownItem>
+                        <DropdownItem key="Tags">Tags</DropdownItem>
+                        <DropdownItem key="Authors">Authors</DropdownItem>
+                    </DropdownMenu>
+
+                </Dropdown>
                 </div>
             </div>
 
