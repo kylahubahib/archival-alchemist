@@ -71,7 +71,7 @@ const renderActiveTabContent = () => {
                     description="A list of all available capstone manuscripts."
                     manuscripts={manuscripts} // Pass manuscripts to Manuscript
                     user={auth.user} // Pass the user to Manuscript
-                    choice={choice} // Pass choice to Manuscript
+                    //choice={choice} // Pass choice to Manuscript
                 />
             );
         }
@@ -83,7 +83,7 @@ const renderActiveTabContent = () => {
                     description="A selection of manuscripts recommended for you."
                     manuscripts={manuscripts} // Update this with actual data as needed
                     user={auth.user} // Pass the user to Manuscript
-                    choice={choice} // Pass choice to Manuscript
+                    //choice={choice} // Pass choice to Manuscript
                 />
             );
         }
@@ -95,7 +95,7 @@ const renderActiveTabContent = () => {
                     description="Manuscripts categorized by university."
                     manuscripts={manuscripts} // Update this with actual data as needed
                     user={auth.user} // Pass the user to Manuscript
-                    choice={choice} // Pass choice to Manuscript
+                    //choice={choice} // Pass choice to Manuscript
                 />
             );
         }
@@ -106,7 +106,7 @@ const renderActiveTabContent = () => {
                     title="Welcome"
                     description="Select a tab to view manuscripts."
                     user={auth.user} // Pass the user to Manuscript
-                    choice={choice} // Pass choice to Manuscript
+                    //choice={choice} // Pass choice to Manuscript
                 />
             );
         }

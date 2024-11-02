@@ -378,18 +378,46 @@ class StudentClassController extends Controller
 // ORDER BY
 //     final_rating DESC;
 
+// public function getPublishedManuscripts(Request $request)
+// {
+//     try {
+//         //Retrieve the 'choice' query parameter
+//         $keyword = $request->query('keyword');
+//         Log::info('My keyword: ' . $keyword);
+//         // Determine relationships to load based on choice
+
+//             $manuscripts = ManuscriptProject::with(['tags', 'authors']) // Exclude ratings if choice is 'R' or any other value
+//                 ->where('is_publish', '1')
+//                 ->get();
+
+
+//         // Log the fetched manuscripts for debugging
+//         logger()->info('Fetched Manuscripts with Tags and Authors:', $manuscripts->toArray());
+
+//         return response()->json($manuscripts, 200);
+//     } catch (\Exception $e) {
+//         return response()->json(['message' => 'Error fetching manuscripts.', 'errors' => $e->getMessage()], 500);
+//     }
+// }
+
+
 public function getPublishedManuscripts(Request $request)
 {
     try {
-        //Retrieve the 'choice' query parameter
-        $choice = $request->query('choice');
-        Log::info('My choice: ' . $choice);
+        // Retrieve the 'keyword' query parameter
+        $keyword = $request->query('keyword');
+        Log::info('My keyword: ' . $keyword);
+
         // Determine relationships to load based on choice
+        $manuscripts = ManuscriptProject::with(['tags', 'authors'])
+            ->where('is_publish', '1');
 
-            $manuscripts = ManuscriptProject::with(['tags', 'authors']) // Exclude ratings if choice is 'R' or any other value
-                ->where('is_publish', '1')
-                ->get();
+        // If a keyword is provided, filter manuscripts by title
+        if ($keyword) {
+            $manuscripts = $manuscripts->where('man_doc_title', 'like', '%' . $keyword . '%');
+        }
 
+        $manuscripts = $manuscripts->get(); // Execute the query to get the results
 
         // Log the fetched manuscripts for debugging
         logger()->info('Fetched Manuscripts with Tags and Authors:', $manuscripts->toArray());
@@ -399,6 +427,7 @@ public function getPublishedManuscripts(Request $request)
         return response()->json(['message' => 'Error fetching manuscripts.', 'errors' => $e->getMessage()], 500);
     }
 }
+
 
 
 public function getPublishedRecManuscripts(Request $request)
@@ -766,6 +795,7 @@ public function storeRatings(Request $request)
 //         return response()->json(['error' => 'Failed to submit rating.'], 500);
 //     }
 // }
+
 
 
 }

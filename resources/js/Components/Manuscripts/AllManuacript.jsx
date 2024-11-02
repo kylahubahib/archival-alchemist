@@ -1,4 +1,7 @@
 import React, { useState, useEffect } from 'react';
+
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import { FaEye, FaComment, FaBookmark, FaFileDownload, FaFilter, FaStar, FaQuoteLeft } from 'react-icons/fa';
 import RatingComponent from '@/Components/Ratings'
 import Modal from '@/Components/Modal'
@@ -6,8 +9,6 @@ import axios from 'axios';
 import SearchBar from '@/Components/SearchBars/LibrarySearchBar'; // Import the LibrarySearchBar component
 import { Tooltip, Button } from '@nextui-org/react';
 import {Dropdown, DropdownTrigger, DropdownMenu, DropdownItem} from "@nextui-org/react";
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
 import { Skeleton } from '@nextui-org/skeleton'; // Import Skeleton
 
 const Manuscript = ({user, choice}) => {
@@ -28,6 +29,7 @@ const Manuscript = ({user, choice}) => {
     const [selectedRating, setSelectedRating] = useState(0); // Store the rating value
     const [selectedManuscript, setSelectedManuscript] = useState(null); // Track selected manuscript
     const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    const [titleInputValue, setTitleInputValue] = useState(''); // State for the title input
 
     const resetRating = () => {
         setSelectedRating(0); // Reset the rating to 0 (or whatever your default is)
@@ -59,6 +61,9 @@ const handleClick = (value) => {
     onRatingChange(value);
     resetRating(); // This can be called if you need a specific reset behavior
 };
+
+
+
     // Handle the rating submission
     const handleSubmit = async () => {
         if (!selectedManuscript || selectedRating === 0) {
@@ -232,43 +237,67 @@ const handleClick = (value) => {
 
 
 
+    // useEffect to fetch manuscripts based on titleInputValue
+     // useEffect to fetch manuscripts based on titleInputValue
+     // useEffect to fetch all manuscripts on mount
+    // Effect to fetch all manuscripts on component mount
     useEffect(() => {
-        console.log('Fetching manuscripts...');
-         axios.get(`/api/published-manuscripts?choice=${choice}`)
-        //axios.get('/api/published-manuscripts')
-        .then(response => {
-            console.log('Fetched manuscripts with tags:', response.data);
-            const data = response.data;
+        let isMounted = true; // flag to track if the component is mounted
 
-            response.data.forEach(manuscript => {
-                console.log('Manuscript Tags:', manuscript.tags); // Log tags for each manuscript
-            });
+        const fetchAllManuscripts = async () => {
+            setLoading(true);
+            try {
+                const response = await axios.get('/api/published-manuscripts');
+                if (isMounted) {
+                    // Only set state if the component is still mounted
+                    setManuscripts(response.data);
+                }
+            } catch (error) {
+                if (isMounted) {
+                    toast.error('Error fetching manuscripts.'); // Show toast on error
+                    setError('An error occurred while fetching the data.');
+                }
+            } finally {
+                if (isMounted) {
+                    setLoading(false);
+                }
+            }
+        };
+
+        fetchAllManuscripts();
+
+        return () => {
+            isMounted = false; // Cleanup flag when component unmounts
+        };
+    }, []);
 
 
-            response.data.forEach(manuscript => {
-                console.log('Manuscript Author:', manuscript.authors); // Log users for each manuscript
-            });
+    // Effect to fetch manuscripts based on title input
+    useEffect(() => {
+        const fetchManuscripts = async () => {
+            if (!titleInputValue) return; // Exit early if no title input
+            setLoading(true);
+            try {
+                const response = await axios.get(`/api/published-manuscripts?keyword=${titleInputValue}`);
+                setManuscripts(response.data);
+            } catch (error) {
+                console.error('Error fetching manuscripts:', error);
+                setError('An error occurred while fetching the data.');
+            } finally {
+                setLoading(false);
+            }
+        };
 
-            // Remove duplicates
-            const uniqueManuscripts = Array.from(new Set(data.map(item => item.id)))
-                .map(id => data.find(item => item.id === id));
+        fetchManuscripts();
+    }, [titleInputValue]);
 
-            console.log('Unique Manuscripts:', uniqueManuscripts);
-            setManuscripts(uniqueManuscripts);
-            setLoading(false);
-        })
-        .catch(error => {
-            console.error('Error fetching manuscripts:', error);
-            setError('An error occurred while fetching the data.');
-            setLoading(false);
-        });
-
-    }, []); // Empty dependency array ensures this runs only once
 
     // Function to update search results
-    const handleSearchResults = (results) => {
-        setSearchResults(results);
+    // Handler to receive the search input value
+    const handleSearch = (inputValue) => {
+        setTitleInputValue(inputValue); // Update state when search is performed
     };
+
 
     const toggleComments = () => {
         setShowComments(!showComments);
@@ -311,9 +340,23 @@ const handleClick = (value) => {
     return (
         <section className="w-full mx-auto my-4">
             <div className="mb-6 w-full flex items-center gap-4"> {/* Adjusted to use flex and gap */}
-                <div className="flex-grow"> {/* SearchBar will take up the remaining space */}
-                    <SearchBar onSearchResults={handleSearchResults} /> {/* Add the search bar */}
-                </div>
+            <div className="flex-grow">
+                    <SearchBar onSearch={handleSearch} value={titleInputValue} /> {/* Bind value to input */}
+                    {loading && <div>Loading...</div>}
+                    {error && <div>{error}</div>}
+                    <div>
+                        {manuscriptsToDisplay.length === 0 ? (
+                            <div>No manuscripts available.</div>
+                        ) : (
+                            manuscriptsToDisplay.map(manuscript => (
+                                <div key={manuscript.id}>
+                                    <h2>{manuscript.title}</h2>
+                                    {/* Add other manuscript details here */}
+                                </div>
+                            ))
+                        )}
+                    </div>
+        </div>
                 <div className="w-[200px]"> {/* Set dropdown button width to 50px */}
                     <Dropdown>
                         <DropdownTrigger className="w-full">

@@ -293,6 +293,7 @@ Route::get('/api/tags', [TagController::class, 'index']);
 //Add a route for fetching tag suggestions:
     // In api.php or web.php
     Route::get('/api/authors/suggestions', [TagController::class, 'Authorsuggestions']);
+    Route::get('/api/title/suggestions', [TagController::class, 'Titlesuggestions']);
 
 //route for checking the class code
 Route::post('/check-class-code', [StudentClassController::class, 'checkClassCode']);

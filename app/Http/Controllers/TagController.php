@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ManuscriptProject;
 use App\Models\Tags;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -108,10 +109,26 @@ class TagController extends Controller
     public function Authorsuggestions(Request $request)
     {
         $query = $request->input('query');
-        $users = User::where('name', 'like', "%{$query}%")->get();
+        $users = User::where('name', 'like', "%{$query}%")
+        ->where('is_premium', '1')
+        ->get();
         return response()->json($users);
     }
 
+        /**
+     * Search for authors based on the query.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function Titlesuggestions(Request $request)
+    {
+        $query = $request->input('query');$title = ManuscriptProject::where('man_doc_title', 'like', "%{$query}%")
+        ->where('is_publish', '1')
+        ->get();
+
+        return response()->json($title);
+    }
 
 
     /**
