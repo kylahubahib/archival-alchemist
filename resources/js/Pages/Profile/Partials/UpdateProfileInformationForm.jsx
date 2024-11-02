@@ -43,9 +43,9 @@ export default function UpdateProfileInformationForm({ mustVerifyEmail, status, 
         formData.append('uni_id_num', data.uni_id_num);
         formData.append('user_pnum', data.user_pnum);
         formData.append('user_aboutme', data.user_aboutme);
-        if (data.user_pic) {
-            formData.append('user_pic', data.user_pic);
-        }
+        // if (data.user_pic) {
+        //     formData.append('user_pic', data.user_pic);
+        // }
 
         try {
             await axios.patch(route('profile.update'), formData, {
@@ -71,6 +71,30 @@ export default function UpdateProfileInformationForm({ mustVerifyEmail, status, 
             </header>
 
             <form onSubmit={submit}  method="POST" encType="multipart/form-data" className="mt-6 space-y-6">
+                {/* <div className="flex items-center space-x-4">
+                    <div className="relative w-20 h-20">
+                        {profilePic ? (
+                            <img
+                                src={profilePic}
+                                alt="Profile"
+                                className="w-full h-full rounded-full object-cover"
+                            />
+                        ) : (
+                            <FaUserCircle className="w-full h-full text-gray-400" />
+                        )}
+                    </div>
+                    <div>
+                        <InputLabel htmlFor="user_pic" value="Profile Picture" />
+                        <input
+                            type="file"
+                            id="user_pic"
+                            name="user_pic"
+                            onChange={handleFileChange}
+                            className="mt-1 block w-full"
+                        />
+                        <InputError className="mt-2" message={errors.user_pic} />
+                    </div>
+                </div> */}
 
                 <div>
                     <InputLabel htmlFor="name" value="Name" />

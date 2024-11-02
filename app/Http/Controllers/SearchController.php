@@ -1,6 +1,8 @@
 <?php
 
 namespace App\Http\Controllers;
+
+use App\Models\ManuscriptProject;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -68,11 +70,11 @@ class SearchController extends Controller
         $searchQuery = $request->input('query');
 
         // Search in the manuscript table for book titles
-        $manuscripts = DB::table('manuscripts')
-            ->where('title', 'LIKE', '%' . $searchQuery . '%')
-            ->select('title', 'id', 'created_at', DB::raw("'manuscripts' as source"))
-            ->orderBy('created_at', 'desc')
-            ->get();
+        $manuscripts = ManuscriptProject::where('title', 'LIKE', '%' . $searchQuery . '%')
+        ->select('title', 'id', 'created_at', DB::raw("'manuscripts' as source"))
+        ->orderBy('created_at', 'desc')
+        ->get();
+
 
         // Return the results
         return response()->json($manuscripts);

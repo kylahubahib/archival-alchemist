@@ -11,7 +11,7 @@ export default function SavedList({ auth }) {
     const MainLayout = isAuthenticated ? AuthenticatedLayout : GuestLayout;
     const [bookmarks, setBookmarks] = useState([]);
     const [manuscripts, setManuscripts] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
 
     useEffect(() => {
@@ -19,11 +19,11 @@ export default function SavedList({ auth }) {
         axios.get('/api/my-favorite-manuscripts')
             .then(response => {
                 setManuscripts(response.data);
-                setLoading(false);
+                //setLoading(false);
             })
             .catch(err => {
                 setError('Failed to fetch favorite manuscripts.');
-                setLoading(false);
+                //setLoading(false);
             });
     }, []);
 

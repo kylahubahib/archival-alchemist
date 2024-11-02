@@ -169,7 +169,7 @@ export default function Edit({ auth, mustVerifyEmail, status }) {
                 <div className="my-4">
                     {activeTab === 'accountSettings' && (
                         <>
-                        
+
                         <div className="mx-auto sm:px-6 lg:px-10 space-y-4">
                             <div className=" p-4 bg-white shadow sm:rounded-lg m-2">
                                 <SubscriptionForm className="max-w-xl" user={auth.user}/>
@@ -185,13 +185,13 @@ export default function Edit({ auth, mustVerifyEmail, status }) {
                                 </AccordionItem>
                                 <AccordionItem key="3" aria-label="Password Information" title="Password Information">
                                     <UpdatePasswordForm className="max-w-xl" />
-                                </AccordionItem> 
+                                </AccordionItem>
                                 <AccordionItem key="4" aria-label="Account Deletio" title="Account Deletion">
                                     <DeleteUserForm className="max-w-xl" />
-                                </AccordionItem>  
+                                </AccordionItem>
                             </Accordion>
                         </div>
-                        
+
                         </>
                     )}
                 </div>

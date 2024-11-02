@@ -2,11 +2,13 @@
 
 use App\Http\Controllers\StudentClassController;
 use App\Http\Controllers\TeacherClassController;
+use Illuminate\Support\Facades\Route;
 
 use App\Models\Forum;
-use App\Models\Student; 
+use App\Models\Student;
 use App\Http\Controllers\TagController;
 use App\Http\Controllers\SearchController;
+use App\Http\Controllers\ForumPostController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 
 use App\Http\Controllers\GoogleController;
@@ -141,15 +143,8 @@ Route::post('/remove-affiliation', [ProfileController::class, 'removeAffiliation
 
 use App\Events\MessageSent;
 
-Route::post('/send-message', function (Request $request) {
-    // You can validate the request as needed
-    $message = $request->input('message'); // Assuming you send a message from the frontend
 
-    // Trigger the event
-    event(new MessageSent($message));
 
-    return response()->json(['status' => 'Message sent!']);
-});
 
 use App\Mail\SubscriptionInquiryMail;
 use App\Mail\NewAccountMail;
@@ -348,6 +343,7 @@ Route::get('/api/tags', [TagController::class, 'index']);
 //Add a route for fetching tag suggestions:
     // In api.php or web.php
     Route::get('/api/authors/suggestions', [TagController::class, 'Authorsuggestions']);
+    Route::get('/api/title/suggestions', [TagController::class, 'Titlesuggestions']);
 
 //route for checking the class code
 Route::post('/check-class-code', [StudentClassController::class, 'checkClassCode']);
@@ -360,7 +356,9 @@ Route::get('/check-student-in-class', [StudentClassController::class, 'checkStud
 
 
 
-Route::get('/api/approved-manuscripts', [StudentClassController::class, 'getApprovedManuscripts']);
+Route::get('/api/published-manuscripts', [StudentClassController::class, 'getPublishedManuscripts']);
+Route::get('/api/publishedRec-manuscripts', [StudentClassController::class, 'getPublishedRecManuscripts']);
+//Route::get('/api/published-manuscripts/{choice}', [StudentClassController::class, 'getPublishedManuscripts']);
 Route::get('/api/my-approved-manuscripts', [StudentClassController::class, 'myApprovedManuscripts']);
 Route::get('/api/my-favorite-manuscripts', [StudentClassController::class, 'myfavoriteManuscripts']);
 
@@ -406,20 +404,8 @@ Route::middleware('auth')->group(function () {
 // });
 
 
-
-
 //Teacher Activity API routes
 Route::post('/store-newGroupClass', [TeacherClassController::class, 'newGroupClass']);
-
-
-// Route for displaying a specific post
-Route::middleware(['web'])->group(function () {
-    Route::get('/forum-posts', [ForumPostController::class, 'index']);
-    Route::post('/forum-posts', [ForumPostController::class, 'store']);
-    Route::get('/posts/{id}', [ForumPostController::class, 'show'])->name('posts.show');
-    Route::delete('/forum-posts/{id}', [ForumPostController::class, 'destroy'])->name('forum.posts.destroy');
-
-});
 Route::get('/manuscripts/class', [TeacherClassController::class, 'getManuscriptsByClass']);
 // Route for updating manuscript status
 Route::put('/manuscripts/{id}/update-status', [TeacherClassController::class, 'updateManuscriptStatus']);
@@ -435,5 +421,14 @@ Route::post('/classes/add-students', [TeacherClassController::class, 'addStudent
 //Ratings
 Route::post('/ratings', [StudentClassController::class, 'storeRatings']);
 Route::get('/groupmembers/{manuscriptId}', [TeacherClassController::class, 'ViewGroupMembers']);
-require __DIR__.'/auth.php';
 
+
+// Route for displaying a specific post
+Route::middleware(['web'])->group(function () {
+    Route::get('/forum-posts', [ForumPostController::class, 'index']);
+    Route::post('/forum-posts', [ForumPostController::class, 'store']);
+    Route::get('/posts/{id}', [ForumPostController::class, 'show'])->name('posts.show');
+    Route::delete('/forum-posts/{id}', [ForumPostController::class, 'destroy'])->name('forum.posts.destroy');
+
+});
+require __DIR__.'/auth.php';

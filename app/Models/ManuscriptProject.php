@@ -67,6 +67,7 @@ class ManuscriptProject extends Model
     //A manuscript can have many ratings.
     public function ratings()
     {
-        return $this->hasMany(Rating::class);
+        return $this->hasMany(Rating::class, 'manuscript_id', 'id');
     }
+
 }
