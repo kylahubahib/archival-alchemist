@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\NewPostCreated;
 use App\Models\ForumPost;
 use App\Models\ForumTag;
 use Illuminate\Http\Request;
@@ -19,6 +20,10 @@ class ForumPostController extends Controller
     public function index()
 {
     $posts = ForumPost::with(['user', 'tags'])->get();
+    \Log::info('Forum Posts Retrieved:', $posts->toArray());
+    \Log::info('Fetching forum posts');
+    $posts = ForumPost::all();
+    \Log::info('Posts fetched: ', $posts->toArray());
 
     $formattedPosts = $posts->map(function ($post) {
         return [
@@ -96,6 +101,9 @@ class ForumPostController extends Controller
                 $post->tags()->sync($tagIds);
                 Log::info('Tags synced with post ID ' . $post->id, ['tags' => $tagIds]);
             }
+
+            // Broadcast the new post event to other users
+            broadcast(new NewPostCreated($post))->toOthers();
         });
 
         // Load user and tags relationship to include in the response

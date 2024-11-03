@@ -364,7 +364,7 @@ Route::post('/store-newGroupClass', [TeacherClassController::class, 'newGroupCla
 // Route for displaying a specific post
 Route::middleware(['web'])->group(function () {
     // Route to get all forum posts
-    Route::get('/forum-posts', [ForumPostController::class, 'index'])->name('forum-posts.index');
+    Route::get('/forum-posts', [ForumPostController::class, 'index']);
 
     // Route to create a new forum post
     Route::post('/forum-posts', [ForumPostController::class, 'store'])->name('forum-posts.store');

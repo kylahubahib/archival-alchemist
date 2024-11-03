@@ -13,6 +13,8 @@ import axios from 'axios';
 import { useState, useEffect } from 'react';
 import PostDetailModal from '@/Components/PostDetailModal';
 import { formatDistanceToNow } from 'date-fns';
+import Echo from 'laravel-echo'; 
+import Pusher from 'pusher-js';
 //import axios from 'axios';
 
 export default function Forum({ auth }) {
@@ -31,26 +33,81 @@ export default function Forum({ auth }) {
   const { isOpen: isConfirmOpen, onOpen: onConfirmOpen, onOpenChange: onConfirmOpenChange } = useDisclosure();
   const [postToDelete, setPostToDelete] = useState(null);
 
+    
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
   // Set up Axios CSRF token configuration globally
   axios.defaults.headers.common['X-CSRF-TOKEN'] = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
   axios.defaults.withCredentials = true;
 
-  useEffect(() => {
-    console.log("Forum page loaded");
-    fetchPosts();
-  }, []);
+        useEffect(() => {
+          console.log("Current posts state:", posts);
+      }, [posts]); // Log whenever posts change
 
-  // Fetch posts from the server
-  const fetchPosts = async () => {
-    try {
-        const response = await axios.get('/forum-posts');
-        console.log('Fetched posts:', response.data);
-        // Adjust the following line based on the actual structure of the response
-        setPosts(Array.isArray(response.data) ? response.data : []);
-    } catch (error) {
-        console.error('Error fetching posts:', error);
+          // Initialize Laravel Echo with Pusher for real-time updates
+        useEffect(() => {
+          const echo = new Echo({
+            broadcaster: 'pusher',
+            key: 'ed777339e9944a0f909f',
+            cluster: 'ap1',
+            forceTLS: true,
+            client: new Pusher('yed777339e9944a0f909f', {
+              cluster: 'ap1',
+              encrypted: true,
+            }),
+          });
+
+          // Listen for new posts
+          echo.channel('forum-posts').listen('NewPostCreated', (event) => {
+            setPosts((prevPosts) => [event.post, ...prevPosts]); // Prepend new post to the list
+          });
+
+          return () => {
+            echo.disconnect();
+          };
+        }, []);
+
+        useEffect(() => {
+          fetchPosts();
+        }, []);
+
+
+
+
+        useEffect(() => {
+          console.log("Forum page loaded");
+          fetchPosts();
+        }, []);
+        // Fetch posts from the server
+
+        const fetchPosts = async () => {
+        try {
+            const response = await axios.get('/forum-posts');
+            console.log('Fetched posts:', response.data);
+            setPosts(Array.isArray(response.data) ? response.data : []);
+        } catch (error) {
+            console.error('Error fetching posts:', error);
+            setError(error.message || 'Something went wrong');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    
+
+    useEffect(() => {
+        fetchPosts();
+    }, []); // Empty dependency array to run once
+
+    if (loading) {
+        return <div>Loading posts...</div>;
     }
-};
+
+    if (error) {
+        return <div>Error: {error}</div>;
+    }
+    
 
 const handleTitleClick = async (postId) => {
   try {
@@ -317,19 +374,25 @@ const handleTitleClick = async (postId) => {
         </div>
 
         {/* Dropdown for actions */}
-        {isAuthenticated && (
-          <div className="absolute right-0 top-2">
-            <Dropdown>
-              <DropdownTrigger>
-                <Button variant="light" size="lg">...</Button>
-              </DropdownTrigger>
-              <DropdownMenu>
-                <DropdownItem onClick={() => handleReportPost(post.id)}>Report</DropdownItem>
-                <DropdownItem onClick={() => handleDeleteConfirmation(post.id)}>Delete</DropdownItem>
-              </DropdownMenu>
-            </Dropdown>
-          </div>
-        )}
+          {isAuthenticated && (
+            <div className="absolute right-0 top-2">
+              <Dropdown>
+                <DropdownTrigger>
+                  <Button variant="light" size="lg">...</Button>
+                </DropdownTrigger>
+                <DropdownMenu>
+                  {/* Only show "Report" if the user is not the post owner */}
+                  <DropdownItem onClick={() => handleReportPost(post.id)}>Report</DropdownItem>
+                  
+                  {/* Show "Delete" only if the user is the post owner */}
+                  {auth.user && post.user && auth.user.id === post.user.id && (
+                    <DropdownItem onClick={() => handleDeleteConfirmation(post.id)}>Delete</DropdownItem>
+                  )}
+                </DropdownMenu>
+              </Dropdown>
+            </div>
+          )}
+
       </div>
     ))
   ) : (
