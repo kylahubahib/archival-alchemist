@@ -18,31 +18,31 @@ class ForumPostController extends Controller
 {
     // Fetch all forum posts with the associated user relationship
     public function index()
-{
-    $posts = ForumPost::with(['user', 'tags'])->get();
-    \Log::info('Forum Posts Retrieved:', $posts->toArray());
-    \Log::info('Fetching forum posts');
-    $posts = ForumPost::all();
-    \Log::info('Posts fetched: ', $posts->toArray());
-
-    $formattedPosts = $posts->map(function ($post) {
-        return [
-            'id' => $post->id,
-            'title' => $post->title,
-            'body' => $post->body,
-            'viewCount' => $post->viewCount,
-            'commentCount' => $post->commentCount,
-            'user' => $post->user,
-            'tags' => $post->tags->pluck('name'), // Ensure to get tag names
-        ];
-    });
-
-    \Log::info('Forum Posts Retrieved:', $formattedPosts->toArray());
+    {
+        // Fetch all forum posts with the associated user and tags relationships
+        $posts = ForumPost::with(['user', 'tags'])->get();
     
-    return Inertia::render('Forum/Index', [
-        'posts' => $formattedPosts,
-    ]);
-}
+        // Log fetched posts for debugging
+        \Log::info('Forum Posts Retrieved:', $posts->toArray());
+    
+        // Format posts for the response
+        $formattedPosts = $posts->map(function ($post) {
+            return [
+                'id' => $post->id,
+                'title' => $post->title,
+                'body' => $post->body,
+                'viewCount' => $post->viewCount,
+                'commentCount' => $post->comments, // Ensure this matches the database column
+                'user' => $post->user,
+                'tags' => $post->tags->pluck('name'), // Ensure to get tag names
+            ];
+        });
+    
+        return Inertia::render('Forum/Index', [
+            'posts' => $formattedPosts,
+        ]);
+    }
+    
 
 
     // Store a new forum post
@@ -175,5 +175,12 @@ class ForumPostController extends Controller
             $post->increment('viewCount'); // Increment the view count
             return response()->json(['views' => $post->viewCount]);
         }
+
+
+        public function faq()
+        {
+            return Inertia::render('FAQ'); // Assuming the file is located in resources/js/Pages/FAQ.jsx
+        }
+
 
 }

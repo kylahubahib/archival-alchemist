@@ -41,72 +41,78 @@ export default function Forum({ auth }) {
   axios.defaults.headers.common['X-CSRF-TOKEN'] = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
   axios.defaults.withCredentials = true;
 
-        useEffect(() => {
-          console.log("Current posts state:", posts);
-      }, [posts]); // Log whenever posts change
+  
+    // Fetch posts function
+    const fetchPosts = async () => {
+      try {
+          const response = await axios.get('/forum-posts');
+          console.log('Fetched posts:', response.data);
+          setPosts(Array.isArray(response.data) ? response.data : []);
+      } catch (error) {
+          console.error('Error fetching posts:', error);
+          setError(error.message || 'Something went wrong');
+      } finally {
+          setLoading(false);
+      }
+  };
 
-          // Initialize Laravel Echo with Pusher for real-time updates
-        useEffect(() => {
-          const echo = new Echo({
-            broadcaster: 'pusher',
-            key: 'ed777339e9944a0f909f',
-            cluster: 'ap1',
-            forceTLS: true,
-            client: new Pusher('yed777339e9944a0f909f', {
+  // UseEffect for fetching posts and setting up Pusher
+  useEffect(() => {
+      fetchPosts(); // Call fetchPosts on component mount
+
+      const echo = new Echo({
+          broadcaster: 'pusher',
+          key: 'ed777339e9944a0f909f',
+          cluster: 'ap1',
+          forceTLS: true,
+          client: new Pusher('yed777339e9944a0f909f', {
               cluster: 'ap1',
               encrypted: true,
-            }),
-          });
+          }),
+      });
 
-          // Listen for new posts
-          echo.channel('forum-posts').listen('NewPostCreated', (event) => {
-            setPosts((prevPosts) => [event.post, ...prevPosts]); // Prepend new post to the list
-          });
+      echo.channel('forum-posts').listen('NewPostCreated', (event) => {
+          setPosts((prevPosts) => [event.post, ...prevPosts]);
+      });
 
-          return () => {
-            echo.disconnect();
-          };
-        }, []);
+      return () => {
+          echo.disconnect();
+      };
+  }, []);
 
-        useEffect(() => {
-          fetchPosts();
-        }, []);
+  // Handle post submission
+  const handlePostSubmit = async () => {
+      const newPost = {
+          title: title.trim(),
+          body: body.trim(),
+          tags: tags.map(tag => tag.trim()).filter(tag => tag !== ""),
+      };
 
-
-
-
-        useEffect(() => {
-          console.log("Forum page loaded");
-          fetchPosts();
-        }, []);
-        // Fetch posts from the server
-
-        const fetchPosts = async () => {
-        try {
-            const response = await axios.get('/forum-posts');
-            console.log('Fetched posts:', response.data);
-            setPosts(Array.isArray(response.data) ? response.data : []);
-        } catch (error) {
-            console.error('Error fetching posts:', error);
-            setError(error.message || 'Something went wrong');
-        } finally {
-            setLoading(false);
-        }
-    };
+      try {
+          const response = await axios.post('/forum-posts', newPost);
+          if (response.status === 201) {
+              const postWithUserData = {
+                  ...response.data,
+                  user: auth.user,
+              };
+              setPosts([postWithUserData, ...posts]);
+              resetForm();
+              onOpenChange();
+              toast.success("Post created successfully!");
+              
+              // Optionally, you can call fetchPosts again here if needed
+              // fetchPosts(); 
+          }
+      } catch (error) {
+          handlePostError(error, newPost);
+      }
+  };
 
     
 
-    useEffect(() => {
-        fetchPosts();
-    }, []); // Empty dependency array to run once
-
-    if (loading) {
-        return <div>Loading posts...</div>;
-    }
-
-    if (error) {
-        return <div>Error: {error}</div>;
-    }
+     // Render loading or error states
+     if (loading) return <div>Loading posts...</div>;
+     if (error) return <div>Error: {error}</div>;
     
 
 const handleTitleClick = async (postId) => {
@@ -145,29 +151,7 @@ const handleTitleClick = async (postId) => {
         setSelectedPost(null); // Clear the selected post
       };
 
-  const handlePostSubmit = async () => {
-    const newPost = {
-      title: title.trim(),
-      body: body.trim(),
-      tags: tags.map(tag => tag.trim()).filter(tag => tag !== ""),
-    };
 
-    try {
-      const response = await axios.post('/forum-posts', newPost);
-      if (response.status === 201) {
-        const postWithUserData = {
-          ...response.data,
-          user: auth.user,
-        };
-        setPosts([postWithUserData, ...posts]);
-        resetForm();
-        onOpenChange();
-        toast.success("Post created successfully!");
-      }
-    } catch (error) {
-      handlePostError(error, newPost);
-    }
-  };
 
   const handlePostError = async (error, newPost) => {
     if (error.response?.status === 419) {

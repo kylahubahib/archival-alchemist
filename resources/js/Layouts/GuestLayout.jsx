@@ -4,10 +4,10 @@ import React from 'react';
 
 export default function GuestLayout({ user, children }) {
     const [showMobileMenu, setShowMobileMenu] = useState(false);
-    
 
     return (
         <div className="min-h-screen bg-customlightBlue flex flex-col">
+            {/* Navigation */}
             <nav className="bg-customlightBlue sticky top-0 z-50 select-none">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between h-16 items-center">
@@ -15,9 +15,8 @@ export default function GuestLayout({ user, children }) {
                         <div className="hidden md:flex space-x-4 sm:space-x-6">
                             <NavLink href={route('home')} active={route().current('home')} className="text-customBlue">Home</NavLink>
                             <NavLink href={route('library')} active={route().current('library')} className="text-customBlue">Library</NavLink>
-                            <NavLink href={route('forum')} active={route().current('forum')} className="text-customBlue">Forum</NavLink>
-                            <NavLink href={route('tour')} active={route().current('tour')} className="text-customBlue">Tour</NavLink>
                             <NavLink href={route('pricing')} active={route().current('pricing')} className="text-customBlue">Pricing</NavLink>
+                            <NavLink href={route('faq')} active={route().current('faq')} className="text-customBlue">FAQ</NavLink>
                         </div>
                         <div className="hidden md:flex space-x-4 sm:space-x-6">
                             {user ? (
@@ -76,14 +75,18 @@ export default function GuestLayout({ user, children }) {
                                         <li><NavLink href={route('register')} active={route().current('register')} className="text-customBlue block">Register</NavLink></li>
                                     </>
                                 )}
-
                             </ul>
                         </div>
                     </div>
                 )}
             </nav>
 
-            {children}
+            {/* Main Content */}
+            <div className="flex-grow">
+                {children}
+            </div>
+
+            
         </div>
     );
 }

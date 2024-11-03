@@ -249,9 +249,14 @@ Route::get('/pricing', [SubscriptionPlanController::class, 'pricing'])->name('pr
 
 Route::get('/terms-and-conditions', [TermsAndConditionController::class, 'terms_and_conditions'])->name('terms-and-conditions');
 
-Route::get('/terms-and-condition', function () {
-    return Inertia::render('Terms&Condition');
-})->name('termsandcondition');
+Route::inertia('/privacy-policy', 'PrivacyPolicy')->name('privacy-policy');
+
+Route::inertia('/terms-and-conditions', 'TermsandConditions')->name('terms-and-conditions');
+
+Route::get('/faq', [ForumPostController::class, 'faq'])->name('faq');
+
+
+
 
 
 
