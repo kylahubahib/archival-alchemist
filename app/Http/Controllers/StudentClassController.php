@@ -160,9 +160,15 @@ class StudentClassController extends Controller
              if($manuscriptProject)
              {
                 
-                $class = ClassModel::where('class_code', $classCode)->first();
+                Log::info('Get class code:', ['Code' => $classCode]);
+
+                $classId = ClassStudent::where('class_id', $classCode)->pluck('class_id')->first();
+                Log::info('Class Found:', ['Code' => $classId]);
+
                 $authorIds = Author::whereIn('user_id', $users)->pluck('user_id')->toArray();
-                $teacherId = $class->ins_id; // Assuming this is how you get the teacher ID
+                $teacherId = ClassModel::where('id', $classId)->pluck('ins_id')->first();
+
+                Log::info('Teacher Id: ', ['id' => $teacherId]);
         
                 // Upload the file to Google Drive and get the Google Docs URL
                 $googleDocsUrl = $this->uploadToDrive($request->file('man_doc_content'), $authorIds, $teacherId);
@@ -173,7 +179,7 @@ class StudentClassController extends Controller
                     ]);
                 }
 
-                 $faculty = $class->ins_id;
+                 $faculty = $teacherId;
                  
                  RevisionHistory::create([
                      'ins_comment' => null,
@@ -254,12 +260,15 @@ class StudentClassController extends Controller
     {
         // Get author emails from the Author table
         $authorEmails = User::whereIn('user_id', $authorIds)->pluck('email')->toArray();
+        Log::info('Author Email:', ['author' => $authorEmails]);
 
         // Add the teacher's email
         $teacherEmail = User::find($teacherId)->email;
 
         // Combine author emails and teacher email
         $emails = array_merge($authorEmails, [$teacherEmail]);
+
+        Log::info('Permitted Emails:', ['emails' => $emails]);
 
         // Set permissions for each user
         foreach ($emails as $email) {

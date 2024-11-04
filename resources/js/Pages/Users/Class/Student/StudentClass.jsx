@@ -13,7 +13,7 @@ import { Skeleton } from '@nextui-org/skeleton'; // Import Skeleton
 export default function StudentClass({ auth }) {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
-    const [classCode, setClassCode] = useState('');
+    const [classCode, setClassCode] = useState(null);
     const [joinedClass, setJoinedClass] = useState(false);
     const [activeTab, setActiveTab] = useState(null);
     const [errorMessage, setErrorMessage] = useState(''); // Add state for error message
