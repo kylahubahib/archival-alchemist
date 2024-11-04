@@ -3,6 +3,7 @@ import { Divider, Spinner } from '@nextui-org/react';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
 import Echo from 'laravel-echo';
+import Pusher from 'pusher-js';
 
 export default function SuperAdminNotification({}) {
     const [notificationData, setNotificationData] = useState([]);

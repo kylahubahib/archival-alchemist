@@ -29,10 +29,10 @@ export default function RegistrationForm() {
 
     useEffect(() => {
         
-        console.log(data.role);
-        console.log(data.user_dob);
-        console.log(data.ins_admin_proof);
-        console.log(data.uni_branch_id);
+        // console.log(data.role);
+        // console.log(data.user_dob);
+        // console.log(data.ins_admin_proof);
+        // console.log(data.uni_branch_id);
     })
 
     const handleSubmit = (e) => {

@@ -153,9 +153,9 @@ export default function Track({manuscript=[]}) {
                 <div className="p-5 flex flex-col md:flex-row md:space-x-4 space-y-4 md:space-y-0">
                     
                     {/* Left side - Image Card */}
-                    <div className="w-full md:w-1/2">
+                    <div className="md:w-1/2">
                     <Card isFooterBlurred radius="lg" className="border-none">
-                        <iframe width={600} height={500} allowFullScreen src={selectedData.man_doc_content + '/preview'}/>
+                        <iframe width={500} height={400} allowFullScreen src={selectedData.man_doc_content + '/preview'}/>
                         <CardFooter className="justify-between before:bg-white/10 border-white/20 border-1 overflow-hidden py-1 absolute before:rounded-xl rounded-large bottom-1 w-[calc(100%_-_8px)] shadow-small ml-1 z-10">
                         <p className="text-tiny text-white/80">Available soon.</p>
                         <Button onClick={() => modifyDocument(selectedData.man_doc_content)} className="text-tiny text-white bg-black/20" variant="flat" color="default" radius="lg" size="sm">

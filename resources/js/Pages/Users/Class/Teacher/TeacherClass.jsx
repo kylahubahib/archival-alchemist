@@ -7,7 +7,7 @@ import ClassDropdown from "@/Components/ClassDropdown";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFolder, faUsers, faUser, faEllipsisV } from '@fortawesome/free-solid-svg-icons';
 import { Button, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, useDisclosure } from "@nextui-org/react";
-import { Skeleton } from '@nextui-org/skeleton'; // Import Skeleton
+import { Skeleton } from '@nextui-org/skeleton'; 
 
 axios.defaults.headers.common['X-CSRF-TOKEN'] = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
 
@@ -402,7 +402,7 @@ const handleAddStudent = async () => {
         >
             <Head title={getHeaderTitle()} />
 
-            <div className="h-screen bg-white rounded m-4 rounded-xl">
+            <div className="h-screen bg-white  m-4 rounded-xl">
                 <div className="w-full mx-auto sm:px-6 lg:px-8">
                     <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                         <div className="p-6 text-gray-900 w-full">
@@ -418,7 +418,6 @@ const handleAddStudent = async () => {
                             <>
                             {/* Render course options */}
                             {!selectedCourse && (
-
                                 <div className="grid grid-cols-3 gap-4">
                                     {courses.map(course => (
                                         <div

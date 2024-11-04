@@ -45,27 +45,18 @@ class AuthenticatedSessionController extends Controller
         // Get the data of the user and student table
         $user = Auth::user()->load(['student', 'faculty']);
 
+        \Log::info('User Type: ' . $user->user_type);
+
         // Check if user is affiliated with an institution
         if ($user->user_type != 'admin' && $user->user_type != 'superadmin') {
             if ($user->user_type == 'student') {
                 $checkInSub = InstitutionSubscription::where('uni_branch_id', $user->student->uni_branch_id)->first();
-            }
-
-            if ($user->user_type == 'teacher') {
+            } elseif ($user->user_type == 'teacher') {
                 $checkInSub = InstitutionSubscription::where('uni_branch_id', $user->faculty->uni_branch_id)->first();
             }
 
             $this->checkInstitutionSubscription($checkInSub, $user);
-           
-
-        // // Check if the user has a Google account associated
-        // if ($user->email) {
-        //     // If they have a Google account, check for the access token
-        //     if (!session()->has('google_access_token')) {
-        //         // Redirect to Google for authentication
-        //         return redirect()->route('google.auth');  // Define a route for Google authentication
-        //     }
-        // }
+        }
 
         // Redirect based on user_type
         switch ($user->user_type) {
@@ -77,13 +68,11 @@ class AuthenticatedSessionController extends Controller
                 return redirect()->route('institution-students');
             case 'superadmin':
                 return redirect()->route('dashboard.index');
-                break;
             default:
                 return redirect('/');
         }
     }
 
-    }
 
     /**
      * Destroy an authenticated session.

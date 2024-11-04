@@ -74,7 +74,7 @@ export default function Authenticated({ user, children, newProfile = null }) {
 
                             <div className="hidden sm:flex sm:items-center sm:ml-6">
                                 <button className="rounded-full py-1 px-6 bg-green-300 flex flex-row space-x-2">
-                                    <span>{isPremium ? [<FaCrown size={20} color="#FFD700" />] : null}</span>
+                                    <span>{isPremium ? (<FaCrown size={20} color="#FFD700" />) : null}</span>
                                     <span>{user.user_type.charAt(0).toUpperCase() + user.user_type.slice(1).toLowerCase()}</span>
                                 </button>
 
