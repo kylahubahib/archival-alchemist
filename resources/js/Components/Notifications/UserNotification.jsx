@@ -4,6 +4,7 @@ import axios from 'axios';
 import { useEffect, useState } from 'react';
 import Echo from 'laravel-echo';
 import { router } from '@inertiajs/react';
+import Pusher from 'pusher-js';
 
 export default function UserNotification({user}) {
     const [notificationData, setNotificationData] = useState([]);
