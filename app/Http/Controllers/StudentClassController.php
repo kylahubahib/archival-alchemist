@@ -24,6 +24,7 @@ use Carbon\Carbon;
 use Google\Client as GoogleClient;
 use Google\Service\Drive as GoogleDrive;
 use Google\Service\Drive\Permission;
+use App\Notifications\UserNotification;
 
 
 class StudentClassController extends Controller
@@ -165,13 +166,14 @@ class StudentClassController extends Controller
                 $classId = ClassStudent::where('class_id', $classCode)->pluck('class_id')->first();
                 Log::info('Class Found:', ['Code' => $classId]);
 
-                $authorIds = Author::whereIn('user_id', $users)->pluck('user_id')->toArray();
+                //$authorIds = Author::whereIn('user_id', $users)->pluck('user_id')->toArray();
+                $manuscriptId = $manuscriptProject->id;
                 $teacherId = ClassModel::where('id', $classId)->pluck('ins_id')->first();
 
                 Log::info('Teacher Id: ', ['id' => $teacherId]);
         
                 // Upload the file to Google Drive and get the Google Docs URL
-                $googleDocsUrl = $this->uploadToDrive($request->file('man_doc_content'), $authorIds, $teacherId);
+                $googleDocsUrl = $this->uploadToDrive($request->file('man_doc_content'), $manuscriptId, $teacherId);
 
                 if($googleDocsUrl) {
                     $manuscriptProject->update([
@@ -189,6 +191,19 @@ class StudentClassController extends Controller
                      'revision_content' => $manuscriptProject->man_doc_content,
                      'status' => 'Started'
                  ]);
+
+                 // Notifies the teacher that a new manuscript is uploaded
+                 $teacher = User::find($faculty);
+                 $uploader = Auth::user()->name; 
+                 // Use value if you want to get only the specified column
+                 $className = ClassModel::where('id', $classId)->value('class_name');
+
+                 if ($teacher) {
+                         $teacher->notify(new UserNotification([
+                             'message' => $uploader . ' from ' . $className . ' uploaded a new manuscript that needs to be reviewed.',
+                             'user_id' => $teacher->id
+                         ]));
+                 }
              }
  
              return response()->json(['message' => 'Manuscript project uploaded successfully.'], 200);
@@ -200,7 +215,7 @@ class StudentClassController extends Controller
      }
 
 
-     public function uploadToDrive($file, $authorIds, $teacherId)
+     public function uploadToDrive($file, $manuscriptId, $teacherId)
     {
         $user = Auth::user();
 
@@ -215,7 +230,7 @@ class StudentClassController extends Controller
         // Set the access token
         $accessToken = $user->google_access_token;
 
-        // Check if the access token is expired
+        // Check if the access token is expired since access token expired in one hour so we need the refresh token to get a new access token
         if (Carbon::now()->greaterThanOrEqualTo(Carbon::parse($user->google_token_expiry))) {
             $client->refreshToken($user->google_refresh_token);
             $newAccessToken = $client->getAccessToken();
@@ -229,6 +244,7 @@ class StudentClassController extends Controller
             $accessToken = $newAccessToken['access_token'];
         }
 
+        // Set the access the new access token
         $client->setAccessToken($accessToken);
 
         // Initialize Google Drive Service
@@ -239,7 +255,7 @@ class StudentClassController extends Controller
         $driveFile->setName($file->getClientOriginalName());
         $driveFile->setMimeType($file->getMimeType());
 
-        // Specify that the file should be converted to Google Docs format
+        // Convert the file to google docs format
         $uploadOptions = [
             'data' => file_get_contents($file->getRealPath()),
             'mimeType' => $file->getMimeType(),
@@ -247,53 +263,75 @@ class StudentClassController extends Controller
             'fields' => 'id',
         ];
 
+        //Create the document in the google drive file
         $uploadedFile = $driveService->files->create($driveFile, $uploadOptions);
 
         //Set permissions for users
-        $this->setPermissions($driveService, $uploadedFile->id, $authorIds, $teacherId);
+        $this->setPermissions($driveService, $uploadedFile->id, $manuscriptId, $teacherId);
 
         return 'https://docs.google.com/document/d/' . $uploadedFile->id;
     }
 
 
-    private function setPermissions($driveService, $fileId, $authorIds, $teacherId)
+    private function setPermissions($driveService, $fileId, $manuscriptId, $teacherId)
     {
-        // Get author emails from the Author table
-        $authorEmails = User::whereIn('user_id', $authorIds)->pluck('email')->toArray();
-        Log::info('Author Email:', ['author' => $authorEmails]);
+        Log::info('Drive Service Instance:', ['driveService' => $driveService]);
+        Log::info('File ID:', ['fileId' => $fileId]);
+        Log::info('Manuscript ID:', ['manuscriptId' => $manuscriptId]);
+        Log::info('Teacher ID:', ['teacherId' => $teacherId]);
 
-        // Add the teacher's email
+        // Get author emails from the Author table
+        $authorEmails = Author::with('user')
+            ->where('man_doc_id', $manuscriptId)->get()
+            ->pluck('user.email')->toArray();
+
+        //$authorEmails = User::whereIn('user_id', $authorIds)->pluck('email')->toArray();
+        Log::info('Fetched Author Emails:', ['authorEmails' => $authorEmails]);
+
+        // Retrieve the teacher's email
         $teacherEmail = User::find($teacherId)->email;
+        Log::info('Teacher Email:', ['teacherEmail' => $teacherEmail]);
 
         // Combine author emails and teacher email
         $emails = array_merge($authorEmails, [$teacherEmail]);
-
-        Log::info('Permitted Emails:', ['emails' => $emails]);
+        Log::info('Combined Emails:', ['emails' => $emails]);
 
         // Set permissions for each user
         foreach ($emails as $email) {
-
+            Log::info('Processing Email:', ['email' => $email]);
             // Check if the email is valid
             if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-                Log::warning('Invalid email address:', ['email' => $email]);
+                Log::warning('Invalid Email Address:', ['email' => $email]);
                 continue; 
             }
 
+            // Create permission for the user
             $permission = new Permission();
             $permission->setType('user');
-            $permission->setRole('writer'); 
+            $permission->setRole('writer');
             $permission->setEmailAddress($email);
 
+            Log::info('Permission Object Created:', [
+                'type' => $permission->getType(),
+                'role' => $permission->getRole(),
+                'emailAddress' => $permission->getEmailAddress(),
+            ]);
+
             try {
+
+                // Set the permission
                 $driveService->permissions->create($fileId, $permission);
+                Log::info('Permission Set Successfully:', ['email' => $email]);
+                
             } catch (Exception $e) {
-                Log::error('Error setting permissions:', [
+                Log::error('Error Setting Permissions:', [
                     'email' => $email,
                     'error' => $e->getMessage(),
                 ]);
             }
         }
     }
+
 
     
 
