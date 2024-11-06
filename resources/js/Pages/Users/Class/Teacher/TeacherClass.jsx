@@ -58,12 +58,10 @@ const [isMembersLoading, setIsMembersLoading] = useState(false);
 
 // Fetch members whenever hoveredClass changes
 useEffect(() => {
-    console.log('Hovered Class: ', hoveredClass);
     const fetchMembers = async () => {
         setIsMembersLoading(true); // Set loading state to true before fetching
         try {
             const response = await axios.get(`/groupmembers/${hoveredClass.id}`);
-            console.log('Members: ', response.data);
             setMembers(response.data);
             // setError(''); // Clear any previous error
         } catch (err) {
@@ -214,9 +212,8 @@ const handleAddStudent = async () => {
             const response = await axios.get('/manuscripts/class', {
                 params: { ins_id: selectedClass.ins_id }
             });
-            console.log('Get manuscripts in classes: ', response.data); // Check that the new data is correct
+            console.log(response.data); // Check that the new data is correct
             setClasses(response.data); // Update the classes state
-            console.log('classes: ', classes);
         } catch (error) {
             console.error("Error fetching updated manuscripts:", error);
             setMessage("Failed to fetch updated manuscripts.");
@@ -274,8 +271,8 @@ const handleAddStudent = async () => {
     useEffect(() => {
         axios.get('http://127.0.0.1:8000/check-student-in-class') // Make sure the URL is correct
         .then(response => {
-            if (response.data.classCode) {
-                setClassCode(response.data.classCode);
+            if (response.data.class) {
+                setClassCode(response.data.class);
             }
             setLoading(false);
         })
@@ -405,9 +402,9 @@ const handleAddStudent = async () => {
         >
             <Head title={getHeaderTitle()} />
 
-            <div className="h-screen bg-white m-4 rounded-xl">
+            <div className="h-screen bg-white rounded m-4 rounded-xl">
                 <div className="w-full mx-auto sm:px-6 lg:px-8">
-                    <div className="overflow-hidden sm:rounded-lg">
+                    <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                         <div className="p-6 text-gray-900 w-full">
                             <div className="flex justify-between items-center mb-4">
                                 <div className="text-xl">
@@ -485,37 +482,37 @@ const handleAddStudent = async () => {
                                                 }}
                                             >
                                                 <ModalContent>
-                                                {(onClose) => (
-                                                    <>
-                                                        <ModalHeader className="flex flex-col gap-1">New Class Group</ModalHeader>
-                                                        <ModalBody>
-                                                            <div className="flex flex-col gap-4">
-                                                                <input
-                                                                    id="className"
-                                                                    type="text"
-                                                                    className={`border p-2 rounded-md ${!className ? 'border-red-500' : 'border-gray-300'}`}
-                                                                    placeholder="Enter class group name"
-                                                                    onChange={(e) => setClassName(e.target.value)}
-                                                                    value={className}
-                                                                />
-                                                            </div>
-                                                        </ModalBody>
-                                                        <ModalFooter>
-                                                            <Button
-                                                                color="primary"
-                                                                auto
-                                                                flat
-                                                                onClick={handleCreate}
-                                                                disabled={isLoading}
-                                                            >
-                                                                {isLoading ? 'Creating...' : 'Create'}
-                                                            </Button>
-                                                            <Button auto flat onClick={handleModalClose}>
-                                                                Close
-                                                            </Button>
-                                                        </ModalFooter>
-                                                    </>
-                                                )}
+                                                    {(onClose) => (
+                                                        <>
+                                                            <ModalHeader className="flex flex-col gap-1">New Class Group</ModalHeader>
+                                                            <ModalBody>
+                                                                <div className="flex flex-col gap-4">
+                                                                    <input
+                                                                        id="className"
+                                                                        type="text"
+                                                                        className={`border p-2 rounded-md ${!className ? 'border-red-500' : 'border-gray-300'}`}
+                                                                        placeholder="Enter class group name"
+                                                                        onChange={(e) => setClassName(e.target.value)}
+                                                                        value={className}
+                                                                    />
+                                                                </div>
+                                                            </ModalBody>
+                                                            <ModalFooter>
+                                                                <Button
+                                                                    color="primary"
+                                                                    auto
+                                                                    flat
+                                                                    onClick={handleCreate}
+                                                                    disabled={isLoading}
+                                                                >
+                                                                    {isLoading ? 'Creating...' : 'Create'}
+                                                                </Button>
+                                                                <Button auto flat onClick={handleModalClose}>
+                                                                    Close
+                                                                </Button>
+                                                            </ModalFooter>
+                                                        </>
+                                                    )}
                                                 </ModalContent>
                                             </Modal>
 
@@ -541,7 +538,7 @@ const handleAddStudent = async () => {
 
                                                 <TableBody>
                                                     {classes.map((classItem) => (
-                                                <TableRow key={classItem.id}>
+                                                        <TableRow key={classItem.id}>
                                                     <TableCell className="w-[10%] text-left">
                                 <span
                                     className="cursor-pointer text-blue-500 hover:underline"
@@ -570,7 +567,7 @@ const handleAddStudent = async () => {
                                                                         </div>
                                                                     </DropdownTrigger>
                                                                     <DropdownMenu aria-label="Actions" >
-                                                                        <DropdownItem key="code" onClick={() => handleStatusChange(classItem.id, 'X')}>Copy group code</DropdownItem>
+                                                                        {/* <DropdownItem key="code" onClick={() => handleStatusChange(classItem.id, 'X')}>Copy group code</DropdownItem> */}
                                                                         <DropdownItem key="add" onClick={() => openModal(classItem.class_name, classItem.class_code)}>Add student</DropdownItem>
                                                                         <DropdownItem key="approve" onClick={() => handleStatusChange(classItem.id, 'Y')}>Approve</DropdownItem>
                                                                         <DropdownItem key="decline" onClick={() => handleStatusChange(classItem.id, 'X')}>Decline</DropdownItem>
@@ -583,61 +580,61 @@ const handleAddStudent = async () => {
                                                 </TableBody>
                                             </Table>
 
-                            {/* Modal for Adding Authors */}
-                            <Modal isOpen={isModalOpen} onClose={closeModal}>
-                                <ModalContent>
-                                    <ModalHeader>Add Student</ModalHeader>
-                                    <ModalBody>
-                                        <div className="flex flex-col gap-4">
-                                            <input
-                                                type="text"
-                                                placeholder="Enter authors name and press Enter"
-                                                className="w-full p-2 border rounded mb-2"
-                                                value={authorInputValue}
-                                                onChange={handleAuthorInputChange}
-                                                onKeyDown={handleAuthorKeyDown}
-                                            />
-                                            {errors.users && <div className="text-red-600 text-sm mb-2">{errors.users}</div>}
-            {errorMessage && <div className="text-red-600 text-sm mb-2">{errorMessage}</div>} {/* Error message display */}
+                                            {/* Modal for Adding Authors */}
+                                            <Modal isOpen={isModalOpen} onClose={closeModal}>
+                                                <ModalContent>
+                                                    <ModalHeader>Add Student</ModalHeader>
+                                                    <ModalBody>
+                                                        <div className="flex flex-col gap-4">
+                                                            <input
+                                                                type="text"
+                                                                placeholder="Enter authors name and press Enter"
+                                                                className="w-full p-2 border rounded mb-2"
+                                                                value={authorInputValue}
+                                                                onChange={handleAuthorInputChange}
+                                                                onKeyDown={handleAuthorKeyDown}
+                                                            />
+                                                            {errors.users && <div className="text-red-600 text-sm mb-2">{errors.users}</div>}
+                            {errorMessage && <div className="text-red-600 text-sm mb-2">{errorMessage}</div>} {/* Error message display */}
 
-                                            {authorSuggestions.length > 0 && (
-                                                <ul className="absolute bg-white border border-gray-300 mt-1 max-h-60 overflow-auto z-10 w-full">
-                                                    {authorSuggestions.map((suggestion, index) => (
-                                                        <li
-                                                            key={index}
-                                                            className="p-2 cursor-pointer hover:bg-gray-200"
-                                                            onClick={() => handleAuthorSuggestionSelect(suggestion.name)}
-                                                        >
-                                                            {suggestion.name}
-                                                        </li>
-                                                    ))}
-                                                </ul>
-                                            )}
+                                                            {authorSuggestions.length > 0 && (
+                                                                <ul className="absolute bg-white border border-gray-300 mt-1 max-h-60 overflow-auto z-10 w-full">
+                                                                    {authorSuggestions.map((suggestion, index) => (
+                                                                        <li
+                                                                            key={index}
+                                                                            className="p-2 cursor-pointer hover:bg-gray-200"
+                                                                            onClick={() => handleAuthorSuggestionSelect(suggestion.name)}
+                                                                        >
+                                                                            {suggestion.name}
+                                                                        </li>
+                                                                    ))}
+                                                                </ul>
+                                                            )}
 
-                                            <div className="tags-container flex flex-wrap mt-2">
-                                                {users.map((author, index) => (
-                                                    <div key={index} className="tag bg-gray-200 p-1 rounded mr-2 mb-2 flex items-center">
-                                                        {author}
-                                                        <button
-                                                            type="button"
-                                                            className="ml-1 text-red-600"
-                                                            onClick={() => handleAuthorsRemove(index)}
-                                                        >
-                                                            &times;
-                                                        </button>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    </ModalBody>
-                                    <ModalFooter>
-                                        <Button color="primary" auto onClick={handleAddStudent} disabled={isLoading}>
-                                            {isLoading ? 'Adding...' : 'Add'}
-                                        </Button>
-                                        <Button auto onClick={closeModal}>Close</Button>
-                                    </ModalFooter>
-                                </ModalContent>
-                            </Modal>
+                                                            <div className="tags-container flex flex-wrap mt-2">
+                                                                {users.map((author, index) => (
+                                                                    <div key={index} className="tag bg-gray-200 p-1 rounded mr-2 mb-2 flex items-center">
+                                                                        {author}
+                                                                        <button
+                                                                            type="button"
+                                                                            className="ml-1 text-red-600"
+                                                                            onClick={() => handleAuthorsRemove(index)}
+                                                                        >
+                                                                            &times;
+                                                                        </button>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    </ModalBody>
+                                                    <ModalFooter>
+                                                        <Button color="primary" auto onClick={handleAddStudent} disabled={isLoading}>
+                                                            {isLoading ? 'Adding...' : 'Add'}
+                                                        </Button>
+                                                        <Button auto onClick={closeModal}>Close</Button>
+                                                    </ModalFooter>
+                                                </ModalContent>
+                                            </Modal>
 
 
                                             {isShowMembersModalOpen && hoveredClass && (
@@ -650,15 +647,10 @@ const handleAddStudent = async () => {
                 Members
             </button>
             <div className="flex flex-col items-center justify-center p-6 rounded-lg shadow-md">
-                {hoveredClass.manuscripts.length > 0 
-                    ? hoveredClass.manuscripts.map((manuscript, index) => (
-                        <div key={index}>
-                            {manuscript.man_doc_title}
-                        </div>
-                    )) 
-                : "No manuscript submission from the group."}
+                <h5 className="mb-4 text-center font-bold text-gray-500">
+                    {hoveredClass.man_doc_title || "No manuscript submission from the group."}
+                </h5>
                 {error && <p className="text-red-500">{error}</p>}
-                <div className="mb-2 text-gray-700 mt-5">Members</div>
                 {isMembersLoading ? (
                     // Customized Skeleton
                     <div className="flex flex-col space-y-2 w-full">
@@ -671,10 +663,7 @@ const handleAddStudent = async () => {
                     </div>
                 ) : members.length > 0 ? (
                     members.map(member => (
-                        <>
-                        <p key={member.id} className="mb-2 text-gray-600">{member.name}</p>
-                        {/* <p key={member.user.id} className="mb-2 text-gray-600">{member.user.name}</p> */}
-                        </>
+                        <p key={member.user.id} className="mb-2 text-gray-600">{member.user.name}</p>
                     ))
                 ) : (
                     <p className="mb-2 text-gray-600">No members found.</p>

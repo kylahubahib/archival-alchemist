@@ -62,9 +62,9 @@ export default function StudentClass({ auth }) {
         // Check if the response contains class data
         if (response.data.class) {
             setManuscript(response.data.manuscripts);
-            
-            console.log('Code;', response.data.classCode);
-            console.log('class id: ', response.data.class.class_id);
+            console.log('Manucripts', response.data.manuscripts);
+            //console.log('Code;', response.data.classCode);
+            //console.log('class id: ', response.data.class.class_id);
             // Update state with the class code
             setClassCode(response.data.classCode);
             setClassId(response.data.class.class_id);

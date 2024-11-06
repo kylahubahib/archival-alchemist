@@ -36,7 +36,7 @@ class PersonalSubscriptionController extends Controller
                 ->get();
         }
         
-        \Log::info('Personal Subscription: ', $per_sub);
+        //\Log::info('Personal Subscription: ', $per_sub);
 
         if($per_sub){
             return response()->json([

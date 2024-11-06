@@ -74,20 +74,17 @@ class StudentClassController extends Controller
             // Generate a unique filename
             $fileName = time() . '_' . $file->getClientOriginalName();
 
-            // Move the file to the public/storage/capstone_files directory
-            $file->move(public_path('storage/capstone_files'), $fileName);
-
             // Store the relative path to the file (without the 'public' part)
             $filePath = 'storage/capstone_files/' . $fileName;
 
             // Create the manuscript project
             $manuscriptProject = ManuscriptProject::create([
                 'man_doc_title' => $validatedData['man_doc_title'],
-
                 'man_doc_description' => $validatedData['man_doc_description'],
                 'man_doc_adviser' => $validatedData['man_doc_adviser'],
                 'man_doc_content' => $filePath, // Save the relative path to the database
                 'class_code' => $validatedData['class_id'] ?? null,
+                'man_doc_status' => 'P'
             ]);
 
             Log::info('Manuscript Project Created:', ['id' => $manuscriptProject->id]);
@@ -169,6 +166,34 @@ class StudentClassController extends Controller
                 ]);
             }
 
+            if($manuscriptProject)
+            {
+               Log::info('Get class code:', ['Code' => $classCode]);
+               $classId = $classCode;
+               Log::info('Class Found:', ['Class Id' => $classId]);
+
+               //$authorIds = Author::whereIn('user_id', $users)->pluck('user_id')->toArray();
+               $manuscriptId = $manuscriptProject->id;
+               $teacherId = ClassModel::where('id', $classId)->pluck('ins_id')->first();
+
+               Log::info('Teacher Id: ', ['id' => $teacherId]);
+       
+               // Upload the file to Google Drive and get the Google Docs URL
+               $googleDocsUrl = $this->uploadToDrive($file, $manuscriptId, $teacherId);
+
+               if($googleDocsUrl) {
+                   $manuscriptProject->update([
+                       'man_doc_content' => $googleDocsUrl,
+                   ]);
+               }
+
+               
+                // Move the file to the public/storage/capstone_files directory
+                $file->move(public_path('storage/capstone_files'), $fileName);
+            }
+
+             $faculty = $teacherId;
+
             // if($manuscriptProject)
             // {
             //     $class = ClassModel::where('class_code', $classCode)->first();
@@ -193,7 +218,7 @@ class StudentClassController extends Controller
     }
 
 
-     public function uploadToDrive($file, $manuscriptId, $teacherId)
+    public function uploadToDrive($file, $manuscriptId, $teacherId)
     {
         $user = Auth::user();
 
@@ -309,6 +334,8 @@ class StudentClassController extends Controller
             }
         }
     }
+
+
 
 
     
@@ -867,13 +894,14 @@ public function checkStudentInClass()
      // Load user with manuscripts that are not approved, including tags and revision history
      $user = Auth::user()->load([
         'manuscripts' => function ($query) {
-            $query->where('man_doc_status', 'X');
+            $query->where('man_doc_status', 'P');
         },
         'manuscripts.tags',
         'manuscripts.revision_history.faculty',
         'manuscripts.authors'
     ]);
 
+    Log::info($user->manuscripts);
 
     // Check if the user is enrolled in any class
     if($user->user_type === 'student') {

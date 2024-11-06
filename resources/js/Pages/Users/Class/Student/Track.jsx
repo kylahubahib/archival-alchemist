@@ -18,6 +18,10 @@ export default function Track({manuscript=[]}) {
         setExpanded(!expanded);
     };
 
+    useEffect(() => {
+        console.log(manuscript);
+    })
+
     const openModal = (data, content) => {
         setModalContent(content);
         setSelectedData(data);
@@ -50,7 +54,7 @@ export default function Track({manuscript=[]}) {
 
                         <div>
                             <div className="text-base font-bold">
-                                Status: {data.man_doc_status != 'X' ? 'APPROVED' : 'PENDING'}
+                                Status: {data.man_doc_status != 'P' ? 'APPROVED' : 'PENDING'}
                             </div>
                             <div className="text-base text-blue-500 cursor-pointer" onClick={() => toggleTimeline(data)}>
                                 {expanded ? 'See Less' : 'See More'}
