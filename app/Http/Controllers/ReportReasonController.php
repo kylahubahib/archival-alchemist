@@ -53,11 +53,15 @@ class ReportReasonController extends Controller
     public function update(Request $request, $id): RedirectResponse
     {
 
-        $request->validate([
-            'report_type_content' => 'required|string|max:1000'
-        ], [], [
-            'report_type_content' => 'report reason',
-        ]);
+        $request->validate(
+            //Validation rules
+            ['report_type_content' => 'required|string|max:1000'], 
+            // Custom error messages
+            [], 
+            //Custom attribute name for the error messages
+            // Example: The report type content is required turns to The report reason is required.
+            ['report_type_content' => 'report reason',]
+        );
 
         $data = ReportType::find($id);
 

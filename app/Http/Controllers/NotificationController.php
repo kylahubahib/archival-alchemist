@@ -39,7 +39,7 @@ class NotificationController extends Controller
            
         }
         
-        Log::info($notificationData);
+        //Log::info($notificationData);
 
         $unreadNotif = Notification::where('notifiable_id', $userId)
         ->where('read_at', null)->get();

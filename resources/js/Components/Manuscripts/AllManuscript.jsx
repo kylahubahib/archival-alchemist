@@ -164,11 +164,15 @@ const Manuscript = ({user, choice}) => {
                 return;
             }
 
-            console.log(`Fetching favorites for user: ${user.id}`);
+            //console.log(`Fetching favorites for user: ${user.id}`);
 
             try {
                 const response = await axios.get(`/user/${user.id}/favorites`);
-                const favoritesData = response.data.map((favorite) => `${user.id}-${favorite.man_doc_id}`);
+                //console.log('Response: ', response.data.favorites);
+                const favoritesData = [];
+                if(response.data.favorites) {
+                    favoritesData = response.data.favorites.map((favorite) => `${user.id}-${favorite.man_doc_id}`);
+                }
                 setFavorites(new Set(favoritesData));
                 console.log(`Fetched favorites for user ${user.id}:`, favoritesData);
             } catch (error) {
@@ -230,7 +234,7 @@ const Manuscript = ({user, choice}) => {
 
 
     // useEffect to fetch manuscripts based on titleInputValue
-     // useEffect to fetch all manuscripts on mount
+    // useEffect to fetch all manuscripts on mount
     // Effect to fetch all manuscripts on component mount
     useEffect(() => {
         let isMounted = true; // flag to track if the component is mounted

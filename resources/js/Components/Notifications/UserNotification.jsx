@@ -26,7 +26,7 @@ export default function UserNotification({user}) {
         channel.listen('.notification', (data) => {
             console.log(data);
             //setNotificationData((prev) => [...prev, data]);
-            setNotifying(true);
+            //setNotifying(true);
             router.reload();
         });
     }, []);

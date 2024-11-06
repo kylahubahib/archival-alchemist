@@ -28,7 +28,7 @@ class PaymentSessionController extends Controller
 
     public function PaymentSession(Request $request)
     {
-        \Log::info('in payment session');
+        //\Log::info('in payment session');
         $request->validate([
             'plan_id' => 'required|exists:subscription_plans,id',
         ]);
@@ -134,7 +134,7 @@ class PaymentSessionController extends Controller
 
                 $checkoutDetails = $response->json('data.attributes');
 
-                \Log::info($checkoutDetails);
+                \Log::info('Checkout Details: ', $checkoutDetails);
 
                 $subscriptionInterval = $plan->plan_term;
                 $currentDate = Carbon::now();

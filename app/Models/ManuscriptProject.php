@@ -23,7 +23,7 @@ class ManuscriptProject extends Model
         'man_doc_view_count',
         'is_publish',
         'man_doc_rating',
-        'class_id',
+        'class_code',
     ];
 
     /**

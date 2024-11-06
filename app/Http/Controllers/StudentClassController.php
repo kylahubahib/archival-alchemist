@@ -58,7 +58,7 @@ class StudentClassController extends Controller
  
              ]);
  
-             //Get the class code using request
+             //Get the class code using request. The class code is the class id
              $classCode = $request->get('class_code');
  
              // Use the correct key to get tags from the request
@@ -69,7 +69,8 @@ class StudentClassController extends Controller
  
              // Store the file in the capstone_files directory
              $filePath = $request->file('man_doc_content')->storeAs('capstone_files', time() . '_' . $request->file('man_doc_content')->getClientOriginalName(), 'public');
- 
+             
+             Log::info('Class code:', ['id' => $classCode]);
              // Create the manuscript project
              $manuscriptProject = ManuscriptProject::create([
                  'man_doc_title' => $validatedData['man_doc_title'],
@@ -162,9 +163,8 @@ class StudentClassController extends Controller
              {
                 
                 Log::info('Get class code:', ['Code' => $classCode]);
-
-                $classId = ClassStudent::where('class_id', $classCode)->pluck('class_id')->first();
-                Log::info('Class Found:', ['Code' => $classId]);
+                $classId = $classCode;
+                Log::info('Class Found:', ['Class Id' => $classId]);
 
                 //$authorIds = Author::whereIn('user_id', $users)->pluck('user_id')->toArray();
                 $manuscriptId = $manuscriptProject->id;
@@ -395,7 +395,23 @@ class StudentClassController extends Controller
                     'stud_id' => $userId, // Store the user ID
                 ]);
 
-                return response()->json(['success' => true, 'message' => 'Joined class successfully']);
+                
+                 // Notifies the teacher that a new student joins
+                 $teacher = User::find($class->ins_id);
+                 $newStudent = Auth::user()->name; 
+
+                 if ($teacher) {
+                         $teacher->notify(new UserNotification([
+                             'message' => $newStudent . ' joins ' . $class->class_name,
+                             'user_id' => $teacher->id
+                         ]));
+                 }
+
+                return response()->json([
+                    'success' => true, 
+                    'message' => 'Joined class successfully',
+                    'classId' => $class->id
+                ]);
             }
         } catch (\Exception $e) {
             // Log the error and return a response
@@ -619,6 +635,8 @@ public function getPublishedManuscripts(Request $request)
 
         // Execute the query to get the results
         $fetchedManuscripts = $manuscripts->get();
+
+        Log::info('Published Manuscripts:', ['manuscripts' => $fetchedManuscripts]);
 
         // Log the number of manuscripts found
         if ($fetchedManuscripts->isNotEmpty()) {
@@ -880,11 +898,18 @@ public function checkStudentInClass()
 
 
     // Check if the user is enrolled in any class
-    $studentClass = ClassStudent::where('stud_id', $user->id)->first();
-
-    if ($studentClass) {
+    if($user->user_type === 'student') {
+        $userClass = ClassStudent::where('stud_id', $user->id)->first();
+        $class = ClassModel::where('id', $userClass->class_id)->first();
+    } else {
+        $userClass = ClassModel::where('ins_id', $user->id)->first();
+        $class = ClassModel::where('id', $userClass->id)->first();
+    }
+   
+    if ($userClass) {
         return response()->json([
-            'class' => $studentClass->class_id, 
+            'class' => $userClass,
+            'classCode' => $class->class_code, 
             'manuscripts' => $user->manuscripts
         ]);
     } else {

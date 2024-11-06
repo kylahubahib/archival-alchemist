@@ -14,6 +14,7 @@ export default function StudentClass({ auth }) {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
     const [classCode, setClassCode] = useState(null);
+    const [classId, setClassId] = useState(null);
     const [joinedClass, setJoinedClass] = useState(false);
     const [activeTab, setActiveTab] = useState(null);
     const [errorMessage, setErrorMessage] = useState(''); // Add state for error message
@@ -61,8 +62,12 @@ export default function StudentClass({ auth }) {
         // Check if the response contains class data
         if (response.data.class) {
             setManuscript(response.data.manuscripts);
+            
+            console.log('Code;', response.data.classCode);
+            console.log('class id: ', response.data.class.class_id);
             // Update state with the class code
-            setClassCode(response.data.class);
+            setClassCode(response.data.classCode);
+            setClassId(response.data.class.class_id);
 
             // Mark that the class has been joined
             setJoinedClass(true); // Student is already joined if class exists
@@ -123,7 +128,9 @@ export default function StudentClass({ auth }) {
 
                                 // Perform insertion with class details
                                 axios.post('/store-student-class', { class_code: classCode, class_name, ins_id })
-                                    .then(() => {
+                                    .then((response) => {
+                                        setClassId(response.data.classId);
+                                        //console.log('class id: ', response.data.classId)
                                         setJoinedClass(true);
                                         setActiveTab('track');  // Set active tab to 'upload'
                                         closeModal();
@@ -233,7 +240,7 @@ export default function StudentClass({ auth }) {
                                     <div className="bg-gray-100 flex-grow rounded-b-lg w-full"> {/* Ensure this section grows */}
                                         {/* Conditionally Render Active Tab Component */}
                                         <div className="mt-6">
-                                            {activeTab === 'upload' && <UploadCapstone class_code={classCode}  />}
+                                            {activeTab === 'upload' && <UploadCapstone class_code={classId}  />}
                                             {activeTab === 'track' && <Track manuscript={manuscript}/>}
                                             {activeTab === 'approve' && <Approve />}
                                         </div>

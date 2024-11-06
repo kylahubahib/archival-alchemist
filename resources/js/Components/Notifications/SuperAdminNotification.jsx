@@ -22,7 +22,7 @@ export default function SuperAdminNotification({}) {
         const channel = window.Echo.channel('superadmin-notifications');
         channel.listen('.notification', (data) => {
             //setNotificationData((prev) => [...prev, data]);
-            setNotifying(true);
+            //setNotifying(true);
         });
     }, [setNotifying]);
 

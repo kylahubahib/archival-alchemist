@@ -26,7 +26,7 @@ export default function SuperAdminNotification({user}) {
         channel.listen('.notification', (data) => {
             //setNotificationData((prev) => [...prev, data]);
             router.reload();
-            setNotifying(true);
+            //setNotifying(true);
         });
     }, []);
 

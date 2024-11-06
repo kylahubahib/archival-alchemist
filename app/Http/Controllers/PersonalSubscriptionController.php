@@ -36,7 +36,7 @@ class PersonalSubscriptionController extends Controller
                 ->get();
         }
         
-        \Log::info($per_sub);
+        \Log::info('Personal Subscription: ', $per_sub);
 
         if($per_sub){
             return response()->json([
@@ -58,7 +58,7 @@ class PersonalSubscriptionController extends Controller
 
     public function cancelSubscription(Request $request, string $id)
     {
-        //If user cancel their subscription, they won't be notify to renew their subscription since
+        //If user cancel their subscription, they won't be notified to renew their subscription since
         //subscription is non recurring
 
         $per_sub = PersonalSubscription::find($id);
