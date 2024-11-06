@@ -567,7 +567,8 @@ const handleAddStudent = async () => {
                                                                         </div>
                                                                     </DropdownTrigger>
                                                                     <DropdownMenu aria-label="Actions" >
-                                                                        <DropdownItem key="add" onClick={() => openModal(classItem.class_name, classItem.class_code)}>Add Student</DropdownItem>
+                                                                        <DropdownItem key="code" onClick={() => handleStatusChange(classItem.id, 'X')}>Copy group code</DropdownItem>
+                                                                        <DropdownItem key="add" onClick={() => openModal(classItem.class_name, classItem.class_code)}>Add student</DropdownItem>
                                                                         <DropdownItem key="approve" onClick={() => handleStatusChange(classItem.id, 'Y')}>Approve</DropdownItem>
                                                                         <DropdownItem key="decline" onClick={() => handleStatusChange(classItem.id, 'X')}>Decline</DropdownItem>
                                                                         <DropdownItem key="delete" className="text-danger" color="danger">Delete</DropdownItem>
