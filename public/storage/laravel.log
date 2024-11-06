@@ -1,0 +1,38 @@
+[2024-11-05 07:58:25] local.ERROR: Uncaught InvalidArgumentException: Please provide a valid cache path. in C:\xampp\htdocs\archival-alchemist-main\vendor\laravel\framework\src\Illuminate\View\Compilers\Compiler.php:67
+Stack trace:
+#0 C:\xampp\htdocs\archival-alchemist-main\vendor\laravel\framework\src\Illuminate\View\ViewServiceProvider.php(97): Illuminate\View\Compilers\Compiler->__construct(Object(Illuminate\Filesystem\Filesystem), false, '', true, 'php')
+#1 C:\xampp\htdocs\archival-alchemist-main\vendor\laravel\framework\src\Illuminate\Container\Container.php(931): Illuminate\View\ViewServiceProvider->Illuminate\View\{closure}(Object(Illuminate\Foundation\Application), Array)
+#2 C:\xampp\htdocs\archival-alchemist-main\vendor\laravel\framework\src\Illuminate\Container\Container.php(815): Illuminate\Container\Container->build(Object(Closure))
+#3 C:\xampp\htdocs\archival-alchemist-main\vendor\laravel\framework\src\Illuminate\Foundation\Application.php(1046): Illuminate\Container\Container->resolve('blade.compiler', Array, true)
+#4 C:\xampp\htdocs\archival-alchemist-main\vendor\laravel\framework\src\Illuminate\Container\Container.php(751): Illuminate\Foundation\Application->resolve('blade.compiler', Array)
+#5 C:\xampp\htdocs\archival-alchemist-main\vendor\laravel\framework\src\Illuminate\Foundation\Application.php(1028): Illuminate\Container\Container->make('blade.compiler', Array)
+#6 C:\xampp\htdocs\archival-alchemist-main\vendor\laravel\framework\src\Illuminate\Foundation\helpers.php(124): Illuminate\Foundation\Application->make('blade.compiler', Array)
+#7 Command line code(1): app('Illuminate\\View...')
+#8 {main}
+  thrown {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Uncaught InvalidArgumentException: Please provide a valid cache path. in C:\\xampp\\htdocs\\archival-alchemist-main\\vendor\\laravel\\framework\\src\\Illuminate\\View\\Compilers\\Compiler.php:67
+Stack trace:
+#0 C:\\xampp\\htdocs\\archival-alchemist-main\\vendor\\laravel\\framework\\src\\Illuminate\\View\\ViewServiceProvider.php(97): Illuminate\\View\\Compilers\\Compiler->__construct(Object(Illuminate\\Filesystem\\Filesystem), false, '', true, 'php')
+#1 C:\\xampp\\htdocs\\archival-alchemist-main\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Container.php(931): Illuminate\\View\\ViewServiceProvider->Illuminate\\View\\{closure}(Object(Illuminate\\Foundation\\Application), Array)
+#2 C:\\xampp\\htdocs\\archival-alchemist-main\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Container.php(815): Illuminate\\Container\\Container->build(Object(Closure))
+#3 C:\\xampp\\htdocs\\archival-alchemist-main\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(1046): Illuminate\\Container\\Container->resolve('blade.compiler', Array, true)
+#4 C:\\xampp\\htdocs\\archival-alchemist-main\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Container.php(751): Illuminate\\Foundation\\Application->resolve('blade.compiler', Array)
+#5 C:\\xampp\\htdocs\\archival-alchemist-main\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(1028): Illuminate\\Container\\Container->make('blade.compiler', Array)
+#6 C:\\xampp\\htdocs\\archival-alchemist-main\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\helpers.php(124): Illuminate\\Foundation\\Application->make('blade.compiler', Array)
+#7 Command line code(1): app('Illuminate\\\\View...')
+#8 {main}
+  thrown at C:\\xampp\\htdocs\\archival-alchemist-main\\vendor\\laravel\\framework\\src\\Illuminate\\View\\Compilers\\Compiler.php:67)
+[stacktrace]
+#0 {main}
+"} 
+[2024-11-05 07:58:28] local.ERROR: Trait "Chatify\Traits\UUID" not found {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Trait \"Chatify\\Traits\\UUID\" not found at C:\\xampp\\htdocs\\archival-alchemist-main\\app\\Models\\ChFavorite.php:8)
+[stacktrace]
+#0 {main}
+"} 
+[2024-11-05 07:59:28] local.ERROR: Trait "Chatify\Traits\UUID" not found {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Trait \"Chatify\\Traits\\UUID\" not found at C:\\xampp\\htdocs\\archival-alchemist-main\\app\\Models\\ChFavorite.php:8)
+[stacktrace]
+#0 {main}
+"} 
+[2024-11-05 08:00:28] local.ERROR: Trait "Chatify\Traits\UUID" not found {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Trait \"Chatify\\Traits\\UUID\" not found at C:\\xampp\\htdocs\\archival-alchemist-main\\app\\Models\\ChFavorite.php:8)
+[stacktrace]
+#0 {main}
+"} 

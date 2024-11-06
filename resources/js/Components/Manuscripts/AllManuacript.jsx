@@ -385,7 +385,18 @@ const handleDropdownChange = (selectedKey) => {
                     />
                 </div>
             <div className="flex-1 p-4">
-                <h2 className="text-xl font-bold text-gray-900">{manuscript.man_doc_title}</h2>
+                <h2 className="text-xl font-bold text-gray-900">
+                <a
+                    href={`http://127.0.0.1:8000/${manuscript.man_doc_content}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-gray-700 hover:text-blue-600 hover:underline cursor-pointer transition-all duration-300 ease-in-out"
+                >
+                    {manuscript.man_doc_title}
+                </a>
+
+
+                    </h2>
                 {/* <p className="text-gray-700 mt-1">Author: {user.name}</p> */}
 
                 {/* Display the users here */}

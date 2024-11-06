@@ -60,15 +60,24 @@ class StudentClassController extends Controller
             // Use the correct key to get tags from the request
             $users = $request->get('name', []); // Change from 'tags' to 'tags_name'
 
-            // Store the file in the capstone_files directory
-            $filePath = $request->file('man_doc_content')->storeAs('capstone_files', time() . '_' . $request->file('man_doc_content')->getClientOriginalName(), 'public');
 
+            // Get the file from the request
+            $file = $request->file('man_doc_content');
+
+            // Generate a unique filename
+            $fileName = time() . '_' . $file->getClientOriginalName();
+
+            // Move the file to the public/storage/capstone_files directory
+            $file->move(public_path('storage/capstone_files'), $fileName);
+
+            // Store the relative path to the file (without the 'public' part)
+            $filePath = 'storage/capstone_files/' . $fileName;
 
             // Create the manuscript project
             $manuscriptProject = ManuscriptProject::create([
                 'man_doc_title' => $validatedData['man_doc_title'],
                 'man_doc_adviser' => $validatedData['man_doc_adviser'],
-                'man_doc_content' => 'storage/' . $filePath, // Save the path for database
+                'man_doc_content' => $filePath, // Save the relative path to the database
                 'class_code' => $validatedData['class_id'] ?? null,
             ]);
 
@@ -151,20 +160,20 @@ class StudentClassController extends Controller
                 ]);
             }
 
-            if($manuscriptProject)
-            {
-                $class = ClassModel::where('class_code', $classCode)->first();
-                $faculty = $class->ins_id;
+            // if($manuscriptProject)
+            // {
+            //     $class = ClassModel::where('class_code', $classCode)->first();
+            //     $faculty = $class->ins_id;
 
-                RevisionHistory::create([
-                    'ins_comment' => null,
-                    'man_doc_id' => $manuscriptProject->id,
-                    'ins_id' => $faculty,
-                    'uploaded_at' => $manuscriptProject->created_at,
-                    'revision_content' => $manuscriptProject->man_doc_content,
-                    'status' => 'Started'
-                ]);
-            }
+            //     RevisionHistory::create([
+            //         'ins_comment' => null,
+            //         'man_doc_id' => $manuscriptProject->id,
+            //         'ins_id' => $faculty,
+            //         'uploaded_at' => $manuscriptProject->created_at,
+            //         'revision_content' => $manuscriptProject->man_doc_content,
+            //         'status' => 'Started'
+            //     ]);
+            // }
 
             return response()->json(['message' => 'Manuscript project uploaded successfully.'], 200);
 
@@ -849,6 +858,22 @@ public function storeRatings(Request $request)
 //     }
 // }
 
+
+public function view($filename)
+{
+    Log::info('View method called for filename: ' . $filename);
+    $filePath = public_path('/storage/capstone_files/' . $filename);
+
+    Log::info('Checking file path: ' . $filePath);
+
+    if (!file_exists($filePath)) {
+        Log::error('File not found: ' . $filename);
+        abort(404, 'File not found');
+    }
+
+    Log::info('File found: ' . $filename);
+    return view('view_file', compact('filename'));
+}
 
 
 }
