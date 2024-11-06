@@ -42,6 +42,7 @@ class StudentClassController extends Controller
         try {
             $validatedData = $request->validate([
                 'man_doc_title' => 'required|string|max:255',
+                'man_doc_description' => 'required|string',
                 'man_doc_adviser' => 'required|string|max:255',
                 'man_doc_author' => 'nullable|array',
                 'man_doc_author.*' => '.string|max:255',
@@ -76,6 +77,8 @@ class StudentClassController extends Controller
             // Create the manuscript project
             $manuscriptProject = ManuscriptProject::create([
                 'man_doc_title' => $validatedData['man_doc_title'],
+
+                'man_doc_description' => $validatedData['man_doc_description'],
                 'man_doc_adviser' => $validatedData['man_doc_adviser'],
                 'man_doc_content' => $filePath, // Save the relative path to the database
                 'class_code' => $validatedData['class_id'] ?? null,
