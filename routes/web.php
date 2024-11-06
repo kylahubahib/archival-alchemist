@@ -428,4 +428,13 @@ Route::middleware(['web'])->group(function () {
     Route::delete('/forum-posts/{id}', [ForumPostController::class, 'destroy'])->name('forum.posts.destroy');
 
 });
+
+
+
+// route::get('view_file/{file}', [StudentClassController::class, 'view']);
+
+
+Route::get('/view_file/{filename}', [StudentClassController::class, 'view'])->name('view_file');
+
+
 require __DIR__.'/auth.php';

@@ -36,6 +36,7 @@
         "@nextui-org/react": "^2.4.8",
         "browser-image-compression": "^2.0.2",
         "chart.js": "^4.4.5",
+        "cors": "^2.8.5",
         "date-fns": "^3.6.0",
         "flowbite-react": "^0.10.2",
         "framer-motion": "^11.7.0",

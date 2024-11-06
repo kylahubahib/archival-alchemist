@@ -543,41 +543,43 @@ const handleAddStudent = async () => {
                                                     {classes.map((classItem) => (
                                                 <TableRow key={classItem.id}>
                                                     <TableCell className="w-[10%] text-left">
-                                                        <span
-                                                            className="cursor-pointer text-blue-500 hover:underline"
-                                                            onMouseEnter={() => handleMouseEnter(classItem)}
-                                                        >
-                                                            {classItem.class_name}
-                                                        </span>
-                                                    </TableCell>
-                                                    <TableCell className="text-left">
-                                                        {classItem.man_doc_title|| "No manuscript submission from the group."}
-                                                    </TableCell>
-                                                    <TableCell className="text-center">
-                                                        {new Date(classItem.created_at).toLocaleDateString() || "N/A"}
-                                                    </TableCell>
-                                                    <TableCell className="text-center">
-                                                        {new Date(classItem.updated_at).toLocaleDateString() || "N/A"}
-                                                    </TableCell>
-                                                    <TableCell className="text-center">
-                                                        {getStatusButton(classItem.man_doc_status || "norecords")}
-                                                    </TableCell>
-                                                    <TableCell className="text-center">
-                                                        <Dropdown >
-                                                            <DropdownTrigger>
-                                                                <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-300 text-white">
-                                                                    <FontAwesomeIcon icon={faEllipsisV} />
-                                                                </div>
-                                                            </DropdownTrigger>
-                                                            <DropdownMenu aria-label="Actions" >
-                                                                <DropdownItem key="add" onClick={() => openModal(classItem.class_name, classItem.class_code)}>Add Student</DropdownItem>
-                                                                <DropdownItem key="approve" onClick={() => handleStatusChange(classItem.id, 'Y')}>Approve</DropdownItem>
-                                                                <DropdownItem key="decline" onClick={() => handleStatusChange(classItem.id, 'X')}>Decline</DropdownItem>
-                                                                <DropdownItem key="delete" className="text-danger" color="danger">Delete</DropdownItem>
-                                                            </DropdownMenu>
-                                                        </Dropdown>
-                                                    </TableCell>
-                                                </TableRow>))}
+                                <span
+                                    className="cursor-pointer text-blue-500 hover:underline"
+                                    onMouseEnter={() => handleMouseEnter(classItem)}
+                                >
+                                    {classItem.class_name}
+                                </span>
+                            </TableCell>
+                            <TableCell className="text-left">
+                                                                {classItem.man_doc_title|| "No manuscript submission from the group."}
+                                                            </TableCell>
+                                                                                 <TableCell className="text-center">
+                                                                {new Date(classItem.created_at).toLocaleDateString() || "N/A"}
+                                                            </TableCell>
+                                                            <TableCell className="text-center">
+                                                                {new Date(classItem.updated_at).toLocaleDateString() || "N/A"}
+                                                            </TableCell>
+                                                            <TableCell className="text-center">
+                                                                {getStatusButton(classItem.man_doc_status || "norecords")}
+                                                            </TableCell>
+                                                            <TableCell className="text-center">
+                                                                <Dropdown >
+                                                                    <DropdownTrigger>
+                                                                        <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-300 text-white">
+                                                                            <FontAwesomeIcon icon={faEllipsisV} />
+                                                                        </div>
+                                                                    </DropdownTrigger>
+                                                                    <DropdownMenu aria-label="Actions" >
+                                                                        <DropdownItem key="code" onClick={() => handleStatusChange(classItem.id, 'X')}>Copy group code</DropdownItem>
+                                                                        <DropdownItem key="add" onClick={() => openModal(classItem.class_name, classItem.class_code)}>Add student</DropdownItem>
+                                                                        <DropdownItem key="approve" onClick={() => handleStatusChange(classItem.id, 'Y')}>Approve</DropdownItem>
+                                                                        <DropdownItem key="decline" onClick={() => handleStatusChange(classItem.id, 'X')}>Decline</DropdownItem>
+                                                                        <DropdownItem key="delete" className="text-danger" color="danger">Delete</DropdownItem>
+                                                                    </DropdownMenu>
+                                                                </Dropdown>
+                                                            </TableCell>
+                                                        </TableRow>
+                                                    ))}
                                                 </TableBody>
                                             </Table>
 
