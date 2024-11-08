@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Author extends Model
 {
     use HasFactory, Notifiable;
+    
     // Specify the table name if it does nott follow Laravel's convention
     protected $table = 'author';
 
@@ -31,15 +32,15 @@ class Author extends Model
     // }
 
     // In Author.php model
-// public function user()
-// {
-//     return $this->belongsTo(User::class, 'user_id', 'id'); // Ensure correct mapping
-// }
+    // public function user()
+    // {
+    //     return $this->belongsTo(User::class, 'user_id', 'id'); // Ensure correct mapping
+    // }
 
-public function user(): BelongsTo
-{
-    return $this->belongsTo(User::class, 'user_id', 'id');
-}
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'user_id', 'id');
+    }
 
 
 

@@ -12,8 +12,9 @@ use Illuminate\Notifications\Notifiable;
 class ClassStudent extends Model
 {
     use HasFactory;
+
      // Specify the table name if it does not follow Laravel's convention
-     protected $table = 'class_students';
+    protected $table = 'class_students';
      
     protected $fillable = ['class_id', 'stud_id'];
 

@@ -91,10 +91,12 @@ class DepartmentsController extends Controller
 
         $request->validate([
             'uni_branch_id' => 'required|integer',
-            'dept_name' => 'required|string|unique:departments'
+            'dept_name' => 'required|string|unique:departments',
+            'dept_acronym' => 'nullable|string|unique:departments'
         ], [
             'dept_name.unique' => 'The department name has already been taken.',
             'dept_name.required' => 'The department name is required.',
+            'dept_acronym.unique' => 'The department name has already been taken.',
         ]);
 
         \Log::info('Create Data: ', $request->all());
@@ -102,7 +104,8 @@ class DepartmentsController extends Controller
         Department::create([
             'uni_branch_id' => $request->uni_branch_id,
             'dept_name' =>  $request->dept_name,
-            'added_by' => Auth::user()->name
+            'added_by' => Auth::user()->name,
+            'dept_acronym' => $request->dept_acronym
         ]);
 
         return redirect(route('manage-departments.index'))->with('success', 'Departments created successfully.');
@@ -114,15 +117,20 @@ class DepartmentsController extends Controller
     public function update(Request $request, string $id)
     {
         $request->validate([
-            'uni_branch_id' => 'required|integer',
-            'dept_name' => 'required|string',
+            'dept_name' => 'required|string|unique:departments',
+            'dept_acronym' => 'nullable|string|unique:departments'
+        ], [
+            'dept_name.unique' => 'The department name has already been taken.',
+            'dept_name.required' => 'The department name is required.',
+            'dept_acronym.unique' => 'The department name has already been taken.',
         ]);
+
 
         $department = Department::find($id);
 
         $department->update([
-            'uni_branch_id' => $request->uni_branch_id,
-            'dept_name' =>  $request->dept_name
+            'dept_name' =>  $request->dept_name,
+            'dept_acronym' => $request->dept_acronym
         ]);
 
         return redirect(route('manage-departments.index'))->with('success', 'Departments created successfully.');
@@ -138,5 +146,38 @@ class DepartmentsController extends Controller
         return redirect(route('manage-departments.index'))->with('success', 'Department deleted successfully.');
     }    
 
+
+     /**
+     * Reassign the courses
+     */
+    public function reassignCourses(Request $request, string $id)
+    {
+        $deptId = $request->get('dept_id');
+    
+        Course::where('dept_id', $deptId)->update([
+            'dept_id' => $id
+        ]);
+    
+        return response()->json([
+            'message' => 'Successfully reassigned courses!'
+        ]);
+    }
+    
+
+     /**
+     * Unassign the courses
+     */
+    public function unassignCourses(string $id)
+    {
+    
+        Course::where('dept_id', $id)->update([
+            'dept_id' => null
+        ]);
+    
+        return response()->json([
+            'message' => 'Successfully unassigned courses! You can manually assign them in the courses tab.'
+        ]);
+    }
+    
     
 }

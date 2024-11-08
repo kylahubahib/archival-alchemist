@@ -21,8 +21,7 @@ class SectionsController extends Controller
     {
         $id = $request->get('id');
         
-        $sections = Section::with('course')
-            ->where('course_id', $id)->paginate(100);
+        $sections = Section::with(['course', 'user'])->where('course_id', $id)->paginate(100);
 
         \Log::info($sections);
 

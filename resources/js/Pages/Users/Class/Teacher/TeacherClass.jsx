@@ -402,7 +402,7 @@ const handleAddStudent = async () => {
         >
             <Head title={getHeaderTitle()} />
 
-            <div className="h-screen bg-white rounded m-4 rounded-xl">
+            <div className="h-screen bg-white m-4 rounded-xl">
                 <div className="w-full mx-auto sm:px-6 lg:px-8">
                     <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                         <div className="p-6 text-gray-900 w-full">

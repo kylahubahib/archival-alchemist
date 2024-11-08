@@ -11,7 +11,8 @@ export default function CreateCourse({isOpen, onClose, deptId, branchId}) {
     const { data, setData, post, processing, errors, clearErrors, reset } = useForm({
         course_name: '',
         dept_id: deptId,
-        uni_branch_id: branchId
+        uni_branch_id: branchId,
+        course_acronym: ''
     });
 
     const createSubmit = (e) => {
@@ -21,7 +22,6 @@ export default function CreateCourse({isOpen, onClose, deptId, branchId}) {
                     onClose();
                     showToast('success', 'Successfully added course!')
                     reset();
-                    //refreshTable(deptId);
             },
         });
     };
@@ -62,6 +62,17 @@ export default function CreateCourse({isOpen, onClose, deptId, branchId}) {
                                     placeholder="Course"
                                 />
                                 <InputError message={errors.course_name} className="mt-2" />
+                            </div>
+                            <div className="flex flex-col">
+                                <InputLabel htmlFor="course_acronym" value="Course Acronym" />
+                                <TextInput
+                                    id="course_acronym"
+                                    value={data.course_acronym}
+                                    onChange={(e) => {setData('course_acronym', e.target.value)}}
+                                    className="mt-1 block w-full"
+                                    placeholder="Course Acronym"
+                                />
+                                <InputError message={errors.course_acronym} className="mt-2" />
                             </div>
 
                             <div className="mt-6 flex">

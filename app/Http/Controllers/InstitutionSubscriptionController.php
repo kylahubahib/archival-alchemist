@@ -71,11 +71,10 @@ class InstitutionSubscriptionController extends Controller
 
     public function uploadCSV(Request $request) 
     {
-        // Validate the incoming request
         $request->validate([
-            'file' => 'required|file|mimes:csv,txt|max:2048', // Add your desired validation rules
-            'insubId' => 'required|exists:institution_subscriptions,id', // Ensure the insubId exists
-            'university' => 'required|string|max:255', // Ensure university is a valid string
+            'file' => 'required|file|mimes:csv,txt|max:2048',
+            'insubId' => 'required|exists:institution_subscriptions,id', 
+            'university' => 'required|string|max:255', 
         ]);
 
         $file = $request->file('file'); 
@@ -93,10 +92,18 @@ class InstitutionSubscriptionController extends Controller
             'insub_content' => 'storage/csv_files/' . $fileName,
         ]);
 
-        // Return a JSON response suitable for Inertia
+        try {
+            $createAccounts = Excel::import(new UsersImport, public_path($ins_sub->insub_content));
+            \Log::info('Import user successfully!');
+        } catch (Exception $e) {
+            \Log::error('Error during user import: ' . $e->getMessage());
+        }
+
+       
+
         return response()->json([
             'success' => true,
-            'redirect_url' => route('institution-subscription-billing.index'), // Redirect URL for the frontend
+            'redirect_url' => route('institution-subscription-billing.index'),
             'message' => 'Successfully uploaded.',
             'file' => $ins_sub->insub_content
         ]);

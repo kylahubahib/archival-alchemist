@@ -1,3 +1,8 @@
+import { RiFolderUnknowFill } from "react-icons/ri"; 
+import { FcFolder } from "react-icons/fc"; 
+import { MdFolderDelete } from "react-icons/md"; 
+import { FaEdit, FaFolder } from "react-icons/fa"; 
+import { TbDotsVertical } from "react-icons/tb"; 
 import { FiChevronRight } from "react-icons/fi"; 
 import AddButton from '@/Components/AddButton';
 import InputError from '@/Components/InputError';
@@ -14,30 +19,42 @@ import CreateCourse from "./CreateCourse";
 import EditCourse from "./EditCourse";
 import { showToast } from "@/Components/Toast";
 import CreateSections from "./CreateSection";
-import { Button } from "@nextui-org/react";
+import { Button, Card, CardBody, Divider, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger } from "@nextui-org/react";
 import EditSections from "./EditSection";
+
+import { formatDate, formatPrice } from '@/utils';
+import RemoveDepartment from "./RemoveDepartment";
+import AddExistingCourse from "./AddExistingCourse";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 export default function Departments({ auth, departments, uniBranch_id}) {
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
+    const [isAddCourseModal, setIsAddCourseModal] = useState(false);
+
+    const [wordEntered, setWordEntered] = useState("");
     const [filteredData, setFilteredData] = useState(departments.data);
     const [displayedData, setDisplayedData] = useState('Departments');
+
     const [selectedDept, setSelectedDept] = useState(null); //Data for the selected department to update or delete
     const [selectedCourse, setSelectedCourse] = useState(null); //Data for the selected course to update or delete
     const [selectedSection, setSelectedSection] = useState(null); //Data for the selected section to update or delete
     const [selectedId, setSelectedId] = useState(null); //Id of the selected department or course
-    const [wordEntered, setWordEntered] = useState("");
+
     const [courses, setCourses] = useState(null);
     const [sections, setSections] = useState(null);
 
     const { data, setData, post, put, processing, errors, clearErrors, reset } = useForm({
         dept_name: '',
+        dept_acronym: '',
         uni_branch_id: ''
     });
 
-    useEffect(() => {
-        console.log(filteredData);
-    },[filteredData])
+    // useEffect(() => {
+    //     console.log(filteredData);
+    //     console.log(selectedDept);
+    // },[filteredData, selectedDept])
 
     useEffect(() => {
         if (displayedData === 'Departments') {
@@ -96,13 +113,16 @@ export default function Departments({ auth, departments, uniBranch_id}) {
     }
 
      // Change the display to the section table
-    const displaySections = (id) => {
+    const displaySections = (item) => {
 
-        console.log("Id: ", id)
+        //console.log("Id: ", id)
+
+        setSelectedCourse(item);
+
         axios.get('get-sections', {
-            params: { id: id }
+            params: { id: item.id }
         }).then(response => {
-            setSelectedId(id);
+            setSelectedId(item.id);
             setDisplayedData('Sections');
             setFilteredData(response.data.sections.data);
             setSections(response.data.sections);
@@ -137,16 +157,7 @@ export default function Departments({ auth, departments, uniBranch_id}) {
         }
     };
 
-    //Deletion of a certain department
-    const deleteDepartment = (id) => {
-            router.delete(route('manage-departments.destroy', id), {
-                preserveScroll: true,
-                onSuccess: () => {
-                    showToast('success', 'Successfully deleted department!');
-                },
-            });
-    };
-
+   
     const closeClick = () => {
         reset(); 
         clearErrors(); 
@@ -169,8 +180,8 @@ export default function Departments({ auth, departments, uniBranch_id}) {
         router.delete(route('manage-sections.destroy', id), {
             preserveScroll: true,
             onSuccess: () => {
-                displaySections(selectedId);
-                showToast('success', 'Successfully deleted section!');
+                displaySections(selectedCourse);
+                //showToast('success', 'Successfully deleted section!');
             },
         });
 };
@@ -185,7 +196,11 @@ export default function Departments({ auth, departments, uniBranch_id}) {
         //Open the edit modal for the department
         if(displayedData === 'Departments'){
             setSelectedDept(data);
-            setData('dept_name', data.dept_name)
+            setData({
+                dept_name: data.dept_name,
+                dept_acronym: data.dept_acronym
+            });
+            
             setIsEditModalOpen(true);
 
         }
@@ -201,16 +216,40 @@ export default function Departments({ auth, departments, uniBranch_id}) {
         }
     };
 
+    const openDeleteProcessModal = (data) => {
+        setSelectedDept(data);
+        setIsAssignModalOpen(true);
+        //console.log('deptin: ', data);  
+    };
+
+    const assignCourseModal = (data) => {
+
+        if(displayedData === 'Departments'){
+            setSelectedDept(data);        
+            setIsAddCourseModal(true);
+
+        }
+        else if(displayedData === 'Courses'){
+            setSelectedCourse(data);
+            setIsAddCourseModal(true);
+        }
+    };
+
     const closeModal = () => {
 
         setIsEditModalOpen(false);
         setIsCreateModalOpen(false);
+        setIsAssignModalOpen(false);
+        setIsAddCourseModal(false);
     
         if(displayedData === 'Departments'){
             setFilteredData(departments.data);
             setWordEntered("");
-            setData('dept_name', '');
             setSelectedDept(null);
+            setData({
+                dept_name: '',
+                dept_acronym: ''
+            });
         }
         else if(displayedData === 'Courses'){
             //setFilteredData(courses);
@@ -219,13 +258,11 @@ export default function Departments({ auth, departments, uniBranch_id}) {
             setSelectedCourse(null);
         }
         else if(displayedData === 'Sections'){
-            displaySections(selectedId);
+            displaySections(selectedCourse);
             setWordEntered("");
             setSelectedSection(null);
         }
     };
-
-
 
     return (
         
@@ -241,15 +278,16 @@ export default function Departments({ auth, departments, uniBranch_id}) {
             {/* DEPARTMENTS TABLE */}
             {displayedData === 'Departments' && (   
                 <div className="max-w-full mx-auto sm:px-6 lg:px-8">
-                    <div className="text-gray-800 text-3xl font-bold mb-3">
+                    <div className="text-gray-600 text-2xl font-bold mb-3 mt-7">
                         <div className="flex flex-row space-x-2">
                             <button onClick={() => displayDepts()} className="flex items-center hover:text-customBlue"> <span>Departments</span></button>
                         </div>
                     </div>
 
-                    <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg flex flex-col min-h-custom">
+                    <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg flex flex-col min-h-custom p-5">
                         <div className="overflow-x-auto flex-grow px-5 pb-5 space-y-4 sm:px-5">
                             <div className="flex items-center justify-between flex-column md:flex-row flex-wrap space-y-4 mt-4 md:space-y-0 bg-white">
+                                {/* Search Filter */}
                                 <div className="relative">
                                     <div className="absolute inset-y-0 rtl:inset-r-0 start-0 flex items-center ps-3 pointer-events-none">
                                         <svg className="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
@@ -265,83 +303,77 @@ export default function Departments({ auth, departments, uniBranch_id}) {
                                         onChange={handleFilter}
                                     />
                                 </div>
+                                {/* Adding a new department */}
                                 <div>
                                     <AddButton onClick={openCreateModal} className="text-customBlue hover:text-white space-x-1">
                                         <FaPlus /><span>Add Department</span>
                                     </AddButton> 
                                 </div> 
                             </div>
-
-                            <div>
-                            <table className="w-full text-sm text-left rtl:text-right text-gray-500">
-                                <thead className="text-xs text-gray-700 uppercase bg-gray-50">
-                                    <tr>
-                                        <th scope="col" className="px-6 py-3">
-                                            Department Name
-                                        </th>
-                                        <th scope="col" className="px-6 py-3">
-                                            Added By
-                                        </th>
-                                        <th scope="col" className="px-6 py-3">
-                                            Courses
-                                        </th>
-                                        <th scope="col" className="px-6 py-3">
-                                            Action
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {filteredData.length > 0 ? (
-                                        filteredData.map((dept) => (
-                                            <tr key={dept.id} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50">
-                                                <th scope="row" className="px-6 py-4 font-medium text-gray-900">
-                                                    <div className="pl-3">
-                                                        <div className="text-base">{dept.dept_name}</div>
-                                                    </div>
-                                                </th>
-                                                <td className="px-6 py-4">{dept.added_by}</td>
-                                                <td className="px-6 py-4">
-                                                    <Button onClick={() => displayCourses(dept)} radius="large" variant='light' size='sm' className=" border-blue-400 text-blue-500">
-                                                        View Courses
-                                                    </Button> 
-                                                    {/* <a onClick={() => displayCourses(dept)} className="font-medium text-blue-600 dark:text-blue-500 hover:underline cursor-pointer">View Courses</a> */}
-                                                </td>
-                                                <td className="px-6 py-4 flex flex-row space-x-5">
-                                                    <a onClick={() => openEditModal(dept)} className="font-medium text-blue-600 dark:text-blue-500 hover:underline cursor-pointer">Edit</a>
-                                                    <a onClick={() => deleteDepartment(dept.id)} className="font-medium text-blue-600 dark:text-blue-500 hover:underline cursor-pointer">Delete</a>
-                                                </td>
-                                            </tr>
-                                        ))
-                                    ) : (
-                                        <tr>
-                                            <td colSpan="4" className="px-6 py-4 text-center text-gray-600">No results found</td>
-                                        </tr>
-                                    )}
-                                </tbody>
-                            </table>
+                            
+                            {/* Department List */}
+                            <div className=" pt-1">
+                            {filteredData.length > 0 ? (
+                                filteredData.map((dept) => (
+                                    <Card
+                                    className="border-none hover:bg-gray-100 w-full my-5"
+                                    shadow="sm"
+                                    key={dept.id}
+                                    > 
+                                    <CardBody  onClick={() => displayCourses(dept)} className="cursor-pointer">
+                                        <div className="w-full flex flex-row justify-between">
+                                            <div className=" text-gray-600 font-semibold text-lg">{dept.dept_name} ({dept.dept_acronym})</div>
+                                            <div className="relative flex justify-end items-center gap-2">
+                                                <Dropdown>
+                                                <DropdownTrigger>
+                                                    <Button isIconOnly size="sm" variant="light">
+                                                    <TbDotsVertical />
+                                                    </Button>
+                                                </DropdownTrigger>
+                                                <DropdownMenu > 
+                                                    <DropdownItem onClick={() => openEditModal(dept)} showDivider startContent={<FaEdit className=" text-gray-600" />}>Edit</DropdownItem>
+                                                    <DropdownItem onClick={() => openDeleteProcessModal(dept)} color="danger" startContent={<MdFolderDelete/>}>Delete</DropdownItem>
+                                                </DropdownMenu>
+                                                </Dropdown>
+                                            </div>
+                                        </div>
+                                        <div className="w-full flex flex-row space-x-3">
+                                            <div  className=" text-gray-600 text-small">Added By: {dept.added_by}</div> 
+                                            <div  className=" text-gray-600 text-small">|</div>
+                                            <div  className=" text-gray-600 text-small">Modified At: {formatDate(dept.updated_at)}</div> 
+                                        </div>
+                                       
+                                    </CardBody>
+                                    </Card>
+                                ))
+                            ) : (
+                                <div className="flex flex-col items-center justify-center">
+                                    <Divider/> 
+                                    <div className="mt-3 text-gray-400">No department found</div>
+                                </div>
+                            )}
                             </div>
 
                         </div>
-                        <div className="mt-auto">
-                            <Pagination links={departments.links}/>
-                        </div>
+                     
                     </div>
                 </div>
 
             )}
 
+
             {/* COURSES TABLE */}
             {displayedData === 'Courses' && (
                 <div className="max-w-full mx-auto sm:px-6 lg:px-8">
-                    <div className="text-gray-800 text-3xl font-bold mb-3">
+                    <div className="text-gray-600 text-2xl font-bold mb-3 mt-7">
                         <div className="flex flex-row space-x-2">
-                            <button onClick={() => displayDepts()} className="flex items-center hover:text-customBlue"> <span>Departments</span></button>
+                            <button onClick={() => displayDepts()} className="flex items-center hover:text-customBlue"> <span>{selectedDept.dept_name}</span></button>
                             <button onClick={() => {}} className="flex items-center hover:text-customBlue"><FiChevronRight /><span>Courses</span></button>
                            
                         </div>
                     </div>
 
-                    <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg flex flex-col min-h-custom">
+                    <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg flex flex-col min-h-custom p-5">
                         <div className="overflow-x-auto flex-grow px-5 pb-5 space-y-4 sm:px-5">
                             <div className="flex items-center justify-between flex-column md:flex-row flex-wrap space-y-4 mt-4 md:space-y-0 bg-white">
                                 <div className="relative">
@@ -359,64 +391,65 @@ export default function Departments({ auth, departments, uniBranch_id}) {
                                         onChange={handleFilter}
                                     />
                                 </div>
-                                <div>
+                                <div className="flex flex-row items-center space-x-5">
                                     <AddButton onClick={openCreateModal} className="text-customBlue hover:text-white space-x-1">
-                                        <FaPlus /><span>Add Course</span>
-                                    </AddButton> 
+                                        <FaPlus /><span>New Course</span>
+                                    </AddButton>
+
+                                    <AddButton onClick={() => {assignCourseModal(selectedDept)}} className="text-customBlue hover:text-white space-x-1">
+                                        <FaPlus /><span>Unassigned Course</span>
+                                    </AddButton>  
+
+                                    <AddExistingCourse isOpen={isAddCourseModal} onClose={closeModal} deptId={selectedDept.id}/>
                                 </div> 
                             </div>
-                            <div className="">
-                            <table className="w-full text-sm text-left rtl:text-right text-gray-500">
-                                <thead className="text-xs text-gray-700 uppercase bg-gray-50">
-                                    <tr>
-                                        <th scope="col" className="px-6 py-3">
-                                            Course Name
-                                        </th>
-                                        <th scope="col" className="px-6 py-3">
-                                            Department
-                                        </th>
-                                        <th scope="col" className="px-6 py-3">
-                                            Sections
-                                        </th>
-                                        <th scope="col" className="px-6 py-3">
-                                            Action
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {filteredData.length > 0 ? (
-                                        filteredData.map((course) => (
-                                            <tr key={course.id} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50">
-                                                <th scope="row" className="px-6 py-4 font-medium text-gray-900">
-                                                    <div className="pl-3">
-                                                        <div className="text-base font-semibold">{course.course_name}</div>
-                                                    </div>
-                                                </th>
-                                                <td className="px-6 py-4">{course.department.dept_name}</td>
-                                                 <td className="px-6 py-4 max-w-24">
-                                                    <Button onClick={() => displaySections(course.id)} radius="large" variant='light' size='sm' className=" border-blue-400 text-blue-500">
-                                                        View Sections
+
+                            <div className=" pt-1">
+                                
+                            {filteredData.length > 0 ? (
+                                filteredData.map((course) => (
+                                    <Card
+                                    className="border-none hover:bg-gray-100 w-full my-5"
+                                    shadow="sm"
+                                    key={course.id}
+                                    > 
+                                    <CardBody  onClick={() =>  displaySections(course)} className="cursor-pointer">
+                                        <div className="w-full flex flex-row justify-between">
+                                            <div className=" text-gray-600 font-semibold text-lg">{course.course_name} ({course.course_acronym})</div>
+                                            <div className="relative flex justify-end items-center gap-2">
+                                                <Dropdown>
+                                                <DropdownTrigger>
+                                                    <Button isIconOnly size="sm" variant="light">
+                                                    <TbDotsVertical />
                                                     </Button>
-                                                     {/* <a onClick={() => } className="font-medium text-blue-600 dark:text-blue-500 hover:underline cursor-pointer">View Sections</a> */}
-                                                 </td>
-                                                <td className="px-6 py-4 flex flex-row space-x-5">
-                                                    <a onClick={() => openEditModal(course)} className="font-medium text-blue-600 dark:text-blue-500 hover:underline cursor-pointer">Edit</a>
-                                                    <a onClick={() => deleteCourses(course.id)} className="font-medium text-blue-600 dark:text-blue-500 hover:underline cursor-pointer">Delete</a>
-                                                </td>
-                                            </tr>
-                                        ))
-                                    ) : (
-                                        <tr>
-                                            <td colSpan="4" className="px-6 py-4 text-center text-gray-600">No results found</td>
-                                        </tr>
-                                    )}
-                                </tbody>
-                            </table>
+                                                </DropdownTrigger>
+                                                <DropdownMenu > 
+                                                    <DropdownItem onClick={() => openEditModal(course)} showDivider startContent={<FaEdit className=" text-gray-600" />}>Edit</DropdownItem>
+                                                    <DropdownItem onClick={() => deleteCourses(course.id)} color="danger" startContent={<MdFolderDelete/>}>Delete</DropdownItem>
+                                                </DropdownMenu>
+                                                </Dropdown>
+                                            </div>
+                                        </div>
+
+                                        <div className="w-full flex flex-row space-x-3">
+                                            <div  className=" text-gray-600 text-small">Added By: {course.added_by}</div> 
+                                            <div  className=" text-gray-600 text-small">|</div>
+                                            <div  className=" text-gray-600 text-small">Modified At: {formatDate(course.updated_at)}</div> 
+                                        </div>
+                                       
+                                    </CardBody>
+                                    </Card>
+                                ))
+                            ) : (
+                                <div className="flex flex-col items-center justify-center">
+                                    <Divider/> 
+                                    <div className="mt-3 text-gray-400">No courses found</div>
+                                </div>
+                            )}
                             </div>
+                            
                         </div>
-                        <div className="mt-auto">
-                            <Pagination links={courses.links}/>
-                        </div>
+                       
                     </div>
                 </div>
             
@@ -426,17 +459,16 @@ export default function Departments({ auth, departments, uniBranch_id}) {
             {displayedData === 'Sections' && (
                             
                 <div className="max-w-full mx-auto sm:px-6 lg:px-8">
-                    <div className="text-gray-800 text-3xl font-bold mb-3">
+                    <div className="text-gray-600 text-2xl font-bold mb-3 mt-7">
                         <div className="flex flex-row space-x-2">
-                            <button onClick={() => displayDepts()} className="flex items-center hover:text-customBlue"> <span>Departments</span></button>
-                            <button onClick={() => displayCourses(selectedDept)} className="flex items-center hover:text-customBlue"><FiChevronRight /><span>Courses</span></button>
+                            <button onClick={() => displayCourses(selectedDept)} className="flex items-center hover:text-customBlue"><span>{selectedCourse.course_name}</span></button>
                             <button onClick={() => {}} className="flex items-center  hover:text-customBlue"><FiChevronRight /><span>Sections</span></button>
                         </div>
                     </div>
 
-                    <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg flex flex-col min-h-custom">
+                    <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg flex flex-col min-h-custom p-5">
                         <div className="overflow-x-auto flex-grow px-5 pb-5 space-y-4 sm:px-5">
-                            <div className="flex items-center justify-between flex-column md:flex-row flex-wrap space-y-4 mt-4 md:space-y-0 bg-white">
+                            {/* <div className="flex items-center justify-between flex-column md:flex-row flex-wrap space-y-4 mt-4 md:space-y-0 bg-white">
                                 <div className="relative">
                                     <div className="absolute inset-y-0 rtl:inset-r-0 start-0 flex items-center ps-3 pointer-events-none">
                                         <svg className="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
@@ -452,61 +484,42 @@ export default function Departments({ auth, departments, uniBranch_id}) {
                                         onChange={handleFilter}
                                     />
                                 </div>
-                                <div>
-                                    <AddButton onClick={openCreateModal} className="text-customBlue hover:text-white space-x-1">
-                                        <FaPlus /><span>Add Section</span>
-                                    </AddButton> 
-                                </div> 
+                            </div> */}
+                            <div className="grid lg:grid-cols-3 gap-5 md:grid-cols-2 grid-cols-1 pt-4">
+                                {filteredData.length > 0 ? (
+                                    filteredData.map((section) => (
+                                        <div
+                                            key={section.id}
+                                            className="border rounded-lg p-6 cursor-pointer shadow hover:bg-gray-100 transition-colors duration-200"
+                                            onClick={() => {}}
+                                        >
+                                            <div className="flex justify-center">
+                                                <FcFolder size={70} />
+                                            </div>
+                                            <div className="text-center text-xl font-semibold mb-4">{section.section_name}</div>
+                                            
+                                            <div className=" text-sm text-gray-600">
+                                                <p><strong>Assigned Teacher:</strong> {section.user.name || 'N/A'}</p>
+                                                <p><strong>Date Created:</strong> {new Date(section.created_at).toLocaleDateString()}</p>
+                                            </div>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <div className="col-span-full flex flex-col items-center align-middle justify-center text-gray-200">
+                                        <RiFolderUnknowFill size={400} />
+                                        <p className="mt-4 text-2xl font-semibold">No section found</p>
+                                    </div>    
+                                 )}
                             </div>
-                            <div>
-                            <table className="w-full text-sm text-left rtl:text-right text-gray-500">
-                                <thead className="text-xs text-gray-700 uppercase bg-gray-50">
-                                    <tr>
-                                        <th scope="col" className="px-6 py-3">
-                                            Section Name
-                                        </th>
-                                        <th scope="col" className="px-6 py-3">
-                                            Course
-                                        </th>
-                                        <th scope="col" className="px-6 py-3">
-                                            Action
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {filteredData.length > 0 ? (
-                                        filteredData.map((section) => (
-                                            <tr key={section.id} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50">
-                                                <th scope="row" className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
-                                                    <div className="pl-3">
-                                                        <div className="text-base font-semibol max-w-44">{section.section_name}</div>
-                                                    </div>
-                                                </th>
-                                                <td className="px-6 py-4 max-w-60 truncate">{section.course.course_name}</td>
-                                                <td className="px-6 py-4 flex flex-row space-x-5 max-w-24">
-                                                    <a onClick={() => openEditModal(section)} className="font-medium text-blue-600 dark:text-blue-500 hover:underline cursor-pointer">Edit</a>
-                                                    <a onClick={() => {}} className="font-medium text-blue-600 dark:text-blue-500 hover:underline cursor-pointer">Delete</a>
-                                                </td>
-                                            </tr>
-                                        ))
-                                    ) : (
-                                        <tr>
-                                            <td colSpan="3" className="px-6 py-4 text-center text-gray-600">No results found</td>
-                                        </tr>
-                                    )}
-                                </tbody>
-                            </table>
-                            </div>
+
+
                         </div>
-                        <div className="mt-auto">
-                            <Pagination links={sections.links}/>
-                        </div>
+                      
                     </div>
 			    </div>
             )} 
 
             </div>
-
 
             {/* CREATE MODAL FOR DEPARTMENT */}
             {displayedData === 'Departments' && (
@@ -527,6 +540,17 @@ export default function Departments({ auth, departments, uniBranch_id}) {
                                         placeholder="Department"
                                     />
                                     <InputError message={errors.dept_name} className="mt-2" />
+                                </div>
+                                <div className="flex flex-col">
+                                    <InputLabel htmlFor="dept_acronym" value="Department Acronym" />
+                                    <TextInput
+                                        id="dept_acronym"
+                                        value={data.dept_acronym}
+                                        onChange={(e) => setData('dept_acronym', e.target.value)}
+                                        className="mt-1 block w-full"
+                                        placeholder="Department Acronym"
+                                    />
+                                    <InputError message={errors.dept_acronym} className="mt-2" />
                                 </div>
                                 <input type="hidden" value={data.uni_branch_id} />
                                 <div className="mt-6 flex">
@@ -563,6 +587,17 @@ export default function Departments({ auth, departments, uniBranch_id}) {
                                 />
                                 <InputError message={errors.dept_name} className="mt-2" />
                             </div>
+                            <div className="flex flex-col">
+                                    <InputLabel htmlFor="dept_acronym" value="Department Acronym" />
+                                    <TextInput
+                                        id="dept_acronym"
+                                        value={data.dept_acronym}
+                                        onChange={(e) => setData('dept_acronym', e.target.value)}
+                                        className="mt-1 block w-full"
+                                        placeholder="Department Acronym"
+                                    />
+                                    <InputError message={errors.dept_acronym} className="mt-2" />
+                                </div>
                                 <input type="hidden" value={data.uni_branch_id} />
 
                             <div className="mt-6 flex">
@@ -578,6 +613,11 @@ export default function Departments({ auth, departments, uniBranch_id}) {
                     <button onClick={closeModal} className="text-white text-right mr-5">Close</button>
                 </div>
             </Modal>}
+
+            {displayedData === 'Departments' && (
+               <RemoveDepartment isOpen={isAssignModalOpen} onClose={closeModal} selectedDept={selectedDept} departments={departments.data}/>
+            )}
+
 
             {displayedData === 'Courses' && <CreateCourse isOpen={isCreateModalOpen} onClose={closeModal} deptId={selectedId} setFilteredData={setFilteredData} courses={courses.data}/>}
 

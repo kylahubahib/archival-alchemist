@@ -249,20 +249,26 @@ Route::middleware(['auth', 'verified', 'user-type:admin'])->prefix('institution'
     Route::get('/coadmins', function () {
         return Inertia::render('InstitutionAdmin/CoAdmins');})->name('institution-coadmins');
 
-    Route::resource('/departments', DepartmentsController::class)->names('manage-departments');
-
-    Route::get('/get-courses', [CoursesController::class, 'getCourses'])->name('get-courses');
-    Route::resource('/courses', CoursesController::class)->names('manage-courses');
-
-    
-    Route::get('/get-sections', [SectionsController::class, 'getSections'])->name('get-sections');
-    Route::resource('/sections', SectionsController::class)->names('manage-sections');
-
     Route::get('/faculties', function () {
         return Inertia::render('InstitutionAdmin/Faculties');})->name('institution-faculties');
 
     Route::get('/students', function () {
-        return Inertia::render('InstitutionAdmin/Students');})->name('institution-students');
+            return Inertia::render('InstitutionAdmin/Students');})->name('institution-students');
+
+    Route::resource('/departments', DepartmentsController::class)->names('manage-departments');
+    Route::post('/reassign-courses/{id}', [DepartmentsController::class, 'reassignCourses'])->name('reassign-courses');
+    Route::post('/unassign-courses/{id}', [DepartmentsController::class, 'unassignCourses'])->name('unassign-courses');
+
+    Route::get('/get-courses', [CoursesController::class, 'getCourses'])->name('get-courses');
+    Route::resource('/courses', CoursesController::class)->names('manage-courses');
+    Route::post('/reassign-faculty/{id}', [CoursesController::class, 'reassignFaculty'])->name('reassign-faculty');
+    Route::post('/unassign-faculty/{id}', [CoursesController::class, 'unassignFaculty'])->name('unassign-faculty');
+    Route::get('/get-unassigned-courses', [CoursesController::class, 'getUnassignedCourses'])->name('get-unassigned-courses');
+    Route::get('/get-unassigned-faculty', [CoursesController::class, 'getUnassignedFaculty'])->name('get-unassigned-faculty');
+    Route::post('/assign-courses', [CoursesController::class, 'assignCourses'])->name('assign-courses');
+
+    Route::get('/get-sections', [SectionsController::class, 'getSections'])->name('get-sections');
+    Route::resource('/sections', SectionsController::class)->names('manage-sections');
 
     Route::resource('/subscription-billing', InstitutionSubscriptionController::class)->names('institution-subscription-billing');
 
@@ -271,6 +277,7 @@ Route::middleware(['auth', 'verified', 'user-type:admin'])->prefix('institution'
     Route::get('/get-plans', [SubscriptionPlanController::class, 'getPlans'])->name('get-plans');
 
 });
+
 
 //guest
 Route::get('/home', function () {
@@ -391,8 +398,18 @@ Route::get('/searchlib', [SearchController::class, 'searchlib']);
 
 
 
+//TEACHER ROUTES
 Route::middleware('auth')->group(function () {
    Route::get('/teacher/class', [TeacherClassController::class, 'index'])->name('teacher.class');
+   //Teacher Activity API routes
+    Route::post('/store-newGroupClass', [TeacherClassController::class, 'newGroupClass']);
+    Route::get('/manuscripts/class', [TeacherClassController::class, 'getManuscriptsByClass']);
+    // Route for updating manuscript status
+    Route::put('/manuscripts/{id}/update-status', [TeacherClassController::class, 'updateManuscriptStatus']);
+    Route::get('/get-manuscripts', [TeacherClassController::class, 'getManuscriptsByClass']);
+    Route::get('/students/search', [TeacherClassController::class, 'searchStudents']);
+    Route::post('/classes/add-students', [TeacherClassController::class, 'addStudentsToClass']);
+
 });
 
 
@@ -401,14 +418,7 @@ Route::middleware('auth')->group(function () {
 // });
 
 
-//Teacher Activity API routes
-Route::post('/store-newGroupClass', [TeacherClassController::class, 'newGroupClass']);
-Route::get('/manuscripts/class', [TeacherClassController::class, 'getManuscriptsByClass']);
-// Route for updating manuscript status
-Route::put('/manuscripts/{id}/update-status', [TeacherClassController::class, 'updateManuscriptStatus']);
-Route::get('/get-manuscripts', [TeacherClassController::class, 'getManuscriptsByClass']);
-Route::get('/students/search', [TeacherClassController::class, 'searchStudents']);
-Route::post('/classes/add-students', [TeacherClassController::class, 'addStudentsToClass']);
+
 
 
 //Ratings

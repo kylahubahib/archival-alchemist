@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Course;
+use App\Models\Faculty;
 use App\Models\Department;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
@@ -44,6 +45,7 @@ class CoursesController extends Controller
 
         $request->validate([
             'dept_id' => 'required|integer',
+            'course_acronym' => 'nullable|string',
             'course_name' => [
                 'required',
                 'string',
@@ -75,7 +77,8 @@ class CoursesController extends Controller
         Course::create([
             'dept_id' => $request->dept_id,
             'course_name' =>  $request->course_name,
-            'added_by' => Auth::user()->name
+            'added_by' => Auth::user()->name,
+            'course_acronym' => $request->course_acronym
         ]);
 
         //return redirect(route('manage-departments.index'))->with('success', 'Courses created successfully.');
@@ -93,17 +96,17 @@ class CoursesController extends Controller
     {
         $request->validate([
             'course_name' => 'required|string',
+            'course_acronym' => 'nullable|string'
         ]);
 
         $course = Course::find($id);
 
         $course->update([
-            'course_name' =>  $request->course_name
+            'course_name' =>  $request->course_name,
+            'course_acronym' => $request->course_acronym
         ]);
 
-        return response()->json([
-            'message' => 'Successfully updated course!'
-        ]);
+        return redirect()->back();
     }
 
     /**
@@ -114,9 +117,68 @@ class CoursesController extends Controller
         Course::find($id)->delete();
 
         return redirect()->back()->with(['success' => true]);
+    }
 
-        // return response()->json([
-        //     'message' => 'Successfully deleted course!'
-        // ]);
+    
+    /**
+     * Reassign the courses
+     */
+    public function reassignFaculty(Request $request, string $id)
+    {
+        $courseId = $request->get('course_id');
+    
+        Faculty::where('course_id', $courseId)->update([
+            'course_id' => $id
+        ]);
+    
+        return response()->json([
+            'message' => 'Successfully reassigned teacher!'
+        ]);
+    }
+    
+     /**
+     * Unassign the courses
+     */
+    public function unassignFaculty(Request $request, string $id)
+    {
+        $courseId = $request->get('course_id');
+    
+        Faculty::where('course_id', $courseId)->update([
+            'course_id' => null
+        ]);
+    
+        return response()->json([
+            'message' => 'Successfully unassigned courses! You can manually assign them in the courses tab.'
+        ]);
+    }
+
+    public function getUnassignedCourses()
+    {
+        $courses = Course::where('dept_id', null)->get();
+
+        return response()->json([
+            'courses' => $courses
+        ]);
+    }
+
+    public function getUnassignedFaculty()
+    {
+        $faculty = Faculty::where('course_id', null)->get();
+
+        return response()->json([
+            'faculty' => $faculty
+        ]);
+    }
+
+    public function assignCourses(Request $request)
+    {
+        $deptId = $request->get('deptId');
+        $courses = $request->get('courses');
+
+        Course::whereIn('id', $courses)->update(['dept_id' => $deptId]);
+
+        return response()->json([
+            'message' => 'Successfully assigned courses!'
+        ]);
     }
 }
