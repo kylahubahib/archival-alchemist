@@ -45,14 +45,14 @@ class AuthenticatedSessionController extends Controller
         // Get the data of the user and student table
         $user = Auth::user()->load(['student', 'faculty']);
 
-        \Log::info('User Type: ' . $user->user_type);
+        //$facultyExist = $user->faculty->first()->uni_branch_id;
 
         // Check if user is affiliated with an institution
         if ($user->user_type != 'admin' && $user->user_type != 'superadmin') {
             if ($user->user_type == 'student') {
                 $checkInSub = InstitutionSubscription::where('uni_branch_id', $user->student->uni_branch_id)->first();
             } elseif ($user->user_type == 'teacher') {
-                $checkInSub = InstitutionSubscription::where('uni_branch_id', $user->faculty->uni_branch_id)->first();
+                $checkInSub = InstitutionSubscription::where('uni_branch_id', $user->faculty->first()->uni_branch_id)->first();
             }
             
 

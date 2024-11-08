@@ -178,6 +178,16 @@ class DepartmentsController extends Controller
             'message' => 'Successfully unassigned courses! You can manually assign them in the courses tab.'
         ]);
     }
+
+    public function getAllDepartment(string $id)
+    {
+        $departments = Department::with('course')->where('uni_branch_id', $id)->get();
+
+        return response()->json([
+            'departments' => $departments
+        ]);
+
+    }
     
     
 }

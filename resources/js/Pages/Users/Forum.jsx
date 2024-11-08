@@ -4,7 +4,8 @@ import { Head } from '@inertiajs/react';
 import { 
   Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, 
   useDisclosure, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, 
-  Button, Input, Textarea 
+  Button, Input, Textarea, 
+  Spinner
 } from '@nextui-org/react';
 import SearchBar from '@/Components/SearchBar';
 import { Inertia } from "@inertiajs/inertia";
@@ -134,7 +135,7 @@ useEffect(() => {
     
 
      // Render loading or error states
-     if (loading) return <div>Loading posts...</div>;
+     //if (loading) return <div>Loading posts...</div>;
      if (error) return <div>Error: {error}</div>;
     
 
@@ -270,27 +271,26 @@ const handleTitleClick = async (postId) => {
       <Head title="Forum" />
 
       <div className="py-12">
-        <div className="max-w-7xl mx-auto sm:px-6 lg:px-14">
-          <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-            <div className="p-8 font-bold text-xl text-black h-auto overflow-auto">
+        <div className="mx-auto sm:px-6 lg:px-14 min-h-screen">
+          <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg  min-h-screen">
+            <div className="p-8 font-bold text-xl text-black overflow-auto">
                {/* Sort Dropdown and Search Bar */}
-               <div className="flex items-center space-x-4 justify-between">
-                <div className="mb-8">
-                  <h2 className="font-semibold text-4xl text-gray-800 leading-tight mt-2 ml-1">Forum</h2>
-                  <div className='gap-4'>
-                    <Button className="bg-customBlue w-56 text-white mt-4" variant="solid">
+               <div className="flex space-x-10 justify-between align-middle items-start">
+                <div className="">
+                  {/* /<h2 className="font-semibold text-4xl text-gray-800 leading-tight mt-2 ml-1">Forum</h2> */}
+                  <div className='flex flex-col justify-evenly gap-4'>
+                    <Button className="bg-customBlue text-white" variant="solid">
                       All Discussions
                     </Button>
-                    <Button className="bg-customBlue w-56 text-white mt-2" variant="solid">
+                    <Button className="bg-customBlue  text-white mt-2" variant="solid">
                       My Posts
                     </Button>
                   </div>
                 </div>
-
                 
                 <Dropdown>
                   <DropdownTrigger>
-                    <Button className="bg-customBlue w-56 text-white" variant="solid">
+                    <Button className="bg-customBlue text-white" variant="solid">
                       Sort by
                     </Button>
                   </DropdownTrigger>
@@ -300,8 +300,6 @@ const handleTitleClick = async (postId) => {
                     <DropdownItem key="popular" onClick={() => handleSortChange('popular')}>Most Popular</DropdownItem>
                   </DropdownMenu>
                 </Dropdown>
-              
-
 
                 <SearchBar placeholder="Search..." />
 
@@ -317,6 +315,8 @@ const handleTitleClick = async (postId) => {
               </div>
 
               <div className="flex flex-col items-center -mt-21 ml-32">
+              { !loading ? (
+                <>
               {Array.isArray(posts) && posts.length > 0 ? (
                 posts.map(post => {
                   // Date formatting with error handling
@@ -335,7 +335,8 @@ const handleTitleClick = async (postId) => {
             <div className="border-b pb-4 mb-4 w-3/4 relative flex flex-col" key={post.id}>
               <div className="flex items-start space-x-4">
               <img
-                  src={post.user?.user_pic ? `http://127.0.0.1:8000/profile_pics/${post.user.user_pic}` : "https://via.placeholder.com/150"}
+                  // src={post.user?.user_pic ? {post.user.user_pic} : "https://via.placeholder.com/150"}
+                  src={post.user?.user_pic}
                   alt={post.user ? `${post.user.name}'s avatar` : 'Avatar placeholder'}
                   className="w-16 h-16 mr-4 rounded-full"
                 />
@@ -344,7 +345,7 @@ const handleTitleClick = async (postId) => {
                 <div className="flex-grow">
                   <p className="font-light">{post.user?.name || "Anonymous"}</p>
                   <h3
-                    className="text-2xl text-black cursor-pointer"
+                    className="text-2xl text-black cursor-pointer hover:text-gray-700"
                     onClick={() => handleTitleClick(post.id)}
                   >
                     {post.title}
@@ -413,9 +414,13 @@ const handleTitleClick = async (postId) => {
             </div>
           );
         })
-      ) : (
-        <p className="text-gray-500">No discussions found.</p>
-      )}
+              ) : (
+                <p className="text-gray-500">No discussions found.</p>
+              )}
+              </>) : (
+                <Spinner/>
+              )
+              }
     </div>
   
 

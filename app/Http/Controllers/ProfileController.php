@@ -40,10 +40,10 @@ class ProfileController extends Controller
     public function edit(Request $request): Response
     {
         $user = Auth::user();
+        
 
         if($user->user_type === 'superadmin' || $user->user_type === 'admin')
         {
-
             return Inertia::render('SuperAdmin\Profile\Edit', [
                 'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
                 'status' => session('status'),
@@ -58,7 +58,8 @@ class ProfileController extends Controller
                         'is_premium' => $request->user()->is_premium,
                         'is_affiliated' => $request->user()->is_affiliated,
                         'user_dob' => $request->user()->user_dob,
-                        'uni_id_num' => $request->user()->uni_id_num
+                        'uni_id_num' => $request->user()->uni_id_num,
+                        'user_pnum' => $request->user()->user_pnum
                         // 'user_pic' => $request->user()->user_pic ? asset('storage/profile_pics/' . $request->user()->user_pic) : null,
                     ]
                 ]
@@ -66,6 +67,26 @@ class ProfileController extends Controller
         } 
         else 
         {
+
+            $uniBranchName = '';
+            $uniName = '';
+
+            if($user->user_type === 'student')
+            {
+                $user->load('student.university_branch.university');
+
+                $uniBranchName = $user->student->university_branch->uni_branch_name;
+                $uniName = $user->student->university_branch->university->uni_name;
+            }
+            else if($user->user_type === 'teacher')
+            {
+                $user->load('faculty.university_branch.university');
+
+                $uniBranchName = $user->faculty->first()->university_branch->uni_branch_name;
+                $uniName = $user->faculty->first()->university_branch->university->uni_name;
+            }
+           
+
             return Inertia::render('Profile/Edit', [
                 'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
                 'status' => session('status'),
@@ -80,7 +101,9 @@ class ProfileController extends Controller
                         'is_premium' => $request->user()->is_premium,
                         'is_affiliated' => $request->user()->is_affiliated,
                         'user_dob' => $request->user()->user_dob,
-                        'uni_id_num' => $request->user()->uni_id_num
+                        'uni_id_num' => $request->user()->uni_id_num,
+                        'user_pnum' => $request->user()->user_pnum,
+                        'university' => $uniName . ' ' . $uniBranchName
                         // 'user_pic' => $request->user()->user_pic ? asset('storage/profile_pics/' . $request->user()->user_pic) : null,
                     ]
                 ]

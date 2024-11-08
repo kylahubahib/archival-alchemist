@@ -7,6 +7,7 @@ import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
+import { formatDateString } from '@/utils';
 
 export default function UpdateProfileInformationForm({ mustVerifyEmail, status, className = '' }) {
     const user = usePage().props.auth.user;
@@ -20,6 +21,12 @@ export default function UpdateProfileInformationForm({ mustVerifyEmail, status, 
         user_aboutme: user.user_aboutme || '',
         user_dob: user.user_dob || ''
     });
+
+    useEffect(() => {
+        console.log('dob: ', formatDateString(data.user_dob))
+        console.log(data.user_pnum);
+        console.log(user.university);
+    })
 
     const [profilePic, setProfilePic] = useState(user.user_pic);
     const [message, setMessage] = useState('');
@@ -43,6 +50,7 @@ export default function UpdateProfileInformationForm({ mustVerifyEmail, status, 
         formData.append('uni_id_num', data.uni_id_num);
         formData.append('user_pnum', data.user_pnum);
         formData.append('user_aboutme', data.user_aboutme);
+        formData.append('user_dob', data.user_dob);
         // if (data.user_pic) {
         //     formData.append('user_pic', data.user_pic);
         // }
@@ -69,6 +77,8 @@ export default function UpdateProfileInformationForm({ mustVerifyEmail, status, 
                     Update your account's profile information and email address.
                 </p>
             </header>
+
+            <div>{user.university || 'No affiliated university'}</div>
 
             <form onSubmit={submit}  method="POST" encType="multipart/form-data" className="mt-6 space-y-6">
                 {/* <div className="flex items-center space-x-4">
@@ -156,7 +166,7 @@ export default function UpdateProfileInformationForm({ mustVerifyEmail, status, 
                         id="user_dob"
                         type="date"
                         name="user_dob"
-                        value={data.user_dob}
+                        value={formatDateString(data.user_dob)}
                         className="my-1 block w-full"
                         onChange={(e) => setData('user_dob', e.target.value)}
                     />

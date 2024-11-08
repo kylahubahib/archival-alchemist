@@ -18,6 +18,7 @@ export default function RegistrationForm() {
         user_dob:'',
         password_confirmation: '',
         ins_admin_proof: '',
+        course_id: ''
     });
 
     const nextStep = () => setStep((prevStep) => prevStep + 1);

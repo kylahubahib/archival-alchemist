@@ -165,6 +165,7 @@ Route::post('/send-to-email', function (Request $request) {
 Route::get('get-notifications', [NotificationController::class, 'getNotifications'])->name('get-notifications');
 Route::post('mark-as-read', [NotificationController::class, 'markAsRead']);
 Route::post('clear-notifications', [NotificationController::class, 'clearNotifications']);
+Route::get('get-departments/{id}', [DepartmentsController::class, 'getAllDepartment'])->name('get-departments');
 
 
 //SUPERADMIN
