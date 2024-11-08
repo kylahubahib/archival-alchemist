@@ -292,9 +292,14 @@ Route::get('/pricing', [SubscriptionPlanController::class, 'pricing'])->name('pr
 
 Route::get('/terms-and-conditions', [TermsAndConditionController::class, 'terms_and_conditions'])->name('terms-and-conditions');
 
-Route::get('/terms-and-condition', function () {
-    return Inertia::render('Terms&Condition');
-})->name('termsandcondition');
+Route::inertia('/privacy-policy', 'PrivacyPolicy')->name('privacy-policy');
+
+Route::inertia('/terms-and-conditions', 'TermsandConditions')->name('terms-and-conditions');
+
+Route::get('/faq', [ForumPostController::class, 'faq'])->name('faq');
+
+
+
 
 
 
@@ -432,11 +437,20 @@ Route::get('/groupmembers/{manuscriptId}', [TeacherClassController::class, 'View
 
 // Route for displaying a specific post
 Route::middleware(['web'])->group(function () {
+    // Route to get all forum posts
     Route::get('/forum-posts', [ForumPostController::class, 'index']);
-    Route::post('/forum-posts', [ForumPostController::class, 'store']);
-    Route::get('/posts/{id}', [ForumPostController::class, 'show'])->name('posts.show');
-    Route::delete('/forum-posts/{id}', [ForumPostController::class, 'destroy'])->name('forum.posts.destroy');
 
+    // Route to create a new forum post
+    Route::post('/forum-posts', [ForumPostController::class, 'store'])->name('forum-posts.store');
+
+    // Route to get details of a specific post
+    Route::get('/posts/{id}', [ForumPostController::class, 'show'])->name('posts.show');
+
+    // Route to delete a specific post
+    Route::delete('/forum-posts/{id}', [ForumPostController::class, 'destroy'])->name('forum-posts.destroy');
+
+    // Route to increment the view count of a specific post
+    Route::post('/forum-posts/{id}/view', [ForumPostController::class, 'incrementViewCount'])->name('forum-posts.incrementViewCount');
 });
 
 

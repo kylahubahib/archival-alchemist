@@ -221,18 +221,24 @@ export default function Home({ auth }) {
                             <p>Phone: +1 (123) 456-7890</p>
                         </motion.div>
 
-                        {/* Copyright Information */}
+                        {/* Privacy Policy and Terms Links */}
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 1, delay: 1.5 }}
-                            className="text-xs"
+                            className="flex space-x-4 mt-4 text-sm"
                         >
-                            <p>&copy; {new Date().getFullYear()} Archival Alchemist. All rights reserved.</p>
+                            <a href="/privacy-policy" className="text-customBlue hover:underline">Privacy Policy</a>
+                            <a href="/terms-and-conditions" className="text-customBlue hover:underline">Terms & Conditions</a>
                         </motion.div>
                     </div>
                 </motion.footer>
-
+                        {/* Footer */}
+                        <footer className="bg-customBlue text-white py-4 text-center">
+                            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                                <p>&copy; 2024 Archival Alchemist. All rights reserved.</p>
+                            </div>
+                        </footer>
 
                 {/* Back to Top Button */}
                 {showButton && (

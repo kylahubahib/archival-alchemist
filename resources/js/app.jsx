@@ -8,7 +8,6 @@ import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { NextUIProvider } from '@nextui-org/react';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
-//import PostDetail from './Pages/PostDetail';
 
 createInertiaApp({
     title: (title) => `${appName}`,
