@@ -15,7 +15,14 @@ import PostDetailModal from '@/Components/PostDetailModal';
 import { formatDistanceToNow } from 'date-fns';
 import Echo from 'laravel-echo'; 
 import Pusher from 'pusher-js';
-//import axios from 'axios';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
+import relativeTime from "dayjs/plugin/relativeTime";
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
+dayjs.extend(relativeTime);
 
 export default function Forum({ auth }) {
   const isAuthenticated = !!auth.user;
@@ -32,6 +39,7 @@ export default function Forum({ auth }) {
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
   const { isOpen: isConfirmOpen, onOpen: onConfirmOpen, onOpenChange: onConfirmOpenChange } = useDisclosure();
   const [postToDelete, setPostToDelete] = useState(null);
+  const [selectedSort, setSelectedSort] = useState('latest');
 
     
     const [loading, setLoading] = useState(true);
@@ -41,44 +49,59 @@ export default function Forum({ auth }) {
   axios.defaults.headers.common['X-CSRF-TOKEN'] = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
   axios.defaults.withCredentials = true;
 
-  
-    // Fetch posts function
-    const fetchPosts = async () => {
-      try {
-          const response = await axios.get('/forum-posts');
-          console.log('Fetched posts:', response.data);
-          setPosts(Array.isArray(response.data) ? response.data : []);
-      } catch (error) {
-          console.error('Error fetching posts:', error);
-          setError(error.message || 'Something went wrong');
-      } finally {
-          setLoading(false);
-      }
-  };
 
-  // UseEffect for fetching posts and setting up Pusher
-  useEffect(() => {
-      fetchPosts(); // Call fetchPosts on component mount
+  const formatPostDate = (dateString) => {
+    const date = dayjs.utc(dateString).tz(dayjs.tz.guess()); // Adjust to local timezone
+    return date.fromNow(); // Display as relative time, e.g., "5 minutes ago"
+};
 
-      const echo = new Echo({
-          broadcaster: 'pusher',
-          key: 'ed777339e9944a0f909f',
-          cluster: 'ap1',
-          forceTLS: true,
-          client: new Pusher('yed777339e9944a0f909f', {
-              cluster: 'ap1',
-              encrypted: true,
-          }),
-      });
+// Fetch posts with sorting option
+const fetchPosts = async (sortType = 'latest') => {
+  setLoading(true); // Start loading
+  try {
+      console.log(`Fetching posts with sort type: ${sortType}`);
+      const response = await axios.get(`/forum-posts?sort=${sortType}`);
+      console.log('Fetched posts:', response.data);
+      setPosts(Array.isArray(response.data) ? response.data : []);
+  } catch (error) {
+      console.error('Error fetching posts:', error.response || error.message);
+      setError(error.message || 'Something went wrong');
+  } finally {
+      setLoading(false);
+  }
+};
 
-      echo.channel('forum-posts').listen('NewPostCreated', (event) => {
-          setPosts((prevPosts) => [event.post, ...prevPosts]);
-      });
 
-      return () => {
-          echo.disconnect();
-      };
-  }, []);
+// useEffect for fetching posts and setting up Pusher
+useEffect(() => {
+    fetchPosts(selectedSort); // Fetch posts with the selected sort option
+
+    const echo = new Echo({
+        broadcaster: 'pusher',
+        key: 'ed777339e9944a0f909f',
+        cluster: 'ap1',
+        forceTLS: true,
+        client: new Pusher('ed777339e9944a0f909f', {
+            cluster: 'ap1',
+            encrypted: true,
+        }),
+    });
+
+    echo.channel('forum-posts').listen('NewPostCreated', (event) => {
+        setPosts((prevPosts) => [event.post, ...prevPosts]);
+    });
+
+    return () => {
+        echo.disconnect();
+    };
+}, [selectedSort]); // Re-fetch when the selectedSort changes
+
+// Handle sorting option change
+    const handleSortChange = (sortType) => {
+      setSelectedSort(sortType); // Update sort option and trigger refetch
+      fetchPosts(sortType); // Re-fetch posts based on selected sort option
+    };
+
 
   // Handle post submission
   const handlePostSubmit = async () => {
@@ -250,8 +273,8 @@ const handleTitleClick = async (postId) => {
         <div className="max-w-7xl mx-auto sm:px-6 lg:px-14">
           <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
             <div className="p-8 font-bold text-xl text-black h-auto overflow-auto">
-              {/* Sort Dropdown and Search Bar */}
-              <div className="flex items-center space-x-4 justify-between">
+               {/* Sort Dropdown and Search Bar */}
+               <div className="flex items-center space-x-4 justify-between">
                 <div className="mb-8">
                   <h2 className="font-semibold text-4xl text-gray-800 leading-tight mt-2 ml-1">Forum</h2>
                   <div className='gap-4'>
@@ -264,6 +287,7 @@ const handleTitleClick = async (postId) => {
                   </div>
                 </div>
 
+                
                 <Dropdown>
                   <DropdownTrigger>
                     <Button className="bg-customBlue w-56 text-white" variant="solid">
@@ -271,11 +295,13 @@ const handleTitleClick = async (postId) => {
                     </Button>
                   </DropdownTrigger>
                   <DropdownMenu aria-label="Sort options">
-                    <DropdownItem key="latest">Latest</DropdownItem>
-                    <DropdownItem key="oldest">Oldest</DropdownItem>
-                    <DropdownItem key="popular">Most Popular</DropdownItem>
+                    <DropdownItem key="latest" onClick={() => handleSortChange('latest')}>Latest</DropdownItem>
+                    <DropdownItem key="oldest" onClick={() => handleSortChange('oldest')}>Oldest</DropdownItem>
+                    <DropdownItem key="popular" onClick={() => handleSortChange('popular')}>Most Popular</DropdownItem>
                   </DropdownMenu>
                 </Dropdown>
+              
+
 
                 <SearchBar placeholder="Search..." />
 
@@ -290,99 +316,109 @@ const handleTitleClick = async (postId) => {
                 </div>
               </div>
 
-              {/* Forum Posts */}
-          <div className="flex flex-col items-center -mt-21 ml-32">
-          {Array.isArray(posts) && posts.length > 0 ? (
-                          posts.map(post => (
-                            <div className="border-b pb-4 mb-4 w-3/4 relative flex flex-col" key={post.id}>
-                              <div className="flex items-start space-x-4">
-                                <img
-                                  src={post.user?.avatar ? `http://127.0.0.1:8000/${post.user.avatar}` : "https://via.placeholder.com/150"}
-                                  alt={post.user ? `${post.user.name}'s avatar` : 'Avatar placeholder'}
-                                  className="w-16 h-16 mr-4 rounded-full"
-                                />
-          <div className="flex-grow">
-            <p className="font-light">{post.user?.name || "Anonymous"}</p>
-            <h3
-              className="text-2xl text-black cursor-pointer"
-              onClick={() => handleTitleClick(post.id)}
-            >
-              {post.title}
-            </h3>
+              <div className="flex flex-col items-center -mt-21 ml-32">
+              {Array.isArray(posts) && posts.length > 0 ? (
+                posts.map(post => {
+                  // Date formatting with error handling
+                  let formattedDate;
+                  try {
+                    const date = new Date(post.created_at);
+                    formattedDate = !isNaN(date) ? `${formatDistanceToNow(date)} ago` : "Invalid date";
+                  } catch (error) {
+                    formattedDate = "Date error";
+                  }
 
-            {/* Display only the first 50 characters of the body */}
-            <p className="mt-2 text-gray-700 text-medium font-extralight">
-              {post.body.length > 50 ? post.body.substring(0, 50) + '...' : post.body}
-            </p>
+                  console.log(post.tags); // Check structure and values of post.tags
 
-            {/* Time Passed, View and Comment Counts */}
-            <div className="text-gray-500 text-sm mt-1 flex items-center">
-              {/* Time Passed */}
-              <span className="mr-4">
-                {formatDistanceToNow(new Date(post.created_at))} ago
-              </span>
-            </div>
 
-            {/* View and Comment Counts */}
-            <div className="text-gray-500 text-sm mt-1 flex items-center">
-              <span className="mr-4 flex items-center">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-4 w-4 mr-1">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                </svg>
-                {post.viewCount || 0}
-              </span>
-              <span className="flex items-center">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-4 w-4 mr-1">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 0 1 .865-.501 48.172 48.172 0 0 0 3.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018Z" />
-                </svg>
-                {post.commentCount || 0}
-              </span>
-            </div>
+          return (
+            <div className="border-b pb-4 mb-4 w-3/4 relative flex flex-col" key={post.id}>
+              <div className="flex items-start space-x-4">
+              <img
+                  src={post.user?.user_pic ? `http://127.0.0.1:8000/profile_pics/${post.user.user_pic}` : "https://via.placeholder.com/150"}
+                  alt={post.user ? `${post.user.name}'s avatar` : 'Avatar placeholder'}
+                  className="w-16 h-16 mr-4 rounded-full"
+                />
 
-            {/* Tags Section */}
-            <div className="text-sm text-gray-500 ml-5">
-              Tags:
-              <span className="ml-2">
-                {Array.isArray(post.tags) && post.tags.length > 0 ? post.tags.map(tag => (
-                  <span
-                    key={tag.id}  // Ensure you have a unique key for each tag
-                    className="inline-block bg-blue-800 text-white text-s font-semibold rounded-full px-3 py-1 mr-2"
+
+                <div className="flex-grow">
+                  <p className="font-light">{post.user?.name || "Anonymous"}</p>
+                  <h3
+                    className="text-2xl text-black cursor-pointer"
+                    onClick={() => handleTitleClick(post.id)}
                   >
-                    {tag.name}
-                  </span>
-                )) : ''}
-              </span>
-            </div>
-          </div>
-        </div>
+                    {post.title}
+                  </h3>
 
-        {/* Dropdown for actions */}
-          {isAuthenticated && (
-            <div className="absolute right-0 top-2">
-              <Dropdown>
-                <DropdownTrigger>
-                  <Button variant="light" size="lg">...</Button>
-                </DropdownTrigger>
-                <DropdownMenu>
-                  {/* Only show "Report" if the user is not the post owner */}
-                  <DropdownItem onClick={() => handleReportPost(post.id)}>Report</DropdownItem>
-                  
-                  {/* Show "Delete" only if the user is the post owner */}
-                  {auth.user && post.user && auth.user.id === post.user.id && (
-                    <DropdownItem onClick={() => handleDeleteConfirmation(post.id)}>Delete</DropdownItem>
-                  )}
-                </DropdownMenu>
-              </Dropdown>
-            </div>
-          )}
+                  {/* Body Preview */}
+                  <p className="mt-2 text-gray-700 text-medium font-extralight">
+                    {post.body.length > 50 ? post.body.substring(0, 50) + '...' : post.body}
+                  </p>
 
-      </div>
-    ))
-  ) : (
-    <p className="text-gray-500">No discussions found.</p>
-  )}
-</div>
+                  {/* Time Passed, View, and Comment Counts */}
+                  <div className="text-gray-500 text-sm mt-1 flex items-center">
+                    <span className="mr-4">{formatPostDate(post.created_at)}</span>
+                    <span className="mr-4 flex items-center">
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-4 w-4 mr-1">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                      </svg>
+                      {post.viewCount || 0}
+                    </span>
+                    <span className="flex items-center">
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-4 w-4 mr-1">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 0 1 .865-.501 48.172 48.172 0 0 0 3.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018Z" />
+                      </svg>
+                      {post.commentCount || 0}
+                    </span>
+                  </div>
+
+                  {/* Tags */}
+                  <div className="text-sm text-gray-500 ml-5">
+                    Tags:
+                    <span className="ml-2">
+                    {Array.isArray(post.tags) && post.tags.length > 0 ? (
+                        post.tags.map(tag => (
+                          <span
+                            key={tag.id}
+                            className="inline-block bg-blue-800 text-white text-s font-semibold rounded-full px-3 py-1 mr-2"
+                          >
+                            {tag.name || "Unnamed Tag"}
+                          </span>
+                        ))
+                      ) : (
+                        <span className="text-gray-400">No tags available</span>
+                      )}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Dropdown for actions */}
+              {isAuthenticated && (
+                <div className="absolute right-0 top-2">
+                  <Dropdown>
+                    <DropdownTrigger>
+                      <Button variant="light" size="lg">...</Button>
+                    </DropdownTrigger>
+                    <DropdownMenu>
+                      <DropdownItem onClick={() => handleReportPost(post.id)}>Report</DropdownItem>
+                      {auth.user && post.user && auth.user.id === post.user.id && (
+                        <DropdownItem onClick={() => handleDeleteConfirmation(post.id)}>Delete</DropdownItem>
+                      )}
+                    </DropdownMenu>
+                  </Dropdown>
+                </div>
+              )}
+            </div>
+          );
+        })
+      ) : (
+        <p className="text-gray-500">No discussions found.</p>
+      )}
+    </div>
+  
+
 
 
 
