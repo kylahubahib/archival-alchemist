@@ -13,7 +13,9 @@ class UniversityBranch extends Model
 {
     use HasFactory;
 
-    protected $primaryKey = 'uni_branch_id';
+    //protected $primaryKey = 'uni_branch_id';
+
+    protected $table = 'university_branches';
 
     protected $fillable = [
         'uni_id',

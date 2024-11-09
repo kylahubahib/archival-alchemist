@@ -13,12 +13,22 @@ import ToastNotification from "@/Components/Toast";
 import { FiBell } from "react-icons/fi";
 import Echo from 'laravel-echo';
 
+import { encodeAllParams } from "@/Components/Admins/Functions";
+
 import SuperAdminNotification from "@/Components/Notifications/SuperAdminNotification";
 import InsAdminNotification from "@/Components/Notifications/InsAdminNotification";
+import { User } from "@nextui-org/react";
+import { useForm } from "@inertiajs/react";
 
 export default function AdminLayout({ user, header, children }) {
     const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const { post } = useForm();
+
+     // Remove the filterOpen item from local storage to reset its state
+    // useEffect(() => {
+    //     localStorage.removeItem('filterOpen');
+    // }, []);
 
 
     const openModal = () => {
@@ -28,35 +38,6 @@ export default function AdminLayout({ user, header, children }) {
     const closeModal = () => {
         setIsModalOpen(false);
     }
-
-    
-
-    useEffect(() => {
-
-        // window.Echo = new Echo({
-        //     broadcaster: 'pusher',
-        //     key: import.meta.env.VITE_PUSHER_APP_KEY,
-        //     cluster: import.meta.env.VITE_PUSHER_APP_CLUSTER,
-        //     forceTLS: true
-        // });
-
-        // const channel = window.Echo.channel('superadmin-notifications');
-        // channel.listen('.notification', (data) => {
-        //     //showToast(JSON.stringify(data.message));
-        //     alert(JSON.stringify(data.message));
-        // });
-
-        // // Listen to the channel
-        // const channel = window.Echo.channel('my-channel');
-        // channel.listen('.my-event', (data) => {
-        //     alert(JSON.stringify(data));
-        // });
-
-        // // Clean up the listener on component unmount
-        // return () => {
-        //     channel.stopListening('.my-event');
-        // };
-    }, []); 
 
     return ( 
 
@@ -110,8 +91,8 @@ export default function AdminLayout({ user, header, children }) {
         <div className="flex-1">
 
             <nav className="bg-white sticky top-0 shadow-sm z-50">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex justify-end h-14">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+                    <div className="flex justify-end">
 
                         <div className="flex items-center mx-3">
                             {/* <FiBell size={24} className="ml-3 text-gray-500" /> */}
@@ -129,27 +110,17 @@ export default function AdminLayout({ user, header, children }) {
                             <div className=" relative">
                                 <Dropdown>
                                     <Dropdown.Trigger>
-                                        <span className="inline-flex rounded-md">
-                                            <button
-                                                type="button"
-                                                className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150"
-                                            >
-                                                {user.name}
-
-                                                <svg
-                                                    className="ml-2 -mr-0.5 h-4 w-4"
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    viewBox="0 0 20 20"
-                                                    fill="currentColor"
-                                                >
-                                                    <path
-                                                        fillRule="evenodd"
-                                                        d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                                                        clipRule="evenodd"
-                                                    />
-                                                </svg>
-                                            </button>
-                                        </span>
+                                    <User 
+                                        color='primary' 
+                                        as="button"
+                                        avatarProps={{
+                                            className: "shadow shadow-white outline-[2.5px] outline-customBlue",
+                                            src: user.user_pic
+                                        }}
+                                        className="transition-transform"
+                                        description={user.email}
+                                        name={user.name}
+                                    />
                                     </Dropdown.Trigger>
 
                                     <Dropdown.Content>

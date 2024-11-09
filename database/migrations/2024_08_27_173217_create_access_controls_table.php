@@ -29,7 +29,7 @@ return new class extends Migration
             $table->boolean('can_edit');
             $table->boolean('can_delete');
             $table->timestamps();
-            $table->foreign('user_id')->references('user_id')->on('users')->onDelete('cascade');
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
         });
     }
 
