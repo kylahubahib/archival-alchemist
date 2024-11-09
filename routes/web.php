@@ -289,19 +289,10 @@ Route::middleware(['auth', 'verified', 'user-type:superadmin'])->group(function 
    });
    
 
-//institution admin
+
+
+   //institution admin
 Route::middleware(['auth', 'verified', 'user-type:admin'])->prefix('institution')->group(function () {
-    // Route::get('/archives', function () {
-    //     return Inertia::render('InstitutionAdmin/Archives');})->name('institution-archives');
-
-    // Route::get('/coadmins', function () {
-    //     return Inertia::render('InstitutionAdmin/CoAdmins');})->name('institution-coadmins');
-
-    // Route::get('/faculties', function () {
-    //     return Inertia::render('InstitutionAdmin/Faculties');})->name('institution-faculties');
-
-    // Route::get('/students', function () {
-    //         return Inertia::render('InstitutionAdmin/Students');})->name('institution-students');
             
     // Common data for all pages
     Route::get('/get-departments-with-courses', [InsAdminCommonDataController::class, 'getDepartmentsWithCourses'])

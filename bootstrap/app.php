@@ -18,6 +18,7 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
         $middleware->alias([ 
             'user-type' => \App\Http\Middleware\CheckUserTypeMiddleware::class,
+            'access' => \App\Http\Middleware\AccessControlMiddleware::class,
             'check-google' => \App\Http\Middleware\CheckGoogleConnection::class
         ]);
         $middleware->append(\Illuminate\Http\Middleware\HandleCors::class);
