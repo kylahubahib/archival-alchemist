@@ -172,6 +172,15 @@ class User extends Authenticatable
          return $this->hasMany(Section::class, 'ins_id');
      }
 
+     public function access_control(): HasOne
+     {
+         return $this->hasOne(AccessControl::class, 'user_id');
+     }
+     public function user_log(): HasMany
+     {
+         return $this->hasMany(UserLog::class, 'user_id');
+     }
+
     // Google access tokens expires after one hour so this method will automatically 
     // create a new access token using the refresh token.
     // Each time you need to make a request to Google Drive or Docs APIs, 

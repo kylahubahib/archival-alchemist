@@ -13,6 +13,8 @@ class UniversityBranch extends Model
 {
     use HasFactory;
 
+    protected $primaryKey = 'uni_branch_id';
+
     protected $fillable = [
         'uni_id',
         'uni_branch_name'
@@ -52,4 +54,9 @@ class UniversityBranch extends Model
     {
         return $this->hasMany(Department::class, 'uni_branch_id');
     }
+
+    // public function capstone_document(): HasMany
+    // {
+    //     return $this->hasMany(CapstoneDocument::class, 'cap_doc_id');
+    // }
 }
