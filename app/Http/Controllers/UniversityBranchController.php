@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers; 
 
 use Illuminate\Http\Request;
 
@@ -12,6 +12,11 @@ class UniversityBranchController extends Controller
     public function index()
     {
         $branches = UniversityBranch::with('university')->get();
+
+        return Inertia::render('SuperAdmin/Advanced/Universities/Universities', [
+            'branches' => $branches,
+        ]);
+        
     }
 
     /**

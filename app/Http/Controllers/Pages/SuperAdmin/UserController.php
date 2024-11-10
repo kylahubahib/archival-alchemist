@@ -56,7 +56,7 @@ class UserController extends Controller
         // Base query to get users
         $query = User::where('user_type', $userType)
             ->whereRaw('LOWER(name) LIKE ?', ["%" . strtolower($searchName) . "%"])
-            ->select('user_id', 'name', 'email', 'is_premium', 'user_pic', 'created_at', 'user_status');
+            ->select('id', 'name', 'email', 'is_premium', 'user_pic', 'created_at', 'user_status');
 
         if ($selectedUniversity) {
             $query->whereHas('student.university_branch.university', function ($q) use ($selectedUniversity) {
@@ -83,28 +83,28 @@ class UserController extends Controller
         switch ($userType) {
             case 'student':
                 $query->with([
-                    'student:stud_id,user_id,uni_branch_id',
-                    'student.university_branch:uni_branch_id,uni_id,uni_branch_name',
-                    'student.university_branch.university:uni_id,uni_name',
-                    'student.university_branch.department.course:course_id,course_name,dept_id',
-                    'student.university_branch.department:dept_id,dept_name,uni_branch_id',
+                    'student:id,user_id,uni_branch_id',
+                    'student.university_branch:id,uni_id,uni_branch_name',
+                    'student.university_branch.university:id,uni_name',
+                    'student.university_branch.department.course:id,course_name,dept_id',
+                    'student.university_branch.department:id,dept_name,uni_branch_id',
                 ]);
                 break;
             case 'faculty':
                 $query->with([
-                    'faculty:fac_id,user_id,uni_branch_id,fac_position',
-                    'faculty.university_branch:uni_branch_id,uni_id,uni_branch_name',
-                    'faculty.university_branch.university:uni_id,uni_name',
-                    'faculty.university_branch.department:dept_id,dept_name,uni_branch_id',
+                    'faculty:id,user_id,uni_branch_id,fac_position',
+                    'faculty.university_branch:id,uni_id,uni_branch_name',
+                    'faculty.university_branch.university:id,uni_name',
+                    'faculty.university_branch.department:id,dept_name,uni_branch_id',
                 ]);
                 break;
             case 'institution_admin':
                 $query->with([
-                    'institution_admin:ins_admin_id,user_id,insub_id',
-                    'institution_admin.institution_subscription:insub_id,uni_branch_id,plan_id',
-                    'institution_admin.institution_subscription.plan:plan_id',
-                    'institution_admin.institution_subscription.university_branch:uni_branch_id,uni_id,uni_branch_name',
-                    'institution_admin.institution_subscription.university_branch.university:uni_id,uni_name',
+                    'institution_admin:id,user_id,insub_id',
+                    'institution_admin.institution_subscription:id,uni_branch_id,plan_id',
+                    'institution_admin.institution_subscription.plan:id',
+                    'institution_admin.institution_subscription.university_branch:id,uni_id,uni_branch_name',
+                    'institution_admin.institution_subscription.university_branch.university:id,uni_name',
                     'access_control:access_id,user_id,role',
                 ]);
                 break;
@@ -264,7 +264,7 @@ class UserController extends Controller
             if ($tokenTable) {
 
                 $accessControlData = [
-                    'user_id' => $user->user_id,
+                    'user_id' => $user->id,
                     'role' => $userType === 'institution_admin' ? "co_institution_admin" : "co_super_admin",
                 ];
 

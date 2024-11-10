@@ -6,6 +6,8 @@ import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import { Head, Link, useForm } from '@inertiajs/react';
+import NavLink from '@/Components/NavLink';
+import React from 'react';
 
 export default function Login({ status, canResetPassword }) {
     const { data, setData, post, processing, errors, reset } = useForm({
@@ -19,17 +21,27 @@ export default function Login({ status, canResetPassword }) {
             reset('password');
         };
     }, []);
+    
 
     const submit = (e) => {
         e.preventDefault();
 
-        post(route('login.store'));
+        post(route('login'));
     };
 
     return (
-        <GuestLayout>
+        //<GuestLayout>
+         
+        <div className="flex flex-col md:flex-row align-middle">
+            <div className="h-64 md:min-h-screen md:w-1/2">
+                <img src="/images/img2.png" alt="books" className="w-full h-full object-cover" />
+            </div>
 
-            <div className="flex-grow flex justify-center items-center">
+            <div className="flex-grow flex flex-col justify-center items-center space-y-3 p-4 md:p-0">
+                <div className="mb-5">
+                    <p className=" text-4xl font-bold text-customBlue text-center">ARCHIVAL <br/> ALCHEMIST</p>
+                </div>
+               
                 <div className="w-full max-w-md mt-6 px-6 py-4 bg-white shadow-md overflow-hidden sm:rounded-lg">
 
                     <Head title="Log in" />
@@ -91,14 +103,21 @@ export default function Login({ status, canResetPassword }) {
                                 </Link>
                             )}
 
-                            <PrimaryButton className="ms-4" type="submit" disabled={processing}>
+                            <PrimaryButton className="ms-4" disabled={processing}>
                                 Log in
                             </PrimaryButton>
                         </div>
                     </form>
                 </div>
+                <div className="text-center">
+                    <span>Don't have an account? 
+                    <NavLink href={route('register')} className=" text-blue-500 font-semibold">REGISTER</NavLink> </span>
+                </div>
             </div>
 
-        </GuestLayout>
+    
+        </div>
+        
+        //</GuestLayout>
     );
 }

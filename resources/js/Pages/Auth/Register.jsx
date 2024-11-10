@@ -1,18 +1,15 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Head, Link } from '@inertiajs/react';
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import Stepper from '@/Components/Stepper';
+import { Checkbox } from '@nextui-org/react';
 
 export default function Register({ prevStep, handleChange, values, handleSubmit, errors }) {
-    const { name, email, password, password_confirmation } = values;
-
-    // const onSubmit = (event) => {
-    //     event.preventDefault(); // Prevent default GET submission
-    //     handleSubmit();
-    // };
+    const { name, email, password, password_confirmation, user_dob } = values;
+    const [isSelected, setIsSelected] = useState(false);
 
     return (
         <>
@@ -49,6 +46,20 @@ export default function Register({ prevStep, handleChange, values, handleSubmit,
                 </div>
 
                 <div className="mt-4">
+                    <InputLabel htmlFor="user_dob" value="Date of Birth" />
+                    <TextInput
+                        id="user_dob"
+                        type="date"
+                        name="user_dob"
+                        value={user_dob}
+                        className="my-1 block w-full"
+                        onChange={handleChange('user_dob')}
+                        required
+                    />
+                    <InputError message={errors.user_dob} className="mt-2" />
+                </div>
+
+                <div className="mt-4">
                     <InputLabel htmlFor="password" value="Password" />
                     <TextInput
                         id="password"
@@ -81,16 +92,16 @@ export default function Register({ prevStep, handleChange, values, handleSubmit,
                 <div className="flex items-center justify-between mt-4">
                     <button type="button" onClick={prevStep}>Back</button>
                     <div>
-                        <Link
-                            href={route('login')}
-                            className="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                        >
-                            Already registered?
-                        </Link>
-                        <PrimaryButton className="ms-4" >
+                        <PrimaryButton className="ms-4" disabled={!isSelected} type="submit">
                             Register
                         </PrimaryButton>
                     </div>
+                </div>
+                <div className="flex flex-row gap-2 mt-3 justify-center">
+                    <Checkbox isSelected={isSelected} onValueChange={setIsSelected}>
+                        I agree to the 
+                    </Checkbox>
+                    <a className="text-blue-500 cursor-pointer">terms and condition</a>
                 </div>
             </form>
         </>

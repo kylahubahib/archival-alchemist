@@ -1,66 +1,105 @@
-import { MdChatBubbleOutline, MdOutlineForum } from "react-icons/md";
+import { RiMessengerLine } from "react-icons/ri";
+import { BiEnvelope } from "react-icons/bi";
+import { MdChatBubbleOutline, MdOutlineForum, MdOutlineLabel,  } from "react-icons/md";
 import { SiGoogleclassroom } from "react-icons/si";
 import { BiBookBookmark, BiBookOpen } from "react-icons/bi";
-import { useState } from 'react';
+import { FiBell } from "react-icons/fi";
+import { useEffect, useState } from 'react';
 import Dropdown from '@/Components/Dropdown';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
-import Sidebar, { SidebarItem } from '@/Components/Sidebar';
-import SearchBar from '@/Components/SearchBar';
+import Sidebar, { SidebarItem, SidebarSeparator } from '@/Components/Sidebar';
 
-export default function Authenticated({ user, children }) {
+import { FaCrown, FaEnvelope } from "react-icons/fa";
+import GiveFeedbackModal from "@/Components/GiveFeedbackModal";
+import ToastNotification, { showToast } from "@/Components/Toast";
+import UserNotification from "@/Components/Notifications/UserNotification";
+
+export default function Authenticated({ user, children, newProfile = null }) {
     const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
+    const [isPremium, setIsPremium] = useState(user.is_premium);
+    const [profilePic, setProfilePic] = useState(user.user_pic);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
+
+    const openModal = () => {
+        setIsModalOpen(true);
+    }
+
+    const closeModal = () => {
+        setIsModalOpen(false);
+    }
+
+    // Debugging: log the user type to console
+    ////console.log(user.user_type); // Add this line to debug
+
+    useEffect(() => {
+        if(newProfile != null){
+            setProfilePic(newProfile)
+        }
+    });
 
     return (
-        <div className="min-h-screen bg-customLightBlue flex  overflow-auto">
+        <div className="bg-customlightBlue min-h-screen flex flex-col">
+         <div className="flex-1 flex">
             {/* Sidebar */}
             <Sidebar color="white" borderRadius="xl" margin="3">
-                <SidebarItem icon={<BiBookOpen size={20} />} text="Library" to="/library" />
                 <SidebarItem icon={<BiBookBookmark size={20} />} text="Favorites" to="/savedlist" />
+                <SidebarItem icon={<BiBookOpen size={20} />} text="Library" to="/library" />
                 <SidebarItem icon={<MdOutlineForum size={20} />} text="Forum" to="/forum" />
-                <SidebarItem icon={<SiGoogleclassroom size={20} />} text="Class" to="/class" />
-                <SidebarItem icon={<MdChatBubbleOutline size={20} />} text="Inbox" to="/inbox" />
-                {/* <SidebarItem icon={<Star size={20} />} text="Subscription" href="/subscription" /> */}
+                {/* <SidebarItem icon={<MdOutlineLabel size={20} />} text="Tags" to="/tags" /> */}
+                {user.user_type === 'teacher' ? (
+                    <SidebarItem icon={<SiGoogleclassroom size={20} />} text="Class" to="/teacherclass" />
+                ) : (
+                    <SidebarItem icon={<SiGoogleclassroom size={20} />} text="Class" to="/studentclass" />
+                )}
+                <SidebarItem icon={<MdChatBubbleOutline size={20} />} text="Inbox" to="/chatify" />
+                <SidebarSeparator marginTop={80}/>
+
+                {/* <SidebarItem icon={<FaCrown size={20} color="#FFD700" />} text="Subscription" to="/subscription" /> */}
+                <SidebarItem icon={<RiMessengerLine size={20} color="#006AFF" />} text="Chat with us" to="https://m.me/432748959923780" externalLink/>
+                <SidebarItem icon={<BiEnvelope size={20} color="#294996" />} text="Give Feedback" onClick={openModal} isActiveModal={isModalOpen}/>
             </Sidebar>
 
-            <div className="flex-1">
-                <nav className="bg-customBlue border-b rounded-xl m-3">
+            <GiveFeedbackModal isOpen={isModalOpen} onClose={closeModal} />
+
+            <div className="flex-1 flex flex-col">
+                <nav className="bg-customBlue border-b rounded-xl m-3 sticky top-3 z-50">
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                         <div className="flex justify-between h-16">
                             <div className="flex">
-                                <div className="shrink-0 flex items-center">
-                                    <SearchBar></SearchBar>
-                                </div>
+                                {/* <div className="shrink-0 flex items-center">
+                                    <SearchBar />
+                                </div> */}
                             </div>
 
                             <div className="hidden sm:flex sm:items-center sm:ml-6">
-                                <div className="ml-3 relative">
+                                <button className="rounded-full py-1 px-6 bg-green-300 flex flex-row space-x-2">
+                                    <span>{isPremium ? (<FaCrown size={20} color="#FFD700" />) : null}</span>
+                                    <span>{user.user_type.charAt(0).toUpperCase() + user.user_type.slice(1).toLowerCase()}</span>
+                                </button>
+
+                                {/* <FiBell size={24} className="ml-3 text-white" /> */}
+
+                                <div className="flex items-center mx-3">
+                                        <UserNotification user={user} />
+                                </div>
+
+                                <div className=" relative">
                                     <Dropdown>
                                         <Dropdown.Trigger>
                                             <span className="inline-flex rounded-md">
                                                 <button
                                                     type="button"
-                                                    className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150"
+                                                    className="relative items-center px-0 py-0 border border-transparent text-sm leading-4 font-medium rounded-full h-10 w-10 flex justify-center text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150"
                                                 >
-                                                    {user.name}
+                                                    <img src={profilePic} className="w-full h-full rounded-full object-cover" />
 
-                                                    <svg
-                                                        className="ml-2 -mr-0.5 h-4 w-4"
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        viewBox="0 0 20 20"
-                                                        fill="currentColor"
-                                                    >
-                                                        <path
-                                                            fillRule="evenodd"
-                                                            d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                                                            clipRule="evenodd"
-                                                        />
-                                                    </svg>
                                                 </button>
                                             </span>
                                         </Dropdown.Trigger>
 
                                         <Dropdown.Content>
-                                            <Dropdown.Link href={route('profile.edit')}>Profile</Dropdown.Link>
+                                            <Dropdown.Link href={route('profile.update')}>Profile</Dropdown.Link>
                                             <Dropdown.Link href={route('logout')} method="post" as="button">
                                                 Log Out
                                             </Dropdown.Link>
@@ -69,7 +108,8 @@ export default function Authenticated({ user, children }) {
                                 </div>
                             </div>
 
-                            {/* This part here is for responsive layout. Not yet configured*/}
+                             {/* This part here is for responsive layout. Not yet configured*/}
+
                             <div className="-mr-2 flex items-center sm:hidden">
                                 <button
                                     onClick={() => setShowingNavigationDropdown((previousState) => !previousState)}
@@ -97,11 +137,12 @@ export default function Authenticated({ user, children }) {
                     </div>
 
 
-                    {/* This part here is for responsive layout. Not yet configured*/}
+                     {/* This part here is for responsive layout. Not yet configured*/}
+
                     <div className={(showingNavigationDropdown ? 'block' : 'hidden') + ' sm:hidden'}>
                         <div className="pt-2 pb-3 space-y-1">
-                            <ResponsiveNavLink href={route('dashboard')} active={route().current('dashboard')}>
-                                Dashboard
+                            <ResponsiveNavLink href={route('library')} active={route().current('library')}>
+                                Library
                             </ResponsiveNavLink>
                         </div>
 
@@ -122,8 +163,13 @@ export default function Authenticated({ user, children }) {
                 </nav>
 
                 {/* Main content */}
+
+                <div className="flex-1">
                 <main>{children}</main>
+                <ToastNotification/>
+                </div>
             </div>
         </div>
+    </div>
     );
 }

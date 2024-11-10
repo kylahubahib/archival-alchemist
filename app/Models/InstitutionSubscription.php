@@ -5,13 +5,15 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Notifications\Notifiable;
+
+use Carbon\Carbon;
 
 class InstitutionSubscription extends Model
 {
-    use HasFactory;
-
-    protected $primaryKey = 'insub_id';
+    use HasFactory, Notifiable;
 
     protected $fillable = [
         'uni_branch_id',
@@ -21,8 +23,20 @@ class InstitutionSubscription extends Model
         'insub_content',
         'insub_num_user',
         'start_date',
-        'end_date'
+        'end_date',
+        'notify_renewal'
     ];
+
+    
+    public function getUpdatedAtAttribute($value)
+    {
+        return Carbon::parse($value)->format('m/d/Y'); 
+    }
+    
+    public function getCreatedAtAttribute($value)
+    {
+        return Carbon::parse($value)->format('m/d/Y'); 
+    }
 
     public function plan(): BelongsTo
     {
@@ -34,8 +48,9 @@ class InstitutionSubscription extends Model
         return $this->belongsTo(UniversityBranch::class, 'uni_branch_id');
     }
 
-    public function institution_admin(): HasOne
+    public function institution_admin(): HasMany
     {
-        return $this->hasOne(InstitutionAdmin::class, 'ins_admin_id');
+        return $this->hasMany(InstitutionAdmin::class, 'insub_id');
     }
 }
+ 

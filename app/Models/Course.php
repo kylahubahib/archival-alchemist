@@ -6,23 +6,25 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Notifications\Notifiable;
 
 class Course extends Model
 {
-    use HasFactory;
+    use HasFactory, Notifiable;
 
-    protected $primaryKey = 'course_id';
+    protected $table = 'courses';
 
     protected $fillable = [
         'dept_id',
         'course_name',
-        'added_by'
+        'added_by',
+        'course_acronym'
     ];
 
-
-    public function student(): HasMany
+    public function sections(): HasMany  // Renamed to sections
     {
-        return $this->hasMany(Student::class, 'stud_id');
+        return $this->hasMany(Section::class, 'course_id'); // Ensure 'course_id' is correct here
     }
 
     public function department(): BelongsTo
@@ -30,8 +32,4 @@ class Course extends Model
         return $this->belongsTo(Department::class, 'dept_id');
     }
 
-    public function section(): HasMany
-    {
-        return $this->hasMany(Section::class, 'sec_id');
-    }
 }

@@ -12,13 +12,15 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('institution_admins', function (Blueprint $table) {
-            $table->bigIncrements('ins_admin_id');
-            $table->unsignedBigInteger('user_id')->unique();
+            $table->id();
+            $table->unsignedBigInteger('user_id');
             $table->unsignedBigInteger('insub_id');
             $table->string('ins_admin_proof');
             $table->timestamps();
-            $table->foreign('user_id')->references('user_id')->on('users')->onDelete('cascade');
-            $table->foreign('insub_id')->references('insub_id')->on('institution_subscriptions')->onDelete('cascade');
+
+            // Define foreign key constraints
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('insub_id')->references('id')->on('institution_subscriptions')->onDelete('cascade');
         });
     }
 

@@ -12,10 +12,11 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('universities', function (Blueprint $table) {
-            $table->bigIncrements('uni_id');
+            $table->id();
             $table->string('uni_name');
             $table->timestamps();
         });
+
     }
 
     /**

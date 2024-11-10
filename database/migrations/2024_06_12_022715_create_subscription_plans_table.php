@@ -12,16 +12,21 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('subscription_plans', function (Blueprint $table) {
-            $table->bigIncrements('plan_id');
+            $table->id();
             $table->string('plan_name');
             $table->decimal('plan_price');
             $table->string('plan_term');
             $table->string('plan_type');
-            $table->unsignedInteger('plan_user_num');
+            $table->unsignedInteger('plan_user_num')->nullable();
             $table->decimal('plan_discount')->nullable();
             $table->unsignedInteger('free_trial_days')->nullable();
             $table->timestamps();
+
+
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
         });
+
+
     }
 
     /**

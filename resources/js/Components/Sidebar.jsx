@@ -1,59 +1,113 @@
-import { HiMenu } from "react-icons/hi";
-import { Link } from '@inertiajs/react';
-import { createContext, useContext, useState } from "react"
-
+import { HiMenu } from "react-icons/hi"; 
+import { Link, usePage } from '@inertiajs/react';
+import { createContext, useContext, useEffect, useState } from "react";
 
 const SidebarContext = createContext();
 
+
 export default function Sidebar({ children, color, borderRadius, margin }) {
-  const [expanded, setExpanded] = useState(true)
-  const bgColor = `bg-${color}`;
-  const radius = `rounded-${borderRadius}`;
-  const SidebarMargin = `m-${margin}`
+    const [expanded, setExpanded] = useState(true);
 
-  return (
-    <>
-      <aside className="sticky top-1 ...">
-        <nav className={`h-screen flex flex-col ${bgColor} border-r shadow-sm ${radius} ${SidebarMargin}`}>
-          <div className="p-4 pb-2 flex justify-between items-center bg-customBlue rounded-t-xl">
-            <button onClick={() => setExpanded((curr) => !curr)} className="p-1.5 rounded-lg text-customLightBlue hover:text-gray-100">
-              {expanded ? <HiMenu size={30} /> : <HiMenu size={30} />}
-            </button>
-            <span className={`text-white font-bold text-lg ${expanded ? 'w-52 ml-3' : 'w-0 hidden'}`}>Archival Alchemist</span>
-          </div>
+    // Check window size and update the expanded state
+    const handleResize = () => {
+        if (window.innerWidth < 768) { // Adjust this value based on your breakpoint
+            setExpanded(false);
+        } else {
+            setExpanded(true);
+        }
+    };
 
-          <SidebarContext.Provider value={{ expanded }}>
+    useEffect(() => {
+        handleResize(); // Check on mount
 
-            <ul className="flex-1 px-3 mt-3">{children}</ul>
-          </SidebarContext.Provider>
+        window.addEventListener('resize', handleResize); // Add event listener
+        return () => window.removeEventListener('resize', handleResize); // Cleanup
+    }, []);
 
-        </nav>
-      </aside>
-    </>
-  )
+    const bgColor = `bg-${color}`;
+    const radius = `rounded-${borderRadius}`;
+    const SidebarMargin = `m-${margin}`;
+
+    return (
+        <>
+            <aside className="sticky top-0 h-screen">
+                <nav className={`h-full flex flex-col ${bgColor} border-r shadow-sm ${radius} ${SidebarMargin}`}>
+                    <div className="p-4 pb-2 flex justify-between items-center bg-customBlue rounded-t-xl">
+                        <button onClick={() => setExpanded((curr) => !curr)} className="p-1.5 rounded-lg text-customlightBlue hover:text-gray-100">
+                            <HiMenu size={30} />
+                        </button>
+                        <span className={`text-white font-bold text-lg ${expanded ? 'w-52 ml-3' : 'w-0 hidden'}`}>Archival Alchemist</span>
+                    </div>
+
+                    <SidebarContext.Provider value={{ expanded }}>
+                        <ul className="flex-1 px-3 mt-3">{children}</ul>
+                    </SidebarContext.Provider>
+                </nav>
+            </aside>
+        </>
+    );
 }
 
-export function SidebarItem({ icon, text, color, marginTop, marginBottom, alert, to }) {
-  const { expanded } = useContext(SidebarContext);
-  const [active, setActive] = useState(false); // State to manage the active state
 
-  // Function to toggle the active state when clicked
-  const activeClick = () => {
-    setActive(!active);
+export function SidebarItem({ icon, text, color, marginTop, marginBottom, alert, to, onClick, isActiveModal, externalLink, ...props }) {
+  const { expanded } = useContext(SidebarContext);
+  const { url } = usePage(); 
+
+  const isActive = url === to || isActiveModal; 
+
+  const handleClick = () => {
+    if (onClick) {
+      onClick();
+    }
   };
 
-  const itemClasses = `relative flex items-center py-2 px-3 my-1 font-medium rounded-md cursor-pointer transition-colors group ${active
-    ? 'bg-gradient-to-tr from-indigo-200 to-indigo-100 text-indigo-800'
-    : 'hover:bg-indigo-50 text-gray-600'
-    }`;
+  const itemClasses = `relative flex items-center py-2 px-3 my-1 font-medium rounded-md cursor-pointer transition-colors group ${
+    isActive
+      ? 'bg-gradient-to-tr from-indigo-200 to-indigo-100 text-gray-600' 
+      : 'hover:bg-indigo-50 text-gray-600'
+  }`;
+
   const textColor = `text-${color}`;
 
-  return (
-    <Link
-      preserveState
-      preserveScroll
-      href={to} onClick={activeClick}>
-      <li className={`${itemClasses} relative`}>
+  if (externalLink) {
+    return (
+      <a href={to} target="_blank" rel="noopener noreferrer">
+        <li className={`${itemClasses}`}>
+          {icon}
+          <span className={`${textColor} overflow-hidden whitespace-nowrap transition-all group-hover:text-gray-600 ${expanded ? 'w-52 ml-3' : 'w-0'} mt-${marginTop} mb-${marginBottom}`}>
+            {text}
+          </span>
+          {alert && (
+            <div className={`absolute right-2 w-2 h-2 rounded bg-indigo-400 ${expanded ? '' : 'top-2'}`}></div>
+          )}
+          {!expanded && (
+            <div className={`absolute left-full rounded-md px-2 py-1 ml-6 bg-indigo-100 text-indigo-800 text-sm invisible opacity-20 -translate-x-3 transition-all group-hover:visible group-hover:opacity-100 group-hover:translate-x-0 overflow-hidden whitespace-nowrap`}>
+              {text}
+            </div>
+          )}
+        </li>
+      </a>
+    );
+  } else {
+    return to ? (
+      <Link href={to}>
+        <li className={`${itemClasses}`}>
+          {icon}
+          <span className={`${textColor} overflow-hidden whitespace-nowrap transition-all group-hover:text-gray-600 ${expanded ? 'w-52 ml-3' : 'w-0'} mt-${marginTop} mb-${marginBottom}`}>
+            {text}
+          </span>
+          {alert && (
+            <div className={`absolute right-2 w-2 h-2 rounded bg-indigo-400 ${expanded ? '' : 'top-2'}`}></div>
+          )}
+          {!expanded && (
+            <div className={`absolute left-full rounded-md px-2 py-1 ml-6 bg-indigo-100 text-indigo-800 text-sm invisible opacity-20 -translate-x-3 transition-all group-hover:visible group-hover:opacity-100 group-hover:translate-x-0 overflow-hidden whitespace-nowrap`}>
+              {text}
+            </div>
+          )}
+        </li>
+      </Link>
+    ) : (
+      <li className={`${itemClasses} relative`} onClick={handleClick}>
         {icon}
         <span className={`${textColor} overflow-hidden whitespace-nowrap transition-all group-hover:text-gray-600 ${expanded ? 'w-52 ml-3' : 'w-0'} mt-${marginTop} mb-${marginBottom}`}>
           {text}
@@ -67,27 +121,42 @@ export function SidebarItem({ icon, text, color, marginTop, marginBottom, alert,
           </div>
         )}
       </li>
-    </Link>
-  );
+    );
+  }
 }
 
-export function SidebarSeparator({ }) {
+
+
+export function SidebarSeparator({ marginTop=56 }) {
   const { expanded } = useContext(SidebarContext);
 
+  const marginTopClass = {
+    56: 'mt-56',
+    60: 'mt-60',
+    72: 'mt-72',
+    80: 'mt-80',
+  }[marginTop] || '';
+
   return (
-    <span className="border-t-2 border-gray-600 mt-4 mb-4"></span>
+    <div
+      className={`${marginTopClass} transition-all duration-300 ease-in-out ${
+        expanded ? 'w-full' : 'w-10 mx-auto'
+      }`}
+    />
   );
 }
 
-export function SidebarTitle({ title }) {
-  const { expanded } = useContext(SidebarContext);
 
-  return (
-    <span className={`text-white font-bold text-sm transition-width duration-300 ease-in-out m-3 ${expanded ? 'w-52 ml-3 inline-block' : 'w-0 hidden'} overflow-hidden`}>
-      {title}
-    </span>
-  );
-}
+
+  export function SidebarTitle({title}) {
+    const { expanded } = useContext(SidebarContext);
+  
+    return (
+      <span className={`text-white font-bold text-sm transition-width duration-300 ease-in-out m-3 ${expanded ? 'w-52 ml-3 inline-block' : 'w-0 hidden' } overflow-hidden`}>
+        {title}
+      </span>
+    );
+  }
 
 {/*To use the sidebar here's the code: 
     <div className="flex">

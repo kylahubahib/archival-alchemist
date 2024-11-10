@@ -26,7 +26,7 @@ class CreateTriggerAfterInsertUsersTable extends Migration
                         can_add, can_edit, can_delete, role
                     )
                     VALUES (
-                        NEW.user_id, TRUE, TRUE, TRUE, TRUE, 
+                        NEW.id, TRUE, TRUE, TRUE, TRUE, 
                         TRUE, TRUE, TRUE, TRUE, TRUE, 
                         TRUE, FALSE, FALSE, FALSE, NEW.user_type
                     );
@@ -39,7 +39,7 @@ class CreateTriggerAfterInsertUsersTable extends Migration
                         can_add, can_edit, can_delete, role
                     )
                     VALUES (
-                        NEW.user_id, FALSE, FALSE, FALSE, FALSE, 
+                        NEW.id, FALSE, FALSE, FALSE, FALSE, 
                         FALSE, FALSE, FALSE, FALSE, FALSE, 
                         FALSE, TRUE, TRUE, TRUE, NEW.user_type
                     );

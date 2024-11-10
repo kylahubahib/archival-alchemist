@@ -2,15 +2,15 @@
 
 namespace App\Models;
 
+
+use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class InstitutionAdmin extends Model
 {
-    use HasFactory;
-
-    protected $primaryKey = 'ins_admin_id';
+    use HasFactory, Notifiable;
 
     protected $fillable = [
         'user_id',
@@ -27,4 +27,6 @@ class InstitutionAdmin extends Model
     {
         return $this->belongsTo(InstitutionSubscription::class, 'insub_id');
     }
+
+
 }
