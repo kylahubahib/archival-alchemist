@@ -416,21 +416,21 @@ export default function Users({ auth, users, userType }) {
 
                                                 const adminActionButtons = () => {
                                                     let disableBtn = { accessControl: null, viewLogs: null, setStatus: null }; // Initialize disable button states
-                                                    // console.log("authAdminRole", authAdminRole);
-                                                    // console.log("adminRole", adminRole);
+                                                    console.log("authAdminRole", authAdminRole);
+                                                    console.log("adminRole", adminRole);
 
                                                     // Manage access for the same and different admin levels
-                                                    // if (authAdminRole === 'super_admin' && adminRole === 'super_admin') {
-                                                    //     disableBtn = { accessControl: true, viewLogs: false, setStatus: true };
-                                                    // } else if (authAdminRole === 'super_admin' && adminRole === 'co_super_admin') {
-                                                    //     disableBtn = { accessControl: false, viewLogs: false, setStatus: false };
-                                                    // }
-                                                    // else if (authAdminRole === 'co_super_admin' && adminRole === 'super_admin') {
-                                                    //     disableBtn = { accessControl: true, viewLogs: false, setStatus: true };
+                                                    if (authAdminRole === 'super_admin' && adminRole === 'super_admin') {
+                                                        disableBtn = { accessControl: true, viewLogs: false, setStatus: true };
+                                                    } else if (authAdminRole === 'super_admin' && adminRole === 'co_super_admin') {
+                                                        disableBtn = { accessControl: false, viewLogs: false, setStatus: false };
+                                                    }
+                                                    else if (authAdminRole === 'co_super_admin' && adminRole === 'super_admin') {
+                                                        disableBtn = { accessControl: true, viewLogs: false, setStatus: true };
 
-                                                    // } else if (authAdminRole === 'co_super_admin' && adminRole === 'co_super_admin') {
-                                                    //     disableBtn = { accessControl: true, viewLogs: false, setStatus: true };
-                                                    // }
+                                                    } else if (authAdminRole === 'co_super_admin' && adminRole === 'co_super_admin') {
+                                                        disableBtn = { accessControl: true, viewLogs: false, setStatus: true };
+                                                    }
 
 
                                                     return (
