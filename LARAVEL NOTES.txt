@@ -593,3 +593,33 @@ PS C:\xampp\htdocs\archival-alchemist-main>
 
 
 composer require maatwebsite/excel:^3.1.35 --with-all-dependencies
+
+
+📍Run the following command to check if the ports are being used:
+netstat -an | findstr :5173
+netstat -an | findstr :8000
+
+
+Import PDF.js: After installing the correct version, you should be able to import it as usual. Make sure to reference the installed version directly, for example:
+
+javascript
+Copy code
+import { pdfjs } from 'pdfjs-dist';
+The pdfjs object will now refer to version 2.10.377 after the install.
+
+Ensure Worker is Set Correctly: If you're using a CDN for the worker, ensure you point to the matching worker version for 2.10.377. This would be:
+
+javascript
+Copy code
+pdfjs.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.wo
+
+
+https://docs.apryse.com/web/get-started/manually/
+/public
+    /webviewer
+        /core
+            webviewer-core.min.js
+        webviewer.min.js
+        webviewer-ui.min.js
+
+

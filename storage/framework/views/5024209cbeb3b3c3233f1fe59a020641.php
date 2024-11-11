@@ -14,9 +14,6 @@
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
 
-        <!-- CSRF Token -->
-        <meta name="csrf-token" content="<?php echo e(csrf_token()); ?>">
-            
         <!-- Scripts -->
         <?php echo app('Tighten\Ziggy\BladeRouteGenerator')->generate(); ?>
         <?php echo app('Illuminate\Foundation\Vite')->reactRefresh(); ?>

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ClassController;
 use App\Http\Controllers\StudentClassController;
 use App\Http\Controllers\TeacherClassController;
 use Illuminate\Support\Facades\Route;
@@ -389,5 +390,12 @@ Route::middleware(['web'])->group(function () {
 
 Route::get('/view_file/{filename}', [StudentClassController::class, 'view'])->name('view_file');
 
+
+//class controller
+// routes/api.php
+
+
+Route::get('/fetch-courses', [ClassController::class, 'fetchCourses']);
+Route::post('/store-sections', [ClassController::class, 'storeSection']); // Route for storing data
 
 require __DIR__.'/auth.php';

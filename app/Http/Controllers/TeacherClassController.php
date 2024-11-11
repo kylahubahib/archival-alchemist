@@ -78,9 +78,13 @@ class TeacherClassController extends Controller
             // Retrieve classes where ins_id matches the current user's ID
             $classes = ClassModel::where('ins_id', Auth::id())->get();
 
+            $sections = Section::where('course_id', Auth::id())->get();
+
             return response()->json([
                 'courses' => $courses,
                 'classes' => $classes, // Include the classes in the response
+
+                'sections' => $sections, // Include the classes in the response
             ]);
         }
 

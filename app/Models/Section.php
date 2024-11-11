@@ -14,8 +14,10 @@ class Section extends Model
 
     protected $fillable = [
         'course_id',  // Corrected spelling here
+        'subject_name',
         'section_name',
-        'added_by'
+        'added_by',
+        'ins_id'
     ];
 
     public function course(): BelongsTo

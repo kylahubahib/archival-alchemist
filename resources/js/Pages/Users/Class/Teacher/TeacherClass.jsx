@@ -8,10 +8,14 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFolder, faUsers, faUser, faEllipsisV } from '@fortawesome/free-solid-svg-icons';
 import { Button, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, useDisclosure } from "@nextui-org/react";
 import { Skeleton } from '@nextui-org/skeleton'; // Import Skeleton
+import CreateClassView from '@/Pages/Users/Class/Teacher/CreateClassView ';
 
-axios.defaults.headers.common['X-CSRF-TOKEN'] = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+
+//axios.defaults.headers.common['X-CSRF-TOKEN'] = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+axios.defaults.headers['X-CSRF-TOKEN'] = document.querySelector('meta[name="csrf-token"]').content;
 
 export default function TeacherClass({ auth }) {
+    const [isCreating, setIsCreating] = useState(true);
     const [courses, setCourses] = useState([]);
     const [selectedCourse, setSelectedCourse] = useState(null);
     const [selectedClass, setSelectedClass] = useState(null);
@@ -386,6 +390,8 @@ const handleAddStudent = async () => {
                 );
         }
     };
+
+
     return (
         <AuthenticatedLayout
             user={auth.user}
@@ -400,10 +406,23 @@ const handleAddStudent = async () => {
                 </div>
             }
         >
-            <Head title={getHeaderTitle()} />
+            <Head title={getHeaderTitle()} />            {isCreating ? (
+    <CreateClassView onCreate={handleCreate} />
+) : (
+    <div>
+        {/* Render courses or other main content here */}
+        {courses.map((course, index) => (
+            <div key={index}>
+                <h3>{course.name}</h3>
+                {/* Add more course details and actions as needed */}
+            </div>
+        ))}
+    </div>
+)}
 
-            <div className="h-screen bg-white rounded m-4 rounded-xl">
-                <div className="w-full mx-auto sm:px-6 lg:px-8">
+
+            {/* <div className="h-screen bg-white rounded m-4 rounded-xl"> */}
+                {/* <div className="w-full mx-auto sm:px-6 lg:px-8"> */}
                     <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                         <div className="p-6 text-gray-900 w-full">
                             <div className="flex justify-between items-center mb-4">
@@ -433,27 +452,6 @@ const handleAddStudent = async () => {
                                                 <FontAwesomeIcon icon={faFolder} size="4x" />
                                             </div>
                                             <div className="text-center">{course.course_name}</div>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-
-                            {/* Render sections for selected course */}
-                            {selectedCourse && !selectedClass && (
-                                <div className="grid grid-cols-3 gap-4">
-                                    {classes.map((classItem) => (
-                                        <div
-                                            key={classItem.id}
-                                            className="border rounded-lg p-4 cursor-pointer"
-                                            onClick={() => setSelectedClass(classItem)}
-                                        >
-                                            <div className="flex justify-between items-center mb-2">
-                                                <span className="text-sm">10 Members</span>
-                                            </div>
-                                            <div className="flex justify-center mb-2">
-                                                <FontAwesomeIcon icon={faUsers} size="4x" />
-                                            </div>
-                                            <div className="text-center">{classItem.class_name}</div>
                                         </div>
                                     ))}
                                 </div>
@@ -681,8 +679,8 @@ const handleAddStudent = async () => {
                             )}
                         </div>
                     </div>
-                </div>
-            </div>
+                {/* </div> */}
+            {/* </div> */}
         </AuthenticatedLayout>
     );
 }

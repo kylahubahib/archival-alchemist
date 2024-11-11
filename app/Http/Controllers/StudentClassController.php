@@ -77,11 +77,11 @@ class StudentClassController extends Controller
             // Create the manuscript project
             $manuscriptProject = ManuscriptProject::create([
                 'man_doc_title' => $validatedData['man_doc_title'],
-
                 'man_doc_description' => $validatedData['man_doc_description'],
                 'man_doc_adviser' => $validatedData['man_doc_adviser'],
                 'man_doc_content' => $filePath, // Save the relative path to the database
                 'class_code' => $validatedData['class_id'] ?? null,
+                'man_doc_status' => 'P',
             ]);
 
             Log::info('Manuscript Project Created:', ['id' => $manuscriptProject->id]);

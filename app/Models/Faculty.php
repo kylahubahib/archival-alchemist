@@ -12,7 +12,8 @@ class Faculty extends Model
     protected $fillable = [
         'user_id',
         'uni_branch_id',
-        'faculty_position'
+        'faculty_position',
+        'course_id', // Add course_id here if you want to allow it to be mass-assigned.
     ];
 
     public function user()
@@ -24,4 +25,6 @@ class Faculty extends Model
     {
         return $this->belongsTo(UniversityBranch::class, 'uni_branch_id');
     }
+
+    
 }

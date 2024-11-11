@@ -14,7 +14,7 @@ class ClassModel extends Model
     protected $table = 'class';
     // The attributes that are mass assignable.
 
-    protected $fillable = ['class_code', 'class_name', 'ins_id', 'stud_id'];
+    protected $fillable = ['class_code', 'class_name', 'ins_id', 'stud_id', 'section_id'];
     // Ensure this is not set to false
     public $timestamps = true;
 

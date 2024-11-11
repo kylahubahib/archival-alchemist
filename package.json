@@ -3,7 +3,8 @@
     "type": "module",
     "scripts": {
         "dev": "vite",
-        "build": "vite build"
+        "build": "vite build && npm run move-static",
+        "move-static": "copyfiles -u 1 './node_modules/@pdftron/webviewer/public/*' './dist/public/webviewer'"
     },
     "devDependencies": {
         "@babel/plugin-transform-react-jsx": "^7.25.9",
@@ -13,6 +14,7 @@
         "@vitejs/plugin-react": "^4.2.0",
         "autoprefixer": "^10.4.12",
         "axios": "^1.7.7",
+        "copyfiles": "^2.4.1",
         "laravel-echo": "^1.16.1",
         "laravel-vite-plugin": "^1.0",
         "postcss": "^8.4.31",
@@ -34,6 +36,7 @@
         "@mui/material": "^6.1.5",
         "@mui/styled-engine-sc": "^6.1.5",
         "@nextui-org/react": "^2.4.8",
+        "@pdftron/webviewer": "^11.0.0",
         "browser-image-compression": "^2.0.2",
         "cors": "^2.8.5",
         "date-fns": "^3.6.0",
@@ -42,8 +45,7 @@
         "html2canvas": "^1.4.1",
         "html2pdf.js": "^0.10.2",
         "normalize.css": "^8.0.1",
-        "pdfjs-dist": "^4.7.76",
-        "react-chat-elements": "^12.0.16",
+        "pdfjs-dist": "^2.10.377",
         "react-icons": "^5.2.1",
         "react-toastify": "^10.0.6",
         "react-vertical-timeline-component": "^3.6.0",
