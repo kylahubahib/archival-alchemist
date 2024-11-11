@@ -81,6 +81,16 @@ class ClassController extends Controller
                       ->exists(); // Return true if exists, false otherwise
     }
 
-
+    public function fetchClasses(Request $request)
+    {
+        try {
+            $classes = Section::where('ins_id', Auth::id())->get();
+            return response()->json($classes);
+        } catch (\Exception $e) {
+            // Log the error for debugging
+            Log::error('Error fetching classes: ' . $e->getMessage());
+            return response()->json(['error' => 'An error occurred'], 500);
+        }
+    }
 
 }
