@@ -1,7 +1,8 @@
 import { Dialog, DialogPanel, Transition, TransitionChild } from '@headlessui/react';
 
 export default function Modal({ children, show = false, maxWidth = '2xl', closeable = true, onClose = () => {}, maxHeight = '2xl' }) {
-
+    
+    // Define max width and height classes based on props
     const maxWidthClass = {
         sm: 'sm:max-w-sm',
         md: 'sm:max-w-md',
@@ -12,6 +13,14 @@ export default function Modal({ children, show = false, maxWidth = '2xl', closea
         '4xl': 'sm:max-w-4xl',
         '5xl': 'sm:max-w-5xl',
     }[maxWidth];
+
+    const maxHeightClass = {
+       sm: 'max-h-[50vh]', 
+        md: 'max-h-[60vh]',
+        lg: 'max-h-[70vh]',
+        xl: 'max-h-[80vh]',
+        '2xl': 'max-h-[95vh]',
+    }[maxHeight];
 
     const handleClose = () => {
         if (closeable) {
@@ -34,7 +43,7 @@ export default function Modal({ children, show = false, maxWidth = '2xl', closea
                     leaveFrom="opacity-100"
                     leaveTo="opacity-0"
                 >
-                    <div className="fixed inset-0 bg-gray-500/75" />
+                    <div className="fixed inset-0 bg-gray-800/75" />
                 </TransitionChild>
 
                 <TransitionChild
@@ -46,7 +55,7 @@ export default function Modal({ children, show = false, maxWidth = '2xl', closea
                     leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
                 >
                     <DialogPanel
-                        className={`relative bg-white rounded-lg shadow-xl m-5 transform transition-all sm:w-full sm:mx-auto ${maxWidthClass} max-h-[80vh] overflow-y-auto`}
+                        className={`relative bg-white rounded-lg shadow-xl m-5 transform transition-all sm:w-full sm:mx-auto ${maxWidthClass} ${maxHeightClass} overflow-y-auto`}
                     >
                         {children}
                     </DialogPanel>

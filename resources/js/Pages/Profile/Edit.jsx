@@ -1,7 +1,4 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import DeleteUserForm from './Partials/DeleteUserForm';
-import UpdatePasswordForm from './Partials/UpdatePasswordForm';
-import UpdateProfileInformationForm from './Partials/UpdateProfileInformationForm';
 import { Head, useForm } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 import { FaUserCircle } from 'react-icons/fa';
@@ -13,6 +10,9 @@ import Repository from './Partials/Repository';
 import Posts from './Partials/Posts';
 import SubscriptionForm from './Partials/SubscriptionForm';
 import { Accordion, AccordionItem } from '@nextui-org/react';
+import UpdateProfileInformationForm from './Partials/UpdateProfileInformationForm';
+import DeleteUserForm from './Partials/DeleteUserForm';
+import UpdatePasswordForm from './Partials/UpdatePasswordForm';
 
 
 
@@ -23,6 +23,8 @@ export default function Edit({ auth, mustVerifyEmail, status }) {
     const [errorMessage, setErrorMessage] = useState('');
     const [showErrorModal, setShowErrorModal] = useState(false);
     const [showConfirmModal, setShowConfirmModal] = useState(false);
+
+    
 
     const { data, setData, post, processing, recentlySuccessful, errors, reset } = useForm({
         user_pic: null,
@@ -167,7 +169,7 @@ export default function Edit({ auth, mustVerifyEmail, status }) {
                 <div className="my-4">
                     {activeTab === 'accountSettings' && (
                         <>
-                        
+
                         <div className="mx-auto sm:px-6 lg:px-10 space-y-4">
                             <div className=" p-4 bg-white shadow sm:rounded-lg m-2">
                                 <SubscriptionForm className="max-w-xl" user={auth.user}/>
@@ -183,13 +185,13 @@ export default function Edit({ auth, mustVerifyEmail, status }) {
                                 </AccordionItem>
                                 <AccordionItem key="3" aria-label="Password Information" title="Password Information">
                                     <UpdatePasswordForm className="max-w-xl" />
-                                </AccordionItem> 
+                                </AccordionItem>
                                 <AccordionItem key="4" aria-label="Account Deletio" title="Account Deletion">
                                     <DeleteUserForm className="max-w-xl" />
-                                </AccordionItem>  
+                                </AccordionItem>
                             </Accordion>
                         </div>
-                        
+
                         </>
                     )}
                 </div>

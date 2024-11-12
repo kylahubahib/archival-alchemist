@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import Modal from '@/Components/Modal';
+import { router } from '@inertiajs/react';
 
 
 const UploadCapstone = ({class_code}) => {
@@ -9,6 +10,7 @@ const UploadCapstone = ({class_code}) => {
     const [modalOpen, setModalOpen] = useState(false);
     const [formValues, setFormValues] = useState({
         man_doc_title: '',
+        man_doc_description: '',
         man_doc_content: null,
         man_doc_adviser: '',
         agreed: false,
@@ -25,6 +27,7 @@ const UploadCapstone = ({class_code}) => {
     const resetForm = () => {
         setFormValues({
             man_doc_title: '',
+            man_doc_description: '',
             man_doc_content: null,
             man_doc_adviser: '',
             agreed: false,
@@ -153,6 +156,7 @@ const UploadCapstone = ({class_code}) => {
     const isFormValid = () => {
         return (
             formValues.man_doc_title &&
+            formValues.man_doc_description &&
             formValues.man_doc_adviser &&
             users.length > 0 &&
             tags.length > 0 &&
@@ -176,6 +180,7 @@ const UploadCapstone = ({class_code}) => {
         const newErrors = {};
 
         if (!formValues.man_doc_title) newErrors.man_doc_title = 'Title is required.';
+        if (!formValues.man_doc_description) newErrors.man_doc_description = 'Description is required.';
         if (users.length === 0) newErrors.users = 'At least one user is required.';
         if (!formValues.man_doc_adviser) newErrors.man_doc_adviser = 'Adviser is required.';
         if (tags.length === 0) newErrors.tags = 'At least one tag is required.';
@@ -198,6 +203,8 @@ const UploadCapstone = ({class_code}) => {
                 // Prepare form data
                 const formData = new FormData();
                 formData.append('man_doc_title', formValues.man_doc_title);
+
+                formData.append('man_doc_description', formValues.man_doc_description);
                 formData.append('man_doc_adviser', formValues.man_doc_adviser);
 
                 users.forEach(user => formData.append('name[]', user));
@@ -215,6 +222,7 @@ const UploadCapstone = ({class_code}) => {
 
                 setMessage(response.data.message);
                 setSuccess(true);
+                router.reload();
             } catch (error) {
                 console.error('Error Details:', error);
                 if (error.response) {
@@ -232,8 +240,6 @@ const UploadCapstone = ({class_code}) => {
         } else {
             window.scrollTo(0, 0);
         }
-
-
     };
 
     return (
@@ -262,6 +268,17 @@ const UploadCapstone = ({class_code}) => {
                             />
                             {errors.man_doc_title && <div className="text-red-600 text-sm mb-2">{errors.man_doc_title}</div>}
 
+
+                            <textarea
+                                name="man_doc_description"
+                                placeholder="Enter the description or research abstract"
+                                className="w-full p-2 border rounded mb-2"
+                                value={formValues.man_doc_description}
+                                onChange={handleFormFieldChange}
+                                rows="3"  // You can adjust this number to control the height of the textarea
+                                cols="50"  // Optionally, adjust the number of columns
+                            ></textarea>
+                            {errors.man_doc_description && <div className="text-red-600 text-sm mb-2">{errors.man_doc_description}</div>}
 
                             <input
                                 type="text"
@@ -414,3 +431,4 @@ const UploadCapstone = ({class_code}) => {
 };
 
 export default UploadCapstone;
+

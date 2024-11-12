@@ -1,0 +1,595 @@
+
+BROADCAST_DRIVER=pusher
+
+PUSHER_APP_ID=1882335
+PUSHER_APP_KEY=6a1b2b7c6151dee9ff2c
+PUSHER_APP_SECRET=ecf0f10d2c962cca68ba
+
+PUSHER_HOST=
+PUSHER_PORT=443
+PUSHER_SCHEME=https
+PUSHER_APP_CLUSTER=ap1
+
+VITE_PUSHER_APP_KEY="${PUSHER_APP_KEY}"
+VITE_PUSHER_APP_CLUSTER="${PUSHER_APP_CLUSTER}"
+
+
+
+
+ bootstrap/app.php - file has been revitalized as a code-first application configuration file.
+ From this file, you may now customize your application's routing, middleware, service providers,
+ exception handling, and more.
+
+ Laravel's default password hashing algorithm is bcrypt. The "work factor" for bcrypt hashes can be
+ adjusted via the config/hashing.php configuration file or the BCRYPT_ROUNDS environment variable.
+
+ Laravel Prompts is a PHP package for adding beautiful and user-friendly forms to your command-line
+ applications, with browser-like features including placeholder text and validation.
+
+ Installed package in npm
+ - npm install date-fns
+
+...
+
+
+**Carbon** is a popular date and time library in Laravel, built on top of PHP's **DateTime** class,
+providing a wide range of methods for date manipulation. Here are some of the most commonly used methods in Carbon:
+
+### 1. **Creation Methods**
+These methods are used to create a Carbon instance.
+
+- `now()`: Get the current date and time.
+  ```php
+  Carbon::now(); // Current date and time
+  ```
+
+- `today()`: Get today's date with time set to 00:00:00.
+  ```php
+  Carbon::today(); // Today's date
+  ```
+
+- `tomorrow()`: Get tomorrow's date.
+  ```php
+  Carbon::tomorrow(); // Tomorrow's date
+  ```
+
+- `yesterday()`: Get yesterday's date.
+  ```php
+  Carbon::yesterday(); // Yesterday's date
+  ```
+
+- `create()`: Create a Carbon instance from a specific date.
+  ```php
+  Carbon::create(2024, 1, 1); // January 1, 2024
+  ```
+
+- `parse()`: Parse a date string.
+  ```php
+  Carbon::parse('2024-01-01'); // January 1, 2024
+  ```
+
+### 2. **Modification Methods**
+These methods allow you to modify the date.
+
+- `addDays()`: Add days to the current date.
+  ```php
+  Carbon::now()->addDays(10); // 10 days from now
+  ```
+
+- `subDays()`: Subtract days from the current date.
+  ```php
+  Carbon::now()->subDays(5); // 5 days ago
+  ```
+
+- `addMonths()`: Add months to the current date.
+  ```php
+  Carbon::now()->addMonths(2); // 2 months from now
+  ```
+
+- `subMonths()`: Subtract months from the current date.
+  ```php
+  Carbon::now()->subMonths(1); // 1 month ago
+  ```
+
+- `startOfDay()`: Set the time to the start of the day (00:00:00).
+  ```php
+  Carbon::now()->startOfDay(); // Start of today
+  ```
+
+- `endOfDay()`: Set the time to the end of the day (23:59:59).
+  ```php
+  Carbon::now()->endOfDay(); // End of today
+  ```
+
+- `startOfWeek()`: Set the date to the start of the week (by default Monday).
+  ```php
+  Carbon::now()->startOfWeek(); // Start of the current week
+  ```
+
+- `endOfWeek()`: Set the date to the end of the week (by default Sunday).
+  ```php
+  Carbon::now()->endOfWeek(); // End of the current week
+  ```
+
+- `startOfMonth()`: Set the date to the start of the month.
+  ```php
+  Carbon::now()->startOfMonth(); // Start of the current month
+  ```
+
+- `endOfMonth()`: Set the date to the end of the month.
+  ```php
+  Carbon::now()->endOfMonth(); // End of the current month
+  ```
+
+- `next()`: Get the next occurrence of a day (e.g., Monday).
+  ```php
+  Carbon::now()->next(Carbon::MONDAY); // Next Monday
+  ```
+
+- `previous()`: Get the previous occurrence of a day.
+  ```php
+  Carbon::now()->previous(Carbon::MONDAY); // Previous Monday
+  ```
+
+### 3. **Comparison Methods**
+These methods allow you to compare dates.
+
+- `equalTo()`: Check if two dates are the same.
+  ```php
+  Carbon::now()->equalTo(Carbon::yesterday()); // False
+  ```
+
+- `greaterThan()`: Check if a date is greater than another.
+  ```php
+  Carbon::now()->greaterThan(Carbon::yesterday()); // True
+  ```
+
+- `lessThan()`: Check if a date is less than another.
+  ```php
+  Carbon::now()->lessThan(Carbon::tomorrow()); // True
+  ```
+
+- `between()`: Check if a date is between two other dates.
+  ```php
+  Carbon::now()->between(Carbon::yesterday(), Carbon::tomorrow()); // True
+  ```
+
+- `isToday()`: Check if a date is today.
+  ```php
+  Carbon::now()->isToday(); // True
+  ```
+
+- `isTomorrow()`: Check if a date is tomorrow.
+  ```php
+  Carbon::now()->isTomorrow(); // False
+  ```
+
+- `isWeekend()`: Check if a date falls on the weekend.
+  ```php
+  Carbon::now()->isWeekend(); // Depends on the current day
+  ```
+
+### 4. **Formatting Methods**
+These methods are used to format the date.
+
+- `format()`: Format the date in a specific format.
+  ```php
+  Carbon::now()->format('Y-m-d H:i:s'); // 2024-09-17 13:45:00
+  ```
+
+- `toDateString()`: Get the date in `Y-m-d` format.
+  ```php
+  Carbon::now()->toDateString(); // 2024-09-17
+  ```
+
+- `toTimeString()`: Get the time in `H:i:s` format.
+  ```php
+  Carbon::now()->toTimeString(); // 13:45:00
+  ```
+
+- `toFormattedDateString()`: Get a formatted date string (e.g., Sep 17, 2024).
+  ```php
+  Carbon::now()->toFormattedDateString(); // Sep 17, 2024
+  ```
+
+- `toDayDateTimeString()`: Get a formatted date-time string (e.g., Tue, Sep 17, 2024 1:45 PM).
+  ```php
+  Carbon::now()->toDayDateTimeString(); // Tue, Sep 17, 2024 1:45 PM
+  ```
+
+### 5. **Other Useful Methods**
+
+- `diffForHumans()`: Get a human-readable difference.
+  ```php
+  Carbon::now()->subDays(5)->diffForHumans(); // "5 days ago"
+  ```
+
+- `age()`: Calculate age based on the date.
+  ```php
+  Carbon::parse('1990-01-01')->age; // 34 (for example, depending on the current year)
+  ```
+
+- `copy()`: Create a copy of the current Carbon instance.
+  ```php
+  Carbon::now()->copy()->addDays(5); // Copy and add 5 days
+  ```
+
+- `timezone()`: Set the timezone for the Carbon instance.
+  ```php
+  Carbon::now()->timezone('America/New_York'); // Set to New York timezone
+  ```
+
+########################################################
+
+Eloquent provides a wide variety of methods for interacting with the database.
+These methods can be grouped into categories based on their function, such as **retrieval**,
+**insertion**, **deletion**, **updating**, **query building**, and **relationships**.
+Here’s a breakdown of the most commonly used **Eloquent** methods in Laravel:
+
+### 1. **Retrieval Methods**
+These methods retrieve data from the database.
+
+- `all()`: Retrieve all records from a model's table.
+  ```php
+  User::all();
+  ```
+
+- `find($id)`: Find a record by its primary key.
+  ```php
+  User::find(1);
+  ```
+
+- `findOrFail($id)`: Find a record by its primary key or throw a `ModelNotFoundException` if not found.
+  ```php
+  User::findOrFail(1);
+  ```
+
+- `first()`: Retrieve the first record in the table.
+  ```php
+  User::where('email', 'example@example.com')->first();
+  ```
+
+- `firstOrFail()`: Retrieve the first record or throw a `ModelNotFoundException` if not found.
+  ```php
+  User::where('email', 'example@example.com')->firstOrFail();
+  ```
+
+- `get()`: Execute the query and get the results.
+  ```php
+  User::where('active', 1)->get();
+  ```
+
+- `pluck($column)`: Retrieve a single column's values as a collection.
+  ```php
+  User::pluck('email');
+  ```
+
+- `value($column)`: Retrieve the value of a single column.
+  ```php
+  User::where('id', 1)->value('email');
+  ```
+
+- `count()`: Count the number of records in the result.
+  ```php
+  User::where('active', 1)->count();
+  ```
+
+- `sum($column)`: Sum the values of a given column.
+  ```php
+  Order::sum('total');
+  ```
+
+- `avg($column)`: Get the average value of a given column.
+  ```php
+  Order::avg('total');
+  ```
+
+- `max($column)`: Get the maximum value of a column.
+  ```php
+  Order::max('total');
+  ```
+
+- `min($column)`: Get the minimum value of a column.
+  ```php
+  Order::min('total');
+  ```
+
+### 2. **Insertion Methods**
+These methods are used to insert data into the database.
+
+- `create()`: Create and insert a new record into the database.
+  ```php
+  User::create([
+      'name' => 'John Doe',
+      'email' => 'johndoe@example.com',
+  ]);
+  ```
+
+- `insert()`: Insert data into the table.
+  ```php
+  DB::table('users')->insert([
+      ['name' => 'John', 'email' => 'john@example.com'],
+      ['name' => 'Jane', 'email' => 'jane@example.com']
+  ]);
+  ```
+
+- `firstOrCreate()`: Retrieve the first record matching the attributes or create it if it doesn’t exist.
+  ```php
+  User::firstOrCreate(['email' => 'johndoe@example.com'], ['name' => 'John Doe']);
+  ```
+
+- `firstOrNew()`: Retrieve the first record matching the attributes or instantiate a new instance if it doesn’t exist.
+  ```php
+  $user = User::firstOrNew(['email' => 'johndoe@example.com']);
+  ```
+
+- `updateOrCreate()`: Update an existing record or create it if it doesn’t exist.
+  ```php
+  User::updateOrCreate(
+      ['email' => 'johndoe@example.com'],
+      ['name' => 'John Doe']
+  );
+  ```
+
+### 3. **Updating Methods**
+These methods are used to update existing records.
+
+- `update()`: Update the specified columns in the matching records.
+  ```php
+  User::where('id', 1)->update(['name' => 'John Doe']);
+  ```
+
+- `increment($column, $amount = 1)`: Increment the value of a column.
+  ```php
+  User::where('id', 1)->increment('login_count');
+  ```
+
+- `decrement($column, $amount = 1)`: Decrement the value of a column.
+  ```php
+  User::where('id', 1)->decrement('login_count');
+  ```
+
+### 4. **Deletion Methods**
+These methods are used to delete records from the database.
+
+- `delete()`: Delete the matching records.
+  ```php
+  User::where('id', 1)->delete();
+  ```
+
+- `destroy($id)`: Delete the records with the specified primary key.
+  ```php
+  User::destroy(1);
+  ```
+
+- `truncate()`: Delete all records from the table without logging individual deletions.
+  ```php
+  User::truncate();
+  ```
+
+### 5. **Query Building Methods**
+These methods are used for building custom queries.
+
+- `where()`: Add a `where` clause to the query.
+  ```php
+  User::where('active', 1)->get();
+  ```
+
+- `orWhere()`: Add an `OR` `where` clause.
+  ```php
+  User::where('active', 1)->orWhere('role', 'admin')->get();
+  ```
+
+- `whereBetween()`: Add a `where between` clause.
+  ```php
+  Order::whereBetween('total', [100, 200])->get();
+  ```
+
+- `whereIn()`: Add a `where in` clause.
+  ```php
+  User::whereIn('id', [1, 2, 3])->get();
+  ```
+
+- `whereNull()`: Add a `where null` clause.
+  ```php
+  User::whereNull('email_verified_at')->get();
+  ```
+
+- `whereNotNull()`: Add a `where not null` clause.
+  ```php
+  User::whereNotNull('email_verified_at')->get();
+  ```
+
+- `orderBy()`: Order the results by a given column.
+  ```php
+  User::orderBy('name', 'asc')->get();
+  ```
+
+- `groupBy()`: Group the results by a given column.
+  ```php
+  User::groupBy('role')->get();
+  ```
+
+- `having()`: Add a `having` clause.
+  ```php
+  Order::groupBy('user_id')->having('total', '>', 100)->get();
+  ```
+
+- `limit()`: Limit the number of results returned.
+  ```php
+  User::limit(10)->get();
+  ```
+
+- `offset()`: Skip a given number of results.
+  ```php
+  User::offset(5)->limit(10)->get();
+  ```
+
+- `with()`: Eager load relationships.
+  ```php
+  User::with('posts')->get();
+  ```
+
+### 6. **Relationship Methods**
+These methods are used to define and work with model relationships.
+
+- `hasOne()`: Define a one-to-one relationship.
+  ```php
+  public function profile()
+  {
+      return $this->hasOne(Profile::class);
+  }
+  ```
+
+- `hasMany()`: Define a one-to-many relationship.
+  ```php
+  public function posts()
+  {
+      return $this->hasMany(Post::class);
+  }
+  ```
+
+- `belongsTo()`: Define an inverse one-to-one or one-to-many relationship.
+  ```php
+  public function user()
+  {
+      return $this->belongsTo(User::class);
+  }
+  ```
+
+- `belongsToMany()`: Define a many-to-many relationship.
+  ```php
+  public function roles()
+  {
+      return $this->belongsToMany(Role::class);
+  }
+  ```
+
+- `morphOne()`: Define a polymorphic one-to-one relationship.
+  ```php
+  public function image()
+  {
+      return $this->morphOne(Image::class, 'imageable');
+  }
+  ```
+
+- `morphMany()`: Define a polymorphic one-to-many relationship.
+  ```php
+  public function comments()
+  {
+      return $this->morphMany(Comment::class, 'commentable');
+  }
+  ```
+
+- `morphTo()`: Define the inverse of a polymorphic relationship.
+  ```php
+  public function commentable()
+  {
+      return $this->morphTo();
+  }
+  ```
+
+- `withCount()`: Eager load the count of related models.
+  ```php
+  User::withCount('posts')->get();
+  ```
+
+---
+
+### Conclusion
+These are just some of the common **Eloquent methods** available in Laravel. Eloquent provides a rich set of methods
+for managing your database and interacting with relationships, and the framework's flexibility allows for easy querying,
+modifying, and handling of data.
+
+You can find the complete set of Eloquent methods in the [official Laravel documentation](https://laravel.com/docs/eloquent).
+
+
+
+
+
+
+
+//How to install laravel-excel
+
+1. Requirements
+PHP: ^7.2\|^8.0 (php -v)
+Laravel: ^5.8 (php artisan --version)
+PhpSpreadsheet: ^1.21 (Will be installed with laravel-excel)
+(To check enabled php extension: php -m)
+(Go to xamp control panel, click explorer, search and open php.ini, search the extensions not on the list and remove the ; at the start and then restart the server)
+PHP extension php_zip enabled
+PHP extension php_xml enabled
+PHP extension php_gd2 enabled
+PHP extension php_iconv enabled
+PHP extension php_simplexml enabled
+PHP extension php_xmlreader enabled
+PHP extension php_zlib enabled
+
+2. If all requirements are met, proceed to installation:
+composer remove phpoffice/phpexcel
+composer remove maatwebsite/excel
+
+composer clear-cache
+php artisan config:cache
+composer update --with-all-dependencies
+composer require maatwebsite/excel
+You sent
+ouh gi in ani nako
+
+
+3. Run this command to create the excel.php in the config folder:
+php artisan vendor:publish --provider="Maatwebsite\Excel\ExcelServiceProvider" --tag=config
+ composer require maatwebsite/excel:^3.1.35 --with-all-dependencies
+
+composer clear cache
+//End How to install laravel-excel
+
+
+
+check the migration status
+php artisan migrate:status
+
+refresh the migration
+php artisan migrate:refresh
+
+do the migration
+php artisan migrate
+
+
+📌clearing caches and data's
+php artisan optimize:clear
+php artisan event:cache
+php artisan view:cache
+php artisan optimize
+php artisan config:cache
+php artisan config:clear
+php artisan cache:clear
+npm run build
+php artisan storage:link
+php artisan route:list
+php artisan session:clear
+
+
+
+PS C:\xampp\htdocs\archival-alchemist-main> composer require maatwebsite/excel:^3.1.35 --with-all-dependencies
+A connection timeout was encountered. If you intend to run Composer without connecting to the internet, run the command again prefixed with COMPOSER_DISABLE_NETWORK=1 to make Composer run in offline mode.
+https://repo.packagist.org could not be fully loaded (curl error 28 while downloading https://repo.packagist.org/packages.json: Resolving timed out after 10002 milliseconds), package information was loaded from the local cache and may be out of date
+./composer.json has been updated
+Running composer update maatwebsite/excel --with-all-dependencies
+Loading composer repositories with package information
+https://repo.packagist.org could not be fully loaded (curl error 6 while downloading https://repo.packagist.org/packages.json: Could not resolve host: repo.packagist.org), package information was loaded from the local cache and may be out of date
+
+Installation failed, reverting ./composer.json and ./composer.lock to their original content.
+The following exception probably indicates you are offline or have misconfigured DNS resolver(s)
+
+In CurlDownloader.php line 371:
+
+  curl error 6 while downloading https://repo.packagist.org/p2/illuminate/collections.json: Could not resolve host: repo.packagist.org
+
+
+require [--dev] [--dry-run] [--prefer-source] [--prefer-dist] [--prefer-install PREFER-INSTALL] [--fixed] [--no-suggest] [--no-progress] [--no-update] [--no-install] [--no-audit] [--audit-format AUDIT-FORMAT] [--update-no-dev] [-w|--update-with-dependencies] [-W|--update-with-all-dependencies] [--with-dependencies] [--with-all-dependencies] [--ignore-platform-req IGNORE-PLATFORM-REQ] [--ignore-platform-reqs] [--prefer-stable] [--prefer-lowest] [-m|--minimal-changes] [--sort-packages] [-o|--optimize-autoloader] [-a|--classmap-authoritative] [--apcu-autoloader] [--apcu-autoloader-prefix APCU-AUTOLOADER-PREFIX] [--] [<packages>...]
+
+PS C:\xampp\htdocs\archival-alchemist-main>
+
+
+composer require maatwebsite/excel:^3.1.35 --with-all-dependencies

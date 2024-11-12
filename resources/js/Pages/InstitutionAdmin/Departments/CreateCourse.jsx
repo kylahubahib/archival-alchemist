@@ -4,23 +4,24 @@ import Modal from '@/Components/Modal';
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import { showToast } from '@/Components/Toast';
-import { useForm } from '@inertiajs/react';
+import { router, useForm } from '@inertiajs/react';
 
 export default function CreateCourse({isOpen, onClose, deptId, branchId}) {
 
     const { data, setData, post, processing, errors, clearErrors, reset } = useForm({
         course_name: '',
         dept_id: deptId,
-        uni_branch_id: branchId
+        uni_branch_id: branchId,
+        course_acronym: ''
     });
 
     const createSubmit = (e) => {
         e.preventDefault();
         post(route('manage-courses.store'), {
-            onSuccess: () => {
-                onClose();
-                showToast('success', 'Successfully added course!')
-                reset();
+            onSuccess: (response) => {
+                    onClose();
+                    showToast('success', 'Successfully added course!')
+                    reset();
             },
         });
     };
@@ -30,6 +31,15 @@ export default function CreateCourse({isOpen, onClose, deptId, branchId}) {
         clearErrors(); 
         onClose();
     };
+
+    const refreshTable = (id) => {
+        axios.get('get-courses', {
+            params: { id: id }
+        }).then(response => {
+            setFilteredData(response.data.courses.data); 
+            setCourses(response.data.courses.data); 
+        });
+    }
     
 
     return (
@@ -52,6 +62,17 @@ export default function CreateCourse({isOpen, onClose, deptId, branchId}) {
                                     placeholder="Course"
                                 />
                                 <InputError message={errors.course_name} className="mt-2" />
+                            </div>
+                            <div className="flex flex-col">
+                                <InputLabel htmlFor="course_acronym" value="Course Acronym" />
+                                <TextInput
+                                    id="course_acronym"
+                                    value={data.course_acronym}
+                                    onChange={(e) => {setData('course_acronym', e.target.value)}}
+                                    className="mt-1 block w-full"
+                                    placeholder="Course Acronym"
+                                />
+                                <InputError message={errors.course_acronym} className="mt-2" />
                             </div>
 
                             <div className="mt-6 flex">

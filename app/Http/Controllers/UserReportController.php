@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\ReportType;
 use App\Models\UserReport;
+use App\Models\User;
+use App\Models\Forum;
+use App\Models\Post;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\JsonResponse;
@@ -13,9 +16,12 @@ use Inertia\Response;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth; 
 
+use App\Notifications\InstitutionAdminNotification;
+use App\Notifications\UserNotification;
+
 class UserReportController extends Controller
 {
-    /**
+    /** 
      * Display a listing of the resource.
      */
     public function index()
@@ -103,6 +109,42 @@ class UserReportController extends Controller
     }
 
     /**
+     * Display the specified resource.
+     */
+    public function show(string $id)
+    {
+        $report = UserReport::with('user:id,name,user_status,user_pic')->find($id);
+        $reportedCount = 0;
+
+        if (!$report) {
+            return redirect()->back()->with('error', 'Report not found.');
+        }
+
+        switch ($report->report_location) {  
+            case 'Forum':
+                $content = Forum::with('user:id,name,user_status,user_pic')->find($report->reported_id); 
+                break;
+
+            case 'Profile':
+                $content = User::find($report->reported_id); 
+                $reportedCount = UserReport::where('reported_id', $report->reported_id)->count();
+                break;
+            case 'Post':
+                $content = Post::find($report->reported_id); 
+                break;
+
+            default:
+                break;
+        }
+
+        return response()->json([
+            'report' => $report,
+            'content' => $content,
+            'reportedCount' => $reportedCount
+        ]);
+    }
+
+    /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
@@ -171,25 +213,73 @@ class UserReportController extends Controller
         }
 
         $status = $request->get('status');
+        $duration = (int) $request->get('duration');
+        $reportedId = $request->get('reportedId');
+        $end_date = Carbon::now()->addDays($duration);
 
         switch ($report->report_location) {  
             case 'Forum':
-                // 
+                $content = Forum::find($report->reported_id);
+
+                if ($content) {
+                    \Log::info('Content: ', $content->toArray());
+                
+                    $content->update([
+                        'forum_status' => 'Hidden',
+                    ]);
+
+                    $user = User::find($content->user_id);
+                    if ($user) {
+                        $user->update([
+                            'user_status' => 'Suspended'
+                        ]);
+                    }
+
+                    $report->update([
+                        'report_status' => 'Solved',  
+                        'suspension_start_date' => Carbon::now(),
+                        'suspension_end_date' => $end_date,
+                        'closed_at' => Carbon::now()
+                    ]);
+                }
                 break;
 
-            case 'Chat':
-                // 
+            case 'Profile':
+
+                $user = User::find($report->reported_id);
+                if ($user) {
+                    $user->update([
+                        'user_status' => 'Suspended'
+                    ]);
+
+                }
+
+                $report->update([
+                    'report_status' => 'Solved',  
+                    'suspension_start_date' => Carbon::now(),
+                    'suspension_end_date' => $end_date,
+                    'closed_at' => Carbon::now()
+                ]);
                 break;
+            // case 'Post':
+            //     // 
+            //     break;
 
             default:
                 break;
         }
 
-        $report->update([
-            'report_status' => $status,  
-        ]);
+        $reporter = User::find($report->reporter_id);
 
-        return redirect(route('user-reports.index'))->with('success', 'Report status updated successfully.');
+        if($reporter) {
+            $reporter->notify(new UserNotification([
+                'message' => 'Hello ' . $reporter->name. ', we wanted to inform you that action has been taken regarding your 
+                recent report on ' . $user->name . '. Thank you for helping us keep the Archival Alchemist community safe!',
+                'user_id' => $reporter->id
+            ]));
+        }
+
+      return response()->json([]);
     }
 
 
@@ -199,5 +289,42 @@ class UserReportController extends Controller
     public function destroy(string $id)
     {
         //
+    }
+
+
+    public function warnUser(Request $request, string $id)
+    {
+
+        
+        $report = UserReport::find($id);
+
+        if (!$report) {
+            return redirect()->back()->with('error', 'Report not found.');
+        }
+
+        $status = $request->get('status');
+        $reportedUser = $request->get('reportedUser');;
+
+                
+        $user = User::find($reportedUser);
+        \Log::info($user);
+
+        if ($user) {
+            $user->notify(new UserNotification([
+                'message' => 'Hello ' . $user->name . ', we received a report about your recent activity on Archival Alchemist. 
+                After reviewing it, we could not find enough evidence to substantiate a violation. However, we encourage you 
+                to review our community guidelines and ensure that all interactions align with them to maintain a safe and positive 
+                environment.',
+                'user_id' => $user->id
+            ]));
+        }
+
+        $report->update([
+            'report_status' => 'Dropped',
+            'closed_at' => Carbon::now()
+        ]);
+                
+
+        return response()->json();
     }
 }

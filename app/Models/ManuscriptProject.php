@@ -12,10 +12,11 @@ class ManuscriptProject extends Model
 {
     use HasFactory, Notifiable;
 
-    protected $table = 'manuscripts'; 
+    protected $table = 'manuscripts';
 
     protected $fillable = [
         'man_doc_title',
+        'man_doc_description',
         'man_doc_content',
         'man_doc_status',
         'man_doc_adviser',
@@ -23,7 +24,7 @@ class ManuscriptProject extends Model
         'man_doc_view_count',
         'is_publish',
         'man_doc_rating',
-        'class_id',
+        'class_code',
     ];
 
     /**
@@ -59,6 +60,15 @@ class ManuscriptProject extends Model
     {
         return $this->hasMany(RevisionHistory::class, 'man_doc_id');
     }
+    public function class()
+    {
+        return $this->belongsTo(ClassModel::class, 'class_code');
+    }
 
+    //A manuscript can have many ratings.
+    public function ratings()
+    {
+        return $this->hasMany(Rating::class, 'manuscript_id', 'id');
+    }
 
 }

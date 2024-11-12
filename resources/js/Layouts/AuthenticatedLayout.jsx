@@ -9,10 +9,10 @@ import Dropdown from '@/Components/Dropdown';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
 import Sidebar, { SidebarItem, SidebarSeparator } from '@/Components/Sidebar';
 
-import SearchBar from '@/Components/SearchBar';
 import { FaCrown, FaEnvelope } from "react-icons/fa";
 import GiveFeedbackModal from "@/Components/GiveFeedbackModal";
 import ToastNotification, { showToast } from "@/Components/Toast";
+import UserNotification from "@/Components/Notifications/UserNotification";
 
 export default function Authenticated({ user, children, newProfile = null }) {
     const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
@@ -74,13 +74,17 @@ export default function Authenticated({ user, children, newProfile = null }) {
 
                             <div className="hidden sm:flex sm:items-center sm:ml-6">
                                 <button className="rounded-full py-1 px-6 bg-green-300 flex flex-row space-x-2">
-                                    <span>{isPremium ? [<FaCrown size={20} color="#FFD700" />] : null}</span>
+                                    <span>{isPremium ? (<FaCrown size={20} color="#FFD700" />) : null}</span>
                                     <span>{user.user_type.charAt(0).toUpperCase() + user.user_type.slice(1).toLowerCase()}</span>
                                 </button>
 
-                                <FiBell size={24} className="ml-3 text-white" />
+                                {/* <FiBell size={24} className="ml-3 text-white" /> */}
 
-                                <div className="ml-3 relative">
+                                <div className="flex items-center mx-3">
+                                        <UserNotification user={user} />
+                                </div>
+
+                                <div className=" relative">
                                     <Dropdown>
                                         <Dropdown.Trigger>
                                             <span className="inline-flex rounded-md">
@@ -95,7 +99,7 @@ export default function Authenticated({ user, children, newProfile = null }) {
                                         </Dropdown.Trigger>
 
                                         <Dropdown.Content>
-                                            <Dropdown.Link href={route('profile.edit')}>Profile</Dropdown.Link>
+                                            <Dropdown.Link href={route('profile.update')}>Profile</Dropdown.Link>
                                             <Dropdown.Link href={route('logout')} method="post" as="button">
                                                 Log Out
                                             </Dropdown.Link>
@@ -137,8 +141,8 @@ export default function Authenticated({ user, children, newProfile = null }) {
 
                     <div className={(showingNavigationDropdown ? 'block' : 'hidden') + ' sm:hidden'}>
                         <div className="pt-2 pb-3 space-y-1">
-                            <ResponsiveNavLink href={route('dashboard')} active={route().current('dashboard')}>
-                                Dashboard
+                            <ResponsiveNavLink href={route('library')} active={route().current('library')}>
+                                Library
                             </ResponsiveNavLink>
                         </div>
 

@@ -2,11 +2,12 @@ import { BsPersonFill } from "react-icons/bs";
 import { BsPersonFillExclamation } from "react-icons/bs";
 import { BsPersonFillCheck } from "react-icons/bs";
 import AdminLayout from '@/Layouts/AdminLayout';
-import { Head } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 import ReportModal from "@/Components/ReportModal";
 import { FaEye, FaPen, FaTrash } from "react-icons/fa";
-import Show from "./Show";
+import Show from "./Show"; 
+import { formatDate, formatPrice } from '@/utils';
 
 export default function UserReports({ auth, userReports, pendingCount, solvedCount, allReportCount, reportLocation }) {
     const [filteredData, setFilteredData] = useState(userReports.data);
@@ -14,7 +15,8 @@ export default function UserReports({ auth, userReports, pendingCount, solvedCou
     const [filteredLocation, setFilteredLocation] = useState("All");
     const [filteredDate, setFilteredDate] = useState("All");
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const[selectedData, setSelectedData] = useState([]);
+    const[selectedData, setSelectedData] = useState(null);
+    const [selectedContent, setSelectedContent] = useState(null);
 
 
     useEffect(() => {
@@ -29,8 +31,10 @@ export default function UserReports({ auth, userReports, pendingCount, solvedCou
     }
 
     const closeModal = () => {
-        setIsReportModalOpen(false)
-        setIsModalOpen(false)
+        setSelectedData(null);
+        setSelectedContent(null);
+        setIsReportModalOpen(false);
+        setIsModalOpen(false);
     }
     //FOR REPORT MODAL
 
@@ -55,8 +59,13 @@ export default function UserReports({ auth, userReports, pendingCount, solvedCou
     };
 
     const viewDetails = (data) => {
-        setSelectedData(data);
         //console.log(data);
+
+    
+        axios.get(route('user-reports.show', data.id)).then(response => {
+            setSelectedData(response.data.report);
+            setSelectedContent(response.data.content);
+        });
         setIsModalOpen(true);
     }
 
@@ -207,7 +216,7 @@ export default function UserReports({ auth, userReports, pendingCount, solvedCou
             </div>
 
             <ReportModal isOpen={isReportModalOpen} onClose={closeModal} reportLocation={'Forum'} reportedID={2}/>
-            <Show isOpen={isModalOpen} onClose={closeModal}/>
+            {selectedData && selectedContent && (<Show isOpen={isModalOpen} onClose={closeModal} report={selectedData} content={selectedContent}/>)}
             </AdminLayout>
     );
 }

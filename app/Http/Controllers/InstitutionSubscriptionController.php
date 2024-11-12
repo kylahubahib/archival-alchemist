@@ -50,27 +50,65 @@ class InstitutionSubscriptionController extends Controller
         ]);
     }
 
+    // public function uploadCSV(Request $request) 
+    // {
+    //     $file = $request->file('file'); 
+    //     $insubId = $request->get('insubId');
+    //     $university = $request->get('university');
+
+    //     $fileName = $university . '_' . time() . '.' . $file->getClientOriginalExtension(); 
+    //     $file->move(public_path('storage/csv_files'), $fileName);
+
+    //     $ins_sub = InstitutionSubscription::find($insubId);
+
+    //     $ins_sub->update([
+    //         'insub_content' => 'storage/csv_files/' . $fileName,
+    //     ]);
+
+    //     return redirect(route('institution-subscription-billing.index'))->with('success', 'Successfully uploaded.');
+    // }
+
+
     public function uploadCSV(Request $request) 
     {
+        $request->validate([
+            'file' => 'required|file|mimes:csv,txt|max:2048',
+            'insubId' => 'required|exists:institution_subscriptions,id', 
+            'university' => 'required|string|max:255', 
+        ]);
+
         $file = $request->file('file'); 
         $insubId = $request->get('insubId');
         $university = $request->get('university');
 
-        if (!$file) {
-            return response()->json(['success' => false, 'message' => 'No file uploaded'], 400);
-        }
-
+        // Generate a unique filename
         $fileName = $university . '_' . time() . '.' . $file->getClientOriginalExtension(); 
         $file->move(public_path('storage/csv_files'), $fileName);
 
         $ins_sub = InstitutionSubscription::find($insubId);
 
+        // Update the subscription record with the new file path
         $ins_sub->update([
             'insub_content' => 'storage/csv_files/' . $fileName,
         ]);
 
-        return response()->json(['success' => true, 'message' => 'File uploaded successfully']);
+        try {
+            $createAccounts = Excel::import(new UsersImport, public_path($ins_sub->insub_content));
+            \Log::info('Import user successfully!');
+        } catch (Exception $e) {
+            \Log::error('Error during user import: ' . $e->getMessage());
+        }
+
+       
+
+        return response()->json([
+            'success' => true,
+            'redirect_url' => route('institution-subscription-billing.index'),
+            'message' => 'Successfully uploaded.',
+            'file' => $ins_sub->insub_content
+        ]);
     }
+
 
     public function readCSV(Request $request)
     {
@@ -96,20 +134,36 @@ class InstitutionSubscriptionController extends Controller
         ]);
     }
 
-    public function cancelSubscription(Request $request, string $id)
+
+    public function cancelSubscription(Request $request)
     {
         //If user cancel their subscription, they won't be notify to renew their subscription since
         //subscription is non recurring
 
+        $id = $request->get('id');
+
         $ins_sub = InstitutionSubscription::find($id);
 
-        $ins_sub->update([
-            'notify_renewal' => 0
-        ]);
+        if($ins_sub->notify_renewal === 1)
+        {
+            $ins_sub->update([
+                'notify_renewal' => 0
+            ]);
 
-        return redirect(route('institution-subscription-billing.index'))->with('success', 'You canceled your subscription');
+            $message = "You have canceled your subscription.";
+        }
+        else 
+        {
+            $message = "You've already canceled your subscription";
+        }
+
+        
+        return response()->json([
+            'message' => $message
+        ]);
     }
 
+    
     public function renewSubscription(Request $request, string $id)
     {
         

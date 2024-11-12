@@ -21,11 +21,13 @@ export default function SubscriptionPlans({ auth, subscriptionPlans = [], featur
     useEffect(() => {
         const newFilter = subscriptionPlans.data.filter((value) => {
             if (filteredStatus === "All") {
-                return value.plan_name.toLowerCase().includes(wordEntered.toLowerCase());
+                return (value.plan_name.toLowerCase().includes(wordEntered.toLowerCase()) ||
+                value.plan_type.toLowerCase().includes(wordEntered.toLowerCase()));
             } else {
                 return (
                     value.plan_status.toLowerCase() === filteredStatus.toLowerCase() &&
-                    value.plan_name.toLowerCase().includes(wordEntered.toLowerCase())
+                    (value.plan_name.toLowerCase().includes(wordEntered.toLowerCase()) ||
+                    value.plan_type.toLowerCase().includes(wordEntered.toLowerCase()))
                 );
             }
         });
@@ -51,7 +53,7 @@ export default function SubscriptionPlans({ auth, subscriptionPlans = [], featur
             router.delete(route('manage-subscription-plans.destroy', id), {
                 preserveScroll: true,
                 onSuccess: () => {
-                    alert('Successfully deleted!');
+                    alert('Successfully deleted plan!');
                 },
             });
         }
@@ -143,12 +145,16 @@ export default function SubscriptionPlans({ auth, subscriptionPlans = [], featur
                                 </div>
                             </div>
 
-                            <div className="overflow-y-auto h-480">
+                            <div className="min-h-[480px]"> 
+                            {/* className="overflow-y-auto h-480" */}
                                 <table className="w-full text-sm text-left rtl:text-right text-gray-500">
                                     <thead className="text-xs text-gray-700 uppercase bg-gray-50">
                                         <tr>
                                             <th scope="col" className="px-6 py-3">
                                                 Plans
+                                            </th>
+                                            <th scope="col" className="px-6 py-3">
+                                                Type
                                             </th>
                                             <th scope="col" className="px-6 py-3">
                                                 Term
@@ -173,6 +179,7 @@ export default function SubscriptionPlans({ auth, subscriptionPlans = [], featur
                                                             <div className="text-base font-semibol max-w-44 truncate">{sp.plan_name}</div>
                                                         </div>
                                                     </th>
+                                                    <td className="px-6 py-4 max-w-60 truncate">{sp.plan_type}</td>
                                                     <td className="px-6 py-4 max-w-60 truncate">{sp.plan_term}</td>
                                                     <td className="px-6 py-4">{sp.plan_price}</td>
                                                     <td className="px-6 py-4">
@@ -189,15 +196,15 @@ export default function SubscriptionPlans({ auth, subscriptionPlans = [], featur
                                                         <a onClick={() => openEditModal(sp)} className="bg-customBlue text-white rounded p-1 hover:bg-transparent hover:text-customBlue cursor-pointer" title="Edit">
                                                             <FaPen/>
                                                         </a>
-                                                        <a onClick={() => deletePlan(sp.id)} className="bg-customBlue text-white rounded p-1 hover:bg-transparent hover:text-customBlue cursor-pointer" title="Delete">
+                                                        {/* <a onClick={() => deletePlan(sp.id)} className="bg-customBlue text-white rounded p-1 hover:bg-transparent hover:text-customBlue cursor-pointer" title="Delete">
                                                             <FaTrash/>
-                                                        </a>
+                                                        </a> */}
                                                     </td>
                                                 </tr>
                                             ))
                                         ) : (
                                             <tr className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50">
-                                                <td colSpan="5" className="px-6 py-4 text-center text-gray-500">
+                                                <td colSpan="6" className="px-6 py-4 text-center text-gray-500">
                                                     No subscription plans found.
                                                 </td>
                                             </tr>

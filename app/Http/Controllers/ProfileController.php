@@ -25,17 +25,6 @@ use App\Models\Student;
 
 class ProfileController extends Controller
 {
-    /**
-     * Display the user's profile form.
-     */
-    // public function edit(Request $request): Response
-    // {
-    //     return Inertia::render('Profile/Edit', [
-    //         'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
-    //         'status' => session('status'),
-    //     ]);
-    // }
-
 
     public function showProfilePic($filename)
     {
@@ -50,25 +39,78 @@ class ProfileController extends Controller
 
     public function edit(Request $request): Response
     {
-        return Inertia::render('Profile/Edit', [
-            'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
-            'status' => session('status'),
-            'auth' => [
-                'user' => [
-                    'name' => $request->user()->name,
-                    'email' => $request->user()->email,
-                    'created_at' => $request->user()->created_at,
-                    'user_aboutme' => $request->user()->user_aboutme,
-                    'user_type' => $request->user()->user_type,
-                    'user_pic' => $request->user()->user_pic,
-                    'is_premium' => $request->user()->is_premium,
-                    'is_affiliated' => $request->user()->is_affiliated,
-                    'user_dob' => $request->user()->user_dob,
-                    'uni_id_num' => $request->user()->uni_id_num
-                    // 'user_pic' => $request->user()->user_pic ? asset('storage/profile_pics/' . $request->user()->user_pic) : null,
+        $user = Auth::user();
+        
+
+        if($user->user_type === 'superadmin' || $user->user_type === 'admin')
+        {
+            return Inertia::render('SuperAdmin\Profile\Edit', [
+                'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
+                'status' => session('status'),
+                'auth' => [
+                    'user' => [
+                        'name' => $request->user()->name,
+                        'email' => $request->user()->email,
+                        'created_at' => $request->user()->created_at,
+                        'user_aboutme' => $request->user()->user_aboutme,
+                        'user_type' => $request->user()->user_type,
+                        'user_pic' => $request->user()->user_pic,
+                        'is_premium' => $request->user()->is_premium,
+                        'is_affiliated' => $request->user()->is_affiliated,
+                        'user_dob' => $request->user()->user_dob,
+                        'uni_id_num' => $request->user()->uni_id_num,
+                        'user_pnum' => $request->user()->user_pnum
+                        // 'user_pic' => $request->user()->user_pic ? asset('storage/profile_pics/' . $request->user()->user_pic) : null,
+                    ]
                 ]
-            ]
-        ]);
+            ]);
+        } 
+        else 
+        {
+
+            $uniBranchName = '';
+            $uniName = '';
+
+            if($user->user_type === 'student')
+            {
+                $user->load('student.university_branch.university');
+
+                $uniBranchName = $user->student->university_branch->uni_branch_name;
+                $uniName = $user->student->university_branch->university->uni_name;
+            }
+            else if($user->user_type === 'teacher')
+            {
+                $user->load('faculty.university_branch.university');
+
+                $uniBranchName = $user->faculty->first()->university_branch->uni_branch_name;
+                $uniName = $user->faculty->first()->university_branch->university->uni_name;
+            }
+           
+
+            return Inertia::render('Profile/Edit', [
+                'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
+                'status' => session('status'),
+                'auth' => [
+                    'user' => [
+                        'name' => $request->user()->name,
+                        'email' => $request->user()->email,
+                        'created_at' => $request->user()->created_at,
+                        'user_aboutme' => $request->user()->user_aboutme,
+                        'user_type' => $request->user()->user_type,
+                        'user_pic' => $request->user()->user_pic,
+                        'is_premium' => $request->user()->is_premium,
+                        'is_affiliated' => $request->user()->is_affiliated,
+                        'user_dob' => $request->user()->user_dob,
+                        'uni_id_num' => $request->user()->uni_id_num,
+                        'user_pnum' => $request->user()->user_pnum,
+                        'university' => $uniName . ' ' . $uniBranchName
+                        // 'user_pic' => $request->user()->user_pic ? asset('storage/profile_pics/' . $request->user()->user_pic) : null,
+                    ]
+                ]
+            ]);
+        }
+
+      
     }
 
 
@@ -130,57 +172,12 @@ class ProfileController extends Controller
 
         Log::info($user->toArray());
 
-        // Handle file upload
-        // if ($request->hasFile('user_pic')) {
-        //     // Delete old profile picture if it exists
-        //     if ($user->user_pic) {
-        //         Storage::disk('public')->delete('profile_pics/' . $user->user_pic);
-        //     }
-
-        //     // Store new profile picture
-        //     $path = $request->file('user_pic')->store('profile_pics', 'public');
-        //     $user->user_pic = basename($path);
-        //     $user->save();
-        // }
-
         // Return JSON response
         return response()->json(['message' => 'Profile picture updated successfully!']);
     }
 
 
-    /**
-     * Update the user's profile picture.
-     */
-    // public function updatePicture(Request $request): \Illuminate\Http\JsonResponse
-    // {
-    //     \Log::info('User Profile');
 
-    //     // Validate request
-    //     $request->validate([
-    //         'user_pic' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
-    //     ]);
-
-    //     $user = Auth::user();
-
-    //     // Store the uploaded picture in the 'profiles' directory on the public disk
-    //     $path = $request->user_pic->store('profiles', 'public');
-
-    //     // Update the user's profile picture path
-    //     $user->update([
-    //         'user_pic' => $path, // This stores the path relative to the 'public/storage' directory
-    //     ]);
-
-    //     \Log::info($user->toArray());
-
-    //     // Return JSON response
-    //     return response()->json(['message' => 'Profile picture updated successfully!']);
-    // }
-
-
-
-    /**
-     * Delete the user's account.
-     */
     public function destroy(Request $request): RedirectResponse
     {
         $request->validate([
@@ -209,24 +206,21 @@ class ProfileController extends Controller
             ]);
 
             $user = Auth::user();
-
-           
-
             $student = Student::where('user_id', $user->id)->first();
             
-
             $subscriptionExist = InstitutionSubscription::where('uni_branch_id', $student->uni_branch_id)
                 ->where('insub_status', 'Active')
                 ->first();
 
-
             if ($subscriptionExist == null) {
                 return response()->json([
+                    'is_affiliated' => $user->is_affiliated,
                     'message' => 'Your university currently does not have an active subscription. Please reach out to your institution for more information or updates.'
                 ]);
             } else {
                 $result = $this->checkInstitutionSubscription($subscriptionExist, $user);
 
+                 //Return true if user exist in the csv file
                 if ($result['status']  == true) {
 
                     $user->update([
@@ -237,12 +231,16 @@ class ProfileController extends Controller
                         'uni_branch_id' => $request->uni_branch_id
                     ]);
 
+                   
                     return response()->json([
-                        'message' => $result['message']
+                        'message' => $result['message'],
+                        'is_affiliated' => $user->is_affiliated
                     ]);
                 } 
+                 //Return false if user exist does not exist or there's no uploaded csv or university does not have an active subscription
                 else {
                     return response()->json([
+                        'is_affiliated' => $user->is_affiliated,
                         'message' => $result['message']
                     ]);
                 }

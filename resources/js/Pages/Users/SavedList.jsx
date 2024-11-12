@@ -4,13 +4,14 @@ import { Head } from '@inertiajs/react';
 import { FaBookmark } from 'react-icons/fa';
 import axios from 'axios'; // Import Axios
 import Manuscript from '@/Components/Manuscripts/MyFavoriteManuscript';
+import {Skeleton} from "@nextui-org/skeleton";
 
 export default function SavedList({ auth }) {
     const isAuthenticated = !!auth.user; // Check if user is authenticated
     const MainLayout = isAuthenticated ? AuthenticatedLayout : GuestLayout;
     const [bookmarks, setBookmarks] = useState([]);
     const [manuscripts, setManuscripts] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
 
     useEffect(() => {
@@ -18,21 +19,22 @@ export default function SavedList({ auth }) {
         axios.get('/api/my-favorite-manuscripts')
             .then(response => {
                 setManuscripts(response.data);
-                setLoading(false);
+                //setLoading(false);
             })
             .catch(err => {
                 setError('Failed to fetch favorite manuscripts.');
-                setLoading(false);
+                //setLoading(false);
             });
     }, []);
 
     if (loading) {
-        return <div>Loading...</div>;
+        return <Skeleton height="100px" />;
     }
 
     if (error) {
         return <div>{error}</div>;
     }
+
 
     return (
         <MainLayout

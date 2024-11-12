@@ -1,0 +1,309 @@
+
+INSERT INTO USERS(`user_id`, `name`, `email`, `email_verified_at`, `password`, `uni_id_num`, `user_pnum`, `user_aboutme`, `user_type`, `user_status`, `is_premium`, `user_pic`, `remember_token`, `created_at`, `updated_at`)
+VALUES
+    ('1', 'Maria Carmel Tabada', 'student@gmail.com', NULL, '$2y$12$jm5TIPsWVz4MV0OwrwO/i.DWnrY69TyNNrJEXlIgKKayR6jlTcf8.', NULL, NULL, NULL, 'student', 'active', '1', 'profile_images/F3.jpg', NULL, NOW(), NOW()),
+    ('2', 'John Doe', 'john.doe@example.com', NULL, '$2y$12$jm5TIPsWVz4MV0OwrwO/i.DWnrY69TyNNrJEXlIgKKayR6jlTcf8.', NULL, NULL, NULL, 'student', 'active', '1', 'profile_images/M2.jpg', NULL, NOW(), NOW()),
+    ('3', 'Jane Smith', 'jane.smith@example.com', NULL, '$2y$12$jm5TIPsWVz4MV0OwrwO/i.DWnrY69TyNNrJEXlIgKKayR6jlTcf8.', NULL, NULL, NULL, 'student', 'active', '1', 'profile_images/F4.jpg', NULL, NOW(), NOW()),
+    ('4', 'Emily Davis', 'emily.davis@example.com', NULL, '$2y$12$jm5TIPsWVz4MV0OwrwO/i.DWnrY69TyNNrJEXlIgKKayR6jlTcf8.', NULL, NULL, NULL, 'student', 'active', '1', 'profile_images/F5.jpg', NULL, NOW(), NOW()),
+    ('5', 'Michael Brown', 'michael.brown@example.com', NULL, '$2y$12$jm5TIPsWVz4MV0OwrwO/i.DWnrY69TyNNrJEXlIgKKayR6jlTcf8.', NULL, NULL, NULL, 'student', 'active', '1', 'profile_images/M3.jpg', NULL, NOW(), NOW()),
+    ('6', 'Sarah Wilson', 'sarah.wilson@example.com', NULL, '$2y$12$jm5TIPsWVz4MV0OwrwO/i.DWnrY69TyNNrJEXlIgKKayR6jlTcf8.', NULL, NULL, NULL, 'student', 'active', '0', 'profile_images/F6.jpg', NULL, NOW(), NOW()),
+    ('7', 'David Johnson', 'david.johnson@example.com', NULL, '$2y$12$jm5TIPsWVz4MV0OwrwO/i.DWnrY69TyNNrJEXlIgKKayR6jlTcf8.', NULL, NULL, NULL, 'student', 'active', '0', 'profile_images/M4.jpg', NULL, NOW(), NOW()),
+    ('8', 'Laura Martinez', 'laura.martinez@example.com', NULL, '$2y$12$jm5TIPsWVz4MV0OwrwO/i.DWnrY69TyNNrJEXlIgKKayR6jlTcf8.', NULL, NULL, NULL, 'student', 'active', '0', 'profile_images/F7.jpg', NULL, NOW(), NOW()),
+    ('9', 'Chris Lee', 'chris.lee@example.com', NULL, '$2y$12$jm5TIPsWVz4MV0OwrwO/i.DWnrY69TyNNrJEXlIgKKayR6jlTcf8.', NULL, NULL, NULL, 'student', 'active', '0', 'profile_images/M5.jpg', NULL, NOW(), NOW()),
+    ('10', 'Jessica Adams', 'jessica.adams@example.com', NULL, '$2y$12$jm5TIPsWVz4MV0OwrwO/i.DWnrY69TyNNrJEXlIgKKayR6jlTcf8.', NULL, NULL, NULL, 'student', 'active', '0', 'profile_images/F8.jpg', NULL, NOW(), NOW()),
+
+    ('11', 'Jeylsie Caro', 'faculty@gmail.com', NULL, '$2y$12$jm5TIPsWVz4MV0OwrwO/i.DWnrY69TyNNrJEXlIgKKayR6jlTcf8.', NULL, NULL, NULL, 'faculty', 'active', '1', 'profile_images/F2.jpg', NULL, NOW(), NOW()),
+    ('12', 'Robert Smith', 'robert.smith@example.com', NULL, '$2y$12$jm5TIPsWVz4MV0OwrwO/i.DWnrY69TyNNrJEXlIgKKayR6jlTcf8.', NULL, NULL, NULL, 'faculty', 'active', '0', 'profile_images/M6.jpg', NULL, NOW(), NOW()),
+    ('13', 'Linda Johnson', 'linda.johnson@example.com', NULL, '$2y$12$jm5TIPsWVz4MV0OwrwO/i.DWnrY69TyNNrJEXlIgKKayR6jlTcf8.', NULL, NULL, NULL, 'faculty', 'active', '0', 'profile_images/F9.jpg', NULL, NOW(), NOW()),
+    ('14', 'James Brown', 'james.brown@example.com', NULL, '$2y$12$jm5TIPsWVz4MV0OwrwO/i.DWnrY69TyNNrJEXlIgKKayR6jlTcf8.', NULL, NULL, NULL, 'faculty', 'active', '1', 'profile_images/M7.jpg', NULL, NOW(), NOW()),
+    ('15', 'Patricia Davis', 'patricia.davis@example.com', NULL, '$2y$12$jm5TIPsWVz4MV0OwrwO/i.DWnrY69TyNNrJEXlIgKKayR6jlTcf8.', NULL, NULL, NULL, 'faculty', 'active', '0', 'profile_images/F10.jpg', NULL, NOW(), NOW()),
+    ('16', 'Mark Wilson', 'mark.wilson@example.com', NULL, '$2y$12$jm5TIPsWVz4MV0OwrwO/i.DWnrY69TyNNrJEXlIgKKayR6jlTcf8.', NULL, NULL, NULL, 'faculty', 'active', '0', 'profile_images/M8.jpg', NULL, NOW(), NOW()),
+    ('17', 'Nancy Taylor', 'nancy.taylor@example.com', NULL, '$2y$12$jm5TIPsWVz4MV0OwrwO/i.DWnrY69TyNNrJEXlIgKKayR6jlTcf8.', NULL, NULL, NULL, 'faculty', 'active', '1', 'profile_images/F11.jpg', NULL, NOW(), NOW()),
+    ('18', 'Steven Anderson', 'steven.anderson@example.com', NULL, '$2y$12$jm5TIPsWVz4MV0OwrwO/i.DWnrY69TyNNrJEXlIgKKayR6jlTcf8.', NULL, NULL, NULL, 'faculty', 'active', '1', 'profile_images/M9.jpg', NULL, NOW(), NOW()),
+    ('19', 'Karen Thomas', 'karen.thomas@example.com', NULL, '$2y$12$jm5TIPsWVz4MV0OwrwO/i.DWnrY69TyNNrJEXlIgKKayR6jlTcf8.', NULL, NULL, NULL, 'faculty', 'active', '0', 'profile_images/F12.jpg', NULL, NOW(), NOW()),
+    ('20', 'Michael Moore', 'michael.moore@example.com', NULL, '$2y$12$jm5TIPsWVz4MV0OwrwO/i.DWnrY69TyNNrJEXlIgKKayR6jlTcf8.', NULL, NULL, NULL, 'faculty', 'active', '0', 'profile_images/M10.jpg', NULL, NOW(), NOW()),
+
+    ('21', 'David Jhonson Basnillo', 'institution.admin@gmail.com', NULL, '$2y$12$jm5TIPsWVz4MV0OwrwO/i.DWnrY69TyNNrJEXlIgKKayR6jlTcf8.', NULL, NULL, NULL, 'institution_admin', 'active', '0', 'profile_images/M1.jpg', NULL, NOW(), NOW()),
+    ('22', 'Emily Clark', 'emily.clark@example.com', NULL, '$2y$12$jm5TIPsWVz4MV0OwrwO/i.DWnrY69TyNNrJEXlIgKKayR6jlTcf8.', NULL, NULL, NULL, 'institution_admin', 'active', '0', 'profile_images/F13.jpg', NULL, NOW(), NOW()),
+    ('23', 'Paul Walker', 'paul.walker@example.com', NULL, '$2y$12$jm5TIPsWVz4MV0OwrwO/i.DWnrY69TyNNrJEXlIgKKayR6jlTcf8.', NULL, NULL, NULL, 'institution_admin', 'active', '0', 'profile_images/M11.jpg', NULL, NOW(), NOW()),
+    ('24', 'Sandra Hall', 'sandra.hall@example.com', NULL, '$2y$12$jm5TIPsWVz4MV0OwrwO/i.DWnrY69TyNNrJEXlIgKKayR6jlTcf8.', NULL, NULL, NULL, 'institution_admin', 'active', '0', 'profile_images/F14.jpg', NULL, NOW(), NOW()),
+    ('25', 'Ryan Green', 'ryan.green@example.com', NULL, '$2y$12$jm5TIPsWVz4MV0OwrwO/i.DWnrY69TyNNrJEXlIgKKayR6jlTcf8.', NULL, NULL, NULL, 'institution_admin', 'active', '0', 'profile_images/F15.jpg', NULL, NOW(), NOW()),
+    ('26', 'Olivia Lewis', 'olivia.lewis@example.com', NULL, '$2y$12$jm5TIPsWVz4MV0OwrwO/i.DWnrY69TyNNrJEXlIgKKayR6jlTcf8.', NULL, NULL, NULL, 'institution_admin', 'active', '0', 'profile_images/F16.jpg', NULL, NOW(), NOW()),
+    ('27', 'Daniel Harris', 'daniel.harris@example.com', NULL, '$2y$12$jm5TIPsWVz4MV0OwrwO/i.DWnrY69TyNNrJEXlIgKKayR6jlTcf8.', NULL, NULL, NULL, 'institution_admin', 'active', '0', 'profile_images/M12.jpg', NULL, NOW(), NOW()),
+    ('28', 'Megan King', 'megan.king@example.com', NULL, '$2y$12$jm5TIPsWVz4MV0OwrwO/i.DWnrY69TyNNrJEXlIgKKayR6jlTcf8.', NULL, NULL, NULL, 'institution_admin', 'active', '0', 'profile_images/F17.jpg', NULL, NOW(), NOW()),
+    ('29', 'Joshua Wright', 'joshua.wright@example.com', NULL, '$2y$12$jm5TIPsWVz4MV0OwrwO/i.DWnrY69TyNNrJEXlIgKKayR6jlTcf8.', NULL, NULL, NULL, 'institution_admin', 'active', '0', 'profile_images/M13.jpg', NULL, NOW(), NOW()),
+    ('30', 'Ashley Robinson', 'ashley.robinson@example.com', NULL, '$2y$12$jm5TIPsWVz4MV0OwrwO/i.DWnrY69TyNNrJEXlIgKKayR6jlTcf8.', NULL, NULL, NULL, 'institution_admin', 'active', '0', 'profile_images/F18.jpg', NULL, NOW(), NOW()),
+
+    ('31', 'Kyla Hubahib', 'super.admin@gmail.com', NULL, '$2y$12$jm5TIPsWVz4MV0OwrwO/i.DWnrY69TyNNrJEXlIgKKayR6jlTcf8.', NULL, NULL, NULL, 'super_admin', 'active', '0', 'profile_images/F1.jpg', NULL, NOW(), NOW()),
+    ('32', 'Joseph Martinez', 'joseph.martinez@example.com', NULL, '$2y$12$jm5TIPsWVz4MV0OwrwO/i.DWnrY69TyNNrJEXlIgKKayR6jlTcf8.', NULL, NULL, NULL, 'super_admin', 'active', '0', 'profile_images/M14.jpg', NULL, NOW(), NOW()),
+    ('33', 'Matthew Lee', 'matthew.lee@example.com', NULL, '$2y$12$jm5TIPsWVz4MV0OwrwO/i.DWnrY69TyNNrJEXlIgKKayR6jlTcf8.', NULL, NULL, NULL, 'super_admin', 'active', '0', 'profile_images/M15.jpg', NULL, NOW(), NOW()),
+    ('34', 'Jessica Miller', 'jessica.miller@example.com', NULL, '$2y$12$jm5TIPsWVz4MV0OwrwO/i.DWnrY69TyNNrJEXlIgKKayR6jlTcf8.', NULL, NULL, NULL, 'super_admin', 'active', '0', 'profile_images/F19.jpg', NULL, NOW(), NOW()),
+    ('35', 'David Scott', 'david.scott@example.com', NULL, '$2y$12$jm5TIPsWVz4MV0OwrwO/i.DWnrY69TyNNrJEXlIgKKayR6jlTcf8.', NULL, NULL, NULL, 'super_admin', 'active', '0', 'profile_images/M16.jpg', NULL, NOW(), NOW()),
+    ('36', 'Emily Green', 'emily.green@example.com', NULL, '$2y$12$jm5TIPsWVz4MV0OwrwO/i.DWnrY69TyNNrJEXlIgKKayR6jlTcf8.', NULL, NULL, NULL, 'super_admin', 'active', '0', 'profile_images/F20.jpg', NULL, NOW(), NOW()),
+    ('37', 'Christopher Moore', 'christopher.moore@example.com', NULL, '$2y$12$jm5TIPsWVz4MV0OwrwO/i.DWnrY69TyNNrJEXlIgKKayR6jlTcf8.', NULL, NULL, NULL, 'super_admin', 'active', '0', 'profile_images/M17.jpg', NULL, NOW(), NOW()),
+    ('38', 'John Hall', 'amanda.hall@example.com', NULL, '$2y$12$jm5TIPsWVz4MV0OwrwO/i.DWnrY69TyNNrJEXlIgKKayR6jlTcf8.', NULL, NULL, NULL, 'super_admin', 'active', '0', 'profile_images/M18.jpg', NULL, NOW(), NOW()),
+    ('39', 'Daniel Carter', 'daniel.carter@example.com', NULL, '$2y$12$jm5TIPsWVz4MV0OwrwO/i.DWnrY69TyNNrJEXlIgKKayR6jlTcf8.', NULL, NULL, NULL, 'super_admin', 'active', '0', 'profile_images/M19.jpg', NULL, NOW(), NOW()),
+    ('40', 'Steph Adams', 'olivia.adams@example.com', NULL, '$2y$12$jm5TIPsWVz4MV0OwrwO/i.DWnrY69TyNNrJEXlIgKKayR6jlTcf8.', NULL, NULL, NULL, 'super_admin', 'active', '0', 'profile_images/M20.jpg', NULL, NOW(), NOW())
+    ;
+
+INSERT INTO UNIVERSITIES(`uni_id`, `uni_name`, `created_at`, `updated_at`)
+VALUES('1', 'Cebu Technological University', NOW(), NOW());
+
+INSERT INTO UNIVERSITY_BRANCHES(`uni_branch_id`, `uni_id`, `uni_branch_name`, `created_at`, `updated_at`)
+VALUES
+    ('1', '1', 'Main Campus', NOW(), NOW()),
+    ('2', '1', 'Naga', NOW(), NOW())
+    ;
+
+INSERT INTO SUBSCRIPTION_PLANS(`plan_id`, `plan_name`, `plan_price`, `plan_term`, `plan_type`, `plan_user_num`, `plan_discount`, `free_trial_days`, `created_at`, `updated_at`)
+VALUES
+    ('1', 'Institutional Subscription', '10000.00', 'Per Semester', 'institutional', '20', '1000.00', '3', NOW(), NOW()),
+    ('2', 'Personal Subscription', '3000.00', 'Per Month', 'personal', '1', '300.00', '14', NOW(), NOW())
+    ;
+
+INSERT INTO PERSONAL_SUBSCRIPTIONS(`persub_id`, `user_id`, `plan_id`, `persub_status`, `total_amount`, `start_date`, `end_date`)
+VALUES
+    ('1', '1', '2', 'active', '10000.00', '2024-09-01', '2024-12-10'),
+    ('2', '2', '2', 'active', '10000.00', '2024-09-01', '2024-12-10'),
+    ('3', '3', '2', 'deactivated', '10000.00', '2024-09-01', '2024-12-10'),
+    ('4', '4', '2', 'active', '10000.00', '2024-09-01', '2024-12-10'),
+    ('5', '5', '2', 'deactivated', '10000.00', '2024-09-01', '2024-12-10')
+    ;
+
+INSERT INTO INSTITUTION_SUBSCRIPTIONS(`insub_id`, `uni_branch_id`, `plan_id`, `insub_status`, `total_amount`, `insub_content`, `insub_num_user`, `start_date`, `end_date`, `created_at`, `updated_at`)
+VALUES
+    ('1', '1', '1', 'active', '10000.00', '', '20', '2024-09-01', '2024-12-10', NOW(), NOW()),
+    ('2', '2', '1', 'active', '10000.00', '', '20', '2024-09-01', '2024-12-10', NOW(), NOW()),
+    ('3', '1', '1', 'deactivated', '10000.00', '', '20', '2024-09-01', '2024-12-10', NOW(), NOW()),
+    ('4', '1', '1', 'deactivated', '10000.00', '', '20', '2024-09-01', '2024-12-10', NOW(), NOW()),
+    ('5', '2', '1', 'deactivated', '10000.00', '', '20', '2024-09-01', '2024-12-10', NOW(), NOW()),
+    ('6', '1', '1', 'deactivated', '10000.00', '', '20', '2024-09-01', '2024-12-10', NOW(), NOW()),
+    ('7', '2', '1', 'deactivated', '10000.00', '', '20', '2024-09-01', '2024-12-10', NOW(), NOW()),
+    ('8', '1', '1', 'deactivated', '10000.00', '', '20', '2024-09-01', '2024-12-10', NOW(), NOW()),
+    ('9', '1', '1', 'deactivated', '10000.00', '', '20', '2024-09-01', '2024-12-10', NOW(), NOW()),
+    ('10', '2', '1', 'deactivated', '10000.00', '', '20', '2024-09-01', '2024-12-10', NOW(), NOW())
+    ;
+
+INSERT INTO DEPARTMENTS(`dept_id`, `uni_branch_id`, `dept_name`, `added_by`, `created_at`, `updated_at`)
+VALUES
+    ('1', '1', 'College of Computer, Information, and Communications Technology', '', NOW(), NOW()),
+    ('2', '1', 'College of Technology', '', NOW(), NOW()),
+    ('3', '2', 'College of Computer, Information, and Communications Technology', '', NOW(), NOW())
+    ;
+
+INSERT INTO COURSES(`course_id`, `dept_id`, `course_name`, `added_by`, `created_at`, `updated_at`)
+VALUES
+    ('1', '1', 'Bachelor of Science in Information Technology', '', NOW(), NOW()),
+    ('2', '3', 'Bachelor of Science in Information Technology', '', NOW(), NOW()),
+    ('3', '1', 'Bachelor of Science in Computer Science', '', NOW(), NOW()),
+    ('4', '3', 'Bachelor of Science in Computer Science', '', NOW(), NOW()),
+    ('5', '2', 'Bachelor of Science in Information Systems', '', NOW(), NOW())
+    ;
+
+INSERT INTO SECTIONS(`sec_id`, `course_id`, `sec_name`, `added_by`, `created_at`, `updated_at`)
+VALUES
+    ('1', '1', 'BSIT IV-1', 'David Jhonson Basnillo', NOW(), NOW()),
+    ('2', '1', 'BSIT IV-2', 'David Jhonson Basnillo', NOW(), NOW()),
+    ('3', '2', 'BSIT IV-1', 'David Jhonson Basnillo', NOW(), NOW()),
+    ('4', '2', 'BSIT IV-2', 'David Jhonson Basnillo', NOW(), NOW()),
+    ('5', '3', 'BSIS IV-1', 'David Jhonson Basnillo', NOW(), NOW()),
+    ('6', '4', 'BSIS IV-1', 'David Jhonson Basnillo', NOW(), NOW())
+    ;
+
+INSERT INTO STUDENTS(`stud_id`, `user_id`, `uni_branch_id`, `dept_id`, `course_id`,  `created_at`, `updated_at`)
+VALUES
+    ('1123', '1', '1', '2', '5', NOW(), NOW()),
+    ('1124', '2', '1', '1', '4', NOW(), NOW()),
+    ('1125', '3', '1', '1', '2', NOW(), NOW()),
+    ('1126', '4', '2', '3', '1', NOW(), NOW()),
+    ('1127', '5', '1', '1', '1', NOW(), NOW()),
+    ('1128', '6', '1', '1', '2', NOW(), NOW()),
+    ('1129', '7', '1', '1', '3', NOW(), NOW()),
+    ('1130', '8', '2', '3', '1', NOW(), NOW()),
+    ('1131', '9', '1', '2', '5', NOW(), NOW()),
+    ('1132', '10', '1', '1', '1', NOW(), NOW())
+    ;
+
+INSERT INTO FACULTIES(`fac_id`, `user_id`, `uni_branch_id`, `dept_id`, `fac_position`, `created_at`, `updated_at`)
+VALUES
+    ('1', '11', '1', '1', 'Instructor I/ College Secretary', NOW(), NOW()),
+    ('2', '12', '1', '2', 'Instructor I', NOW(), NOW()),
+    ('3', '13', '1', '1', 'Associate Professor I/ Assistants Sports Director', NOW(), NOW()),
+    ('4', '14', '1', '1', 'Instructor I', NOW(), NOW()),
+    ('5', '15', '1', '2', 'Instructor I', NOW(), NOW()),
+    ('6', '16', '1', '1', 'Instructor I/ University Research and Extension Associate', NOW(), NOW()),
+    ('7', '17', '1', '2', 'Instructor I', NOW(), NOW()),
+    ('8', '18', '2', '3', 'Instructor I', NOW(), NOW()),
+    ('9', '19', '1', '2', 'Assistant Professor IV, Program Chairperson, IT Department', NOW(), NOW()),
+    ('10', '20', '2', '3', 'Instructor I', NOW(), NOW())
+    ;
+
+INSERT INTO INSTITUTION_ADMINS(`ins_admin_id`, `user_id`, `insub_id`, `ins_admin_proof`, `created_at`, `updated_at`)
+VALUES
+    ('1', '21', '1', '', NOW(), NOW()),
+    ('2', '22', '1', '', NOW(), NOW()),
+    ('3', '23', '2', '', NOW(), NOW()),
+    ('4', '24', '1', '', NOW(), NOW()),
+    ('5', '25', '1', '', NOW(), NOW()),
+    ('6', '26', '2', '', NOW(), NOW()),
+    ('7', '27', '1', '', NOW(), NOW()),
+    ('8', '28', '1', '', NOW(), NOW()),
+    ('9', '29', '2', '', NOW(), NOW()),
+    ('10', '30', '1', '', NOW(), NOW())
+    ;
+
+INSERT INTO CLASSES(`class_id`, `fac_id`, `sec_id`, `class_code`, `class_name`, `class_status`, `max_stud_num`, `created_at`, `updated_at`)
+VALUES
+    ('1', '1', '1', 'BSIT101', 'Introduction to Information Technology', 'active', '30', NOW(), NOW()),
+    ('2', '1', '1', 'BSIT102', 'Programming Fundamentals', 'active', '30', NOW(), NOW()),
+    ('3', '1', '2', 'BSIT201', 'Database Management Systems', 'active', '30', NOW(), NOW()),
+    ('4', '1', '2', 'BSIT202', 'Web Development', 'active', '30', NOW(), NOW())
+    ;
+
+INSERT INTO CLASS_STUDENTS(`class_id`, `stud_id`, `joined_at`, `leave_at`)
+VALUES
+    ('4', '1123', NOW(), NULL),
+    ('4', '1124', NOW(), NULL),
+    ('4', '1125', NOW(), NULL),
+    ('4', '1126', NOW(), NULL),
+    ('4', '1127', NOW(), NULL),
+    ('4', '1128', NOW(), NULL),
+    ('4', '1129', NOW(), NULL),
+    ('4', '1130', NOW(), NULL),
+    ('4', '1131', NOW(), NULL),
+    ('4', '1132', NOW(), NULL)
+    ;
+
+INSERT INTO CAPSTONE_DOCUMENTS(`cap_doc_id`, `class_id`, `uni_branch_id`, `cap_doc_title`, `cap_doc_desc`, `cap_doc_content`, `cap_doc_status`, `cap_doc_adviser`, `cap_doc_view_count`, `cap_doc_rating`, `cap_doc_citation`, `is_published`, `created_at`, `updated_at`)
+VALUES
+    ('1', '4', '1', 'Real-time Web Chat Application', 
+    'This project explores the development of a real-time web chat application using WebSockets, focusing on efficient message delivery and scalability. Built with a Laravel backend and React frontend, the project emphasizes user authentication, message persistence, and secure data handling, while maintaining real-time responsiveness even with high user loads.', 
+    'real_time_chat_app.pdf', 'approved', 'Jeylsie Caro', 150, 4.8, 'Doe, J. (2024). Real-time Web Chat Application.', 1, '2024-10-23 10:00:00', '2024-10-23 10:00:00'),
+    
+    ('2', '4', '1', 'E-Commerce Website with Payment Gateway', 
+    'This capstone focuses on creating a full-stack e-commerce platform with a highly secure payment gateway using Stripe. The project delves into key web technologies including Laravel for handling complex backend logic, React for a responsive user interface, and Stripe API for seamless payment integration. Performance optimization and user security are prioritized to ensure a smooth shopping experience.', 
+    'ecommerce_website.pdf', 'approved', 'Jeylsie Caro', 135, 4.7, 'Johnson, M. (2024). E-Commerce Website with Payment Gateway.', 1, '2024-10-23 10:00:00', '2024-10-23 10:00:00'),
+    
+    ('3', '4', '1', 'Progressive Web Application for News Aggregation', 
+    'This project examines the creation of a Progressive Web Application (PWA) for aggregating and displaying news articles from various sources. Built using React, this PWA leverages service workers for offline functionality and performance optimizations such as pre-caching and lazy loading, offering users an app-like experience even with unreliable internet connections.', 
+    'pwa_news_aggregation.pdf', 'rejected', 'Jeylsie Caro', 120, 4.2, 'Brown, A. (2024). Progressive Web Application for News Aggregation.', 0, '2024-10-23 10:00:00', '2024-10-23 10:00:00'),
+    
+    ('4', '4', '2', 'Collaborative Task Management System', 
+    'This project focuses on developing a task management system that supports real-time collaboration, allowing multiple users to manage and track tasks concurrently. Built with Laravel for backend processes and Vue.js for a dynamic frontend, the system includes features such as task assignment, progress tracking, real-time notifications, and version control, designed to improve team productivity and coordination.', 
+    'task_management_system.pdf', 'pending', 'Jeylsie Caro', 90, 4.4, 'Wilson, E. (2024). Collaborative Task Management System.', 1, '2024-10-23 10:00:00', '2024-10-23 10:00:00'),
+    
+    ('5', '4', '1', 'Event Booking System with Calendar Integration', 
+    'The project aims to create an intuitive event booking platform integrated with an interactive calendar. Utilizing Laravel for backend development and FullCalendar.js for the user interface, the platform allows users to book events, view availability in real time, and receive automated email confirmations. The system is designed to handle high volumes of bookings while maintaining an easy-to-use interface.', 
+    'event_booking_system.pdf', 'approved', 'Jeylsie Caro', 165, 4.9, 'Davis, M. (2024). Event Booking System with Calendar Integration.', 1, '2024-10-23 10:00:00', '2024-10-23 10:00:00'),
+    
+    ('6', '4', '1', 'Automated Code Review System', 
+    'This capstone explores the use of machine learning algorithms to automate the code review process. By integrating AI-based tools into a web platform, developers can submit code for review, and the system will provide feedback on code quality, potential security risks, and performance bottlenecks. Built using React for the frontend and Node.js for the backend, this project significantly reduces the time required for manual code reviews.', 
+    'automated_code_review.pdf', 'approved', 'Jeylsie Caro', 175, 5.0, 'Taylor, S. (2024). Automated Code Review System.', 1, '2024-10-23 10:00:00', '2024-10-23 10:00:00'),
+    
+    ('7', '4', '1', 'Online Learning Platform with Video Streaming', 
+    'The project focuses on creating an online learning platform that incorporates video streaming and interactive learning tools. Built with a Laravel backend and React frontend, the platform supports course creation, student enrollment, and real-time video streaming for live lectures. Additionally, it integrates interactive quizzes and assignments to enhance student engagement and learning outcomes.', 
+    'online_learning_platform.pdf', 'pending', 'Jeylsie Caro', 110, 4.6, 'Martinez, B. (2024). Online Learning Platform with Video Streaming.', 1, '2024-10-23 10:00:00', '2024-10-23 10:00:00'),
+    
+    ('8', '4', '2', 'Job Board Application with Real-time Notifications', 
+    'This project involves developing a job board platform with real-time notifications for new job postings and application updates. Using Laravel as the backend framework, the system integrates Redis and WebSockets to push real-time updates to users. The platform is designed to handle a large volume of users and job postings, ensuring scalability and a smooth user experience.', 
+    'job_board_app.pdf', 'approved', 'Jeylsie Caro', 130, 4.8, 'Thomas, L. (2024). Job Board Application with Real-time Notifications.', 1, '2024-10-23 10:00:00', '2024-10-23 10:00:00'),
+    
+    ('9', '4', '1', 'Crowdfunding Platform for Charitable Causes', 
+    'This project focuses on developing a web-based crowdfunding platform to support charitable causes. The platform allows users to create and manage fundraising campaigns, track donations, and view real-time progress toward goals. Utilizing Laravel for backend logic and Stripe for secure payment processing, the system ensures both ease of use and financial security for donors and campaign managers.', 
+    'crowdfunding_platform.pdf', 'rejected', 'Jeylsie Caro', 95, 4.3, 'Lee, K. (2024). Crowdfunding Platform for Charitable Causes.', 0, '2024-10-23 10:00:00', '2024-10-23 10:00:00'),
+    
+    ('10', '4', '1', 'Weather Forecasting Web App with AI Integration', 
+    'This project involves building a web-based weather forecasting application that integrates AI models to provide predictive analytics. The app offers real-time weather updates and forecasts based on historical weather data, leveraging AI for more accurate predictions. Built using Laravel and a variety of data APIs, the application aims to provide a user-friendly and insightful experience for weather tracking and forecasting.', 
+    'weather_forecasting_app.pdf', 'pending', 'Jeylsie Caro', 145, 4.7, 'Adams, N. (2024). Weather Forecasting Web App with AI Integration.', 1, '2024-10-23 10:00:00', '2024-10-23 10:00:00');
+
+
+INSERT INTO USER_LOGS(user_id, log_activity, log_activity_content, created_at)
+VALUES
+    (1, 'Forum Participation', 'Posted a question in the capstone project forum', NOW()),
+    (1, 'Class Enrollment', 'Joined the Capstone Project Class', NOW()),
+    (1, 'Document Access', 'Viewed capstone documentation', NOW()),
+    (1, 'Assignment Submission', 'Submitted capstone project draft', NOW()),
+    (1, 'Feedback Submission', 'Submitted feedback on capstone project guidelines', NOW()),
+    (1, 'Event Registration', 'Registered for capstone project presentation day', NOW()),
+    (1, 'Profile Update', 'Updated personal information', NOW()),
+    (2, 'Forum Participation', 'Commented on a capstone project post', NOW()),
+    (2, 'Class Enrollment', 'Joined Advanced Capstone Workshop', NOW()),
+    (2, 'Document Access', 'Accessed capstone project resources', NOW()),
+    (3, 'Assignment Submission', 'Uploaded final capstone project', NOW()),
+    (3, 'Forum Participation', 'Participated in discussion about project challenges', NOW()),
+    (3, 'Class Enrollment', 'Joined the Capstone Review Class', NOW()),
+    (4, 'Feedback Submission', 'Provided feedback on class materials', NOW()),
+    (4, 'Document Access', 'Reviewed guidelines for capstone projects', NOW()),
+    (5, 'Forum Participation', 'Shared tips for project success in the forum', NOW()),
+    (5, 'Class Enrollment', 'Joined Capstone Preparation Class', NOW()),
+    (5, 'Document Access', 'Viewed capstone project proposal template', NOW()),
+    (6, 'Forum Participation', 'Asked for help with project deadlines', NOW()),
+    (6, 'Class Enrollment', 'Joined Group Capstone Project Class', NOW()),
+    (7, 'Document Access', 'Accessed past capstone projects for reference', NOW()),
+    (7, 'Feedback Submission', 'Submitted suggestions for improvement', NOW()),
+    (8, 'Class Enrollment', 'Joined Capstone Collaboration Class', NOW()),
+    (8, 'Forum Participation', 'Posted project ideas for feedback', NOW()),
+    (9, 'Document Access', 'Reviewed capstone project criteria', NOW()),
+    (10, 'Class Enrollment', 'Joined Capstone Project Class', NOW())
+    ;
+
+INSERT INTO USER_LOGS(user_id, log_activity, log_activity_content, created_at)
+VALUES
+    (11, 'Class Link Sending', 'Sent class link for Capstone Project Class to students', NOW()),
+    (11, 'Capstone Approval', 'Approved capstone project proposal for student 1', NOW()),
+    (11, 'Assignment Posting', 'Posted new assignment for capstone project', NOW()),
+    (11, 'Feedback Review', 'Reviewed student feedback on capstone projects', NOW()),
+    (11, 'Office Hours', 'Held office hours for capstone project guidance', NOW()),
+    (12, 'Class Link Sending', 'Sent link for Advanced Capstone Workshop', NOW()),
+    (12, 'Capstone Approval', 'Approved capstone project proposal for student 2', NOW()),
+    (13, 'Class Link Sending', 'Shared class link with students for Capstone Collaboration', NOW()),
+    (13, 'Feedback Review', 'Reviewed feedback on class materials', NOW()),
+    (14, 'Capstone Approval', 'Approved capstone project proposal for student 3', NOW()),
+    (14, 'Assignment Grading', 'Graded capstone project submissions', NOW()),
+    (15, 'Office Hours', 'Scheduled extra office hours for capstone project support', NOW()),
+    (16, 'Class Link Sending', 'Sent link for Capstone Review Class to students', NOW()),
+    (17, 'Capstone Approval', 'Approved group capstone project', NOW()),
+    (18, 'Event Coordination', 'Organized capstone project showcase event', NOW()),
+    (19, 'Assignment Posting', 'Posted new guidelines for capstone projects', NOW()),
+    (20, 'Feedback Review', 'Conducted feedback session with students on projects', NOW())
+    ;
+
+INSERT INTO USER_LOGS(user_id, log_activity, log_activity_content, created_at)
+VALUES
+    (21, 'User Management', 'Added new student user', NOW()),
+    (21, 'User Management', 'Added new faculty member', NOW()),
+    (21, 'User Management', 'Added co-institution admin', NOW()),
+    (21, 'Class Management', 'Updated capstone project class details', NOW()),
+    (21, 'Feedback Review', 'Reviewed user feedback on the capstone system', NOW()),
+    (22, 'User Management', 'Activated student account', NOW()),
+    (22, 'User Management', 'Deactivated inactive faculty account', NOW()),
+    (23, 'User Management', 'Created a new student account', NOW()),
+    (23, 'Class Management', 'Created new capstone project class', NOW()),
+    (24, 'Feedback Management', 'Managed feedback submissions from students', NOW()),
+    (25, 'User Management', 'Updated user permissions for faculty', NOW()),
+    (26, 'User Management', 'Merged two student accounts', NOW()),
+    (27, 'Event Coordination', 'Coordinated capstone project presentations', NOW()),
+    (28, 'Report Generation', 'Generated report on capstone project enrollments', NOW()),
+    (29, 'User Management', 'Reset password for student account', NOW()),
+    (30, 'Feedback Management', 'Analyzed feedback trends for capstone projects', NOW())
+    ;
+
+INSERT INTO USER_LOGS(user_id, log_activity, log_activity_content, created_at)
+VALUES
+    (31, 'User Management', 'Activated user account for student 1', NOW()),
+    (31, 'User Management', 'Deactivated user account for student 2', NOW()),
+    (31, 'Feedback Management', 'Managed user feedback on capstone projects', NOW()),
+    (31, 'User Management', 'Added co-super admin', NOW()),
+    (31, 'Custom Message Creation', 'Created custom messages for dropdowns', NOW()),
+    (32, 'User Management', 'Reviewed user reports for compliance', NOW()),
+    (32, 'System Configuration', 'Configured new user roles', NOW()),
+    (33, 'Policy Implementation', 'Implemented new data privacy policies', NOW()),
+    (33, 'System Audit', 'Conducted system audit for security compliance', NOW()),
+    (34, 'User Management', 'Updated user permissions for co-super admin', NOW()),
+    (35, 'User Reports Review', 'Reviewed user reports for issues', NOW()),
+    (36, 'User Management', 'Deactivated inactive accounts', NOW()),
+    (37, 'Event Coordination', 'Coordinated annual capstone project conference', NOW()),
+    (38, 'Feedback Management', 'Generated report on user feedback', NOW()),
+    (39, 'User Management', 'Updated system user access levels', NOW()),
+    (40, 'User Management', 'Conducted training for new admins', NOW())
+    ;

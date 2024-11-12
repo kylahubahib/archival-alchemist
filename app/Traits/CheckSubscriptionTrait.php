@@ -16,6 +16,11 @@ trait CheckSubscriptionTrait
         if ($checkInSub != null && $checkInSub->insub_content != null) {
             // Retrieve the CSV file path from the subscription
             $filePath = $checkInSub->insub_content;
+
+            if (!file_exists($filePath)) {
+                Log::error('CSV file not found: ' . $filePath);
+                return false; 
+            }
     
             // Retrieve data from the CSV file
             $csvData = Excel::toArray(new UsersImport, public_path($filePath));
@@ -48,7 +53,8 @@ trait CheckSubscriptionTrait
                             } else {
                                 if ($user->is_premium) {
                                     $user->update([
-                                        'is_premium' => false
+                                        'is_premium' => false, 
+                                        'is_affiliated' => true
                                     ]);
                                 }
 

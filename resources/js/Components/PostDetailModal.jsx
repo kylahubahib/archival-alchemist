@@ -17,8 +17,8 @@ const PostDetailModal = ({ isOpen, onClose, post }) => {
         {/* User Info and Tags */}
         <div className="flex items-center mb-4 mt-5">
           <img 
-            src={post.userProfilePicture} 
-            alt={`${post.userName}'s profile`}
+            src={post.user?.user_pic} 
+            alt={`${post.user?.name}'s profile`}
             className="w-12 h-12 rounded-full mr-3"
           />
           <div className="flex-1">

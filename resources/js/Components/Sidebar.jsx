@@ -1,37 +1,53 @@
 import { HiMenu } from "react-icons/hi"; 
 import { Link, usePage } from '@inertiajs/react';
-import { createContext, useContext, useState } from "react";
-
+import { createContext, useContext, useEffect, useState } from "react";
 
 const SidebarContext = createContext();
 
-export default function Sidebar({children, color, borderRadius, margin }) {
-    const [expanded, setExpanded] = useState(true)
-    const bgColor= `bg-${color}`;
-    const radius = `rounded-${borderRadius}`; 
-    const SidebarMargin = `m-${margin}`
-    
+
+export default function Sidebar({ children, color, borderRadius, margin }) {
+    const [expanded, setExpanded] = useState(true);
+
+    // Check window size and update the expanded state
+    const handleResize = () => {
+        if (window.innerWidth < 768) { // Adjust this value based on your breakpoint
+            setExpanded(false);
+        } else {
+            setExpanded(true);
+        }
+    };
+
+    useEffect(() => {
+        handleResize(); // Check on mount
+
+        window.addEventListener('resize', handleResize); // Add event listener
+        return () => window.removeEventListener('resize', handleResize); // Cleanup
+    }, []);
+
+    const bgColor = `bg-${color}`;
+    const radius = `rounded-${borderRadius}`;
+    const SidebarMargin = `m-${margin}`;
+
     return (
         <>
             <aside className="sticky top-0 h-screen">
                 <nav className={`h-full flex flex-col ${bgColor} border-r shadow-sm ${radius} ${SidebarMargin}`}>
                     <div className="p-4 pb-2 flex justify-between items-center bg-customBlue rounded-t-xl">
                         <button onClick={() => setExpanded((curr) => !curr)} className="p-1.5 rounded-lg text-customlightBlue hover:text-gray-100">
-                            {expanded ? <HiMenu size={30} /> : <HiMenu size={30} />}
+                            <HiMenu size={30} />
                         </button>
                         <span className={`text-white font-bold text-lg ${expanded ? 'w-52 ml-3' : 'w-0 hidden'}`}>Archival Alchemist</span>
                     </div>
 
                     <SidebarContext.Provider value={{ expanded }}>
-
                         <ul className="flex-1 px-3 mt-3">{children}</ul>
                     </SidebarContext.Provider>
-
                 </nav>
             </aside>
         </>
-    )
+    );
 }
+
 
 export function SidebarItem({ icon, text, color, marginTop, marginBottom, alert, to, onClick, isActiveModal, externalLink, ...props }) {
   const { expanded } = useContext(SidebarContext);

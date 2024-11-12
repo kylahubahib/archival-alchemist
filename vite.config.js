@@ -6,6 +6,16 @@ export default defineConfig({
     server: {
         host: 'localhost',
         cors: true, // Enable CORS
+        fs: {
+            strict: true,
+        },
+        hmr: {
+            timeout: 3000,
+            overlay: false,
+        },
+    },
+    build: {
+        target: 'esnext',
     },
     plugins: [
         laravel({

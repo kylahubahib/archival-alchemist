@@ -4,15 +4,15 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
+        <!-- CSRF Token -->
+        <meta name="csrf-token" content="{{ csrf_token() }}">
+
         <title inertia>{{ config('app.name', 'Archival Alchemist') }}</title>
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
 
-        <!-- CSRF Token -->
-        <meta name="csrf-token" content="{{ csrf_token() }}">
-            
         <!-- Scripts -->
         @routes
         @viteReactRefresh
@@ -22,9 +22,7 @@
     <body class="font-sans antialiased">
         @inertia
 
-
         <!-- <div id="placeholder"></div>
         <script type="text/javascript" src="http://your-server-ip/web-apps/apps/api/documents/api.js"></script> -->
-    
     </body>
 </html>
