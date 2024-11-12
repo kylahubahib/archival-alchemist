@@ -123,8 +123,7 @@ useEffect(() => {
               onOpenChange();
               toast.success("Post created successfully!");
               
-              // Optionally, you can call fetchPosts again here if needed
-              // fetchPosts(); 
+              
           }
       } catch (error) {
           handlePostError(error, newPost);
@@ -417,12 +416,6 @@ const handleTitleClick = async (postId) => {
         <p className="text-gray-500">No discussions found.</p>
       )}
     </div>
-  
-
-
-
-
-
 
                     {/* Modal for displaying post details */}
                     <PostDetailModal
