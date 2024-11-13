@@ -13,24 +13,6 @@ export const updateUrl = (paramKey, paramValue) => {
     window.history.pushState({}, '', `${window.location.pathname}?${urlParams}`);
 };
 
-export const getAcronymAndOrigText = (str) => {
-    if (typeof str === 'string') {
-        let acronym;
-
-        // Handle special case for acronyms with "of" in the string
-        if (str === 'College of Technology') {
-            acronym = 'COT';
-        } else {
-            acronym = (str.match(/\b[A-Z]/g) || []).join('');
-        }
-
-        return { origText: str, acronym };
-    }
-
-    return { origText: '', acronym: '' };
-};
-
-
 export const capitalize = (str) => {
     return str.replace(/^(.)/, (match) => match.toUpperCase());
 }
@@ -81,11 +63,11 @@ export const sanitizeParam = (param) => {
 
 export const setStatusChip = (status) => {
     switch (status) {
-        case 'active':
+        case 'Active':
             return <Chip size='sm' color='success' variant='flat'>Active</Chip>;
-        case 'deactivated':
+        case 'Deactivated':
             return <Chip size='sm' color='danger' variant='flat'>Deactivated</Chip>;
-        case 'paused':
+        case 'Paused':
             return <Chip size='sm' color='default' variant='flat'>Pending</Chip>;
         default:
             return <Chip size='sm' color='success' variant='flat'>Active</Chip>;
@@ -95,27 +77,10 @@ export const setStatusChip = (status) => {
 export const renderAutocompleteItems = (category, autocompleteItems, onClick = null) => {
     return Array.isArray(autocompleteItems)
         ? autocompleteItems.map(item => {
-            let itemKey = item;
-            let itemLabel = item;
-
-            // Add your own category here
-            const categoriesWithAcronym = ['University', 'Branch', 'Department', 'Course'];
-            const categoriesWithCapitalization = ['Plan Status'];
-
-            // Then your own condition here
-            if (categoriesWithAcronym.includes(category)) {
-                const { origText, acronym } = getAcronymAndOrigText(item);
-                itemKey = origText;
-                itemLabel = acronym;
-            }
-
-            if (categoriesWithCapitalization.includes(category)) {
-                itemLabel = capitalize(item);
-            }
 
             return (
-                <AutocompleteItem onClick={onClick} key={itemKey}>
-                    {itemLabel}
+                <AutocompleteItem onClick={onClick} key={item}>
+                    {item}
                 </AutocompleteItem>
             );
         })

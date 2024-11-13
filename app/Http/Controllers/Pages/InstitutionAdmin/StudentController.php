@@ -41,31 +41,32 @@ class StudentController extends Controller
         $entriesPerPage = (int) request('entries', 10);
 
         $query = DB::table('users')
-            ->join('students', 'users.user_id', '=', 'students.user_id')
-            ->join('university_branches', 'students.uni_branch_id', '=', 'university_branches.uni_branch_id')
-            ->join('departments', 'students.dept_id', '=', 'departments.dept_id')
-            ->join('courses', 'students.course_id', '=', 'courses.course_id')
-            ->leftJoin('personal_subscriptions', 'users.user_id', '=', 'personal_subscriptions.user_id')
-            ->leftJoin('subscription_plans', 'personal_subscriptions.plan_id', '=', 'subscription_plans.plan_id')
+            ->join('students', 'users.id', '=', 'students.user_id')
+            ->join('university_branches', 'students.uni_branch_id', '=', 'university_branches.id')
+            ->leftJoin('class_students', 'students.id', '=', 'class_students.stud_id')
+            ->leftJoin('class', 'class_students.class_id', '=', 'class.id')
+            ->leftJoin('sections', 'class.section_id', '=', 'sections.id')
+            ->leftJoin('courses', 'sections.course_id', '=', 'courses.id')
+            ->leftJoin('departments', 'courses.dept_id', '=', 'departments.id')
+            ->leftJoin('personal_subscriptions', 'users.id', '=', 'personal_subscriptions.user_id')
+            ->leftJoin('subscription_plans', 'personal_subscriptions.plan_id', '=', 'subscription_plans.id')
             ->select(
-                'students.stud_id',
-                'students.course_id',
-                'users.user_id',
                 'users.name',
                 'users.created_at',
                 'users.email',
                 'users.is_premium',
                 'users.user_pic',
                 'users.user_status',
-                'departments.dept_name',
-                'courses.course_id',
-                'courses.course_name',
+                'students.id',
+                'departments.dept_acronym',
+                'courses.course_acronym',
+                'sections.section_name',
                 'subscription_plans.plan_name',
                 'personal_subscriptions.start_date',
                 'personal_subscriptions.end_date',
                 'personal_subscriptions.persub_status',
             )
-            ->where('university_branches.uni_branch_id', $this->insAdminUniBranchId);
+            ->where('university_branches.id', $this->insAdminUniBranchId);
 
         if ($hasStudentPremiumAccess === 'with-premium-access') {
             $query->where('users.is_premium', true);
@@ -78,7 +79,7 @@ class StudentController extends Controller
             // to avoid canceling out the next where queries
             $query->where(function ($q) use ($search) {
                 $q->where('users.name', 'LIKE', '%' . $search . '%')
-                    ->orWhere('students.stud_id', 'LIKE', '%' . $search . '%');
+                    ->orWhere('students.id', 'LIKE', '%' . $search . '%');
             });
         }
 
@@ -108,7 +109,7 @@ class StudentController extends Controller
         }
 
         $students = $query
-            ->orderBy('students.stud_id', 'asc')
+            ->orderBy('students.id', 'asc')
             ->paginate($entriesPerPage)
             ->withQueryString();
 
@@ -140,7 +141,7 @@ class StudentController extends Controller
     {
         $validatedData = request()->validate(
             [
-                'student_id' => 'required|integer|unique:students,stud_id',
+                'student_id' => 'required|integer|unique:students,id',
                 'department_id' => 'required|integer',
                 'course_id' => 'required|integer',
                 'name' => 'required|string|max:255',
@@ -172,8 +173,8 @@ class StudentController extends Controller
 
             // Create the student
             Student::create([
+                'id' => $validatedData['student_id'],
                 'user_id' => $user->user_id,
-                'stud_id' => $validatedData['student_id'],
                 'uni_branch_id' => $this->insAdminUniBranchId,
                 'dept_id' => $validatedData['department_id'],
                 'course_id' => $validatedData['course_id'],

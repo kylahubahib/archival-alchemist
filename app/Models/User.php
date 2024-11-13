@@ -25,6 +25,8 @@ class User extends Authenticatable
      *
      * @var array<int, string>
      */
+
+
     protected $fillable = [
         'name',
         'email',
@@ -91,7 +93,7 @@ class User extends Authenticatable
     public function custom_content(): HasMany
     {
         return $this->hasMany(CustomContent::class, 'user_id');
-        }
+    }
 
     public function manuscripts(): BelongsToMany
     {
@@ -161,25 +163,25 @@ class User extends Authenticatable
     }
 
     // Define the relationship with the Author model
-     // If a User has many Authors
-     public function authors()
-     {
-         return $this->hasMany(Author::class, 'user_id', 'id');
-     }
+    // If a User has many Authors
+    public function authors()
+    {
+        return $this->hasMany(Author::class, 'user_id', 'id');
+    }
 
-     public function section()
-     {
-         return $this->hasMany(Section::class, 'ins_id');
-     }
+    public function section()
+    {
+        return $this->hasMany(Section::class, 'ins_id');
+    }
 
-     public function access_control(): HasOne
-     {
-         return $this->hasOne(AccessControl::class, 'user_id');
-     }
-     public function user_log(): HasMany
-     {
-         return $this->hasMany(UserLog::class, 'user_id');
-     }
+    public function access_control(): HasOne
+    {
+        return $this->hasOne(AccessControl::class, 'user_id');
+    }
+    public function user_log(): HasMany
+    {
+        return $this->hasMany(UserLog::class, 'user_id');
+    }
 
     // Google access tokens expires after one hour so this method will automatically 
     // create a new access token using the refresh token.
@@ -200,5 +202,4 @@ class User extends Authenticatable
             ]);
         }
     }
-
 }

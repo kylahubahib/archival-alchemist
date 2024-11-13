@@ -18,7 +18,6 @@ return new class extends Migration
         Schema::table('departments', function (Blueprint $table) {
             $table->string('dept_acronym')->nullable();
         });
-
     }
 
     /**

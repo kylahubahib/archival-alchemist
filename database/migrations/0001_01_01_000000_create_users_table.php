@@ -22,12 +22,12 @@ return new class extends Migration
             $table->string('user_aboutme')->nullable();
             $table->string('user_type');
             $table->string('user_status')->default('active');
-            $table->boolean('is_premium')->default(false); 
-            $table->string('user_pic')->nullable(); 
+            $table->boolean('is_premium')->default(false);
+            $table->string('user_pics')->nullable();
             $table->rememberToken();
             $table->timestamps();
         });
-        
+
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {
             $table->string('email')->primary();

@@ -128,13 +128,17 @@ return [
     //     * Package Service Providers...
     //     */
     //     Maatwebsite\Excel\ExcelServiceProvider::class,
+    //     // Laravel\Reverb\ApplicationManagerServiceProvider::class,
+    //     Illuminate\Filesystem\FilesystemServiceProvider::class,
+    //     Illuminate\Cache\CacheServiceProvider::class,
+
     // ],
 
     // 'aliases' => [
     //     'Excel' => Maatwebsite\Excel\Facades\Excel::class,
     // ]
 
-    
+
 
 
 ];

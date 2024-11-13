@@ -17,7 +17,7 @@ import axios from "axios";
 import SetPlanStatus from "./SetPlanStatus";
 import ActionButton from "@/Components/Admins/ActionButton";
 import Pagination from "@/Components/Admins/Pagination";
-import { encodeParam, getAcronymAndOrigText, setStatusChip, updateUrl } from "@/Components/Admins/Functions";
+import { encodeParam, setStatusChip, updateUrl } from "@/Components/Admins/Functions";
 import NoDataPrompt from "@/Components/Admins/NoDataPrompt";
 import Filter from "./Filter";
 import { Link, router } from "@inertiajs/react";
@@ -27,7 +27,7 @@ import Add from "./Add";
 import FileUpload from "@/Components/FileUpload";
 
 export default function Students({ auth, insAdminAffiliation, retrievedStudents, hasStudentPremiumAccess, retrievedSearchName, retrievedEntriesPerPage }) {
-
+    console.log('retrievedStudents', retrievedStudents);
     const [studentsToRender, setStudentsToRender] = useState(retrievedStudents);
     const [userId, setUserId] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
@@ -61,8 +61,8 @@ export default function Students({ auth, insAdminAffiliation, retrievedStudents,
         { text: 'No Premium Access', icon: <HiDocumentMinus />, routeParam: 'no-premium-access' },
     ];
     const tableHeaders = {
-        'with-premium-access': ['Name', 'Student ID', 'Department', 'Course', 'Date Created', 'Current Plan', 'Plan Status', 'Action'],
-        'no-premium-access': ['Name', 'Student ID', 'Department', 'Course', 'Date Created', 'Current Plan'],
+        'with-premium-access': ['Name', 'Student ID', 'Department', 'Course', 'Section', 'Date Created', 'Current Plan', 'Plan Status', 'Action'],
+        'no-premium-access': ['Name', 'Student ID', 'Department', 'Course', 'Section', 'Date Created', 'Current Plan'],
     };
 
     useEffect(() => {
@@ -182,7 +182,7 @@ export default function Students({ auth, insAdminAffiliation, retrievedStudents,
         <AdminLayout
             user={auth.user}
         >
-            <div>
+            <div className="p-4">
                 <div className="flex">
                     <PageHeader>STUDENTS</PageHeader>
                     <PageHeader className="ml-auto mr-4 uppercase">{`${university.uni_name} - ${uni_branch_name}`}</PageHeader>
@@ -322,8 +322,6 @@ export default function Students({ auth, insAdminAffiliation, retrievedStudents,
                                         {renderTableHeader()}
                                         <tbody>
                                             {studentsToRender.data.map((student, index) => {
-                                                const department = getAcronymAndOrigText(student.dept_name);
-                                                const course = getAcronymAndOrigText(student.course_name);
                                                 const formattedDateCreated = format(new Date(student.created_at), 'MM/dd/yyyy HH:mm aa');
 
                                                 const actionButtons = () => {
@@ -331,8 +329,8 @@ export default function Students({ auth, insAdminAffiliation, retrievedStudents,
                                                         <div className="p-2 flex gap-2">
                                                             {student.persub_status &&
                                                                 (<ActionButton
-                                                                    icon={student.persub_status === 'active' ? <FaFileCircleMinus /> : <FaFileCircleCheck />}
-                                                                    tooltipContent={student.persub_status === 'active' ? 'Deactivate plan' : 'Acitvate plan'}
+                                                                    icon={student.persub_status === 'Active' ? <FaFileCircleMinus /> : <FaFileCircleCheck />}
+                                                                    tooltipContent={student.persub_status === 'Active' ? 'Deactivate plan' : 'Acitvate plan'}
                                                                     onClick={() =>
                                                                         handleSetStatusModal(
                                                                             student.user_id,
@@ -361,9 +359,10 @@ export default function Students({ auth, insAdminAffiliation, retrievedStudents,
                                                                 }}
                                                             />
                                                         </td>
-                                                        <td className="p-2">{student.stud_id}</td>
-                                                        <td className="p-2">{department.acronym}</td>
-                                                        <td className="p-2">{course.acronym}</td>
+                                                        <td className="p-2">{student.id}</td>
+                                                        <td className="p-2">{student.dept_acronym ?? 'N/A'}</td>
+                                                        <td className="p-2">{student.course_acronym ?? 'N/A'}</td>
+                                                        <td className="p-2">{student.section_name ?? 'N/A'}</td>
                                                         <td className="p-2">{formattedDateCreated}</td>
                                                         <td className="p-2">
                                                             <Chip startContent={<FaFileInvoice size={16} />} size="sm" className="text-customGray h-full p-1 text-wrap flex" variant='faded'>

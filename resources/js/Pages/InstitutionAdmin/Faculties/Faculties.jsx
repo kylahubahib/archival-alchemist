@@ -28,7 +28,6 @@ import FileUpload from "@/Components/FileUpload";
 
 export default function Faculties({ auth, insAdminAffiliation, retrievedFaculties, hasFacultyPremiumAccess, retrievedSearchName, retrievedEntriesPerPage }) {
 
-    console.log('retrievedFaculties', retrievedFaculties);
     const [facultiesToRender, setFacultiesToRender] = useState(retrievedFaculties);
     const [userId, setUserId] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
@@ -182,7 +181,7 @@ export default function Faculties({ auth, insAdminAffiliation, retrievedFacultie
         <AdminLayout
             user={auth.user}
         >
-            <div>
+            <div className="p-4">
                 <div className="flex">
                     <PageHeader>FACULTIES</PageHeader>
                     <PageHeader className="ml-auto mr-4 uppercase">{`${university.uni_name} - ${uni_branch_name}`}</PageHeader>
@@ -361,7 +360,7 @@ export default function Faculties({ auth, insAdminAffiliation, retrievedFacultie
                                                                 }}
                                                             />
                                                         </td>
-                                                        <td className="p-2">{faculty.fac_id}</td>
+                                                        <td className="p-2">{faculty.id}</td>
                                                         <td className="p-2">{department.acronym}</td>
                                                         <td className="p-2">{faculty.fac_position}</td>
                                                         <td className="p-2">{formattedDateCreated}</td>
