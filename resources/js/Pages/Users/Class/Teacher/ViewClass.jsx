@@ -3,7 +3,7 @@ import { Button } from '@nextui-org/react';
 import People from '@/Pages/Users/Class/Teacher/People';
 import Grades from '@/Pages/Users/Class/Teacher/Grades';
 
-const ViewClass = ({ onBack }) => {
+const ViewClass = ({ onBack, folders}) => {
     const [activeSection, setActiveSection] = useState(''); // Track active section
 
     const handleShowGrades = () => {
@@ -17,7 +17,7 @@ const ViewClass = ({ onBack }) => {
     const handleShowAssignedProject = () => {
         setActiveSection('assignedProject');
     };
-
+    console.log('Folders in ViewClass:', folders);  // Check the folders prop
     return (
         <div className="w-full">
             {/* Header Bar */}
@@ -66,8 +66,8 @@ const ViewClass = ({ onBack }) => {
 
             {/* Content Section */}
             <div className="w-full bg-white">
-                {activeSection === 'people' && <People onBack={() => setActiveSection('')} />} {/* Show People component */}
-                {activeSection === 'grades' && <Grades onBack={() => setActiveSection('')} />} {/* Show Grades component */}
+    {activeSection === 'people' && <People folders={folders} onBack={() => setActiveSection('')} />}
+    {activeSection === 'grades' && <Grades onBack={() => setActiveSection('')} />} {/* Show Grades component */}
                 {activeSection === 'assignedProject' && <div className="w-full bg-gray-100 p-6"><h3 className="text-gray-800 font-semibold">Assigned Project Section</h3></div>} {/* Show Assigned Project Section */}
                 {!activeSection && (
                     <div className="w-full bg-gray-100 p-6"> {/* Default section when no option is selected */}
@@ -75,6 +75,7 @@ const ViewClass = ({ onBack }) => {
                     </div>
                 )}
             </div>
+
         </div>
     );
 };

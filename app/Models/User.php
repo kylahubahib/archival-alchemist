@@ -160,9 +160,14 @@ class User extends Authenticatable
     //     return $this->hasMany(Author::class, 'user_id');
     // }
 
-        // If a User has many Authors
-        public function authors()
-        {
-            return $this->hasMany(Author::class, 'user_id', 'id');
-        }
+    // If a User has many Authors
+    public function authors()
+    {
+        return $this->hasMany(Author::class, 'user_id', 'id');
+    }
+
+    public function groupMembers()
+    {
+        return $this->hasMany(GroupMember::class, 'section_id');
+    }
 }

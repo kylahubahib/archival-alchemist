@@ -399,5 +399,11 @@ Route::get('/fetch-courses', [ClassController::class, 'fetchCourses']);
 Route::post('/store-sections', [ClassController::class, 'storeSection']); // Route for storing data
 Route::get('/fetch-classes', [ClassController::class, 'fetchClasses']);
 
+Route::post('/store-groupmembers', [ClassController::class, 'addStudentsToClass']);
+Route::get('/fetch-currentuser', [ClassController::class, 'getCurrentUser']);
+
+Route::get('/fetch-groupmembers', [ClassController::class, 'getGroupMembers']);
+// In web.php or api.php
+Route::delete('/delete-groupmembers/{id}', [ClassController::class, 'deleteStudent']);
 
 require __DIR__.'/auth.php';
