@@ -124,7 +124,10 @@ const CreateClassSection = ({ userId }) => {
             ) : (
                 <>
                     {/* Display folders or empty folder with a plus sign */}
-                    <div className="flex justify-start items-start w-full mt-6 ml-6 mr-30">
+                   <div className="flex bg-gray-200 justify-start items-start w-full ">
+                    <p className="flex justify-start items-start my-2 mt-3 mx-5 w-full font-bold text-gray-400 text-2xl">Active Classes</p>
+                    </div>
+                    <div className="flex justify-start items-start w-full ml-6 mr-30">
                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 w-full m-10 mr-50">
                             {/* First the "Create Class" folder */}
                             <div

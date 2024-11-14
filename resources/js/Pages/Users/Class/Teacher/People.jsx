@@ -173,7 +173,7 @@ useEffect(() => {
             });
 
             // Check the response from the API
-            console.log("API Response:", response.data);
+            console.log("API Response:", response.data)/delete-groupmembers;
 
             // Refetch the students list from the server after the student has been added
             const groupResponse = await axios.get("/fetch-groupmembers");

@@ -11,11 +11,11 @@ class AssignedTask extends Model
     use HasFactory;
 
     protected $fillable = [
-        'section_id',
         'task_title',
-        'task',
         'task_instructions',
-        'due_date'
+        'task_startdate',
+        'task_duedate',
+        'section_id'
     ];
 
     public function section(): BelongsTo

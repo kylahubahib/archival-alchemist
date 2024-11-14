@@ -3,6 +3,8 @@
 // App\Http\Controllers\ClassController.php
 
 namespace App\Http\Controllers;
+
+use App\Models\AssignedTask;
 use App\Models\Course;
 use App\Models\Section;
 use App\Models\User;
@@ -12,6 +14,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class ClassController extends Controller
 {
@@ -249,6 +252,48 @@ class ClassController extends Controller
         } catch (\Exception $e) {
             return response()->json(['message' => 'Error removing student'], 500);
         }
+    }
+
+
+    public function storeAssignedTask(Request $request, $section_id) {
+        Log::info('Store Task Request Data:', $request->all());
+
+        $validatedData = $request->validate([
+            'title' => 'required|string',
+            'instructions' => 'nullable|string',
+            'startdate' => 'required|string',
+            'duedate' => 'required|string',
+        ]);
+
+        // Process task storage logic
+        try {
+            $task = new AssignedTask();
+            $task->section_id = $section_id;
+            $task->task_title = $validatedData['title'];
+            $task->task_instructions = $validatedData['instructions'];
+            $task->task_startdate = Carbon::parse($validatedData['startdate'])->format('Y-m-d H:i:s');
+            $task->task_duedate = Carbon::parse($validatedData['duedate'])->format('Y-m-d H:i:s');
+            $task->save();
+        } catch (\Exception $e) {
+            // Handle any exception that may occur
+            dd($e->getMessage()); // For debugging
+        }
+    }
+
+
+    public function fetchAssignedTask($section_id)
+    {
+        Log::info('Task accessed with GET method');
+
+        // Retrieve all tasks assigned to the given section_id
+        $tasks = AssignedTask::where('section_id', $section_id) // Filter tasks by section_id
+            ->select('task_title', 'task_instructions', 'task_startdate', 'task_duedate', 'section_id') // Only select required columns
+            ->get(); // Retrieve all tasks for the given section_id
+
+        // Log the retrieved tasks
+        Log::info('Tasks Retrieved', ['tasks' => $tasks->toArray()]);
+
+        return response()->json($tasks); // Return the tasks as a JSON response
     }
 
 }

@@ -15,7 +15,6 @@ return new class extends Migration
             $table->id();
             $table->string('task_title');
             $table->text('task_instructions')->nullable();
-            $table->date('task_duedate');
             $table->foreignId('section_id')->constrained('sections')->onDelete('cascade'); // Add the section_id column as a foreign key
             $table->timestamps();
         });

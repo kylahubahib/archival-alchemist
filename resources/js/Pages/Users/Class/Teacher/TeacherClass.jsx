@@ -375,7 +375,7 @@ const handleAddStudent = async () => {
         <AuthenticatedLayout
             user={auth.user}
             header={
-                <div className="flex justify-between items-center ">
+                <div className="flex justify-between items-center w-h-screen">
                     {selectedCourse && !selectedClass && (
                         <button className="bg-blue-500 text-white px-4 py-2 rounded mr-2" onClick={() => setIsGroupModalOpen(true)}>
                             Add Section
@@ -385,7 +385,7 @@ const handleAddStudent = async () => {
             }
         >
             {isCreating ? (
-                <CreateClassSection onCreate={handleCreate} />
+                <CreateClassSection onCreate={handleCreate} className="flex justify-between items-center w-h-full"/>
             ) : (
                 <div>
                     {/* Render classes or other main content here */}

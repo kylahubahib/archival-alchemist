@@ -406,4 +406,7 @@ Route::get('/fetch-groupmembers', [ClassController::class, 'getGroupMembers']);
 // In web.php or api.php
 Route::delete('/delete-groupmembers/{id}', [ClassController::class, 'deleteStudent']);
 
+Route::post('/store-assignedTask/{section_id}', [ClassController::class, 'storeAssignedTask']);
+Route::get('/fetch-AssignedTask/{section_id}', [ClassController::class, 'fetchAssignedTask']);
+
 require __DIR__.'/auth.php';
