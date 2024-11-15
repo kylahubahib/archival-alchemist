@@ -3,7 +3,8 @@
     "type": "module",
     "scripts": {
         "dev": "vite",
-        "build": "vite build"
+        "build": "vite build && npm run move-static",
+        "move-static": "copyfiles -u 1 './node_modules/@pdftron/webviewer/public/*' './dist/public/webviewer'"
     },
     "devDependencies": {
         "@babel/plugin-transform-react-jsx": "^7.25.9",
@@ -13,6 +14,7 @@
         "@vitejs/plugin-react": "^4.2.0",
         "autoprefixer": "^10.4.20",
         "axios": "^1.7.7",
+        "copyfiles": "^2.4.1",
         "laravel-echo": "^1.16.1",
         "laravel-vite-plugin": "^1.0",
         "postcss": "^8.4.47",
@@ -46,6 +48,7 @@
         "framer-motion": "^11.7.0",
         "html2canvas": "^1.4.1",
         "html2pdf.js": "^0.10.2",
+        "luxon": "^3.5.0",
         "normalize.css": "^8.0.1",
         "pdfjs-dist": "^4.6.82",
         "react-chartjs-2": "^5.2.0",

@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+
 use Illuminate\Support\Facades\Storage;
 use App\Models\Author;
 use Illuminate\Support\Facades\File;
@@ -74,6 +75,9 @@ class StudentClassController extends Controller
             // Generate a unique filename
             $fileName = time() . '_' . $file->getClientOriginalName();
 
+            // Move the file to the public/storage/capstone_files directory
+            $file->move(public_path('storage/capstone_files'), $fileName);
+
             // Store the relative path to the file (without the 'public' part)
             $filePath = 'storage/capstone_files/' . $fileName;
 
@@ -84,7 +88,7 @@ class StudentClassController extends Controller
                 'man_doc_adviser' => $validatedData['man_doc_adviser'],
                 'man_doc_content' => $filePath, // Save the relative path to the database
                 'class_code' => $validatedData['class_id'] ?? null,
-                'man_doc_status' => 'P'
+                'man_doc_status' => 'P',
             ]);
 
             Log::info('Manuscript Project Created:', ['id' => $manuscriptProject->id]);
@@ -166,34 +170,6 @@ class StudentClassController extends Controller
                 ]);
             }
 
-            if($manuscriptProject)
-            {
-               Log::info('Get class code:', ['Code' => $classCode]);
-               $classId = $classCode;
-               Log::info('Class Found:', ['Class Id' => $classId]);
-
-               //$authorIds = Author::whereIn('user_id', $users)->pluck('user_id')->toArray();
-               $manuscriptId = $manuscriptProject->id;
-               $teacherId = ClassModel::where('id', $classId)->pluck('ins_id')->first();
-
-               Log::info('Teacher Id: ', ['id' => $teacherId]);
-       
-               // Upload the file to Google Drive and get the Google Docs URL
-               $googleDocsUrl = $this->uploadToDrive($file, $manuscriptId, $teacherId);
-
-               if($googleDocsUrl) {
-                   $manuscriptProject->update([
-                       'man_doc_content' => $googleDocsUrl,
-                   ]);
-               }
-
-               
-                // Move the file to the public/storage/capstone_files directory
-                $file->move(public_path('storage/capstone_files'), $fileName);
-            }
-
-             $faculty = $teacherId;
-
             // if($manuscriptProject)
             // {
             //     $class = ClassModel::where('class_code', $classCode)->first();
@@ -210,7 +186,6 @@ class StudentClassController extends Controller
             // }
 
             return response()->json(['message' => 'Manuscript project uploaded successfully.'], 200);
-
         } catch (\Exception $e) {
             Log::error('Error uploading manuscript project:', ['error' => $e->getMessage()]);
             return response()->json(['message' => 'Error uploading manuscript project.', 'errors' => $e->getMessage()], 422);
@@ -305,7 +280,7 @@ class StudentClassController extends Controller
             // Check if the email is valid
             if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
                 Log::warning('Invalid Email Address:', ['email' => $email]);
-                continue; 
+                continue;
             }
 
             // Create permission for the user
@@ -325,7 +300,6 @@ class StudentClassController extends Controller
                 // Set the permission
                 $driveService->permissions->create($fileId, $permission);
                 Log::info('Permission Set Successfully:', ['email' => $email]);
-                
             } catch (Exception $e) {
                 Log::error('Error Setting Permissions:', [
                     'email' => $email,
@@ -338,7 +312,7 @@ class StudentClassController extends Controller
 
 
 
-    
+
 
     public function checkClassCode(Request $request)
     {
@@ -400,27 +374,27 @@ class StudentClassController extends Controller
                     'stud_id' => $userId, // Store the user ID
                 ]);
 
-                
-                 // Notifies the teacher that a new student joins
-                 $teacher = User::find($class->ins_id);
-                 $newStudent = Auth::user()->name; 
 
-                 if ($teacher) {
-                         $teacher->notify(new UserNotification([
-                             'message' => $newStudent . ' joins ' . $class->class_name,
-                             'user_id' => $teacher->id
-                         ]));
-                 }
+                // Notifies the teacher that a new student joins
+                $teacher = User::find($class->ins_id);
+                $newStudent = Auth::user()->name;
+
+                if ($teacher) {
+                    $teacher->notify(new UserNotification([
+                        'message' => $newStudent . ' joins ' . $class->class_name,
+                        'user_id' => $teacher->id
+                    ]));
+                }
 
                 return response()->json([
-                    'success' => true, 
+                    'success' => true,
                     'message' => 'Joined class successfully',
                     'classId' => $class->id
                 ]);
             }
         } catch (\Exception $e) {
             // Log the error and return a response
-            Log::error('Error joining class: '.$e->getMessage());
+            Log::error('Error joining class: ' . $e->getMessage());
             return response()->json(['success' => false, 'message' => 'An error occurred while joining the class.'], 500);
         }
     }
@@ -459,279 +433,293 @@ class StudentClassController extends Controller
 
 
 
-//check the class code if it exist in the class database
-// public function checkClassCode(Request $request)
-// {
-//     $classCode = $request->input('class_code');
-//     $class = ClassModel::where('class_code', $classCode)->first();
+    //check the class code if it exist in the class database
+    // public function checkClassCode(Request $request)
+    // {
+    //     $classCode = $request->input('class_code');
+    //     $class = ClassModel::where('class_code', $classCode)->first();
 
-//     if ($class) {
-//         return response()->json(['exists' => true]);
-//     } else {
-//         return response()->json(['exists' => false], 404);
-//     }
-// }
-
-
-
-
-
-// public function getPublishedManuscripts()
-// {
-//     try {
-//         // Fetch manuscripts with 'Y' status, associated tags, and authors
-//         $manuscripts = ManuscriptProject::with(['tags', 'authors']) // Eager load both tags and authors relationships
-//             ->where('is_publish', '1')
-//             ->get();
-
-//         // Log the fetched manuscripts for debugging
-//         logger()->info('Fetched Manuscripts with Tags and Authors:', $manuscripts->toArray());
-
-//         return response()->json($manuscripts, 200);
-//     } catch (\Exception $e) {
-//         return response()->json(['message' => 'Error fetching manuscripts.', 'errors' => $e->getMessage()], 500);
-//     }
-// }
-
-
-//get ratings
-// SELECT
-//     manuscript_id,
-//     ROUND(SUM(user_total_ratings) / COUNT(DISTINCT user_id), 2) AS average_total_rating,
-//     ROUND((SUM(user_total_ratings) / COUNT(DISTINCT user_id)) * 5, 2) AS final_rating
-// FROM (
-//     SELECT
-//         manuscript_id,
-//         user_id,
-//         SUM(rating) / 5 AS user_total_ratings
-//     FROM
-//         ratings
-//     GROUP BY
-//         manuscript_id, user_id
-// ) AS user_ratings
-// GROUP BY
-//     manuscript_id
-// ORDER BY
-//     final_rating DESC;
-
-// public function getPublishedManuscripts()
-// {
-//     try {
-//         // Fetch manuscripts with 'Y' status, associated tags, and authors
-//         $manuscripts = ManuscriptProject::with(['tags', 'authors']) // Eager load both tags and authors relationships
-//             ->where('is_publish', '1')
-//             ->get();
-
-//         // Log the fetched manuscripts for debugging
-//         logger()->info('Fetched Manuscripts with Tags and Authors:', $manuscripts->toArray());
-
-//         return response()->json($manuscripts, 200);
-//     } catch (\Exception $e) {
-//         return response()->json(['message' => 'Error fetching manuscripts.', 'errors' => $e->getMessage()], 500);
-//     }
-// }
-
-//recommended ratings
-// SELECT
-//     m.id,
-//     m.man_doc_title,
-//     m.man_doc_content,
-//     m.man_doc_description,
-//     m.man_doc_status,
-//     m.man_doc_adviser,
-//     m.man_doc_view_count,
-//     m.is_publish,
-//     m.created_at,
-//     m.updated_at,
-//     m.class_code,
-//     ROUND(SUM(r.rating / 5) / COUNT(DISTINCT r.user_id), 2) AS average_total_rating, -- Divides each user's rating by 5 before summing
-//     ROUND((SUM(r.rating / 5) / COUNT(DISTINCT r.user_id)) * 5, 2) AS final_rating -- Final rating scaled to 5
-// FROM
-//     manuscripts AS m
-// INNER JOIN
-//     ratings AS r ON m.id = r.manuscript_id
-// GROUP BY
-//     m.id
-// HAVING
-//     COUNT(DISTINCT r.user_id) > 0 -- Ensure there are ratings before calculating
-// ORDER BY
-//     final_rating DESC;
-
-// public function getPublishedManuscripts(Request $request)
-// {
-//     try {
-//         //Retrieve the 'choice' query parameter
-//         $keyword = $request->query('keyword');
-//         Log::info('My keyword: ' . $keyword);
-//         // Determine relationships to load based on choice
-
-//             $manuscripts = ManuscriptProject::with(['tags', 'authors']) // Exclude ratings if choice is 'R' or any other value
-//                 ->where('is_publish', '1')
-//                 ->get();
-
-
-//         // Log the fetched manuscripts for debugging
-//         logger()->info('Fetched Manuscripts with Tags and Authors:', $manuscripts->toArray());
-
-//         return response()->json($manuscripts, 200);
-//     } catch (\Exception $e) {
-//         return response()->json(['message' => 'Error fetching manuscripts.', 'errors' => $e->getMessage()], 500);
-//     }
-// }
-
-
-// public function getPublishedManuscripts(Request $request)
-// {
-//     try {
-//         // Retrieve the 'keyword' query parameter
-//         $keyword = $request->query('keyword');
-//         Log::info('My keyword: ' . $keyword);
-
-//         // Determine relationships to load based on choice
-//         $manuscripts = ManuscriptProject::with(['tags', 'authors'])
-//             ->where('is_publish', '1');
-
-//         // If a keyword is provided, filter manuscripts by title
-//         if ($keyword) {
-//             $manuscripts = $manuscripts->where('man_doc_title', 'like', '%' . $keyword . '%');
-//         }
-
-//         $manuscripts = $manuscripts->get(); // Execute the query to get the results
-
-//         // Log the fetched manuscripts for debugging
-//         logger()->info('Fetched Manuscripts with Tags and Authors:', $manuscripts->toArray());
-
-//         return response()->json($manuscripts, 200);
-//     } catch (\Exception $e) {
-//         return response()->json(['message' => 'Error fetching manuscripts.', 'errors' => $e->getMessage()], 500);
-//     }
-// }
+    //     if ($class) {
+    //         return response()->json(['exists' => true]);
+    //     } else {
+    //         return response()->json(['exists' => false], 404);
+    //     }
+    // }
 
 
 
 
-public function getPublishedManuscripts(Request $request)
-{
-    try {
-        // Retrieve the 'keyword' and 'searchField' query parameters
-        $keyword = $request->query('keyword');
-        $searchField = $request->query('searchField', 'Title'); // Default to Title if not specified
-        Log::info('My keyword: ' . $keyword);
-        Log::info('Search field: ' . $searchField);
 
-        // Initialize manuscripts query
-        $manuscripts = ManuscriptProject::with(['tags', 'authors'])
-            ->where('is_publish', '1');
+    // public function getPublishedManuscripts()
+    // {
+    //     try {
+    //         // Fetch manuscripts with 'Y' status, associated tags, and authors
+    //         $manuscripts = ManuscriptProject::with(['tags', 'authors']) // Eager load both tags and authors relationships
+    //             ->where('is_publish', '1')
+    //             ->get();
 
-        // Filter manuscripts based on the selected search field
-        if ($keyword) {
-            if ($searchField === 'Title') {
-                $manuscripts = $manuscripts->where('man_doc_title', 'like', '%' . $keyword . '%');
-            } elseif ($searchField === 'Tags') {
-                $manuscripts = $manuscripts->whereHas('tags', function ($query) use ($keyword) {
-                    $query->where('tags_name', 'like', '%' . $keyword . '%');
-                });
-            } elseif ($searchField === 'Authors') {
-                $manuscripts = $manuscripts->whereHas('authors', function ($query) use ($keyword) {
-                    $query->where('name', 'like', '%' . $keyword . '%');
-                });
+    //         // Log the fetched manuscripts for debugging
+    //         logger()->info('Fetched Manuscripts with Tags and Authors:', $manuscripts->toArray());
+
+    //         return response()->json($manuscripts, 200);
+    //     } catch (\Exception $e) {
+    //         return response()->json(['message' => 'Error fetching manuscripts.', 'errors' => $e->getMessage()], 500);
+    //     }
+    // }
+
+
+    //get ratings
+    // SELECT
+    //     manuscript_id,
+    //     ROUND(SUM(user_total_ratings) / COUNT(DISTINCT user_id), 2) AS average_total_rating,
+    //     ROUND((SUM(user_total_ratings) / COUNT(DISTINCT user_id)) * 5, 2) AS final_rating
+    // FROM (
+    //     SELECT
+    //         manuscript_id,
+    //         user_id,
+    //         SUM(rating) / 5 AS user_total_ratings
+    //     FROM
+    //         ratings
+    //     GROUP BY
+    //         manuscript_id, user_id
+    // ) AS user_ratings
+    // GROUP BY
+    //     manuscript_id
+    // ORDER BY
+    //     final_rating DESC;
+
+    // public function getPublishedManuscripts()
+    // {
+    //     try {
+    //         // Fetch manuscripts with 'Y' status, associated tags, and authors
+    //         $manuscripts = ManuscriptProject::with(['tags', 'authors']) // Eager load both tags and authors relationships
+    //             ->where('is_publish', '1')
+    //             ->get();
+
+    //         // Log the fetched manuscripts for debugging
+    //         logger()->info('Fetched Manuscripts with Tags and Authors:', $manuscripts->toArray());
+
+    //         return response()->json($manuscripts, 200);
+    //     } catch (\Exception $e) {
+    //         return response()->json(['message' => 'Error fetching manuscripts.', 'errors' => $e->getMessage()], 500);
+    //     }
+    // }
+
+    //recommended ratings
+    // SELECT
+    //     m.id,
+    //     m.man_doc_title,
+    //     m.man_doc_content,
+    //     m.man_doc_description,
+    //     m.man_doc_status,
+    //     m.man_doc_adviser,
+    //     m.man_doc_view_count,
+    //     m.is_publish,
+    //     m.created_at,
+    //     m.updated_at,
+    //     m.class_code,
+    //     ROUND(SUM(r.rating / 5) / COUNT(DISTINCT r.user_id), 2) AS average_total_rating, -- Divides each user's rating by 5 before summing
+    //     ROUND((SUM(r.rating / 5) / COUNT(DISTINCT r.user_id)) * 5, 2) AS final_rating -- Final rating scaled to 5
+    // FROM
+    //     manuscripts AS m
+    // INNER JOIN
+    //     ratings AS r ON m.id = r.manuscript_id
+    // GROUP BY
+    //     m.id
+    // HAVING
+    //     COUNT(DISTINCT r.user_id) > 0 -- Ensure there are ratings before calculating
+    // ORDER BY
+    //     final_rating DESC;
+
+    // public function getPublishedManuscripts(Request $request)
+    // {
+    //     try {
+    //         //Retrieve the 'choice' query parameter
+    //         $keyword = $request->query('keyword');
+    //         Log::info('My keyword: ' . $keyword);
+    //         // Determine relationships to load based on choice
+
+    //             $manuscripts = ManuscriptProject::with(['tags', 'authors']) // Exclude ratings if choice is 'R' or any other value
+    //                 ->where('is_publish', '1')
+    //                 ->get();
+
+
+    //         // Log the fetched manuscripts for debugging
+    //         logger()->info('Fetched Manuscripts with Tags and Authors:', $manuscripts->toArray());
+
+    //         return response()->json($manuscripts, 200);
+    //     } catch (\Exception $e) {
+    //         return response()->json(['message' => 'Error fetching manuscripts.', 'errors' => $e->getMessage()], 500);
+    //     }
+    // }
+
+
+    // public function getPublishedManuscripts(Request $request)
+    // {
+    //     try {
+    //         // Retrieve the 'keyword' query parameter
+    //         $keyword = $request->query('keyword');
+    //         Log::info('My keyword: ' . $keyword);
+
+    //         // Determine relationships to load based on choice
+    //         $manuscripts = ManuscriptProject::with(['tags', 'authors'])
+    //             ->where('is_publish', '1');
+
+    //         // If a keyword is provided, filter manuscripts by title
+    //         if ($keyword) {
+    //             $manuscripts = $manuscripts->where('man_doc_title', 'like', '%' . $keyword . '%');
+    //         }
+
+    //         $manuscripts = $manuscripts->get(); // Execute the query to get the results
+
+    //         // Log the fetched manuscripts for debugging
+    //         logger()->info('Fetched Manuscripts with Tags and Authors:', $manuscripts->toArray());
+
+    //         return response()->json($manuscripts, 200);
+    //     } catch (\Exception $e) {
+    //         return response()->json(['message' => 'Error fetching manuscripts.', 'errors' => $e->getMessage()], 500);
+    //     }
+    // }
+
+
+
+
+    public function getPublishedManuscripts(Request $request)
+    {
+        try {
+            // Retrieve the 'keyword' and 'searchField' query parameters
+            $keyword = $request->query('keyword');
+            $searchField = $request->query('searchField', 'Title'); // Default to Title if not specified
+            Log::info('My keyword: ' . $keyword);
+            Log::info('Search field: ' . $searchField);
+
+            // Initialize manuscripts query
+            $manuscripts = ManuscriptProject::with(['tags', 'authors'])
+                ->where('is_publish', '1');
+
+            // Filter manuscripts based on the selected search field
+            if ($keyword) {
+                if ($searchField === 'Title') {
+                    $manuscripts = $manuscripts->where('man_doc_title', 'like', '%' . $keyword . '%');
+                } elseif ($searchField === 'Tags') {
+                    $manuscripts = $manuscripts->whereHas('tags', function ($query) use ($keyword) {
+                        $query->where('tags_name', 'like', '%' . $keyword . '%');
+                    });
+                } elseif ($searchField === 'Authors') {
+                    $manuscripts = $manuscripts->whereHas('authors', function ($query) use ($keyword) {
+                        $query->where('name', 'like', '%' . $keyword . '%');
+                    });
+                }
             }
+
+            // Execute the query to get the results
+            $fetchedManuscripts = $manuscripts->get();
+
+            Log::info('Published Manuscripts:', ['manuscripts' => $fetchedManuscripts]);
+
+            // Log the number of manuscripts found
+            if ($fetchedManuscripts->isNotEmpty()) {
+                Log::info('Found manuscripts:', $fetchedManuscripts->toArray());
+            } else {
+                Log::info('No manuscripts found for the given keyword and search field.');
+            }
+
+            return response()->json($fetchedManuscripts, 200);
+        } catch (\Exception $e) {
+            // Log the error details for debugging
+            Log::error('Error fetching manuscripts: ' . $e->getMessage(), [
+                'stack' => $e->getTraceAsString()
+            ]);
+
+            return response()->json(['message' => 'Error fetching manuscripts.', 'errors' => $e->getMessage()], 500);
         }
-
-        // Execute the query to get the results
-        $fetchedManuscripts = $manuscripts->get();
-
-        Log::info('Published Manuscripts:', ['manuscripts' => $fetchedManuscripts]);
-
-        // Log the number of manuscripts found
-        if ($fetchedManuscripts->isNotEmpty()) {
-            Log::info('Found manuscripts:', $fetchedManuscripts->toArray());
-        } else {
-            Log::info('No manuscripts found for the given keyword and search field.');
-        }
-
-        return response()->json($fetchedManuscripts, 200);
-    } catch (\Exception $e) {
-        // Log the error details for debugging
-        Log::error('Error fetching manuscripts: ' . $e->getMessage(), [
-            'stack' => $e->getTraceAsString()
-        ]);
-
-        return response()->json(['message' => 'Error fetching manuscripts.', 'errors' => $e->getMessage()], 500);
     }
-}
 
 
 
 
-public function getPublishedRecManuscripts(Request $request)
-{
-    try {
-        //Retrieve the 'choice' query parameter
-        $choice = $request->query('choice');
-        Log::info('My choice: ' . $choice);
-        // Determine relationships to load based on choice
+    public function getPublishedRecManuscripts(Request $request)
+    {
+        try {
+            //Retrieve the 'choice' query parameter
+            $choice = $request->query('choice');
+            Log::info('My choice: ' . $choice);
+            // Determine relationships to load based on choice
 
             $manuscripts = ManuscriptProject::with(['ratings', 'authors', 'tags'])
-            ->select('manuscripts.id', 'manuscripts.man_doc_title', 'manuscripts.man_doc_description', 'manuscripts.man_doc_content',
-                     'manuscripts.man_doc_adviser', 'manuscripts.man_doc_view_count',
-                     'manuscripts.is_publish', DB::raw('SUM(ratings.rating) as total_rating'),
-                     DB::raw('COUNT(ratings.id) as rating_count'))
-            ->join('ratings', 'manuscripts.id', '=', 'ratings.manuscript_id')
-            ->leftJoin('author', 'manuscripts.id', '=', 'author.man_doc_id')
-            ->leftJoin('manuscript_tag', 'manuscripts.id', '=', 'manuscript_tag.manuscript_id')
-            ->leftJoin('tags', 'manuscript_tag.tag_id', '=', 'tags.id')
-            ->groupBy('manuscripts.id', 'manuscripts.man_doc_title', 'manuscripts.man_doc_description', 'manuscripts.man_doc_content',
-                      'manuscripts.man_doc_adviser', 'manuscripts.man_doc_view_count',
-                      'manuscripts.is_publish')
-            ->havingRaw('COUNT(ratings.id) > 0 AND (SUM(ratings.rating) / COUNT(ratings.id)) >= 3')
-            ->orderBy(DB::raw('SUM(ratings.rating) / COUNT(ratings.id)'), 'DESC')
+                ->select(
+                    'manuscripts.id',
+                    'manuscripts.man_doc_title',
+                    'manuscripts.man_doc_description',
+                    'manuscripts.man_doc_content',
+                    'manuscripts.man_doc_adviser',
+                    'manuscripts.man_doc_view_count',
+                    'manuscripts.is_publish',
+                    DB::raw('SUM(ratings.rating) as total_rating'),
+                    DB::raw('COUNT(ratings.id) as rating_count')
+                )
+                ->join('ratings', 'manuscripts.id', '=', 'ratings.manuscript_id')
+                ->leftJoin('author', 'manuscripts.id', '=', 'author.man_doc_id')
+                ->leftJoin('manuscript_tag', 'manuscripts.id', '=', 'manuscript_tag.manuscript_id')
+                ->leftJoin('tags', 'manuscript_tag.tag_id', '=', 'tags.id')
+                ->groupBy(
+                    'manuscripts.id',
+                    'manuscripts.man_doc_title',
+                    'manuscripts.man_doc_description',
+                    'manuscripts.man_doc_content',
+                    'manuscripts.man_doc_adviser',
+                    'manuscripts.man_doc_view_count',
+                    'manuscripts.is_publish'
+                )
+                ->havingRaw('COUNT(ratings.id) > 0 AND (SUM(ratings.rating) / COUNT(ratings.id)) >= 3')
+                ->orderBy(DB::raw('SUM(ratings.rating) / COUNT(ratings.id)'), 'DESC')
+                ->get();
+            // Log the fetched manuscripts for debugging
+            logger()->info('Fetched Manuscripts with Tags and Authors:', $manuscripts->toArray());
+
+            return response()->json($manuscripts, 200);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Error fetching manuscripts.', 'errors' => $e->getMessage()], 500);
+        }
+    }
+
+
+    // SELECT *
+    // FROM manuscripts mp
+    // JOIN author a ON mp.id = a.man_doc_id
+    // WHERE mp.man_doc_status = 'Y'
+    // AND a.user_id = 31
+    // LIMIT 0, 25;
+
+    public function myApprovedManuscripts()
+    {
+        $userId = Auth::id(); // Get the ID of the currently signed-in user
+
+        // Fetch approved manuscripts for the currently authenticated user, including tags and authors
+        $manuscripts = ManuscriptProject::with(['tags', 'authors']) // Eager load tags and authors relationships
+            ->join('author', 'manuscripts.id', '=', 'author.man_doc_id')
+            ->where('manuscripts.man_doc_status', 'Y') // Ensure only approved manuscripts are retrieved
+            ->where('author.user_id', $userId) // Filter by the current user
+            ->select('manuscripts.*') // Select fields from manuscripts table
             ->get();
-        // Log the fetched manuscripts for debugging
-        logger()->info('Fetched Manuscripts with Tags and Authors:', $manuscripts->toArray());
 
         return response()->json($manuscripts, 200);
-    } catch (\Exception $e) {
-        return response()->json(['message' => 'Error fetching manuscripts.', 'errors' => $e->getMessage()], 500);
     }
-}
 
+    public function myfavoriteManuscripts()
+    {
+        $userId = Auth::id(); // Get the ID of the currently signed-in user
 
-// SELECT *
-// FROM manuscripts mp
-// JOIN author a ON mp.id = a.man_doc_id
-// WHERE mp.man_doc_status = 'Y'
-// AND a.user_id = 31
-// LIMIT 0, 25;
+        // Fetch approved manuscripts for the currently authenticated user, including tags and authors
+        $manuscripts = ManuscriptProject::with(['tags', 'authors']) // Eager load tags and authors relationships
+            ->join('favorites', 'manuscripts.id', '=', 'favorites.man_doc_id')
+            ->where('manuscripts.man_doc_status', 'Y') // Ensure only approved manuscripts are retrieved
+            ->where('favorites.user_id', $userId) // Filter by the current user
+            ->select('manuscripts.*') // Select fields from manuscripts table
+            ->get();
 
-public function myApprovedManuscripts() {
-    $userId = Auth::id(); // Get the ID of the currently signed-in user
-
-    // Fetch approved manuscripts for the currently authenticated user, including tags and authors
-    $manuscripts = ManuscriptProject::with(['tags', 'authors']) // Eager load tags and authors relationships
-        ->join('author', 'manuscripts.id', '=', 'author.man_doc_id')
-        ->where('manuscripts.man_doc_status', 'Y') // Ensure only approved manuscripts are retrieved
-        ->where('author.user_id', $userId) // Filter by the current user
-        ->select('manuscripts.*') // Select fields from manuscripts table
-        ->get();
-
-    return response()->json($manuscripts, 200);
-}
-
-public function myfavoriteManuscripts()
-{
-    $userId = Auth::id(); // Get the ID of the currently signed-in user
-
-    // Fetch approved manuscripts for the currently authenticated user, including tags and authors
-    $manuscripts = ManuscriptProject::with(['tags', 'authors']) // Eager load tags and authors relationships
-        ->join('favorites', 'manuscripts.id', '=', 'favorites.man_doc_id')
-        ->where('manuscripts.man_doc_status', 'Y') // Ensure only approved manuscripts are retrieved
-        ->where('favorites.user_id', $userId) // Filter by the current user
-        ->select('manuscripts.*') // Select fields from manuscripts table
-        ->get();
-
-    return response()->json($manuscripts, 200);
-}
+        return response()->json($manuscripts, 200);
+    }
 
 
     // public function storefavorites(Request $request)
@@ -763,55 +751,56 @@ public function myfavoriteManuscripts()
     // }
 
 
-   // Get the favorites of a user by ID
-   public function getUserFavorites($id) {
-    Log::info('Fetching favorites for user ID: ' . $id);
-    $favorites = Favorite::where('user_id', $id)->get();
+    // Get the favorites of a user by ID
+    public function getUserFavorites($id)
+    {
+        Log::info('Fetching favorites for user ID: ' . $id);
+        $favorites = Favorite::where('user_id', $id)->get();
 
-    Log::info('Favorites retrieved: ', $favorites->toArray()); // Log retrieved favorites
+        Log::info('Favorites retrieved: ', $favorites->toArray()); // Log retrieved favorites
 
-    if ($favorites->isEmpty()) {
-        return response()->json([], 204); // No content
+        if ($favorites->isEmpty()) {
+            return response()->json([], 204); // No content
+        }
+
+        return response()->json($favorites);
     }
-
-    return response()->json($favorites);
-}
 
 
 
 
     public function storefavorites(Request $request)
-{
-    // Check if the user is authenticated
-    if (!Auth::check()) {
-        return response()->json(['message' => 'You need to be logged in to bookmark'], 401);
+    {
+        // Check if the user is authenticated
+        if (!Auth::check()) {
+            return response()->json(['message' => 'You need to be logged in to bookmark'], 401);
+        }
+
+        // Validate input data
+        $request->validate([
+            'man_doc_id' => 'required|integer|exists:manuscripts,id',  // Assuming 'manuscripts' is your table
+        ]);
+
+        $user = Auth::user();
+        $manuscriptId = $request->input('man_doc_id');
+
+        // Check if the manuscript is already bookmarked
+        $alreadyBookmarked = Favorite::where('man_doc_id', $manuscriptId)
+            ->where('user_id', $user->id)
+            ->exists();
+
+        if ($alreadyBookmarked) {
+            return response()->json(['message' => 'Already bookmarked'], 200);
+        }
+
+        // Create the new bookmark
+        $favorite = new Favorite();
+        $favorite->man_doc_id = $manuscriptId;
+        $favorite->user_id = $user->id;
+        $favorite->save();
+
+        return response()->json(['message' => 'Manuscript bookmarked successfully!'], 201);
     }
-
-    // Validate input data
-    $request->validate([
-        'man_doc_id' => 'required|integer|exists:manuscripts,id',  // Assuming 'manuscripts' is your table
-    ]);
-
-    $user = Auth::user();
-    $manuscriptId = $request->input('man_doc_id');
-
-    // Check if the manuscript is already bookmarked
-    $alreadyBookmarked = Favorite::where('man_doc_id', $manuscriptId)
-        ->where('user_id', $user->id)
-        ->exists();
-
-    if ($alreadyBookmarked) {
-        return response()->json(['message' => 'Already bookmarked'], 200);
-    }
-
-    // Create the new bookmark
-    $favorite = new Favorite();
-    $favorite->man_doc_id = $manuscriptId;
-    $favorite->user_id = $user->id;
-    $favorite->save();
-
-    return response()->json(['message' => 'Manuscript bookmarked successfully!'], 201);
-}
 
 
 
@@ -852,218 +841,214 @@ public function myfavoriteManuscripts()
      */
 
 
-     public function downloadPdf($id)
-     {
-         $manuscript = ManuscriptProject::findOrFail($id);
-         $filename = $manuscript->man_doc_content; // Get the filename from the database
+    public function downloadPdf($id)
+    {
+        $manuscript = ManuscriptProject::findOrFail($id);
+        $filename = $manuscript->man_doc_content; // Get the filename from the database
 
-         // Log the filename for debugging
-         Log::info('Filename for download: ' . $filename);
+        // Log the filename for debugging
+        Log::info('Filename for download: ' . $filename);
 
-         // Ensure the filename has the correct extension
-         $filePath = storage_path('app/public/' . str_replace('storage/', '', $filename));
+        // Ensure the filename has the correct extension
+        $filePath = storage_path('app/public/' . str_replace('storage/', '', $filename));
 
-         // Check if the file exists before attempting to download
-         if (!file_exists($filePath)) {
-             abort(404, 'File not found.');
-         }
+        // Check if the file exists before attempting to download
+        if (!file_exists($filePath)) {
+            abort(404, 'File not found.');
+        }
 
-         // Get the actual filename to be downloaded
-         $originalName = basename($filename); // Extract original name from the path
-         $extension = pathinfo($originalName, PATHINFO_EXTENSION);
+        // Get the actual filename to be downloaded
+        $originalName = basename($filename); // Extract original name from the path
+        $extension = pathinfo($originalName, PATHINFO_EXTENSION);
 
-         // Append .pdf if it's not already in the filename
-         if (strtolower($extension) !== 'pdf') {
-             $originalName .= '.pdf';
-         }
+        // Append .pdf if it's not already in the filename
+        if (strtolower($extension) !== 'pdf') {
+            $originalName .= '.pdf';
+        }
 
-         // Return the download response with the correct Content-Type
-         return response()->download($filePath, $originalName, [
+        // Return the download response with the correct Content-Type
+        return response()->download($filePath, $originalName, [
             'Content-Type' => 'application/pdf',
             'Content-Disposition' => 'attachment; filename="' . $originalName . '"'
         ]);
-
-     }
-
-
-
-
-public function checkStudentInClass()
-{
-
-     // Load user with manuscripts that are not approved, including tags and revision history
-     $user = Auth::user()->load([
-        'manuscripts' => function ($query) {
-            $query->where('man_doc_status', 'P');
-        },
-        'manuscripts.tags',
-        'manuscripts.revision_history.faculty',
-        'manuscripts.authors'
-    ]);
-
-    Log::info($user->manuscripts);
-
-    // Check if the user is enrolled in any class
-    if($user->user_type === 'student') {
-        $userClass = ClassStudent::where('stud_id', $user->id)->first();
-        $class = ClassModel::where('id', $userClass->class_id)->first();
-    } else {
-        $userClass = ClassModel::where('ins_id', $user->id)->first();
-        $class = ClassModel::where('id', $userClass->id)->first();
     }
-   
-    if ($userClass) {
-        return response()->json([
-            'class' => $userClass,
-            'classCode' => $class->class_code, 
-            'manuscripts' => $user->manuscripts
-        ]);
-    } else {
-        return response()->json(); 
-    }
-}
 
 
 
-public function storeRatings(Request $request)
-{
-    Log::info('Incoming request: ', $request->all());
 
-    try {
-                // Check if the user is authenticated
-        if (!Auth::check()) {
-            return response()->json(['error' => 'To submit a rating, please log in.'], 401);
-        }
-        // Log request data before validation
-        Log::info('Request data: ', $request->all());
+    public function checkStudentInClass()
+    {
 
-        // Validate the request
-        $request->validate([
-            'manuscript_id' => 'required|exists:manuscripts,id',
-            'rating' => 'required|integer|between:1,5',
+        // Load user with manuscripts that are not approved, including tags and revision history
+        $user = Auth::user()->load([
+            'manuscripts' => function ($query) {
+                $query->where('man_doc_status', 'P');
+            },
+            'manuscripts.tags',
+            'manuscripts.revision_history.faculty',
+            'manuscripts.authors'
         ]);
 
-        // Log user ID for debugging
-        $userId = Auth::id();
-        Log::info('User ID: ' . $userId);
+        Log::info($user->manuscripts);
 
-        // Check if the user has already rated this manuscript
-        $existingRating = Rating::where([
-            'user_id' => $userId,
-            'manuscript_id' => $request->manuscript_id,
-        ])->first();
-
-        if ($existingRating) {
-            return response()->json(['message' => 'You have already rated this manuscript.'], 409);
+        // Check if the user is enrolled in any class
+        if ($user->user_type === 'student') {
+            $userClass = ClassStudent::where('stud_id', $user->id)->first();
+            $class = ClassModel::where('id', $userClass->class_id)->first();
+        } else {
+            $userClass = ClassModel::where('ins_id', $user->id)->first();
+            $class = ClassModel::where('id', $userClass->id)->first();
         }
 
-        // Log data to be used in the updateOrCreate
-        Log::info('Creating rating with data:', [
-            'user_id' => $userId,
-            'manuscript_id' => $request->manuscript_id,
-            'rating' => $request->rating,
-        ]);
-        Log::info('Creating rating with data:', [
-            'user_id' => $userId,
-            'manuscript_id' => $request->manuscript_id,
-            'rating' => $request->rating,
-        ]);
-
-        // Create the new rating
-        $rating = Rating::create([
-            'user_id' => $userId,
-            'manuscript_id' => $request->manuscript_id,
-            'rating' => $request->rating,
-        ]);
-
-        return response()->json(['message' => 'Rating submitted successfully!', 'rating' => $rating], 201);
-    } catch (\Exception $e) {
-        Log::error('Error submitting rating', [
-            'exception' => $e->getMessage(),
-            'stack' => $e->getTraceAsString(),
-            'request' => $request->all(),
-        ]);
-        return response()->json(['error' => 'Failed to submit rating: ' . $e->getMessage()], 500);
+        if ($userClass) {
+            return response()->json([
+                'class' => $userClass,
+                'classCode' => $class->class_code,
+                'manuscripts' => $user->manuscripts
+            ]);
+        } else {
+            return response()->json();
+        }
     }
 
-}
 
 
+    public function storeRatings(Request $request)
+    {
+        Log::info('Incoming request: ', $request->all());
 
-// public function storeRatings(Request $request)
-// {
-//     Log::info('Incoming request: ', $request->all());
+        try {
+            // Check if the user is authenticated
+            if (!Auth::check()) {
+                return response()->json(['error' => 'To submit a rating, please log in.'], 401);
+            }
+            // Log request data before validation
+            Log::info('Request data: ', $request->all());
 
-//     try {
-//         // Check if the user is authenticated
-//         if (!Auth::check()) {
-//             return response()->json(['error' => 'You need to log in first.'], 401);
-//         }
+            // Validate the request
+            $request->validate([
+                'manuscript_id' => 'required|exists:manuscripts,id',
+                'rating' => 'required|integer|between:1,5',
+            ]);
 
-//         // Log request data before validation
-//         Log::info('Request data: ', $request->all());
+            // Log user ID for debugging
+            $userId = Auth::id();
+            Log::info('User ID: ' . $userId);
 
-//         // Validate the request
-//         $request->validate([
-//             'manuscript_id' => 'required|exists:manuscripts,id',
-//             'rating' => 'required|integer|between:1,5',
-//         ]);
+            // Check if the user has already rated this manuscript
+            $existingRating = Rating::where([
+                'user_id' => $userId,
+                'manuscript_id' => $request->manuscript_id,
+            ])->first();
 
-//         // Log user ID for debugging
-//         $userId = Auth::id();
-//         Log::info('User ID: ' . $userId);
+            if ($existingRating) {
+                return response()->json(['message' => 'You have already rated this manuscript.'], 409);
+            }
 
-//         // Check if the user has already rated this manuscript
-//         $existingRating = Rating::where([
-//             'user_id' => $userId,
-//             'manuscript_id' => $request->manuscript_id,
-//         ])->first();
+            // Log data to be used in the updateOrCreate
+            Log::info('Creating rating with data:', [
+                'user_id' => $userId,
+                'manuscript_id' => $request->manuscript_id,
+                'rating' => $request->rating,
+            ]);
+            Log::info('Creating rating with data:', [
+                'user_id' => $userId,
+                'manuscript_id' => $request->manuscript_id,
+                'rating' => $request->rating,
+            ]);
 
-//         if ($existingRating) {
-//             return response()->json(['message' => 'You have already rated this manuscript.'], 409);
-//         }
+            // Create the new rating
+            $rating = Rating::create([
+                'user_id' => $userId,
+                'manuscript_id' => $request->manuscript_id,
+                'rating' => $request->rating,
+            ]);
 
-//         // Log data to be used in the updateOrCreate
-//         Log::info('Creating rating with data:', [
-//             'user_id' => $userId,
-//             'manuscript_id' => $request->manuscript_id,
-//             'rating' => $request->rating,
-//         ]);
-
-//         // Create the new rating
-//         $rating = Rating::create([
-//             'user_id' => $userId,
-//             'manuscript_id' => $request->manuscript_id,
-//             'rating' => $request->rating,
-//         ]);
-
-//         return response()->json(['message' => 'Rating submitted successfully!', 'rating' => $rating], 201);
-//     } catch (\Exception $e) {
-//         Log::error('Error submitting rating', [
-//             'exception' => $e->getMessage(),
-//             'stack' => $e->getTraceAsString(),
-//             'request' => $request->all(),
-//         ]);
-//         return response()->json(['error' => 'Failed to submit rating.'], 500);
-//     }
-// }
-
-
-public function view($filename)
-{
-    Log::info('View method called for filename: ' . $filename);
-    $filePath = public_path('/storage/capstone_files/' . $filename);
-
-    Log::info('Checking file path: ' . $filePath);
-
-    if (!file_exists($filePath)) {
-        Log::error('File not found: ' . $filename);
-        abort(404, 'File not found');
+            return response()->json(['message' => 'Rating submitted successfully!', 'rating' => $rating], 201);
+        } catch (\Exception $e) {
+            Log::error('Error submitting rating', [
+                'exception' => $e->getMessage(),
+                'stack' => $e->getTraceAsString(),
+                'request' => $request->all(),
+            ]);
+            return response()->json(['error' => 'Failed to submit rating: ' . $e->getMessage()], 500);
+        }
     }
 
-    Log::info('File found: ' . $filename);
-    return view('view_file', compact('filename'));
-}
 
 
+    // public function storeRatings(Request $request)
+    // {
+    //     Log::info('Incoming request: ', $request->all());
+
+    //     try {
+    //         // Check if the user is authenticated
+    //         if (!Auth::check()) {
+    //             return response()->json(['error' => 'You need to log in first.'], 401);
+    //         }
+
+    //         // Log request data before validation
+    //         Log::info('Request data: ', $request->all());
+
+    //         // Validate the request
+    //         $request->validate([
+    //             'manuscript_id' => 'required|exists:manuscripts,id',
+    //             'rating' => 'required|integer|between:1,5',
+    //         ]);
+
+    //         // Log user ID for debugging
+    //         $userId = Auth::id();
+    //         Log::info('User ID: ' . $userId);
+
+    //         // Check if the user has already rated this manuscript
+    //         $existingRating = Rating::where([
+    //             'user_id' => $userId,
+    //             'manuscript_id' => $request->manuscript_id,
+    //         ])->first();
+
+    //         if ($existingRating) {
+    //             return response()->json(['message' => 'You have already rated this manuscript.'], 409);
+    //         }
+
+    //         // Log data to be used in the updateOrCreate
+    //         Log::info('Creating rating with data:', [
+    //             'user_id' => $userId,
+    //             'manuscript_id' => $request->manuscript_id,
+    //             'rating' => $request->rating,
+    //         ]);
+
+    //         // Create the new rating
+    //         $rating = Rating::create([
+    //             'user_id' => $userId,
+    //             'manuscript_id' => $request->manuscript_id,
+    //             'rating' => $request->rating,
+    //         ]);
+
+    //         return response()->json(['message' => 'Rating submitted successfully!', 'rating' => $rating], 201);
+    //     } catch (\Exception $e) {
+    //         Log::error('Error submitting rating', [
+    //             'exception' => $e->getMessage(),
+    //             'stack' => $e->getTraceAsString(),
+    //             'request' => $request->all(),
+    //         ]);
+    //         return response()->json(['error' => 'Failed to submit rating.'], 500);
+    //     }
+    // }
+
+
+    public function view($filename)
+    {
+        Log::info('View method called for filename: ' . $filename);
+        $filePath = public_path('/storage/capstone_files/' . $filename);
+
+        Log::info('Checking file path: ' . $filePath);
+
+        if (!file_exists($filePath)) {
+            Log::error('File not found: ' . $filename);
+            abort(404, 'File not found');
+        }
+
+        Log::info('File found: ' . $filename);
+        return view('view_file', compact('filename'));
+    }
 }

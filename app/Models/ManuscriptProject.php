@@ -24,7 +24,9 @@ class ManuscriptProject extends Model
         'man_doc_view_count',
         'is_publish',
         'man_doc_rating',
-        'class_code',
+        'group_id',
+        'section_id',
+        'class_id',
     ];
 
     /**
@@ -36,7 +38,7 @@ class ManuscriptProject extends Model
     }
 
 
-     /**
+    /**
      * Many-to-Many relationship with Tags.
      * A manuscript can have multiple tags.
      */
@@ -65,10 +67,19 @@ class ManuscriptProject extends Model
         return $this->belongsTo(ClassModel::class, 'class_code');
     }
 
+    public function section()
+    {
+        return $this->belongsTo(Section::class, 'section_id');
+    }
+
+    public function group()
+    {
+        return $this->belongsTo(Group::class, 'group_id');
+    }
+
     //A manuscript can have many ratings.
     public function ratings()
     {
         return $this->hasMany(Rating::class, 'manuscript_id', 'id');
     }
-
 }
