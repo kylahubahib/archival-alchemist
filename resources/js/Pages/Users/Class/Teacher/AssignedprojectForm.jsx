@@ -108,10 +108,10 @@ const AssignedprojectForm = ({ onBack, folders }) => {
                             height: '100vh',
                         }}
                     >
-                        <div className="w-full h-full flex flex-col justify-center items-center">
+                        <div className="relative h-full flex flex-col justify-center items-center fixed">
                             <Button
                                 onClick={handleSlideCloseToRight}
-                                className="bg-transparent text-black border-none hover:bg-transparent absolute top-6 left-6 flex items-center my-6"
+                                className="bg-transparent text-black border-none hover:bg-transparent absolute top-3 left-6 flex items-center "
                             >
                                 <svg
                                     xmlns="http://www.w3.org/2000/svg"
@@ -125,7 +125,7 @@ const AssignedprojectForm = ({ onBack, folders }) => {
                                 <span className="ml-2">Close</span>
                             </Button>
 
-                            <h2 className="text-xl font-bold py-5 mb-6 text-center text-gray-600">
+                            <h2 className="w-full text-xl t-0 font-bold  mb-6 mt-[-10%] text-gray-600 text-center">
                                 Assign a New Project
                             </h2>
 
@@ -159,16 +159,17 @@ const AssignedprojectForm = ({ onBack, folders }) => {
                                     }}
                                 />
                             </div>
-
+                            <div className="w-full px-8 mb-4">
                             <Button
                                 onClick={handleSave}
-                                className="w-full font-bold px-8 mb-4 mt-10 bg-gray-300 hover:bg-blue-500"
+                                className="w-full px-8 mt-4 bg-gray-300 hover:bg-blue-500"
                                 color="gradient"
                                 size="lg"
                                 fullWidth
                             >
                                 Save Project
                             </Button>
+                            </div>
                         </div>
                     </motion.div>
                 )}

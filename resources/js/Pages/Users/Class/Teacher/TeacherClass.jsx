@@ -2,11 +2,13 @@ import React, { useState, useEffect } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head } from '@inertiajs/react';
 import axios from 'axios';
+import { Link } from '@inertiajs/react';
 import ShowMemersModal from '@/Components/Modal';
 import ClassDropdown from "@/Components/ClassDropdown";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+
 import { faFolder, faUsers, faUser, faEllipsisV } from '@fortawesome/free-solid-svg-icons';
-import { Button, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, useDisclosure } from "@nextui-org/react";
+import { Avatar, Button, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, useDisclosure } from "@nextui-org/react";
 import { Skeleton } from '@nextui-org/skeleton'; // Import Skeleton
 import CreateClassSection from '@/Pages/Users/Class/Teacher/CreateClassSection';
 
@@ -384,6 +386,24 @@ const handleAddStudent = async () => {
                 </div>
             }
         >
+        <div className="flex bg-white justify-start items-start w-h-screen mt-8 mx-8 border-b border-gray-300 ">
+        <Link
+            to="/teacherclass"
+            className="flex justify-start items-start my-3 mt-5 mx-5 w-full text-gray-700 text-2xl hover:underline hover:text-blue-500"
+        >
+<div className="flex items-center space-x-10 border-gray-200">
+    <div className="pr-3">
+        <Avatar
+            src="images/img1.png"
+            alt="Teacher"
+            size="8"
+        />
+    </div>
+    Alchemist Room
+</div>
+
+        </Link>
+    </div>
             {isCreating ? (
                 <CreateClassSection onCreate={handleCreate} className="flex justify-between items-center w-h-full"/>
             ) : (
@@ -394,6 +414,7 @@ const handleAddStudent = async () => {
 
             <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div className="p-6 text-gray-900 w-full">
+
                     <hr className="mb-4" />
                     <>
                         {/* Render selected class information */}

@@ -287,7 +287,7 @@ class ClassController extends Controller
 
         // Retrieve all tasks assigned to the given section_id
         $tasks = AssignedTask::where('section_id', $section_id) // Filter tasks by section_id
-            ->select('task_title', 'task_instructions', 'task_startdate', 'task_duedate', 'section_id') // Only select required columns
+            ->select('id','task_title', 'task_instructions', 'task_startdate', 'task_duedate', 'section_id') // Only select required columns
             ->get(); // Retrieve all tasks for the given section_id
 
         // Log the retrieved tasks
@@ -295,5 +295,28 @@ class ClassController extends Controller
 
         return response()->json($tasks); // Return the tasks as a JSON response
     }
+
+
+
+    public function specificAssignedTask($section_id, Request $request)
+    {
+        // Get taskID from query parameters (may be null)
+        $taskID = $request->query('taskID');
+    // Log the received section_id and taskID for debugging purposes
+    Log::info('Fetching assigned task', [
+        'section_id' => $section_id,
+        'taskID' => $taskID
+    ]);
+        // Start the query to retrieve tasks for the given section_id
+        $tasks = AssignedTask::where('section_id', $section_id)
+        ->where('id', $taskID) // Add this line to filter by taskID
+        ->select('task_title', 'task_instructions', 'task_startdate', 'task_duedate', 'section_id')
+        ->get();
+
+        // Return the tasks as a JSON response
+        return response()->json($tasks);
+    }
+
+
 
 }

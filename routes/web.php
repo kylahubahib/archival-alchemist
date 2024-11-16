@@ -408,5 +408,7 @@ Route::delete('/delete-groupmembers/{id}', [ClassController::class, 'deleteStude
 
 Route::post('/store-assignedTask/{section_id}', [ClassController::class, 'storeAssignedTask']);
 Route::get('/fetch-AssignedTask/{section_id}', [ClassController::class, 'fetchAssignedTask']);
+Route::get('/fetch-specificAssignedTask/{section_id}', [ClassController::class, 'specificAssignedTask']);
+
 
 require __DIR__.'/auth.php';

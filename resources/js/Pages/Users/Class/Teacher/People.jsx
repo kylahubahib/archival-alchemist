@@ -211,10 +211,10 @@ useEffect(() => {
 
     console.log('Folders in People:', folders);  // Check the folders prop
     return (
-        <div className="w-full h-full bg-gray-100 p-6">
+        <div className="pl-10 mt-0 bg-gray-100 rounded-lg shadow-lg w-full pb-20">
             {/* Teachers Section */}
-            <div className="w-full bg-white p-4 rounded-md shadow mb-6">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4">Teachers</h3>
+            <div className="relative w-relative h-48 mb-5 bg-white p-10 rounded-md shadow ml-5 mr-20">
+                <h3 className="text-lg font-semibold text-gray-600 mb-4">Teachers</h3>
                 <div className="space-y-4">
                 {isLoading ? (
                         // Display Skeleton loader for teacher
@@ -234,9 +234,9 @@ useEffect(() => {
             </div>
 
             {/* Students Section */}
-            <div className="w-full bg-white p-4 rounded-md shadow">
+            <div className="relative w-relative bg-white p-4 rounded-md shadow ml-5 mr-20">
                 <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-semibold text-gray-800">Students</h3>
+                    <h3 className="text-lg font-semibold text-gray-600">Students</h3>
                     {/* Add student icon with human and plus symbol */}
                     <Button
                         onClick={() => openModal(true)}
@@ -280,13 +280,6 @@ useEffect(() => {
                     )}
 </div>
 
-            </div>
-
-            {/* Back Button */}
-            <div className="mt-6">
-                <Button auto color="error" onClick={onBack}>
-                    Back
-                </Button>
             </div>
 
                                             {/* Modal for Adding Authors */}
