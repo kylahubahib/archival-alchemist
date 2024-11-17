@@ -13,25 +13,27 @@ class RevisionHistory extends Model
 {
     use HasFactory, Notifiable;
 
-    protected $table = 'revision_history'; 
+    protected $table = 'revision_history';
 
     protected $fillable = [
         'ins_comment',
         'man_doc_id',
         'ins_id',
-        'uploaded_at',
+        'stud_id',
+        'group_id',
+        'section_id',
         'status'
     ];
 
 
     public function getUpdatedAtAttribute($value)
     {
-        return Carbon::parse($value)->format('m/d/Y'); 
+        return Carbon::parse($value)->format('m/d/Y');
     }
-    
+
     public function getCreatedAtAttribute($value)
     {
-        return Carbon::parse($value)->format('m/d/Y'); 
+        return Carbon::parse($value)->format('m/d/Y');
     }
 
     public function manuscript(): BelongsTo
@@ -43,7 +45,7 @@ class RevisionHistory extends Model
     {
         return $this->belongsTo(User::class, 'ins_id');
     }
-    
+
 
 
 }

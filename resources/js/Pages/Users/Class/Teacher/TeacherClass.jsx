@@ -413,6 +413,7 @@ const handleAddStudent = async () => {
             )}
 
             <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+
                 <div className="p-6 text-gray-900 w-full">
 
                     <hr className="mb-4" />
@@ -606,7 +607,12 @@ const handleAddStudent = async () => {
                                                     </ModalBody>
                                                 </ModalContent>
                                             </Modal>
+
+
+
                                         )}
+
+                                        
                                     </div>
                                 </div>
                             </>

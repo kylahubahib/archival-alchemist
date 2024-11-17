@@ -103,11 +103,11 @@ const ClassDropdown = ({ ins_id, onUpdate }) => {
                     <DropdownItem
                         key="in_progress"
                         showDivider
-                        description="Display in-progress manuscripts"
+                        description="Display To-check manuscripts"
                         startContent={<PendingIcon className={iconClasses} />}
                         onClick={() => handleFilterChange('in_progress')}
                     >
-                        In Progress
+                        To Check
                     </DropdownItem>
                     <DropdownItem
                         key="pending"

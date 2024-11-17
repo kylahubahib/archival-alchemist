@@ -75,16 +75,48 @@ class TeacherClassController extends Controller
             // Get the courses in that department along with their sections
             $courses = Course::where('dept_id', $department->id)->with('sections')->get();
 
-            // Retrieve classes where ins_id matches the current user's ID
-            $classes = ClassModel::where('ins_id', Auth::id())->get();
+  // Retrieve sections where ins_id matches the current user's ID
+  $classes = Section::select(
+    'sections.id as section_id',
+    'sections.subject_name',
+    'sections.ins_id',
+    'sections.section_name',
+    'sections.section_classcode',
+    'sections.created_at as section_created_at',
+    'sections.updated_at as section_updated_at',
+    'manuscripts.id as manuscript_id',
+    'manuscripts.man_doc_title',
+    DB::raw("
+        CASE
+            WHEN manuscripts.man_doc_status = 'A' THEN 'Approved'
+            WHEN manuscripts.man_doc_status = 'P' THEN 'Pending'
+            WHEN manuscripts.man_doc_status = 'T' THEN 'To Check'
+            WHEN manuscripts.man_doc_status = 'D' THEN 'Declined'
+            WHEN manuscripts.man_doc_status = 'M' THEN 'Missing'
+            ELSE manuscripts.man_doc_status
+        END as man_doc_status
+    "),
+    'manuscripts.created_at as manuscript_created_at',
+    'manuscripts.updated_at as manuscript_updated_at',
+    'groups.id as group_id',
+    'groups.group_name',
+    'groups.created_at as group_created_at',
+    'groups.updated_at as group_updated_at'
+)
+->leftJoin('manuscripts', 'sections.id', '=', 'manuscripts.section_id')
+->leftJoin('groups', 'sections.id', '=', 'groups.section_id')
+->where('sections.ins_id', Auth::id())
+->where('manuscripts.section_id', '=', 1)
+->where('groups.section_id', '=', 1)
+->whereColumn('groups.id', 'manuscripts.group_id')
+->get();
 
-            $sections = Section::where('course_id', Auth::id())->get();
+Log::info('Classes with groups retrieved:', ['classes' => $classes]);
 
             return response()->json([
                 'courses' => $courses,
                 'classes' => $classes, // Include the classes in the response
-
-                'sections' => $sections, // Include the classes in the response
+                //'sections' => $sections, // Include the classes in the response
             ]);
         }
 
@@ -176,6 +208,10 @@ class TeacherClassController extends Controller
 //     return response()->json($manuscripts);
 // }
 
+// P-Pending
+// T-To Check
+// D-Decline
+// M-Missing
 
 
 public function getManuscriptsByClass(Request $request)
@@ -184,57 +220,78 @@ public function getManuscriptsByClass(Request $request)
     $filter = $request->input('filter', null); // Get the filter from the request, default to null
 
     // Base query to join manuscripts and class tables
-    $query = ManuscriptProject::from('class as c')
-        ->leftJoin('manuscripts as m', 'c.id', '=', 'm.class_code')
-        ->select('c.id as id', 'c.class_code', 'c.ins_id', 'c.class_name', 'm.id as id', 'm.man_doc_title', 'm.man_doc_status', 'm.created_at', 'm.updated_at')
-        ->where('c.ins_id', $ins_id);
-
-        //     // Query to join manuscripts and class tables
-//     $manuscripts = ManuscriptProject::from('class as c')
-//     ->leftJoin('manuscripts as m', 'c.id', '=', 'm.class_code')
-//     ->select('c.id as id', 'c.class_code', 'c.class_name', 'm.id as id', 'm.man_doc_title', 'm.man_doc_status', 'm.created_at', 'm.updated_at')
-//     ->where('c.ins_id', $ins_id)
-//     ->get();
+    $query = ManuscriptProject::from('sections as s')
+        ->leftJoin('manuscripts as m', 's.id', '=', 'm.section_id')
+        ->select(
+            's.id as id',
+            's.subject_name',
+            's.ins_id',
+            's.section_name',
+            's.section_classcode',
+            'm.id as manuscript_id', // Aliased to avoid conflict with section ID
+            'm.man_doc_title',
+            DB::raw("
+                CASE
+                    WHEN m.man_doc_status = 'P' THEN 'Pending'
+                    WHEN m.man_doc_status = 'T' THEN 'To Check'
+                    WHEN m.man_doc_status = 'D' THEN 'Declined'
+                    WHEN m.man_doc_status = 'M' THEN 'Missing'
+                    WHEN m.man_doc_status = 'A' THEN 'Approved'
+                    ELSE m.man_doc_status
+                END as man_doc_status
+            "), // Transforming man_doc_status using CASE
+            'm.created_at',
+            'm.updated_at'
+        )
+        ->where('s.ins_id', $ins_id);
 
     // Apply filter condition based on the filter, if set
-    if ($filter) {
-        switch ($filter) {
-            case 'approved':
-                $query->where('m.man_doc_status', 'Y');
-                break;
-            case 'declined':
-                $query->where('m.man_doc_status', 'X');
-                break;
-            case 'in_progress':
-                $query->where('m.man_doc_status', 'I');
-                break;
-            case 'pending':
-                $query->whereNull('m.id'); // Pending means no manuscript exists for that class
-                break;
-        }
-    }
+    // if ($filter) {
+    //     switch ($filter) {
+    //         case 'approved':
+    //             $query->where('m.man_doc_status', 'Y');
+    //             break;
+    //         case 'declined':
+    //             $query->where('m.man_doc_status', 'X');
+    //             break;
+    //         case 'in_progress':
+    //             $query->where('m.man_doc_status', 'I');
+    //             break;
+    //         case 'pending':
+    //             $query->whereNull('m.id'); // Pending means no manuscript exists for that class
+    //             break;
+    //     }
+    // }
 
     $manuscripts = $query->get();
 
     // Transform statuses into user-friendly labels
-    $manuscripts->transform(function ($manuscript) {
-        switch ($manuscript->man_doc_status) {
-            case 'Y':
-                $manuscript->man_doc_status = 'Approved';
-                break;
-            case 'I':
-                $manuscript->man_doc_status = 'In progress';
-                break;
-            case 'X':
-                $manuscript->man_doc_status = 'Declined';
-                break;
-            default:
-                $manuscript->man_doc_status = 'Pending';
-        }
-        return $manuscript;
-    });
+// Transform statuses into user-friendly labels
+// $manuscripts->transform(function ($manuscript) {
+//     switch ($manuscript->man_doc_status) {
+//         case 'Y':
+//             $manuscript->man_doc_status = 'Approved';
+//             break;
+//         case 'I':
+//             $manuscript->man_doc_status = 'In progress';
+//             break;
+//         case 'X':
+//             $manuscript->man_doc_status = 'Declined';
+//             break;
+//         default:
+//             $manuscript->man_doc_status = 'Pending';
+//     }
+//     return $manuscript;
+// });
 
-    return response()->json($manuscripts);
+    // Log the transformed manuscripts (as an array or JSON)
+    Log::info('This is the Manuscripts:', $manuscripts->toArray()); // Log as an array
+
+
+
+// Return the transformed data
+return response()->json($manuscripts);
+
 }
 
 

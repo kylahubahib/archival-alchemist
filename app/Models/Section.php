@@ -16,6 +16,7 @@ class Section extends Model
         'course_id',  // Corrected spelling here
         'subject_name',
         'section_name',
+        'section_classcode',
         'added_by',
         'ins_id'
     ];
@@ -24,4 +25,13 @@ class Section extends Model
     {
         return $this->belongsTo(Course::class, 'course_id');
     }
+
+    public function groups()
+    {
+        return $this->hasMany(Group::class, 'section_id');
+
+
+    }
+
+
 }

@@ -318,5 +318,31 @@ class ClassController extends Controller
     }
 
 
+    public function storeFeedback(Request $request, $manuscript_id) {
+        Log::info('Store Feedback Request Data:', $request->all());
+
+        $validatedData = $request->validate([
+            'title' => 'required|string',
+            'instructions' => 'nullable|string',
+            'startdate' => 'required|string',
+            'duedate' => 'required|string',
+        ]);
+
+        // Process task storage logic
+        try {
+            $task = new AssignedTask();
+            $task->section_id = $manuscript_id;
+            $task->task_title = $validatedData['title'];
+            $task->task_instructions = $validatedData['instructions'];
+            $task->task_startdate = Carbon::parse($validatedData['startdate'])->format('Y-m-d H:i:s');
+            $task->task_duedate = Carbon::parse($validatedData['duedate'])->format('Y-m-d H:i:s');
+            $task->save();
+        } catch (\Exception $e) {
+            // Handle any exception that may occur
+            dd($e->getMessage()); // For debugging
+        }
+    }
+
+
 
 }

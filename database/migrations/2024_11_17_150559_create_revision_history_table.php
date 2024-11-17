@@ -15,8 +15,11 @@ return new class extends Migration
             $table->id();
             $table->string('ins_comment')->nullable();
             $table->foreignId('man_doc_id')->constrained('id')->on('manuscripts')->onDelete('cascade');
+            $table->string('man_doc_status', 1)->default('S');
             $table->foreignId('ins_id')->constrained('id')->on('users')->onDelete('cascade');
             $table->foreignId('stud_id')->constrained('id')->on('users')->onDelete('cascade');
+            $table->foreignId('group_id')->constrained('id')->on('groups')->onDelete('cascade');
+            $table->foreignId('section_id')->constrained('id')->on('sections')->onDelete('cascade');
             $table->timestamps();
         });
     }
