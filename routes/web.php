@@ -522,6 +522,9 @@ Route::middleware(['web'])->group(function () {
     Route::post('/forum-posts/{id}/view', [ForumPostController::class, 'incrementViewCount'])->name('forum-posts.incrementViewCount');
 });
 
+//Forum Comments
+//Route::post('/posts/{post}/comments', [CommentController::class, 'store']);
+
 
 
 // route::get('view_file/{file}', [StudentClassController::class, 'view']);
