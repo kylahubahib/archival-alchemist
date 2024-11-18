@@ -117,7 +117,7 @@ const CreateClassSection = ({ userId }) => {
     };
 
     return (
-        <div className="flex flex-col items-start justify-start w-h-screen bg-gray-100 mt-0 relative w-relative px-10">
+        <div className="flex flex-col items-start justify-start w-h-screen bg-gray-100 mt-0 relative w-relative mx-8 px-10">
             {isViewClassOpen ? (
                 <ViewClass folders={folders} onBack={handleBack} /> // Pass handleBack as a prop to ViewClass
             ) : (

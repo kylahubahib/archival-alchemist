@@ -6,6 +6,9 @@ use App\Http\Controllers\Pages\InstitutionAdmin\FacultyController;
 use App\Http\Controllers\Pages\InstitutionAdmin\StudentController;
 use App\Http\Controllers\Pages\SuperAdmin\UserController;
 
+use App\Http\Controllers\ClassController;
+use App\Http\Controllers\StudentClassController;
+use App\Http\Controllers\TeacherClassController;
 use Illuminate\Support\Facades\Route;
 
 use App\Models\Forum;
@@ -14,11 +17,8 @@ use App\Http\Controllers\TagController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\ForumPostController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
-use App\Http\Controllers\StudentClassController;
-use App\Http\Controllers\TeacherClassController;
 
 use App\Http\Controllers\GoogleController;
-
 
 use App\Http\Controllers\UserReportController;
 use App\Http\Controllers\AdvancedTagsController;
@@ -63,6 +63,13 @@ use Illuminate\Support\Facades\Auth;
 Route::get('/admin-registration/{token}', [UserController::class, 'adminRegistrationForm'])->name('admin.registration-form');
 Route::post('/submit-admin-registration', [UserController::class, 'submitAdminRegistration'])->name('admin.submit-admin-registration');
 
+// Route::get('/auth/user', function (Request $request) {
+//         return response()->json([
+//             'id' => $request->user()->id,
+//             'user_type' => $request->user()->user_type,
+//             // Add any other fields you might need
+//         ]);
+//     })->middleware('auth');
 
 Route::get('/', function () {
     return Inertia::render('Home');
@@ -102,6 +109,7 @@ Route::get('/tags', function () {
     return Inertia::render('Users/Tags');
 })->middleware(['auth', 'verified', 'user-type:student,teacher'])->name('tags');
 
+
 Route::get('/savedlist', function () {
     return Inertia::render('Users/SavedList');
 })->middleware(['auth', 'verified', 'user-type:student,teacher,general_user'])->name('savedlist');
@@ -134,10 +142,6 @@ Route::get('/connect/google', [GoogleController::class, 'promptGoogleConnection'
 Route::post('/remove-affiliation', [ProfileController::class, 'removeAffiliation'])->name('remove-affiliation');
 
 use App\Events\MessageSent;
-
-
-
-
 use App\Mail\SubscriptionInquiryMail;
 use App\Mail\NewAccountMail;
 use Illuminate\Support\Facades\Mail;
@@ -346,8 +350,6 @@ Route::get('/terms-and-conditions', [TermsAndConditionController::class, 'terms_
 
 Route::inertia('/privacy-policy', 'PrivacyPolicy')->name('privacy-policy');
 
-Route::inertia('/terms-and-conditions', 'TermsandConditions')->name('terms-and-conditions');
-
 Route::get('/faq', [ForumPostController::class, 'faq'])->name('faq');
 
 
@@ -474,10 +476,6 @@ Route::middleware('auth')->group(function () {
 //     Route::get('/display/groupclass', [TeacherClassController::class, 'DisplayGroupClass'])->name('teacher.class');
 // });
 
-
-
-
-
 //Ratings
 // Route::post('/ratings', [StudentClassController::class, 'storeRatings'])
 // ->middleware(['auth', 'user-type:student, teacher'])->name('storeRatings');
@@ -487,6 +485,7 @@ Route::post('/ratings', [StudentClassController::class, 'storeRatings']);
 Route::get('/groupmembers/{manuscriptId}', [TeacherClassController::class, 'ViewGroupMembers']);
 
 
+//FORUM ROUTES
 // Route for displaying a specific post
 Route::middleware(['web'])->group(function () {
     // Route to get all forum posts
@@ -511,6 +510,28 @@ Route::middleware(['web'])->group(function () {
 
 
 Route::get('/view_file/{filename}', [StudentClassController::class, 'view'])->name('view_file');
+
+
+//class controller
+// routes/api.php
+
+
+Route::get('/fetch-courses', [ClassController::class, 'fetchCourses']);
+Route::post('/store-sections', [ClassController::class, 'storeSection']); // Route for storing data
+Route::get('/fetch-classes', [ClassController::class, 'fetchClasses']);
+
+Route::post('/store-groupmembers', [ClassController::class, 'addStudentsToClass']);
+Route::get('/fetch-currentuser', [ClassController::class, 'getCurrentUser']);
+
+Route::get('/fetch-groupmembers', [ClassController::class, 'getGroupMembers']);
+// In web.php or api.php
+Route::delete('/delete-groupmembers/{id}', [ClassController::class, 'deleteStudent']);
+
+Route::post('/store-assignedTask/{section_id}', [ClassController::class, 'storeAssignedTask']);
+Route::get('/fetch-AssignedTask/{section_id}', [ClassController::class, 'fetchAssignedTask']);
+Route::get('/fetch-specificAssignedTask/{section_id}', [ClassController::class, 'specificAssignedTask']);
+
+Route::post('/store-feedback/{manuscript_id}', [ClassController::class, 'storeFeedback']);
 
 
 require __DIR__.'/auth.php';
