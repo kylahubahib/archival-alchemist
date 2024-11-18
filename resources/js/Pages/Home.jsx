@@ -85,7 +85,7 @@ export default function Home({ auth }) {
                         transition={{ duration: 1.5, delay: 0.5 }}
                     >
                         <h6 className="text-3xl md:text-5xl lg:text-7xl font-serif mt-6">
-                        {hero.content_title}
+                        {hero.content_title || ''}
                         </h6>
                         <h4 className="mt-6">{hero.subject || 'Archival Alchemist'}</h4>
                     </motion.div>
@@ -96,7 +96,7 @@ export default function Home({ auth }) {
                         animate={isHeroInView ? { opacity: 1, y: 0 } : {}}
                         transition={{ duration: 2, delay: 1 }}
                     >
-                        {hero.content_text || 'Hello'}
+                        {hero.content_text || ''}
                     </motion.p>
                     </div>
                 </div>

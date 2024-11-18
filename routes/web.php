@@ -64,15 +64,6 @@ Route::get('/admin-registration/{token}', [UserController::class, 'adminRegistra
 Route::post('/submit-admin-registration', [UserController::class, 'submitAdminRegistration'])->name('admin.submit-admin-registration');
 
 
-
-Route::get('/auth/user', function (Request $request) {
-    return response()->json([
-        'id' => $request->user()->id,
-        'user_type' => $request->user()->user_type,
-        // Add any other fields you might need
-    ]);
-})->middleware('auth');
-
 Route::get('/', function () {
     return Inertia::render('Home');
 });
@@ -89,11 +80,11 @@ Route::post('/cancel-subscription',[InstitutionSubscriptionController::class, 'c
 
 Route::get('/library', function () {
     return Inertia::render('Users/Library');
-})->middleware(['user-type:student,teacher,guest'])->name('library');
+})->middleware(['user-type:student,teacher,guest,general_user'])->name('library');
 
 Route::get('/forum', function () {
     return Inertia::render('Users/Forum');
-})->middleware(['user-type:student,teacher,guest'])->name('forum');
+})->middleware(['user-type:student,teacher,guest,general_user'])->name('forum');
 
 Route::get('/studentclass', function () {
     return Inertia::render('Users/Class/Student/StudentClass');
@@ -113,19 +104,11 @@ Route::get('/tags', function () {
 
 Route::get('/savedlist', function () {
     return Inertia::render('Users/SavedList');
-})->middleware(['auth', 'verified', 'user-type:student,teacher'])->name('savedlist');
+})->middleware(['auth', 'verified', 'user-type:student,teacher,general_user'])->name('savedlist');
 
 Route::get('/inbox', function () {
     return Inertia::render('Users/Inbox');
-})->middleware(['auth', 'verified', 'user-type:student,teacher'])->name('inbox');
-
-Route::get('/authors', function () {
-    return Inertia::render('Users/Authors');
-})->middleware(['auth', 'verified', 'user-type:student,teacher'])->name('authors');
-
-Route::get('/tags', function () {
-    return Inertia::render('Users/Tags');
-})->middleware(['auth', 'verified', 'user-type:student,teacher'])->name('tags');
+})->middleware(['auth', 'verified', 'user-type:student,teacher,general_user'])->name('inbox');
 
 // Route::get('/subscription', function () {
 //     return Inertia::render('Users/UserSubscription');

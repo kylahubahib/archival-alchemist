@@ -5,7 +5,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Pages\UsersController;
 use App\Http\Controllers\Api\FetchDataController;
 use App\Http\Middleware\CheckUserTypeMiddleware;
-
+use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use Illuminate\Support\Facades\Auth;
 
 // Route::get('/user', function (Request $request) {
 //     return $request->user();
@@ -21,3 +22,17 @@ Route::get('/fetch-current-plans', [FetchDataController::class, 'fetchDistinctCu
 Route::get('/fetch-status', [FetchDataController::class, 'fetchDistinctUserStatus'])->name('fetch.status');
 Route::get('/fetch-institution-admin-roles', [FetchDataController::class, 'fetchInstitutionAdminRoles'])->name('fetch.institution-admin-roles');
 Route::get('/fetch-super-admin-roles', [FetchDataController::class, 'fetchSuperAdminRoles'])->name('fetch.super-admin-roles');
+
+
+
+
+// USER VIEW APIS
+Route::post('login', [AuthenticatedSessionController::class, 'store']);
+
+Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])
+->name('logout');
+
+Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
+    return $request->user();
+});
+
