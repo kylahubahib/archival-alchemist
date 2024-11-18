@@ -9,7 +9,8 @@ import axios from 'axios';
 import SearchBar from '@/Components/SearchBars/LibrarySearchBar'; // Import the LibrarySearchBar component
 import { Tooltip, Button } from '@nextui-org/react';
 import {Dropdown, DropdownTrigger, DropdownMenu, DropdownItem} from "@nextui-org/react";
-import { Skeleton } from '@nextui-org/skeleton'; // Import Skeleton
+import { Skeleton } from '@nextui-org/skeleton'; // Import //Skeleton
+import PdfViewer from '@/Components/PdfViewer'
 
 const Manuscript = ({user, choice}) => {
     const [favorites, setFavorites] = useState(new Set());
@@ -32,6 +33,8 @@ const Manuscript = ({user, choice}) => {
     const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
     const [titleInputValue, setTitleInputValue] = useState(''); // State for the title input
     const [selectedSearchField, setSelectedSearchField] = useState("Title"); // Track selected search field
+
+
 
 
     // Function to update search results
@@ -299,7 +302,8 @@ const handleDropdownChange = (selectedKey) => {
 
     if (loading) {
         return (
-            <section className="w-full mx-auto my-4">
+<section className="w-full mx-auto my-4 mt-8 ml-50">
+
                 {[...Array(3)].map((_, index) => (
                     <div key={index} className="w-full bg-white shadow-lg flex mb-4">
                         <div className="rounded w-40 h-full bg-gray-200 flex items-center justify-center">
@@ -329,14 +333,14 @@ const handleDropdownChange = (selectedKey) => {
     }
 
     return (
-        <section className="w-full mx-auto my-4">
+        <section className="w-full mx-auto my-4 mt-8 ml-50">
             <div className="mb-6 w-full flex items-center gap-4"> {/* Adjusted to use flex and gap */}
-            <div className="flex-grow">
+            <div className="flex-grow h-full">
             <SearchBar onSearch={handleSearch} selectedSearchField={selectedSearchField} titleInputValue={titleInputValue} // Maintain the value here
     setTitleInputValue={setTitleInputValue} // Optionally, for managing the input state
 />
 
-                {loading && <div>Loading...</div>}
+{loading && <div>Loading...</div>}
                     {error && <div>{error}</div>}
                     <div>
                         {manuscriptsToDisplay.length === 0 ? (
@@ -382,11 +386,27 @@ const handleDropdownChange = (selectedKey) => {
             {manuscriptsToDisplay.map((manuscript) => (
             <div key={manuscript.id} className="w-full bg-white shadow-lg flex mb-4">
                 <div className="rounded w-40 h-full bg-gray-200 flex items-center justify-center">
-                    <img
+                    {/* <img
                         className="rounded w-36 h-46"
                         src="https://via.placeholder.com/150"
                         alt="Book"
                     />
+                     */}
+
+
+{manuscript.man_doc_content ? (
+    <PdfViewer pdfUrl={manuscript.man_doc_content} />
+    // <PdfViewer pdfUrl="http://127.0.0.1:8000/storage/capstone_files/1728959708_Designing%20Student%20Centric%20Solutions%20through%20Collaboration.pdf" />
+
+) : (
+    <div className="flex items-center justify-center h-full w-full text-gray-500">
+        <p>No PDF available</p>
+    </div>
+)}
+
+
+
+
                 </div>
             <div className="flex-1 p-4">
                 <h2 className="text-xl font-bold text-gray-900">
