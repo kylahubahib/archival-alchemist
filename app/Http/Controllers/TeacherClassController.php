@@ -90,7 +90,7 @@ class TeacherClassController extends Controller
         CASE
             WHEN manuscripts.man_doc_status = 'A' THEN 'Approved'
             WHEN manuscripts.man_doc_status = 'P' THEN 'Pending'
-            WHEN manuscripts.man_doc_status = 'T' THEN 'To Check'
+            WHEN manuscripts.man_doc_status = 'T' THEN 'To-Review'
             WHEN manuscripts.man_doc_status = 'D' THEN 'Declined'
             WHEN manuscripts.man_doc_status = 'M' THEN 'Missing'
             ELSE manuscripts.man_doc_status
@@ -233,7 +233,7 @@ public function getManuscriptsByClass(Request $request)
             DB::raw("
                 CASE
                     WHEN m.man_doc_status = 'P' THEN 'Pending'
-                    WHEN m.man_doc_status = 'T' THEN 'To Check'
+                    WHEN m.man_doc_status = 'T' THEN 'To-Review'
                     WHEN m.man_doc_status = 'D' THEN 'Declined'
                     WHEN m.man_doc_status = 'M' THEN 'Missing'
                     WHEN m.man_doc_status = 'A' THEN 'Approved'

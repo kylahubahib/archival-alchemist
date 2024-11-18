@@ -9,6 +9,7 @@ use App\Models\Course;
 use App\Models\Section;
 use App\Models\User;
 use App\Models\GroupMember;
+use App\Models\RevisionHistory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
@@ -318,29 +319,75 @@ class ClassController extends Controller
     }
 
 
-    public function storeFeedback(Request $request, $manuscript_id) {
+    public function storeFeedback(Request $request)
+    {
         Log::info('Store Feedback Request Data:', $request->all());
 
         $validatedData = $request->validate([
-            'title' => 'required|string',
-            'instructions' => 'nullable|string',
-            'startdate' => 'required|string',
-            'duedate' => 'required|string',
+            'comment' => 'required|string',
+            'status' => 'required|string',
         ]);
 
-        // Process task storage logic
         try {
-            $task = new AssignedTask();
-            $task->section_id = $manuscript_id;
-            $task->task_title = $validatedData['title'];
-            $task->task_instructions = $validatedData['instructions'];
-            $task->task_startdate = Carbon::parse($validatedData['startdate'])->format('Y-m-d H:i:s');
-            $task->task_duedate = Carbon::parse($validatedData['duedate'])->format('Y-m-d H:i:s');
-            $task->save();
+            $history = new RevisionHistory();
+            $history->ins_comment = $validatedData['comment'];
+            $history->man_doc_id = $request->manuscript_id;
+            $history->man_doc_status = $validatedData['status'];
+            $history->ins_id = $request->ins_id; // Ensure these values are passed in the request
+            $history->group_id = $request->group_id;
+            $history->section_id = $request->section_id;
+            $history->created_at = $request->manuscriptCreated;
+
+            $history->save();
+
+            return response()->json(['success' => true, 'message' => 'Feedback stored successfully']);
         } catch (\Exception $e) {
             // Handle any exception that may occur
-            dd($e->getMessage()); // For debugging
+            Log::error('Error storing feedback:', ['error' => $e->getMessage()]);
+            return response()->json(['success' => false, 'message' => 'Error storing feedback'], 500);
         }
+    }
+
+    public function fetchHistory(Request $request)
+    {
+        // Get manuscript_id from query parameters
+        $manuscript_id = $request->query('manuscript_id');
+        Log::info('Fetching Manuscript ID:', ['manuscript_id' => $manuscript_id]);
+
+        $getHistory = DB::table('revision_history as r')
+            ->join('manuscripts as m', 'r.man_doc_id', '=', 'm.id')
+            ->where('r.man_doc_id', $manuscript_id)
+            ->select(
+                'r.id as revision_id',
+                'r.ins_comment',
+                'r.man_doc_id',
+                'r.man_doc_status as revision_status',
+                'r.ins_id',
+                'r.group_id as revision_group_id',
+                'r.section_id as revision_section_id',
+                'r.created_at as revision_created_at',
+                'r.updated_at as revision_updated_at',
+                'm.man_doc_title',
+                'm.man_doc_content',
+                'm.man_doc_description',
+                'm.man_doc_status as manuscript_status',
+                'm.man_doc_visibility',
+                'm.man_doc_adviser',
+                'm.man_doc_view_count',
+                'm.is_publish',
+                'm.man_doc_rating',
+                'm.created_at as manuscript_created_at',
+                'm.updated_at as manuscript_updated_at',
+                'm.class_code',
+                'm.group_id as manuscript_group_id',
+                'm.section_id as manuscript_section_id'
+            )
+            ->get();
+
+        // Log the retrieved data for debugging
+
+        Log::info('Retrieved History Data:', ['getHistory' => $getHistory->toArray()]);
+        return response()->json($getHistory);
     }
 
 

@@ -410,6 +410,6 @@ Route::post('/store-assignedTask/{section_id}', [ClassController::class, 'storeA
 Route::get('/fetch-AssignedTask/{section_id}', [ClassController::class, 'fetchAssignedTask']);
 Route::get('/fetch-specificAssignedTask/{section_id}', [ClassController::class, 'specificAssignedTask']);
 
-Route::post('/store-feedback/{manuscript_id}', [ClassController::class, 'storeFeedback']);
-
+Route::post('/store-feedback', [ClassController::class, 'storeFeedback']);
+Route::get('/fetch-history', [ClassController::class, 'fetchHistory']);
 require __DIR__.'/auth.php';
