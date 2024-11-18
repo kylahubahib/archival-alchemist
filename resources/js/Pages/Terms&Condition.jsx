@@ -3,11 +3,11 @@ import { Link, Head } from '@inertiajs/react';
 import NavLink from '@/Components/NavLink';
 import GuestLayout from '@/Layouts/GuestLayout';
 
-export default function TermsAndCondition({auth}) {
+export default function TermsAndCondition({ auth }) {
 
     return (
-        <GuestLayout user={auth.user} 
-            header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Terms and Condition</h2> }>
+        <GuestLayout user={auth.user}
+            header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Terms and Condition</h2>}>
             <Head title="Terms and Condition" />
 
             <div className="py-12">

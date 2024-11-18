@@ -4,17 +4,24 @@ import react from '@vitejs/plugin-react';
 
 export default defineConfig({
     server: {
-        host: 'localhost', // Server runs on localhost, typically useful in local dev.
-        cors: true,         // Enable CORS if your assets are being served from a different origin.
+        host: 'localhost',
+        cors: true, // Enable CORS
+        fs: {
+            strict: true,
+        },
+        hmr: {
+            timeout: 3000,
+            overlay: false,
+        },
+    },
+    build: {
+        target: 'esnext',
     },
     plugins: [
         laravel({
-            input: 'resources/js/app.jsx',  // Entry point for your JS/React code
-            refresh: true,                  // This will automatically refresh the page in the browser on changes
+            input: 'resources/js/app.jsx',
+            refresh: true,
         }),
-        react(), // React plugin to handle React JSX files
+        react(),
     ],
-    optimizeDeps: {
-        include: ['pdfjs-dist'] // Ensures pdfjs-dist is bundled correctly during development
-    }
 });

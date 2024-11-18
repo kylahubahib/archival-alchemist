@@ -3,12 +3,14 @@ import InputLabel from '@/Components/InputLabel';
 import Modal from '@/Components/Modal';
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
+import { showToast } from '@/Components/Toast';
 import { useForm } from '@inertiajs/react';
 
 export default function EditCourse({isOpen, onClose, deptId, course}) {
 
     const { data, setData, put, processing, errors, reset } = useForm({
-        course_name: course.course_name
+        course_name: course.course_name,
+        course_acronym: course.course_acronym
     });
 
     const editSubmit = (e) => {
@@ -18,7 +20,7 @@ export default function EditCourse({isOpen, onClose, deptId, course}) {
             preserveScroll: true,
             onSuccess: () => {
                 onClose();
-                alert('Successfully Updated!');
+                showToast('success', 'Successfully updated course!');
             },
             onError: (errors) => {
                 console.error('Update failed', errors);
@@ -31,7 +33,7 @@ export default function EditCourse({isOpen, onClose, deptId, course}) {
       
         <Modal show={isOpen} onClose={onClose}>
                 <div className="bg-customBlue p-3" >
-                    <h2 className="text-xl text-white font-bold">Add Department</h2>
+                    <h2 className="text-xl text-white font-bold">Update Course</h2>
                 </div>
 
                 <div className="p-6 space-y-5">
@@ -47,6 +49,17 @@ export default function EditCourse({isOpen, onClose, deptId, course}) {
                                     placeholder="Course"
                                 />
                                 <InputError message={errors.course_name} className="mt-2" />
+                            </div>
+                            <div className="flex flex-col">
+                                <InputLabel htmlFor="course_acronym" value="Course Acronym" />
+                                <TextInput
+                                    id="course_acronym"
+                                    value={data.course_acronym}
+                                    onChange={(e) => {setData('course_acronym', e.target.value)}}
+                                    className="mt-1 block w-full"
+                                    placeholder="Course Acronym"
+                                />
+                                <InputError message={errors.course_acronym} className="mt-2" />
                             </div>
 
                             <div className="mt-6 flex">

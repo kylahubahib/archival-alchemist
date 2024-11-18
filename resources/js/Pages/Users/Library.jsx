@@ -4,10 +4,11 @@ import { Head } from '@inertiajs/react';
 import { useState } from 'react';
 import { BookOpenIcon } from '@heroicons/react/24/outline';
 import Modal from '@/Components/Modal';
-import AllManuscript from '@/Components/Manuscripts/AllManuacript';
+import AllManuscript from '@/Components/Manuscripts/AllManuscript';
 import RecManuscript from '@/Components/Manuscripts/RecommendedManuscript';
 import SearchBar from '@/Components/SearchBars/LibrarySearchBar';
 import React from 'react';
+import Manuscript from '@/Components/Manuscript';
 
 const currentYear = new Date().getFullYear(); // Get the current year
 const yearOptions = Array.from(
@@ -132,9 +133,9 @@ const handleEndYearChange = (e) => {
         >
             <Head title="Library" />
 
-            <div className="m-4 min-h-screen rounded-xl">
-                <div className="mx-auto sm:px-6 lg:px-8 bg-gray-100 h-screen pt-10  mr-8">
-                    <div className="flex flex-col ml-8">
+            <div className="bg-white m-4 min-h-screen rounded-xl">
+                <div className="mx-auto sm:px-6 lg:px-8 bg-gray-100 h-screen pt-6">
+                    <div className="flex flex-col">
                         <div className="flex justify-between items-center mb-4">
                             <div className="flex">
                                 <button

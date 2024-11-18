@@ -7,7 +7,9 @@ import { createInertiaApp } from '@inertiajs/react';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { NextUIProvider } from '@nextui-org/react';
 
+
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
+
 
 createInertiaApp({
     title: (title) => `${appName}`,
@@ -16,9 +18,11 @@ createInertiaApp({
         const root = createRoot(el);
 
         root.render(
+        
         <NextUIProvider>
             <App {...props} />
         </NextUIProvider>
+        
     );
     },
     progress: {

@@ -7,12 +7,11 @@ import { Button, Divider, Table, TableBody, TableCell, TableColumn, TableHeader,
 import { useEffect, useState } from 'react';
 import { FaCheck, FaPen, FaTrash } from 'react-icons/fa';
 import TextInput from '@/Components/TextInput';
-import CreateService from "./CreateService";
 import CreateTeam from './CreateTeam';
 
 export default function TeamSection({ isOpen, onClose, team }) {
     const [index, setIndex] = useState(null);
-    const [newService, setNewService] = useState(false);
+    const [newTeam, setNewTeam] = useState(false);
     const [previewUrl, setPreviewUrl] = useState(null);
     const [pic, setPic] = useState(null);
     const { data, setData,put, processing, errors, reset } = useForm({
@@ -70,14 +69,14 @@ export default function TeamSection({ isOpen, onClose, team }) {
     };
 
     const handleCreateItem = () => {
-        setNewService(true);
+        setNewTeam(true);
         setIndex(null);
         reset();
         setPreviewUrl(null);  
     };
 
     const handleCloseCreate = () => {
-        setNewService(false);
+        setNewTeam(false);
         reset();
         setPreviewUrl(null);  
     };
@@ -99,7 +98,9 @@ export default function TeamSection({ isOpen, onClose, team }) {
                 onSuccess: () => {
                     showToast('success', 'Team updated successfully!');
                     setIndex(null);
+                    setData(null);
                     onClose();
+                    router.reload();
                 },
                 onError: () => {
                     showToast('error', 'Failed to update team.');
@@ -134,7 +135,7 @@ export default function TeamSection({ isOpen, onClose, team }) {
                 </Button>
             </div>
 
-            {!newService ? (
+            {!newTeam ? (
             <div className="px-5 py-5">
                 <div > 
                     <Table className='overflow-auto max-h-[500px]'  isHeaderSticky>

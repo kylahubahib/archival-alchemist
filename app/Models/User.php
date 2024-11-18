@@ -11,12 +11,15 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Laravel\Sanctum\HasApiTokens;
 
+
+use Google\Client as GoogleClient;
 
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, HasApiTokens;
 
     /**
      * The attributes that are mass assignable.
@@ -35,7 +38,11 @@ class User extends Authenticatable
         'is_premium',
         'user_pic',
         'user_dob',
-        'is_affiliated'
+        'is_affiliated',
+        'google_user_id',
+        'google_access_token',
+        'google_refresh_token',
+        'google_token_expiry'
     ];
 
     /**
@@ -67,9 +74,9 @@ class User extends Authenticatable
         return $this->hasOne(Student::class, 'user_id');
     }
 
-    public function faculty(): HasOne
+    public function faculty(): HasMany
     {
-        return $this->hasOne(Faculty::class, 'user_id');
+        return $this->hasMany(Faculty::class, 'user_id');
     }
 
     public function institution_admin(): HasOne
@@ -155,19 +162,44 @@ class User extends Authenticatable
     }
 
     // Define the relationship with the Author model
-    // public function authors(): HasMany
-    // {
-    //     return $this->hasMany(Author::class, 'user_id');
-    // }
+     // If a User has many Authors
+     public function authors()
+     {
+         return $this->hasMany(Author::class, 'user_id', 'id');
+     }
 
-    // If a User has many Authors
-    public function authors()
+     public function section()
+     {
+         return $this->hasMany(Section::class, 'ins_id');
+     }
+
+     public function access_control(): HasOne
+     {
+         return $this->hasOne(AccessControl::class, 'user_id');
+     }
+     public function user_log(): HasMany
+     {
+         return $this->hasMany(UserLog::class, 'user_id');
+     }
+
+    // Google access tokens expires after one hour so this method will automatically 
+    // create a new access token using the refresh token.
+    // Each time you need to make a request to Google Drive or Docs APIs, 
+    // call refreshGoogleToken() to ensure the token is valid.
+    public function refreshGoogleToken()
     {
-        return $this->hasMany(Author::class, 'user_id', 'id');
+        if (Carbon::now()->greaterThan($this->google_token_expiry)) {
+            $client = new GoogleClient();
+            $client->setClientId(config('services.google.client_id'));
+            $client->setClientSecret(config('services.google.client_secret'));
+            $client->refreshToken($this->google_refresh_token);
+
+            $newAccessToken = $client->getAccessToken();
+            $this->update([
+                'google_access_token' => $newAccessToken['access_token'],
+                'google_token_expiry' => Carbon::now()->addSeconds($newAccessToken['expires_in']),
+            ]);
+        }
     }
 
-    public function groupMembers()
-    {
-        return $this->hasMany(GroupMember::class, 'section_id');
-    }
 }

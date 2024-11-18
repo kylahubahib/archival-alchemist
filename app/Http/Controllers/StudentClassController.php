@@ -19,6 +19,12 @@ use App\Models\RevisionHistory;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Carbon\Carbon;
+
+use Google\Client as GoogleClient;
+use Google\Service\Drive as GoogleDrive;
+use Google\Service\Drive\Permission;
+use App\Notifications\UserNotification;
 
 
 class StudentClassController extends Controller
@@ -68,9 +74,6 @@ class StudentClassController extends Controller
             // Generate a unique filename
             $fileName = time() . '_' . $file->getClientOriginalName();
 
-            // Move the file to the public/storage/capstone_files directory
-            $file->move(public_path('storage/capstone_files'), $fileName);
-
             // Store the relative path to the file (without the 'public' part)
             $filePath = 'storage/capstone_files/' . $fileName;
 
@@ -81,7 +84,7 @@ class StudentClassController extends Controller
                 'man_doc_adviser' => $validatedData['man_doc_adviser'],
                 'man_doc_content' => $filePath, // Save the relative path to the database
                 'class_code' => $validatedData['class_id'] ?? null,
-                'man_doc_status' => 'P',
+                'man_doc_status' => 'P'
             ]);
 
             Log::info('Manuscript Project Created:', ['id' => $manuscriptProject->id]);
@@ -163,6 +166,34 @@ class StudentClassController extends Controller
                 ]);
             }
 
+            if($manuscriptProject)
+            {
+               Log::info('Get class code:', ['Code' => $classCode]);
+               $classId = $classCode;
+               Log::info('Class Found:', ['Class Id' => $classId]);
+
+               //$authorIds = Author::whereIn('user_id', $users)->pluck('user_id')->toArray();
+               $manuscriptId = $manuscriptProject->id;
+               $teacherId = ClassModel::where('id', $classId)->pluck('ins_id')->first();
+
+               Log::info('Teacher Id: ', ['id' => $teacherId]);
+       
+               // Upload the file to Google Drive and get the Google Docs URL
+               $googleDocsUrl = $this->uploadToDrive($file, $manuscriptId, $teacherId);
+
+               if($googleDocsUrl) {
+                   $manuscriptProject->update([
+                       'man_doc_content' => $googleDocsUrl,
+                   ]);
+               }
+
+               
+                // Move the file to the public/storage/capstone_files directory
+                $file->move(public_path('storage/capstone_files'), $fileName);
+            }
+
+             $faculty = $teacherId;
+
             // if($manuscriptProject)
             // {
             //     $class = ClassModel::where('class_code', $classCode)->first();
@@ -187,7 +218,127 @@ class StudentClassController extends Controller
     }
 
 
+    public function uploadToDrive($file, $manuscriptId, $teacherId)
+    {
+        $user = Auth::user();
 
+        // Initialize Google Client
+        $client = new GoogleClient();
+        $client->setClientId(config('services.google.client_id'));
+        $client->setClientSecret(config('services.google.client_secret'));
+        $client->setRedirectUri(config('services.google.redirect'));
+        $client->setAccessType('offline');
+        $client->addScope(GoogleDrive::DRIVE);
+
+        // Set the access token
+        $accessToken = $user->google_access_token;
+
+        // Check if the access token is expired since access token expired in one hour so we need the refresh token to get a new access token
+        if (Carbon::now()->greaterThanOrEqualTo(Carbon::parse($user->google_token_expiry))) {
+            $client->refreshToken($user->google_refresh_token);
+            $newAccessToken = $client->getAccessToken();
+
+            // Update the user's token and expiry in the database
+            $user->update([
+                'google_access_token' => $newAccessToken['access_token'],
+                'google_token_expiry' => Carbon::now()->addSeconds($newAccessToken['expires_in']),
+            ]);
+
+            $accessToken = $newAccessToken['access_token'];
+        }
+
+        // Set the access the new access token
+        $client->setAccessToken($accessToken);
+
+        // Initialize Google Drive Service
+        $driveService = new GoogleDrive($client);
+
+        // Upload the file to Google Drive
+        $driveFile = new GoogleDrive\DriveFile();
+        $driveFile->setName($file->getClientOriginalName());
+        $driveFile->setMimeType($file->getMimeType());
+
+        // Convert the file to google docs format
+        $uploadOptions = [
+            'data' => file_get_contents($file->getRealPath()),
+            'mimeType' => $file->getMimeType(),
+            'uploadType' => 'multipart',
+            'fields' => 'id',
+        ];
+
+        //Create the document in the google drive file
+        $uploadedFile = $driveService->files->create($driveFile, $uploadOptions);
+
+        //Set permissions for users
+        $this->setPermissions($driveService, $uploadedFile->id, $manuscriptId, $teacherId);
+
+        return 'https://docs.google.com/document/d/' . $uploadedFile->id;
+    }
+
+
+    private function setPermissions($driveService, $fileId, $manuscriptId, $teacherId)
+    {
+        Log::info('Drive Service Instance:', ['driveService' => $driveService]);
+        Log::info('File ID:', ['fileId' => $fileId]);
+        Log::info('Manuscript ID:', ['manuscriptId' => $manuscriptId]);
+        Log::info('Teacher ID:', ['teacherId' => $teacherId]);
+
+        // Get author emails from the Author table
+        $authorEmails = Author::with('user')
+            ->where('man_doc_id', $manuscriptId)->get()
+            ->pluck('user.email')->toArray();
+
+        //$authorEmails = User::whereIn('user_id', $authorIds)->pluck('email')->toArray();
+        Log::info('Fetched Author Emails:', ['authorEmails' => $authorEmails]);
+
+        // Retrieve the teacher's email
+        $teacherEmail = User::find($teacherId)->email;
+        Log::info('Teacher Email:', ['teacherEmail' => $teacherEmail]);
+
+        // Combine author emails and teacher email
+        $emails = array_merge($authorEmails, [$teacherEmail]);
+        Log::info('Combined Emails:', ['emails' => $emails]);
+
+        // Set permissions for each user
+        foreach ($emails as $email) {
+            Log::info('Processing Email:', ['email' => $email]);
+            // Check if the email is valid
+            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                Log::warning('Invalid Email Address:', ['email' => $email]);
+                continue; 
+            }
+
+            // Create permission for the user
+            $permission = new Permission();
+            $permission->setType('user');
+            $permission->setRole('writer');
+            $permission->setEmailAddress($email);
+
+            Log::info('Permission Object Created:', [
+                'type' => $permission->getType(),
+                'role' => $permission->getRole(),
+                'emailAddress' => $permission->getEmailAddress(),
+            ]);
+
+            try {
+
+                // Set the permission
+                $driveService->permissions->create($fileId, $permission);
+                Log::info('Permission Set Successfully:', ['email' => $email]);
+                
+            } catch (Exception $e) {
+                Log::error('Error Setting Permissions:', [
+                    'email' => $email,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
+    }
+
+
+
+
+    
 
     public function checkClassCode(Request $request)
     {
@@ -249,7 +400,23 @@ class StudentClassController extends Controller
                     'stud_id' => $userId, // Store the user ID
                 ]);
 
-                return response()->json(['success' => true, 'message' => 'Joined class successfully']);
+                
+                 // Notifies the teacher that a new student joins
+                 $teacher = User::find($class->ins_id);
+                 $newStudent = Auth::user()->name; 
+
+                 if ($teacher) {
+                         $teacher->notify(new UserNotification([
+                             'message' => $newStudent . ' joins ' . $class->class_name,
+                             'user_id' => $teacher->id
+                         ]));
+                 }
+
+                return response()->json([
+                    'success' => true, 
+                    'message' => 'Joined class successfully',
+                    'classId' => $class->id
+                ]);
             }
         } catch (\Exception $e) {
             // Log the error and return a response
@@ -473,6 +640,8 @@ public function getPublishedManuscripts(Request $request)
 
         // Execute the query to get the results
         $fetchedManuscripts = $manuscripts->get();
+
+        Log::info('Published Manuscripts:', ['manuscripts' => $fetchedManuscripts]);
 
         // Log the number of manuscripts found
         if ($fetchedManuscripts->isNotEmpty()) {
@@ -721,18 +890,36 @@ public function myfavoriteManuscripts()
 
 public function checkStudentInClass()
 {
-    // Get the authenticated user
-    $user = Auth::user();
+
+     // Load user with manuscripts that are not approved, including tags and revision history
+     $user = Auth::user()->load([
+        'manuscripts' => function ($query) {
+            $query->where('man_doc_status', 'P');
+        },
+        'manuscripts.tags',
+        'manuscripts.revision_history.faculty',
+        'manuscripts.authors'
+    ]);
+
+    Log::info($user->manuscripts);
 
     // Check if the user is enrolled in any class
-    $studentClass = ClassStudent::where('stud_id', $user->id)->first();
-
-    if ($studentClass) {
+    if($user->user_type === 'student') {
+        $userClass = ClassStudent::where('stud_id', $user->id)->first();
+        $class = ClassModel::where('id', $userClass->class_id)->first();
+    } else {
+        $userClass = ClassModel::where('ins_id', $user->id)->first();
+        $class = ClassModel::where('id', $userClass->id)->first();
+    }
+   
+    if ($userClass) {
         return response()->json([
-            'class' => $studentClass->class_id, // Return the class code if enrolled
+            'class' => $userClass,
+            'classCode' => $class->class_code, 
+            'manuscripts' => $user->manuscripts
         ]);
     } else {
-        return response()->json(); // Return an empty response if not enrolled
+        return response()->json(); 
     }
 }
 

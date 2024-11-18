@@ -7,8 +7,9 @@ import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
+import { formatDateString } from '@/utils';
 
-export default function UpdateProfileInformation({ mustVerifyEmail, status, className = '' }) {
+export default function UpdateProfileInformationForm({ mustVerifyEmail, status, className = '' }) {
     const user = usePage().props.auth.user;
 
     const { data, setData, patch, errors, processing, recentlySuccessful } = useForm({
@@ -18,7 +19,14 @@ export default function UpdateProfileInformation({ mustVerifyEmail, status, clas
         uni_id_num: user.uni_id_num || '',
         user_pnum: user.user_pnum || '',
         user_aboutme: user.user_aboutme || '',
+        user_dob: user.user_dob || ''
     });
+
+    useEffect(() => {
+        console.log('dob: ', formatDateString(data.user_dob))
+        console.log(data.user_pnum);
+        console.log(user.university);
+    })
 
     const [profilePic, setProfilePic] = useState(user.user_pic);
     const [message, setMessage] = useState('');
@@ -42,6 +50,7 @@ export default function UpdateProfileInformation({ mustVerifyEmail, status, clas
         formData.append('uni_id_num', data.uni_id_num);
         formData.append('user_pnum', data.user_pnum);
         formData.append('user_aboutme', data.user_aboutme);
+        formData.append('user_dob', data.user_dob);
         // if (data.user_pic) {
         //     formData.append('user_pic', data.user_pic);
         // }
@@ -68,6 +77,8 @@ export default function UpdateProfileInformation({ mustVerifyEmail, status, clas
                     Update your account's profile information and email address.
                 </p>
             </header>
+
+            <div>{user.university || 'No affiliated university'}</div>
 
             <form onSubmit={submit}  method="POST" encType="multipart/form-data" className="mt-6 space-y-6">
                 {/* <div className="flex items-center space-x-4">
@@ -148,6 +159,20 @@ export default function UpdateProfileInformation({ mustVerifyEmail, status, clas
                     />
                     <InputError className="mt-2" message={errors.user_pnum} />
                 </div>
+
+                <div>
+                    <InputLabel htmlFor="user_dob" value="Date of Birth" />
+                    <TextInput
+                        id="user_dob"
+                        type="date"
+                        name="user_dob"
+                        value={formatDateString(data.user_dob)}
+                        className="my-1 block w-full"
+                        onChange={(e) => setData('user_dob', e.target.value)}
+                    />
+                    <InputError message={errors.user_dob} className="mt-2" />
+                </div>
+
 
                 <div>
                     <InputLabel htmlFor="user_aboutme" value="About Me" />

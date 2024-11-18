@@ -28,7 +28,7 @@ class PaymentSessionController extends Controller
 
     public function PaymentSession(Request $request)
     {
-        \Log::info('in payment session');
+        //\Log::info('in payment session');
         $request->validate([
             'plan_id' => 'required|exists:subscription_plans,id',
         ]);
@@ -95,7 +95,10 @@ class PaymentSessionController extends Controller
                 $institution = InstitutionAdmin::where('user_id', $user->id)
                     ->first();
 
-                $request->session()->put('ins_sub_id', $institution->insub_id);
+                if($institution) {
+                    $request->session()->put('ins_sub_id', $institution->insub_id);
+                }
+
                 $request->session()->put('plan', $plan);
                 $request->session()->put('finalAmount', $finalAmount);
 
@@ -131,7 +134,7 @@ class PaymentSessionController extends Controller
 
                 $checkoutDetails = $response->json('data.attributes');
 
-                \Log::info($checkoutDetails);
+                \Log::info('Checkout Details: ', $checkoutDetails);
 
                 $subscriptionInterval = $plan->plan_term;
                 $currentDate = Carbon::now();
@@ -167,6 +170,7 @@ class PaymentSessionController extends Controller
                     ]);
 
                     if($user->user_type === 'admin') {
+
                         $institutionSubscription = InstitutionSubscription::find($insub_id);
 
                         //Updates the subscription plan
@@ -182,15 +186,32 @@ class PaymentSessionController extends Controller
                         ]);
 
                     } else {
-                        $personalSubscription = PersonalSubscription::create([
-                            'user_id' => $user->id,
-                            'plan_id' => $plan->id,
-                            'persub_status' => 'Active',
-                            'total_amount' => $finalAmount,
-                            'start_date' => $currentDate->toDateString(),
-                            'end_date' => $endDate,
-                            'notify_renewal' => 1
-                        ]);
+                        $persubExist = PersonalSubscription::where('user_id', $user->id)->first();
+
+                        if($persubExist)
+                        {
+                            $persubExist->update([
+                                'plan_id' => $plan->id,
+                                'persub_status' => 'Active',
+                                'total_amount' => $finalAmount,
+                                'start_date' => $currentDate->toDateString(),
+                                'end_date' => $endDate,
+                                'notify_renewal' => 1
+                            ]);
+                        }
+                        else 
+                        {
+                            $personalSubscription = PersonalSubscription::create([
+                                'user_id' => $user->id,
+                                'plan_id' => $plan->id,
+                                'persub_status' => 'Active',
+                                'total_amount' => $finalAmount,
+                                'start_date' => $currentDate->toDateString(),
+                                'end_date' => $endDate,
+                                'notify_renewal' => 1
+                            ]);
+                        }
+                       
                     }
                     
                     //Updates user is_premium status
@@ -215,6 +236,8 @@ class PaymentSessionController extends Controller
 
     public function paymentCancel(Request $request)
     {
+
+        //Maybe add some logic here where the checkout session is expired
         return redirect()->back();
     }
 

@@ -58,7 +58,7 @@ export default function Login({ status, canResetPassword }) {
                                 name="email"
                                 value={data.email}
                                 className="mt-1 block w-full"
-                                autoComplete="username"
+                                autoComplete="email"
                                 isFocused={true}
                                 onChange={(e) => setData('email', e.target.value)}
                             />
@@ -114,6 +114,8 @@ export default function Login({ status, canResetPassword }) {
                     <NavLink href={route('register')} className=" text-blue-500 font-semibold">REGISTER</NavLink> </span>
                 </div>
             </div>
+
+    
         </div>
         
         //</GuestLayout>

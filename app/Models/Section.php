@@ -13,12 +13,9 @@ class Section extends Model
     protected $table = 'sections';
 
     protected $fillable = [
-        'course_id',  // Corrected spelling here
-        'subject_name',
+        'course_id',  
         'section_name',
-        'section_classcode',
-        'added_by',
-        'ins_id'
+        'added_by'
     ];
 
     public function course(): BelongsTo
@@ -26,12 +23,8 @@ class Section extends Model
         return $this->belongsTo(Course::class, 'course_id');
     }
 
-    public function groups()
+    public function user()
     {
-        return $this->hasMany(Group::class, 'section_id');
-
-
+        return $this->belongsTo(User::class, 'ins_id');
     }
-
-
 }

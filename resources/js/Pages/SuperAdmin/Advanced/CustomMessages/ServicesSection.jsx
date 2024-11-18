@@ -88,8 +88,8 @@ export default function ServicesSection({ isOpen, onClose, services }) {
     const handleSubmit = (e) => {
         e.preventDefault();
         
-        if (pic instanceof File) {
-            uploadIcon(index);
+        if (iconPic instanceof File) {
+           uploadIcon(index);
         }
 
         if (index !== null) {

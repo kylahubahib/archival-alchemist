@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Auth;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -15,6 +14,8 @@ use App\Traits\CheckSubscriptionTrait;
 use App\Models\InstitutionSubscription;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\UsersImport;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 
 class AuthenticatedSessionController extends Controller
 {
@@ -37,57 +38,79 @@ class AuthenticatedSessionController extends Controller
     /**
      * Handle an incoming authentication request.
      */
-    public function store(LoginRequest $request): RedirectResponse
+    public function store(LoginRequest $request)
     {
+        \Log::info("hello");
+
         $request->authenticate();
+        $authenticatedUser = Auth::user();
 
-        $request->session()->regenerate();
-
-        //Get the data of the user and student table
-        $user = Auth::user()->load(['student', 'faculty']);
-
-        //Check if user is affiliated with an institution
-        //$user->student->uni_branch_id : Eloquent way of retrieving data from the student table
-
-        if($user->user_type != 'admin' && $user->user_type != 'superadmin')
+        if($authenticatedUser->user_type !== 'general_user')
         {
-            if($user->user_type == 'student') {
-                $checkInSub = InstitutionSubscription::where('uni_branch_id', $user->student->uni_branch_id)->first();
+            // Get the data of the user and student table
+            $user = $authenticatedUser->load(['student', 'faculty']);
+
+            // Check if user is affiliated with an institution
+            if ($user->user_type != 'admin' && $user->user_type != 'superadmin') {
+                if ($user->user_type == 'student') {
+                    $checkInSub = InstitutionSubscription::where('uni_branch_id', $user->student->uni_branch_id)->first();
+                } elseif ($user->user_type == 'teacher') {
+                    $checkInSub = InstitutionSubscription::where('uni_branch_id', $user->faculty->first()->uni_branch_id)->first();
+                }
+
+                if($user->is_premium == 0 || $user->is_affiliated == 0) {
+                    $this->checkInstitutionSubscription($checkInSub, $user);
+                }
             }
 
-            if($user->user_type == 'teacher') {
-                $checkInSub = InstitutionSubscription::where('uni_branch_id', $user->faculty->uni_branch_id)->first();
+            // Check if the request expects JSON (API request)
+            if ($request->expectsJson()) {
+                $token = $user->createToken('API Token')->plainTextToken;
+
+                return response()->json([
+                    'token' => $token,
+                ]);
             }
 
-            if($user->is_affiliated)
-            {
-                $this->checkInstitutionSubscription($checkInSub, $user);
-            }
-           
+            // If it's not a JSON request, regenerate session and redirect
+            if (!$request->expectsJson()) {
+                $request->session()->regenerate();
 
+                // Redirect based on user_type
+                switch ($user->user_type) {
+                    case 'student':
+                        return redirect()->route('library')->with('user', $user);
+                    case 'teacher':
+                        return redirect()->route('library');
+                    case 'admin':
+                        return redirect()->route('institution-students');
+                    case 'superadmin':
+                        return redirect()->route('dashboard.index');
+                    default:
+                        return redirect('/');
+                }
+            }
+
+        } else 
+        {
+            if ($request->expectsJson()) {
+                $token = $authenticatedUser->createToken('API Token')->plainTextToken;
+    
+                return response()->json([
+                    'token' => $token,
+                ]);
+            }
+    
+            // If it's not a JSON request, regenerate session and redirect
+            if (!$request->expectsJson()) {
+                $request->session()->regenerate();
+                return redirect()->route('library')->with('user', $authenticatedUser);
+            }
         }
-
-        // Redirect based on user_type
-        switch ($user->user_type) {
-            case 'student':
-                return redirect()->route('library')->with('user', $user);
-                break;
-            case 'teacher':
-                return redirect()->route('library');
-                break;
-            case 'admin':
-                return redirect()->route('institution-students');
-                break;
-            case 'superadmin':
-                return redirect()->route('dashboard');
-                break;
-            default:
-                return redirect('/');
-                break;
-        }
-//ok
 
     }
+
+
 
     /**
      * Destroy an authenticated session.

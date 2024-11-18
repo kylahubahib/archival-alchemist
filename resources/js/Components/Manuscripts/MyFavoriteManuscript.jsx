@@ -9,7 +9,6 @@ import axios from 'axios';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { Skeleton } from '@nextui-org/skeleton'; // Import Skeleton
-import PdfViewer from '@/Components/PdfViewer'
 
 const Manuscript = ({ user }) => {
     const [favorites, setFavorites] = useState(new Set());
@@ -244,7 +243,7 @@ const handleClick = (value) => {
 
     if (loading) {
         return (
-            <section className="w-full mx-auto my-4 mt-3 pt-10">
+            <section className="w-full mx-auto my-4 mt-10 pt-10">
                 {[...Array(3)].map((_, index) => (
                     <div key={index} className="w-full bg-white shadow-lg flex mb-4">
                         <Skeleton className="rounded w-40 h-full" />
@@ -277,24 +276,15 @@ const handleClick = (value) => {
     }
 
     return (
-        // <section className="w-full mx-auto my-4 mt-10 pt-10">
-        <section className="w-full mx-auto my-4 mt-3 pt-10">
+        <section className="w-full mx-auto my-4 mt-10 pt-10">
             {manuscriptsToDisplay.map((manuscript) => (
                 <div key={manuscript.id} className="w-full bg-white shadow-lg flex mb-4">
                     <div className="rounded w-40 h-full bg-gray-200 flex items-center justify-center">
-
-
-                    {manuscript.man_doc_content ? (
-    <PdfViewer pdfUrl={manuscript.man_doc_content} />
-    // <PdfViewer pdfUrl="http://127.0.0.1:8000/storage/capstone_files/1728959708_Designing%20Student%20Centric%20Solutions%20through%20Collaboration.pdf" />
-
-) : (
-    <div className="flex items-center justify-center h-full w-full text-gray-500">
-        <p>No PDF available</p>
-    </div>
-)}
-
-
+                        <img
+                            className="rounded w-36 h-46"
+                            src="https://via.placeholder.com/150"
+                            alt="Book"
+                        />
                     </div>
                     <div className="flex-1 p-4">
                         <h2 className="text-xl font-bold text-gray-900">{manuscript.man_doc_title}</h2>
