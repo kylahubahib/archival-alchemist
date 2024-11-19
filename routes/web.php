@@ -3,6 +3,7 @@
 use App\Http\Controllers\ClassController;
 use App\Http\Controllers\StudentClassController;
 use App\Http\Controllers\TeacherClassController;
+use App\Http\Controllers\DocCommentsController;
 use Illuminate\Support\Facades\Route;
 
 use App\Models\Forum;
@@ -299,7 +300,7 @@ Route::get('/api/tags', [TagController::class, 'index']);
 //route for checking the class code
 Route::post('/check-class-code', [StudentClassController::class, 'checkClassCode']);
 // routes for storing student in class table
-Route::post('/store-student-class', [StudentClassController::class, 'storeStudentClass']);
+//Route::post('/store-student-class', [StudentClassController::class, 'storeStudentClass']);
 // routes for checking the user premium subscription
 Route::post('/check-user-premium-status', [CheckSubscriptionController::class, 'is_premium']);
 
@@ -412,4 +413,21 @@ Route::get('/fetch-specificAssignedTask/{section_id}', [ClassController::class, 
 
 Route::post('/store-feedback', [ClassController::class, 'storeFeedback']);
 Route::get('/fetch-history', [ClassController::class, 'fetchHistory']);
+
+
+Route::post('/comments', [DocCommentsController::class, 'store']);
+Route::get('/comments/{manuscriptId}', [DocCommentsController::class, 'index']);
+
+Route::post('/api/replies', [DocCommentsController::class, 'store']);
+
+
+
+
+
+
+//Student
+
+Route::post('/store-student-class', [ClassController::class, 'enrollInClass']);
+
+Route::get('/fetch-studentClasses', [ClassController::class, 'fetchStudentClasses']);
 require __DIR__.'/auth.php';

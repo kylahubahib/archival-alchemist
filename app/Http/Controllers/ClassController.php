@@ -193,6 +193,20 @@ class ClassController extends Controller
     }
 
 
+    private function checkStudentInClass($stud_id)
+    {
+        // Fetch the user record by ID
+        $user = User::where('id', $stud_id)->first();
+
+        // Return the user record if found
+        if ($user) {
+            return $user;
+        }
+
+        // Return null if no user is found
+        return null;
+    }
+
 
     private function getUserIdsByNames(array $studentNames)
     {
@@ -284,6 +298,8 @@ class ClassController extends Controller
 
     public function fetchAssignedTask($section_id)
     {
+        Log::info('STudent tas ID:', ['id' => 1]);
+
         Log::info('Task accessed with GET method');
 
         // Retrieve all tasks assigned to the given section_id
@@ -389,6 +405,107 @@ class ClassController extends Controller
         Log::info('Retrieved History Data:', ['getHistory' => $getHistory->toArray()]);
         return response()->json($getHistory);
     }
+
+
+
+
+
+
+
+    //STUDENT
+
+    public function enrollInClass(Request $request)
+    {
+        $request->validate([
+            'class_code' => 'required|string',
+        ]);
+
+        Log::info('Request data:', $request->all());
+        DB::beginTransaction();
+
+        try {
+            // Check if the class exists in the Section table
+            $class = Section::where('section_classcode', $request->class_code)->first();
+
+            if (!$class) {
+                return response()->json(['success' => false, 'message' => 'Class code not found']);
+            }
+
+            Log::info('Adding student to GroupMembers', [
+                'ins_id' => $class->ins_id,
+                'section_id' => $class->id,
+                'stud_id' => Auth::id(),
+            ]);
+
+            // Check if the student is already enrolled
+            $exists = GroupMember::where('section_id', $class->id)
+                                 ->where('stud_id', Auth::id())
+                                 ->exists();
+
+            if (!$exists) {
+                // Insert the student into the group members table
+                GroupMember::create([
+                    'section_id' => $class->id,
+                    'stud_id' => Auth::id(),
+                ]);
+
+                DB::commit();
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Student added successfully.',
+                ]);
+            } else {
+                DB::rollBack();
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Student already enrolled in this class.',
+                ], 409);
+            }
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error enrolling student: ', ['exception' => $e]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while enrolling the student.',
+            ], 500);
+        }
+    }
+
+    public function fetchStudentClasses(Request $request)
+    {
+        Log::info('Authenticated student ID: ' . Auth::id());
+
+        try {
+            // Enable query log to capture the actual SQL query
+            DB::enableQueryLog();
+
+            // Fetch classes with proper joins
+            $classes = Section::join('group_members', 'sections.id', '=', 'group_members.section_id')
+            ->join('courses', 'courses.id', '=', 'sections.course_id')
+            ->where('group_members.stud_id', Auth::id())
+            ->select('sections.*', 'courses.*', 'group_members.*')
+            ->get();
+
+
+            // Log the SQL query for debugging
+            Log::info('SQL Query: ' . DB::getQueryLog()[0]['query']);
+
+            // Log the fetched data for debugging
+            Log::info('Fetched student classes:', $classes->toArray());
+
+            return response()->json($classes);
+        } catch (\Exception $e) {
+            // Log the error for debugging
+
+            Log::error('Error fetching classes: ' . $e->getMessage());
+            Log::error('Query: ' . $e->getTraceAsString()); // Log detailed stack trace
+
+            return response()->json(['error' => 'An error occurred while fetching classes.'], 500);
+        }
+    }
+
 
 
 

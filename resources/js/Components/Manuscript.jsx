@@ -9,6 +9,7 @@ import {Dropdown, DropdownTrigger, DropdownMenu, DropdownItem} from "@nextui-org
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { Skeleton } from '@nextui-org/skeleton'; // Import Skeleton
+import ManuscriptComment from '@/Components/Manuscripts/ManuscriptComment';
 
 const Manuscript = ({user}) => {
     const [favorites, setFavorites] = useState(new Set());
@@ -28,7 +29,11 @@ const Manuscript = ({user}) => {
     const [selectedRating, setSelectedRating] = useState(0); // Store the rating value
     const [selectedManuscript, setSelectedManuscript] = useState(null); // Track selected manuscript
     const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    const [showForm, setShowForm] = useState(false);
 
+    const handleCommentClick = () => {
+        setShowForm(true);  // Show form directly instead of toggling
+    };
     const resetRating = () => {
         setSelectedRating(0); // Reset the rating to 0 (or whatever your default is)
     };
@@ -547,6 +552,12 @@ const Manuscript = ({user}) => {
                     </div>
                 )}
             </div>
+                        {/* Conditionally Render AssignedprojectForm */}
+                        {showForm && (
+                <div>
+                    <ManuscriptComment onBack={() => setShowForm(false)} /> {/* Hide form on form back */}
+                </div>
+            )}
             </div>
 ))}
             <ToastContainer // Include ToastContainer for displaying toasts

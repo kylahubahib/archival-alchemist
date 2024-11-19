@@ -13,11 +13,19 @@ return new class extends Migration
     {
         Schema::create('doc_comments', function (Blueprint $table) {
             $table->id();
-            $table->text('doc_comment'); // Comment content
             $table->timestamp('edited_at')->nullable(); // Date edited
-            $table->bigInteger('user_id'); // User Id
-            $table->bigInteger('man_doc_id'); // Capstone document Id
+            $table->text('body')->nullable();;
+            $table->text('content');
+            $table->unsignedBigInteger('parent_id')->nullable(); // Parent comment ID for replies
+
+            // $table->morphs('commentable');
+            $table->string('commentable_type')->nullable(); // Adjust as per your needs
+
+            $table->softDeletes();
             $table->timestamps(); // Includes created_at (Date created) and updated_at
+
+            $table->foreignId('man_doc_id')->constrained('id')->on('manuscripts')->onDelete('cascade');
+            $table->foreignId('user_id')->constrained('id')->on('users')->onDelete('cascade');
         });
     }
 

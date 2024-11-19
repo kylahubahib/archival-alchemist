@@ -6,6 +6,8 @@
 
         <!-- CSRF Token -->
         <meta name="csrf-token" content="<?php echo e(csrf_token()); ?>">
+        <?php echo \Livewire\Mechanisms\FrontendAssets\FrontendAssets::styles(); ?>
+
 
         <title inertia><?php echo e(config('app.name', 'Archival Alchemist')); ?></title>
 
@@ -21,9 +23,11 @@
     </head>
     <body class="font-sans antialiased">
         <?php if (!isset($__inertiaSsrDispatched)) { $__inertiaSsrDispatched = true; $__inertiaSsrResponse = app(\Inertia\Ssr\Gateway::class)->dispatch($page); }  if ($__inertiaSsrResponse) { echo $__inertiaSsrResponse->body; } else { ?><div id="app" data-page="<?php echo e(json_encode($page)); ?>"></div><?php } ?>
-
+        <?php echo $__env->yieldContent('content'); ?>
         <!-- <div id="placeholder"></div>
         <script type="text/javascript" src="http://your-server-ip/web-apps/apps/api/documents/api.js"></script> -->
+        <?php echo \Livewire\Mechanisms\FrontendAssets\FrontendAssets::scripts(); ?>
+
     </body>
 </html>
 <?php /**PATH C:\xampp\htdocs\archival-alchemist-main\resources\views/app.blade.php ENDPATH**/ ?>
