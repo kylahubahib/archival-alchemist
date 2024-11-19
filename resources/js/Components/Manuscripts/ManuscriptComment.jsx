@@ -103,7 +103,7 @@ useEffect(() => {
     };
 
     return (
-        <div className="flex justify-end items-center">
+        <div  className="w-[95%] mx-auto my-3 pt-10">
             <AnimatePresence>
                 {isFormVisible && (
                     <motion.div

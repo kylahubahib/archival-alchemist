@@ -5,6 +5,7 @@ import Grades from '@/Pages/Users/Class/Teacher/Grades';
 import AssignedprojectForm from '@/Pages/Users/Class/Teacher/AssignedprojectForm';
 import TaskInstructions from '@/Pages/Users/Class/Student/TaskInstructions';
 import StudentWork from '@/Pages/Users/Class/Teacher/StudentWork';
+import Approved from '@/Pages/Users/Class/Student/Approved';
 
 
 const PreviewTask = ({ folders, onBack, task, taskID }) => {
@@ -17,8 +18,8 @@ const PreviewTask = ({ folders, onBack, task, taskID }) => {
         setActiveSection('grades');
     };
 
-    const handleShowPeople = () => {
-        setActiveSection('people');
+    const handleShowApprovedManuscript = () => {
+        setActiveSection('approved');
     };
 
     const handleShowAssignedProject = () => {
@@ -50,8 +51,8 @@ const PreviewTask = ({ folders, onBack, task, taskID }) => {
                         Track Manuscript
                     </button>
                     <button
-                        onClick={handleShowPeople}
-                        className={`text-gray-600 font-semibold ${activeSection === 'people' ? 'text-blue-500' : 'hover:text-blue-500'}`}
+                        onClick={handleShowApprovedManuscript}
+                        className={`text-gray-600 font-semibold ${activeSection === 'approved' ? 'text-blue-500' : 'hover:text-blue-500'}`}
                     >
                         Approved Manuscript
                     </button>
@@ -83,9 +84,10 @@ const PreviewTask = ({ folders, onBack, task, taskID }) => {
             </div>
 
             {/* Content Section with Margin Top */}
-            <div className="w-full bg-white mt-12"> {/* Add mt-12 to create space below the header */}
+            <div  className="w-[95%] mx-auto pt-10 min-h-screen"> {/* Add mt-12 to create space below the header */}
                 {activeSection === 'taskInstructions' && <TaskInstructions folders={folders} onBack={() => setActiveSection('')}  task={task} taskID={taskID}/>}
                 {activeSection === 'studentWork' && <StudentWork folders={folders} onBack={() => setActiveSection('')}  task={task} taskID={taskID}/>}
+                {activeSection === 'approved' && <Approved folders={folders} onBack={() => setActiveSection('')}  task={task} taskID={taskID}/>}
                 </div>
 
             {/* Conditionally Render AssignedprojectForm */}
