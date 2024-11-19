@@ -11,8 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('courses', function (Blueprint $table) {
-            $table->string('course_acronym');
+        Schema::table('forum_posts', function (Blueprint $table) {
+            $table->string('status')->default('Visible');
         });
     }
 
@@ -21,8 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('courses', function (Blueprint $table) {
-            //
+        Schema::table('forum_posts', function (Blueprint $table) {
+            $table->dropColumn('status');
         });
     }
 };

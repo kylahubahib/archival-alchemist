@@ -39,6 +39,8 @@ use App\Http\Controllers\LandingPageController;
 use App\Http\Controllers\ReportReasonController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\AdvancedForumController;
+
 
 use App\Http\Controllers\PostController;
 
@@ -225,8 +227,7 @@ Route::middleware(['auth', 'verified', 'user-type:superadmin'])->group(function 
        // You can use put or patch. Put is used to update a resource entirely
        // while patch is used to update a single fields
        
-              Route::put('manage-faqs/{id}/change-status', [FAQController::class, 'change_status'])
-       ->name('manage-faqs.change_status');
+              Route::put('manage-faqs/{id}/change-status', [FAQController::class, 'change_status'])->name('manage-faqs.change_status');
    
    
        });
@@ -236,41 +237,35 @@ Route::middleware(['auth', 'verified', 'user-type:superadmin'])->group(function 
            //ADVANCED ROUTES
         //Decided to create routes for the buttons in advanced page to simplify or easily create the crud functionality
    
-       Route::get('/advanced/forum', function () {
-           return Inertia::render('SuperAdmin/Advanced/Forum/Forum');})->name('advanced-forum');
+            Route::get('/advanced/forum', function () {
+            return Inertia::render('SuperAdmin/Advanced/Forum/Forum');})->name('advanced-forum');
            
-       Route::resource('advanced/custom-messages', CustomMessagesController::class)->names('manage-custom-messages');
-   
-       Route::resource('advanced/universities', UniversityController::class)->names('manage-universities');
-   
-       Route::resource('advanced/tags', AdvancedTagsController::class)->names('manage-tags');
-   
-       Route::resource('advanced/report-reason', ReportReasonController::class)->names('manage-report-reason');
-   
-       Route::post('store-service', [CustomMessagesController::class, 'storeService'])->name('store-service');
-       Route::post('store-team', [CustomMessagesController::class, 'storeTeam'])->name('store-team');
-       Route::post('update-icon', [CustomMessagesController::class, 'updateIcon'])->name('update-icon');
-   
-       ///END ADVANCED ROUTES
-   
-           
-       });
+            Route::resource('advanced/forum', AdvancedForumController::class)->names('manage-forum-posts'); 
+            Route::resource('advanced/custom-messages', CustomMessagesController::class)->names('manage-custom-messages');   
+            Route::resource('advanced/universities', UniversityController::class)->names('manage-universities');
+            Route::resource('advanced/tags', AdvancedTagsController::class)->names('manage-tags');
+            Route::resource('advanced/report-reason', ReportReasonController::class)->names('manage-report-reason');
+        
+            Route::post('store-service', [CustomMessagesController::class, 'storeService'])->name('store-service');
+            Route::post('store-team', [CustomMessagesController::class, 'storeTeam'])->name('store-team');
+            Route::post('update-icon', [CustomMessagesController::class, 'updateIcon'])->name('update-icon');
+        
+            ///END ADVANCED ROUTES
+            });
    
     
-       Route::get('get-branches', [UniversityController::class, 'getBranches'])->name('get-branches');
-   
+        Route::get('get-branches', [UniversityController::class, 'getBranches'])->name('get-branches');
+
         Route::middleware('access:dashboard_access')->group(function () {
-           //Route::inertia('/dashboard', 'SuperAdmin/Dashboard')->name('dashboard');
+            //Route::inertia('/dashboard', 'SuperAdmin/Dashboard')->name('dashboard');
             //DASHBOARD ROUTES
-       Route::resource('dashboard', DashboardController::class)->names('dashboard');
-       Route::get('get-weekly-manuscript', [DashboardController::class, 'getWeeklyManuscript']);
-       Route::get('get-monthly-manuscript', [DashboardController::class, 'getMonthlyManuscript']);
-       Route::get('get-yearly-manuscript', [DashboardController::class, 'getYearlyManuscript']);
-       Route::get('get-monthly-revenue', [DashboardController::class, 'getMonthlyRevenue']);
-       Route::get('get-yearly-revenue', [DashboardController::class, 'getYearlyRevenue']);
-       //END OF DASHBOARD ROUTES
-   
-           
+            Route::resource('dashboard', DashboardController::class)->names('dashboard');
+            Route::get('get-weekly-manuscript', [DashboardController::class, 'getWeeklyManuscript']);
+            Route::get('get-monthly-manuscript', [DashboardController::class, 'getMonthlyManuscript']);
+            Route::get('get-yearly-manuscript', [DashboardController::class, 'getYearlyManuscript']);
+            Route::get('get-monthly-revenue', [DashboardController::class, 'getMonthlyRevenue']);
+            Route::get('get-yearly-revenue', [DashboardController::class, 'getYearlyRevenue']);
+            //END OF DASHBOARD ROUTES
        });
    
    });
@@ -390,7 +385,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/api/check-title', [StudentClassController::class, 'checkTitle'])->name('capstone.checkTitle');
 
 //Add a route for fetching tag suggestions:
-    // In api.php or web.php
+// In api.php or web.php
 Route::get('/api/tags/suggestions', [TagController::class, 'suggestions']);
 
 Route::get('tags/existing', [TagController::class, 'existingTags']);
@@ -404,9 +399,9 @@ Route::get('/api/tags', [TagController::class, 'index']);
 
 
 //Add a route for fetching tag suggestions:
-    // In api.php or web.php
-    Route::get('/api/authors/suggestions', [TagController::class, 'Authorsuggestions']);
-    Route::get('/api/title/suggestions', [TagController::class, 'Titlesuggestions']);
+// In api.php or web.php
+Route::get('/api/authors/suggestions', [TagController::class, 'Authorsuggestions']);
+Route::get('/api/title/suggestions', [TagController::class, 'Titlesuggestions']);
 
 //route for checking the class code
 Route::post('/check-class-code', [StudentClassController::class, 'checkClassCode']);
