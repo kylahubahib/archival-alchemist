@@ -2,61 +2,173 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\NewPostCreated;
 use App\Models\ForumPost;
+use App\Models\ForumComment;
+use App\Models\ForumTag;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Response; // Import the Response facade
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB; // Import DB facade
+use Inertia\Inertia;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+
+
 
 class ForumPostController extends Controller
 {
-    public function index()
-    {
-        // Fetch all forum posts with associated user relationship
-        return ForumPost::with('user')->get();
+    // Fetch all forum posts with the associated user relationship
+    public function index(Request $request)
+{
+    // Get the sort parameter from the request (default to 'latest')
+    $sort = $request->input('sort', 'latest');
+
+    // Fetch forum posts with the associated user, tags, and comments relationships
+    $postsQuery = ForumPost::with(['user', 'tags']);
+
+    // Apply sorting based on the 'sort' parameter
+    if ($sort === 'latest') {
+        $postsQuery->orderBy('created_at', 'desc');
+    } else if ($sort === 'oldest') {
+        $postsQuery->orderBy('created_at', 'asc');
     }
 
+    // Fetch the posts after applying the sort
+    $posts = $postsQuery->get();
+
+    // Log fetched posts for debugging
+    \Log::info('Forum Posts Retrieved:', $posts->toArray());
+
+    // Format posts for the response
+    $formattedPosts = $posts->map(function ($post) {
+        return [
+            'id' => $post->id,
+            'title' => $post->title,
+            'body' => $post->body,
+            'viewCount' => $post->viewCount,
+            //'commentCount' => $post->comments->count(), // Corrected comment count
+            'user' => $post->user,
+            'created_at' => $post->formatted_created_at,
+            'tags' => $post->tags->map(function ($tag) {
+                return [
+                    'id' => $tag->id,
+                    'name' => $tag->name ?? 'Unnamed Tag', // Set default for null names
+                ];
+            }),
+        ];
+    });
+
+    return response()->json($formattedPosts);
+}
+
+
+    // Store a new forum post
     public function store(Request $request)
-    {
-        // Validate incoming request
+{
+    // Log CSRF token and incoming request data
+    Log::info('CSRF Token:', [$request->header('X-CSRF-TOKEN')]);
+    Log::info('Incoming Request Data:', $request->all());
+
+    // Validate the incoming request
+    try {
         $request->validate([
             'title' => 'required|string|max:255',
             'body' => 'required|string',
             'tags' => 'nullable|array',
+            'tags.*' => 'string',
         ]);
-
-        // Get the authenticated user
-        $user = Auth::user();
-
-        // Check if the user is authenticated
-        if (!$user) {
-            return response()->json(['error' => 'User not authenticated'], 401);
-        }
-
-        // Create a new forum post with the authenticated user's ID
-        $post = ForumPost::create([
-            'title' => $request->title,
-            'body' => $request->body,
-            'tags' => $request->tags,
-            'user_id' => $user->id, // Use the authenticated user's ID
-        ]);
-
-        return response()->json($post, 201); // Return created post
+    } catch (\Illuminate\Validation\ValidationException $e) {
+        Log::error('Validation Error:', [$e->errors()]);
+        return response()->json(['error' => 'Validation failed', 'messages' => $e->errors()], 422);
     }
 
+    // Get the authenticated user
+    $user = Auth::user();
+
+    // Ensure the user is authenticated
+    if (!$user) {
+        return response()->json(['error' => 'User not authenticated'], 401);
+    }
+
+    // Initialize the post variable
+    $post = null;
+
+    try {
+        // Use DB transaction to handle multiple actions
+        DB::transaction(function () use ($request, $user, &$post) {
+            // Create a new forum post
+            $post = ForumPost::create([
+                'title' => $request->title,
+                'body' => $request->body,
+                'user_id' => $user->id,
+            ]);
+
+            // Sync the tags with the post
+            if (!empty($request->tags)) {
+                $tagIds = [];
+
+                // Process each tag
+                foreach ($request->tags as $tagName) {
+                    // Find or create the tag by name
+                    $tag = ForumTag::firstOrCreate(['name' => trim($tagName)]);
+                    $tagIds[] = $tag->id; // Collect the tag's ID
+                }
+
+                // Attach the tags to the post
+                $post->tags()->sync($tagIds);
+                Log::info('Tags synced with post ID ' . $post->id, ['tags' => $tagIds]);
+            }
+
+            // Broadcast the new post event to other users
+            broadcast(new NewPostCreated($post))->toOthers();
+        });
+
+        // Load user and tags relationship to include in the response
+        $post->load('user', 'tags'); // Make sure to load tags here as well
+
+        Log::info('Created Post:', [$post]);
+        return response()->json($post, 201); // Return the created post
+    } catch (\Illuminate\Database\QueryException $e) {
+        Log::error('Database Error: ' . $e->getMessage());
+        return response()->json(['error' => 'Database error: ' . $e->getMessage()], 500);
+    } catch (\Exception $e) {
+        Log::error('Error creating post: ' . $e->getMessage());
+        return response()->json(['error' => 'Failed to create post: ' . $e->getMessage()], 500);
+    }
+}
+
+    
+
+
+    // Show a specific forum post
     public function show($id)
-    {
-        // Fetch the post by ID with associated user and tags
-        $post = ForumPost::with(['user'])->findOrFail($id);
+{
+    \Log::info("Fetching post with ID: $id");
 
-        // Increment view count (assuming you have a 'views' column)
+    try {
+        // Fetch the post with user and tags relationships
+        $post = ForumPost::with(['user', 'tags'])->findOrFail($id);
 
-        // Return the post data as an Inertia response
-        return inertia('PostDetail', [
-            'post' => $post, // Pass the post data to the Inertia view
-        ]);
+        // Increment the view count
+        $post->increment('viewCount');
+
+        // Return the post as a JSON response
+        return response()->json($post);
+    } catch (ModelNotFoundException $e) {
+        // Handle the case where the post is not found
+        return response()->json(['message' => 'Post not found'], 404);
+    } catch (\Exception $e) {
+        // Handle other exceptions
+        \Log::error("An error occurred: " . $e->getMessage());
+        return response()->json(['message' => 'An error occurred'], 500);
     }
+}
 
-   public function destroy($id)
+
+
+
+    // Delete a forum post
+    public function destroy($id)
     {
         // Find the post by ID
         $post = ForumPost::find($id);
@@ -72,8 +184,20 @@ class ForumPostController extends Controller
         // Return a success response
         return response()->json(['message' => 'Post deleted successfully'], 200);
     }
+
     
+        public function incrementViewCount($id)
+        {
+            $post = ForumPost::findOrFail($id);
+            $post->increment('viewCount'); // Increment the view count
+            return response()->json(['views' => $post->viewCount]);
+        }
+        
+
+        public function faq()
+        {
+            return Inertia::render('FAQ'); // Assuming the file is located in resources/js/Pages/FAQ.jsx
+        }
 
 
-    // You can add other methods for updating, deleting, etc.
 }

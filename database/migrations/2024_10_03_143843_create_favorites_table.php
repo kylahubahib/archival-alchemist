@@ -9,7 +9,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('favorites', function (Blueprint $table) {
-            $table->id();
+            $table->id(); 
 
             // Foreign key to the users table (the user who bookmarked the manuscript)
             $table->foreignId('user_id')->constrained()->onDelete('cascade');

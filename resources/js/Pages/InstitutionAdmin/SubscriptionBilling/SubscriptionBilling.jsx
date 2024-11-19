@@ -10,6 +10,10 @@ import Modal from '@/Components/Modal';
 import { Divider } from '@nextui-org/react';
 import html2pdf from 'html2pdf.js';
 import { showToast } from '@/Components/Toast';
+import { formatDate, formatPrice } from '@/utils';
+import TextInput from '@/Components/TextInput';
+import InputLabel from '@/Components/InputLabel';
+import InputError from '@/Components/InputError';
 
 export default function InsAdminSubscriptionBilling({ auth, ins_sub, transactionHistory, agreement }) {
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -18,8 +22,10 @@ export default function InsAdminSubscriptionBilling({ auth, ins_sub, transaction
     const [planFeatures, setPlanFeatures] = useState([]); 
     const [viewPlans, setViewPlans] = useState(null);
     const [transaction, setTransaction] = useState(null);
+    const [message, setMessage] = useState(null);
 
     const handleRenewal = async (id) => {
+
         const currentDate = new Date();
         const subscriptionEndDate = new Date(ins_sub.end_date); 
         console.log(currentDate, ' and ', subscriptionEndDate  );
@@ -34,11 +40,7 @@ export default function InsAdminSubscriptionBilling({ auth, ins_sub, transaction
                 const response = await axios.post('/payment', { plan_id: id });
     
                 if (response.data.checkout_url) {
-                    
-                    // Redirect the user to PayMongo's checkout page
-                    //window.location.href = response.data.checkout_url;
                     window.open(response.data.checkout_url, '_blank');
-
                 }
             } catch (err) {
                 console.error("Checkout session failed:", err);
@@ -50,7 +52,7 @@ export default function InsAdminSubscriptionBilling({ auth, ins_sub, transaction
     const openModal = (content) => {
         setModalContent(content);
         setIsModalOpen(true);
-    }
+    } 
 
     const closeModal = () => {
         setModalContent(null);
@@ -66,10 +68,16 @@ export default function InsAdminSubscriptionBilling({ auth, ins_sub, transaction
         setTransaction(data);
     }
 
-    useEffect(() =>{
-        console.log(transactionHistory[0]);
-        console.log(agreement);
-    })
+    const cancelSubscription = () => {
+        axios.post('/cancel-subscription', {id: ins_sub.id})
+        .then(response => {
+            setMessage(response.data.message);
+            setTimeout(() => {
+                closeModal();
+                setMessage(null);
+            }, 2000);   
+        });
+    }
 
     const viewPlanList = async () => {
         try {
@@ -85,25 +93,18 @@ export default function InsAdminSubscriptionBilling({ auth, ins_sub, transaction
         } catch (error) {
             console.error('Error fetching plans:', error.response ? error.response.data : error);
         }
-
     };
 
+    
+
     const downloadReceipt = () => {
+        console.log('download')
         const element = document.getElementById('receipt');
         html2pdf()
             .from(element)
             .save(`Receipt_${transaction.reference_number}.pdf`);
     };
 
-    const numberFormat = (number, decimals = 2) => {
-        return Number(number).toLocaleString(undefined, {
-            minimumFractionDigits: decimals,
-            maximumFractionDigits: decimals,
-        });
-    };
-
-
-    
     
     return (
         <AdminLayout
@@ -121,11 +122,10 @@ export default function InsAdminSubscriptionBilling({ auth, ins_sub, transaction
                         <div className="flex flex-row justify-between px-2">
                             <div className="flex flex-col">
                                 <div className="text-gray-700 text-xl font-bold">{ins_sub.plan.plan_name}</div>
-                                <div className="text-gray-600 text-base"><span className="font-bold">Date Started:</span> {ins_sub.start_date}</div>
-                                <div className="text-gray-600 text-base"><span className="font-bold">Next Payment:</span> {ins_sub.end_date}</div>
+                                <div className="text-gray-600 text-base mt-3"><span className="font-bold">Your next bill is on</span> {formatDate(ins_sub.end_date)}</div>
                             </div>
                             <div className="flex flex-col">
-                                <div className="text-gray-800 text-4xl font-bold">{ins_sub.plan.plan_price}</div>
+                                <div className="text-gray-800 text-4xl font-bold">{formatPrice(ins_sub.plan.plan_price)}</div>
                                 <div className="text-gray-600 text-m font-bold pb-2 text-right">/{ins_sub.plan.plan_term}</div>
                             </div>
                         </div>
@@ -157,19 +157,16 @@ export default function InsAdminSubscriptionBilling({ auth, ins_sub, transaction
                                 { ins_sub.plan_id != 6 ? (
                                     <>
                                     <PrimaryButton onClick={() => handleRenewal(ins_sub.plan_id)}>Renew Subscription</PrimaryButton>
-                                    <DangerButton>Cancel Subscription</DangerButton>
+                                    <DangerButton onClick={() => {openModal('popup')}}>Cancel Subscription</DangerButton>
                                     </>
                                     ) : (
                                         <>
                                             <PrimaryButton onClick={viewPlanList}>UPGRADE TO PREMIUM PLANS</PrimaryButton>
                                         </>
                                     )
-
                                 }
-                               
                             </div>
                             <button className="text-blue-600 font-bold hover:text-customBlue" onClick={() => {openModal('agreement')}}>View Agreement</button>
-                            
                         </div>
                     </div>
                 </div>
@@ -205,70 +202,100 @@ export default function InsAdminSubscriptionBilling({ auth, ins_sub, transaction
                                     <th scope="col" className="px-6 py-3">Plan Name</th>
                                     <th scope="col" className="px-6 py-3">Amount</th>
                                     <th scope="col" className="px-6 py-3">Paid At</th>
-                                    <th scope="col" className="px-6 py-3">Action</th>
+                                    <th scope="col" className="px-6 py-3"></th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {transactionHistory.length > 0 ? (
-                                    transactionHistory.map((data, index) => (
-                                        <tr key={index} className="hover:bg-gray-50"> 
-                                            <td className="px-6 py-4">{data.user.name}</td>
-                                            <td className="px-6 py-4">{data.payment_method}</td>
-                                            <td className="px-6 py-4">{data.plan.plan_name}</td>
-                                            <td className="px-6 py-4">{data.trans_amount}</td>
-                                            <td className="px-6 py-4">{data.created_at}</td>
-                                            <td className="px-6 py-4">
-                                                <button className=" text-customBlue" onClick={() => viewReceipt(data)}>View Receipt</button>
-                                            </td>
-                                            
-                                        </tr>
-                                    ))
-                                ) : (
-                                    <tr>
-                                        <td colSpan={5}>No data available</td>
+                                {transactionHistory.map((trans) => (
+                                    <tr key={trans.id} className="bg-white border-b hover:bg-gray-100">
+                                        <td className="px-6 py-3">{auth.user.name}</td>
+                                        <td className="px-6 py-3">{trans.payment_method}</td>
+                                        <td className="px-6 py-3">{trans.plan.plan_name}</td>
+                                        <td className="px-6 py-3">{formatPrice(trans.trans_amount)}</td>
+                                        <td className="px-6 py-3">{formatDate(trans.created_at)}</td>
+                                        <td className="px-6 py-3">
+                                            <button className="text-blue-600 text-sm font-bold hover:underline cursor-pointer" onClick={() => viewReceipt(trans)}>View Receipt</button>
+                                        </td>
                                     </tr>
-                                )}
+                                ))}
                             </tbody>
                         </table>
                     </div>
                 ) : (
-                    <div className="m-3">
-                        <div id="receipt" className="p-6 bg-white">
-                            <h2 className="text-2xl font-bold text-center mb-4">Receipt</h2>
-                            <p className="mb-2"><strong>Reference Number:</strong> {transaction.reference_number}</p>
-                            <p className="mb-4"><strong>Transaction Date:</strong> {transaction.created_at}</p>
-                            <p className="mb-2"><strong>Account Name:</strong> {transaction.user.name}</p>
-                            <p className="mb-4"><strong>Payment Method:</strong> {transaction.payment_method.charAt(0).toUpperCase() + transaction.payment_method.slice(1)}</p>
-
-                            <table className="min-w-full border-collapse border border-gray-300 mb-4">
-                                <thead>
-                                    <tr className="bg-gray-100">
-                                        <th className="border border-gray-300 p-2 text-left">Plan Name</th>
-                                        <th className="border border-gray-300 p-2 text-left">Amount</th>
-                                        <th className="border border-gray-300 p-2 text-left">Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td className="border border-gray-300 p-2">{transaction.plan.plan_name}</td>
-                                        <td className="border border-gray-300 p-2">{numberFormat(transaction.trans_amount, 2)}</td>
-                                        <td className="border border-gray-300 p-2">{transaction.trans_status.charAt(0).toUpperCase() + transaction.trans_status.slice(1)}</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                            <p className="font-semibold"><strong>Discount:</strong> {transaction.plan.plan_discount}</p>
-                            <p className="font-semibold"><strong>Total Amount:</strong> {numberFormat(transaction.trans_amount, 2)}</p>
+                    <div className="p-6 max-w-4xl mx-auto bg-white rounded-lg shadow-md">
+                        <div id="receipt" className="p-10">
+                        <h2 className="text-2xl font-bold text-center mb-5">Subscription Receipt</h2>
+                        <Divider  className="my-6" />
+                        <div className="flex justify-between">
+                            <div>
+                                <div className="text-xl font-bold">Institution Subscription</div>
+                                <div className="text-gray-500">{auth.user.name}</div>
+                                <div className="text-gray-500">{auth.user.email}</div>
+                            </div>
+                            <div className="text-right">
+                                <div className="text-xl font-bold">Amount Paid</div>
+                                <div className="text-3xl text-green-600">{formatPrice(transaction.trans_amount)}</div>
+                            </div>
                         </div>
-                        <PrimaryButton onClick={downloadReceipt} className='ml-4'>Download Receipt</PrimaryButton>
-                        <PrimaryButton onClick={returnToTransaction} className='ml-4'>Go Back</PrimaryButton>
+                        <Divider className="my-6" />
+                        <div className="text-gray-600">
+                            <div><strong>Plan:</strong> {transaction.plan.plan_name}</div>
+                            <div><strong>Reference Number:</strong> {transaction.reference_number}</div>
+                            <div><strong>Paid At:</strong> {formatDate(transaction.created_at)}</div>
+                        </div>
+                        </div>
+                        <Divider className="my-6" />
+                        <div className="text-center">
+                            <PrimaryButton onClick={downloadReceipt} className="mx-auto">Download Receipt</PrimaryButton>
+                            <button className="text-blue-600 font-bold ml-4" onClick={returnToTransaction}>Back to Transactions</button>
+                        </div>
                     </div>
-                )
-                }
+                )}
                 </div>
-                
             </Modal>}
+            
+            {/* Cancel Subscription Confirmation */}
+            {modalContent == 'popup' &&
+            <Modal show={isModalOpen} onClose={closeModal} maxWidth='lg'>
+                <div className="p-6 max-w-4xl mx-auto bg-white rounded-lg shadow-md">
+                <button onClick={closeModal} type="button" className="absolute top-3 end-2.5 text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-full text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white" data-modal-hide="popup-modal">
+                    <svg className="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+                        <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+                    </svg>
+                    <span className="sr-only">Close modal</span>
+                </button>
+                
+                <div className="p-4 md:p-5 text-center">
+                    <svg className="mx-auto mb-4 text-gray-400 w-12 h-12 dark:text-gray-200" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+                        <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 11V6m0 8h.01M19 10a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
+                    </svg>
+                    
+                    <h3 className="my-5 text-lg  text-gray-700 font-semibold dark:text-gray-600">Are you sure you want to proceed?</h3>
+                    
+                    <p className="mb-5 text-md font-normal text-gray-500 dark:text-gray-600">
+                        You are about to cancel your subscription. Since it is non-recurring, you will no longer receive expiration notifications. 
+                    </p>
 
-         
+                    {!message ? (
+                        <>
+                        <div className="flex justify-center">
+                            <button onClick={cancelSubscription} type="button" className="text-white bg-red-600 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 dark:focus:ring-red-800 font-medium rounded-lg text-sm inline-flex items-center px-5 py-2.5">
+                                Yes, I'm sure
+                            </button>
+                            <button onClick={closeModal} type="button" className="py-2.5 px-5 ms-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700">
+                                No, cancel
+                            </button>
+                        </div>
+                        </>
+                    ) : (
+                        <>
+                        <h3 className="my-5 text-lg text-green-500 font-medium dark:text-gray-600">{message}</h3>
+                        </>
+                    )}
+                    
+                </div>
+                </div>
+            </Modal>}
 
         </AdminLayout>
     );

@@ -4,10 +4,11 @@ import { Head } from '@inertiajs/react';
 import { useState } from 'react';
 import { BookOpenIcon } from '@heroicons/react/24/outline';
 import Modal from '@/Components/Modal';
-import AllManuscript from '@/Components/Manuscripts/AllManuacript';
+import AllManuscript from '@/Components/Manuscripts/AllManuscript';
 import RecManuscript from '@/Components/Manuscripts/RecommendedManuscript';
 import SearchBar from '@/Components/SearchBars/LibrarySearchBar';
 import React from 'react';
+import Manuscript from '@/Components/Manuscript';
 
 const currentYear = new Date().getFullYear(); // Get the current year
 const yearOptions = Array.from(

@@ -4,6 +4,8 @@ import { Head } from '@inertiajs/react';
 import axios from 'axios';
 import { Button, Divider } from '@nextui-org/react';
 
+import { formatDate, formatPrice } from '@/utils';
+
 export default function Pricing({ auth, personalPlans=[], institutionalPlans=[], planFeatures = [] }) {
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(false);
@@ -64,7 +66,7 @@ export default function Pricing({ auth, personalPlans=[], institutionalPlans=[],
                                     <h3 className="mb-4 text-2xl font-semibold">{plan.plan_name}</h3>
                                     <p className="font-light text-gray-500 sm:text-lg">{plan.plan_text}</p>
                                     <div className="flex justify-center items-baseline my-8">
-                                        <span className="mr-2 text-5xl font-extrabold">P{plan.plan_price}</span>
+                                        <span className="mr-2 text-4xl">₱ <span className="font-extrabold">{formatPrice(plan.plan_price)}</span></span>
                                         <span className="text-gray-500">{plan.plan_term}</span>
                                     </div>
                                     <ul role="list" className="mb-8 space-y-3 text-left">
@@ -106,8 +108,8 @@ export default function Pricing({ auth, personalPlans=[], institutionalPlans=[],
                                     <h3 className="mb-4 text-2xl font-semibold">{plan.plan_name}</h3>
                                     <p className="font-light text-gray-500 sm:text-lg">{plan.plan_text}</p>
                                     <div className="flex justify-center items-baseline my-8">
-                                        <span className="mr-2 text-4xl font-extrabold">PHP {plan.plan_price}</span>
-                                        <span className="text-gray-500">{plan.plan_term}</span>
+                                        <span className="mr-2 text-4xl">₱ <span className="font-extrabold">{formatPrice(plan.plan_price)}</span></span>
+                                        <span className="text-gray-500">/{plan.plan_term}</span>
                                     </div>
                                     <ul role="list" className="mb-8 space-y-3 text-left">
                                         {getFeaturesByPlanId(plan.id).map((featureName, index) => (

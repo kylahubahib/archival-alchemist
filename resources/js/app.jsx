@@ -16,9 +16,11 @@ createInertiaApp({
         const root = createRoot(el);
 
         root.render(
+        
         <NextUIProvider>
             <App {...props} />
         </NextUIProvider>
+        
     );
     },
     progress: {

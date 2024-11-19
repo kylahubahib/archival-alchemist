@@ -91,10 +91,12 @@ class DepartmentsController extends Controller
 
         $request->validate([
             'uni_branch_id' => 'required|integer',
-            'dept_name' => 'required|string|unique:departments'
+            'dept_name' => 'required|string|unique:departments',
+            'dept_acronym' => 'nullable|string|unique:departments'
         ], [
             'dept_name.unique' => 'The department name has already been taken.',
             'dept_name.required' => 'The department name is required.',
+            'dept_acronym.unique' => 'The department name has already been taken.',
         ]);
 
         \Log::info('Create Data: ', $request->all());
@@ -102,7 +104,8 @@ class DepartmentsController extends Controller
         Department::create([
             'uni_branch_id' => $request->uni_branch_id,
             'dept_name' =>  $request->dept_name,
-            'added_by' => Auth::user()->name
+            'added_by' => Auth::user()->name,
+            'dept_acronym' => $request->dept_acronym
         ]);
 
         return redirect(route('manage-departments.index'))->with('success', 'Departments created successfully.');
@@ -114,15 +117,20 @@ class DepartmentsController extends Controller
     public function update(Request $request, string $id)
     {
         $request->validate([
-            'uni_branch_id' => 'required|integer',
-            'dept_name' => 'required|string',
+            'dept_name' => 'required|string|unique:departments',
+            'dept_acronym' => 'nullable|string|unique:departments'
+        ], [
+            'dept_name.unique' => 'The department name has already been taken.',
+            'dept_name.required' => 'The department name is required.',
+            'dept_acronym.unique' => 'The department name has already been taken.',
         ]);
+
 
         $department = Department::find($id);
 
         $department->update([
-            'uni_branch_id' => $request->uni_branch_id,
-            'dept_name' =>  $request->dept_name
+            'dept_name' =>  $request->dept_name,
+            'dept_acronym' => $request->dept_acronym
         ]);
 
         return redirect(route('manage-departments.index'))->with('success', 'Departments created successfully.');
@@ -136,31 +144,50 @@ class DepartmentsController extends Controller
         Department::find($id)->delete();
 
         return redirect(route('manage-departments.index'))->with('success', 'Department deleted successfully.');
-    }
+    }    
 
-    /**
-     * Display the courses under a specific department
-     */
-    public function getCourses(string $id)
-    {
-        $courses = Course::where('dept_id', $id)->get();
-
-        return Inertia::render('InstitutionAdmin/Departments/Departments', [
-            'courses' => $courses,
-        ]);
-    }
 
      /**
-     * Display the sections under a specific course
+     * Reassign the courses
      */
-    public function getSections(string $id)
+    public function reassignCourses(Request $request, string $id)
     {
-        $sections = Section::where('course_id', $id)->get();
+        $deptId = $request->get('dept_id');
+    
+        Course::where('dept_id', $deptId)->update([
+            'dept_id' => $id
+        ]);
+    
+        return response()->json([
+            'message' => 'Successfully reassigned courses!'
+        ]);
+    }
+    
 
-        return Inertia::render('InstitutionAdmin/Departments/Departments', [
-            'sections' => $sections,
+     /**
+     * Unassign the courses
+     */
+    public function unassignCourses(string $id)
+    {
+    
+        Course::where('dept_id', $id)->update([
+            'dept_id' => null
+        ]);
+    
+        return response()->json([
+            'message' => 'Successfully unassigned courses! You can manually assign them in the courses tab.'
         ]);
     }
 
+    public function getAllDepartment(string $id)
+    {
+        $departments = Department::with('course')->where('uni_branch_id', $id)->get();
+
+        return response()->json([
+            'departments' => $departments
+        ]);
+
+    }
+    
     
 }

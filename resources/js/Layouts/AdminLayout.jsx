@@ -3,17 +3,32 @@ import { MdSpaceDashboard, MdSubscriptions } from "react-icons/md";
 import { CgOrganisation } from "react-icons/cg";
 import { FaScroll, FaFileContract, FaFlag, FaUsers, FaWrench, FaUserSecret, FaUserTie, FaUserGraduate, FaGraduationCap, FaBook, FaFacebookMessenger, FaEnvelope, FaEnvelopeOpen } from "react-icons/fa";
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Dropdown from '@/Components/Dropdown';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
 import SearchBar from '@/Components/SearchBar';
 import Sidebar, { SidebarItem, SidebarSeparator, SidebarTitle } from '@/Components/Sidebar';
 import GiveFeedbackModal from "@/Components/GiveFeedbackModal";
 import ToastNotification from "@/Components/Toast";
+import { FiBell } from "react-icons/fi";
+import Echo from 'laravel-echo';
 
-export default function AdminLayout({ auth, user, header, children }) {
+import { encodeAllParams } from "@/Components/Admins/Functions";
+
+import SuperAdminNotification from "@/Components/Notifications/SuperAdminNotification";
+import InsAdminNotification from "@/Components/Notifications/InsAdminNotification";
+import { User } from "@nextui-org/react";
+import { useForm } from "@inertiajs/react";
+
+export default function AdminLayout({ user, header, children }) {
     const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const { post } = useForm();
+
+     // Remove the filterOpen item from local storage to reset its state
+    // useEffect(() => {
+    //     localStorage.removeItem('filterOpen');
+    // }, []);
 
 
     const openModal = () => {
@@ -24,10 +39,11 @@ export default function AdminLayout({ auth, user, header, children }) {
         setIsModalOpen(false);
     }
 
-    return (
+    return ( 
 
     <div className="min-h-screen bg-customlightBlue flex select-none">
 
+        <div className="sm:block hidden">
         {user.user_type == 'superadmin' ? (
              //SIDEBAR FOR THE SUPER ADMIN
             <Sidebar color="customBlue" borderRadius="none" margin="0">
@@ -66,6 +82,7 @@ export default function AdminLayout({ auth, user, header, children }) {
                 <SidebarItem icon={<FaEnvelope size={20} className="text-white group-hover:text-gray-600" />} text="Give Feedback" color="white" onClick={openModal} isActiveModal={isModalOpen}/>
             </Sidebar>
         )}
+        </div>
 
         <GiveFeedbackModal isOpen={isModalOpen} onClose={closeModal} />
 
@@ -74,34 +91,36 @@ export default function AdminLayout({ auth, user, header, children }) {
         <div className="flex-1">
 
             <nav className="bg-white sticky top-0 shadow-sm z-50">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex justify-end h-14">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+                    <div className="flex justify-end">
 
-                        <div className="hidden sm:flex sm:items-center sm:ml-6">
-                            <div className="ml-3 relative">
+                        <div className="flex items-center mx-3">
+                            {/* <FiBell size={24} className="ml-3 text-gray-500" /> */}
+
+                            {user.user_type == 'superadmin' ? (
+                                    <SuperAdminNotification />
+                                ) : (
+                                    <InsAdminNotification user={user} />
+                                )
+                            }
+                        </div>
+                        
+
+                        <div className="hidden sm:flex sm:items-center sm:ml-5">
+                            <div className=" relative">
                                 <Dropdown>
                                     <Dropdown.Trigger>
-                                        <span className="inline-flex rounded-md">
-                                            <button
-                                                type="button"
-                                                className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150"
-                                            >
-                                                {user.name}
-
-                                                <svg
-                                                    className="ml-2 -mr-0.5 h-4 w-4"
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    viewBox="0 0 20 20"
-                                                    fill="currentColor"
-                                                >
-                                                    <path
-                                                        fillRule="evenodd"
-                                                        d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                                                        clipRule="evenodd"
-                                                    />
-                                                </svg>
-                                            </button>
-                                        </span>
+                                    <User 
+                                        color='primary' 
+                                        as="button"
+                                        avatarProps={{
+                                            className: "shadow shadow-white outline-[2.5px] outline-customBlue",
+                                            src: user.user_pic
+                                        }}
+                                        className="transition-transform"
+                                        description={user.email}
+                                        name={user.name}
+                                    />
                                     </Dropdown.Trigger>
 
                                     <Dropdown.Content>
@@ -151,10 +170,39 @@ export default function AdminLayout({ auth, user, header, children }) {
                         </div>
 
                         <div className="mt-3 space-y-1">
-                            <ResponsiveNavLink href={route('profile.edit')}>Profile</ResponsiveNavLink>
-                            <ResponsiveNavLink method="post" href={route('logout')} as="button">
-                                Log Out
-                            </ResponsiveNavLink>
+                        {user.user_type == 'superadmin' ? (
+                                    <>
+                                    <ResponsiveNavLink href={route('dashboard.index')}>Dashboard</ResponsiveNavLink>
+                                    <ResponsiveNavLink href={route('users')}>Users</ResponsiveNavLink>
+                                    <ResponsiveNavLink href={route('archives')}>Archives</ResponsiveNavLink>
+                                    <ResponsiveNavLink href={route('subscription-billing')}>Subscription & Billing</ResponsiveNavLink>
+                                    <ResponsiveNavLink href={route('user-reports.index')}>User Reports</ResponsiveNavLink>
+                                    <ResponsiveNavLink href={route('user-feedbacks.index')}>User Feedbacks</ResponsiveNavLink>
+                                    <ResponsiveNavLink href={route('manage-terms-and-conditions.index')}>Terms & Conditions</ResponsiveNavLink>
+                                    <ResponsiveNavLink href={route('manage-subscription-plans.index')}>Subscription Plans</ResponsiveNavLink>
+                                    <ResponsiveNavLink href={route('manage-faqs.index')}>FAQs</ResponsiveNavLink>
+                                    <ResponsiveNavLink href={route('advanced-forum')}>Advanced</ResponsiveNavLink>
+                                    </>
+                            ) : (
+                                    <> 
+                                    <ResponsiveNavLink href={route('institution-students')}>Students</ResponsiveNavLink>
+                                    <ResponsiveNavLink href={route('institution-faculties')}>Faculties</ResponsiveNavLink>
+                                    <ResponsiveNavLink href={route('institution-coadmins')}>Co-admins</ResponsiveNavLink>
+                                    <ResponsiveNavLink href={route('manage-departments.index')}>Departments</ResponsiveNavLink>
+                                    <ResponsiveNavLink href={route('institution-archives')}>Archives</ResponsiveNavLink>
+                                    <ResponsiveNavLink href={route('institution-subscription-billing.index')}>Subscription & Billing</ResponsiveNavLink>
+                                    <ResponsiveNavLink href="https://m.me/432748959923780" externalLink>Chat With Us</ResponsiveNavLink>
+                                    <a onClick={openModal} className={`w-full flex font-medium items-start ps-3 pe-4 py-2 border-l-4 text-base focus:outline-none transition duration-150 ease-in-out
+                                    text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300`}>
+                                        Give Feedback 
+                                    </a>
+                                    </>
+        
+                                )}
+                                <ResponsiveNavLink href={route('profile.edit')}>Profile</ResponsiveNavLink>
+                                <ResponsiveNavLink method="post" href={route('logout')} as="button">
+                                    Log Out
+                                </ResponsiveNavLink>
                         </div>
                     </div>
                 </div>

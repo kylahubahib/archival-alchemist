@@ -40,54 +40,42 @@ class AuthenticatedSessionController extends Controller
     public function store(LoginRequest $request): RedirectResponse
     {
         $request->authenticate();
-
         $request->session()->regenerate();
 
-        //Get the data of the user and student table
+        // Get the data of the user and student table
         $user = Auth::user()->load(['student', 'faculty']);
 
-        //Check if user is affiliated with an institution
-        //$user->student->uni_branch_id : Eloquent way of retrieving data from the student table
+        //$facultyExist = $user->faculty->first()->uni_branch_id;
 
-        if($user->user_type != 'admin' && $user->user_type != 'superadmin')
-        {
-            if($user->user_type == 'student') {
+        // Check if user is affiliated with an institution
+        if ($user->user_type != 'admin' && $user->user_type != 'superadmin') {
+            if ($user->user_type == 'student') {
                 $checkInSub = InstitutionSubscription::where('uni_branch_id', $user->student->uni_branch_id)->first();
+            } elseif ($user->user_type == 'teacher') {
+                $checkInSub = InstitutionSubscription::where('uni_branch_id', $user->faculty->first()->uni_branch_id)->first();
             }
+            
 
-            if($user->user_type == 'teacher') {
-                $checkInSub = InstitutionSubscription::where('uni_branch_id', $user->faculty->uni_branch_id)->first();
-            }
-
-            if($user->is_affiliated)
-            {
+            if($user->is_premium == 0 || $user->is_affiliated == 0) {
                 $this->checkInstitutionSubscription($checkInSub, $user);
             }
-           
-
         }
 
         // Redirect based on user_type
         switch ($user->user_type) {
             case 'student':
                 return redirect()->route('library')->with('user', $user);
-                break;
             case 'teacher':
                 return redirect()->route('library');
-                break;
             case 'admin':
                 return redirect()->route('institution-students');
-                break;
             case 'superadmin':
-                return redirect()->route('dashboard');
-                break;
+                return redirect()->route('dashboard.index');
             default:
                 return redirect('/');
-                break;
         }
-//ok
-
     }
+
 
     /**
      * Destroy an authenticated session.

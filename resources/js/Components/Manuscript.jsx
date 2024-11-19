@@ -174,7 +174,7 @@ const Manuscript = ({user}) => {
 
             try {
                 const response = await axios.get(`/user/${user.id}/favorites`);
-                const favoritesData = response.data.map((favorite) => `${user.id}-${favorite.man_doc_id}`);
+                const favoritesData = response.data.favorites.map((favorite) => `${user.id}-${favorite.man_doc_id}`);
                 setFavorites(new Set(favoritesData));
                 console.log(`Fetched favorites for user ${user.id}:`, favoritesData);
             } catch (error) {
@@ -239,7 +239,7 @@ const Manuscript = ({user}) => {
 
     useEffect(() => {
         console.log('Fetching manuscripts...');
-        axios.get('/api/published-manuscripts')
+        axios.get('api/published-manuscripts') 
         .then(response => {
             console.log('Fetched manuscripts with tags:', response.data);
             const data = response.data;

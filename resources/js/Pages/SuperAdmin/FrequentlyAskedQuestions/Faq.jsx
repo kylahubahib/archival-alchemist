@@ -142,7 +142,7 @@ export default function FrequentlyAskedQuestion({ auth, faqs }) {
                             </div>
 
                             
-                            <div className="overflow-y-auto h-480">
+                            <div className=" min-h-[480px]">
 
                             {filteredData.length > 0 ? (
                                 filteredData.map((faq) => (

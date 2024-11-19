@@ -39,25 +39,78 @@ class ProfileController extends Controller
 
     public function edit(Request $request): Response
     {
-        return Inertia::render('Profile/Edit', [
-            'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
-            'status' => session('status'),
-            'auth' => [
-                'user' => [
-                    'name' => $request->user()->name,
-                    'email' => $request->user()->email,
-                    'created_at' => $request->user()->created_at,
-                    'user_aboutme' => $request->user()->user_aboutme,
-                    'user_type' => $request->user()->user_type,
-                    'user_pic' => $request->user()->user_pic,
-                    'is_premium' => $request->user()->is_premium,
-                    'is_affiliated' => $request->user()->is_affiliated,
-                    'user_dob' => $request->user()->user_dob,
-                    'uni_id_num' => $request->user()->uni_id_num
-                    // 'user_pic' => $request->user()->user_pic ? asset('storage/profile_pics/' . $request->user()->user_pic) : null,
+        $user = Auth::user();
+        
+
+        if($user->user_type === 'superadmin' || $user->user_type === 'admin')
+        {
+            return Inertia::render('SuperAdmin\Profile\Edit', [
+                'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
+                'status' => session('status'),
+                'auth' => [
+                    'user' => [
+                        'name' => $request->user()->name,
+                        'email' => $request->user()->email,
+                        'created_at' => $request->user()->created_at,
+                        'user_aboutme' => $request->user()->user_aboutme,
+                        'user_type' => $request->user()->user_type,
+                        'user_pic' => $request->user()->user_pic,
+                        'is_premium' => $request->user()->is_premium,
+                        'is_affiliated' => $request->user()->is_affiliated,
+                        'user_dob' => $request->user()->user_dob,
+                        'uni_id_num' => $request->user()->uni_id_num,
+                        'user_pnum' => $request->user()->user_pnum
+                        // 'user_pic' => $request->user()->user_pic ? asset('storage/profile_pics/' . $request->user()->user_pic) : null,
+                    ]
                 ]
-            ]
-        ]);
+            ]);
+        } 
+        else 
+        {
+
+            $uniBranchName = '';
+            $uniName = '';
+
+            if($user->user_type === 'student')
+            {
+                $user->load('student.university_branch.university');
+
+                $uniBranchName = $user->student->university_branch->uni_branch_name;
+                $uniName = $user->student->university_branch->university->uni_name;
+            }
+            else if($user->user_type === 'teacher')
+            {
+                $user->load('faculty.university_branch.university');
+
+                $uniBranchName = $user->faculty->first()->university_branch->uni_branch_name;
+                $uniName = $user->faculty->first()->university_branch->university->uni_name;
+            }
+           
+
+            return Inertia::render('Profile/Edit', [
+                'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
+                'status' => session('status'),
+                'auth' => [
+                    'user' => [
+                        'name' => $request->user()->name,
+                        'email' => $request->user()->email,
+                        'created_at' => $request->user()->created_at,
+                        'user_aboutme' => $request->user()->user_aboutme,
+                        'user_type' => $request->user()->user_type,
+                        'user_pic' => $request->user()->user_pic,
+                        'is_premium' => $request->user()->is_premium,
+                        'is_affiliated' => $request->user()->is_affiliated,
+                        'user_dob' => $request->user()->user_dob,
+                        'uni_id_num' => $request->user()->uni_id_num,
+                        'user_pnum' => $request->user()->user_pnum,
+                        'university' => $uniName . ' ' . $uniBranchName
+                        // 'user_pic' => $request->user()->user_pic ? asset('storage/profile_pics/' . $request->user()->user_pic) : null,
+                    ]
+                ]
+            ]);
+        }
+
+      
     }
 
 
@@ -153,24 +206,21 @@ class ProfileController extends Controller
             ]);
 
             $user = Auth::user();
-
-           
-
             $student = Student::where('user_id', $user->id)->first();
             
-
             $subscriptionExist = InstitutionSubscription::where('uni_branch_id', $student->uni_branch_id)
                 ->where('insub_status', 'Active')
                 ->first();
 
-
             if ($subscriptionExist == null) {
                 return response()->json([
+                    'is_affiliated' => $user->is_affiliated,
                     'message' => 'Your university currently does not have an active subscription. Please reach out to your institution for more information or updates.'
                 ]);
             } else {
                 $result = $this->checkInstitutionSubscription($subscriptionExist, $user);
 
+                 //Return true if user exist in the csv file
                 if ($result['status']  == true) {
 
                     $user->update([
@@ -181,12 +231,16 @@ class ProfileController extends Controller
                         'uni_branch_id' => $request->uni_branch_id
                     ]);
 
+                   
                     return response()->json([
-                        'message' => $result['message']
+                        'message' => $result['message'],
+                        'is_affiliated' => $user->is_affiliated
                     ]);
                 } 
+                 //Return false if user exist does not exist or there's no uploaded csv or university does not have an active subscription
                 else {
                     return response()->json([
+                        'is_affiliated' => $user->is_affiliated,
                         'message' => $result['message']
                     ]);
                 }

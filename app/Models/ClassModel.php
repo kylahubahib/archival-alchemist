@@ -10,7 +10,8 @@ use Illuminate\Notifications\Notifiable;
 class ClassModel extends Model
 {
     use HasFactory, Notifiable;
-     // Specify the table name if it does not follow Laravel's convention
+
+    // Specify the table name if it does not follow Laravel's convention
     protected $table = 'class';
     // The attributes that are mass assignable.
 
@@ -20,14 +21,15 @@ class ClassModel extends Model
 
 
     public function manuscripts()
-{
-    return $this->hasMany(ManuscriptProject::class, 'class_code');
-}
+    {
+        return $this->hasMany(ManuscriptProject::class, 'class_code');
+    }
 
-public function students()
-{
-    return $this->belongsToMany(User::class, 'class_student', 'class_id', 'stud_id');
-}
+    public function students()
+    {
+        return $this->belongsToMany(User::class, 'class_students', 'class_id', 'stud_id');
+    }
+
 
 }
 

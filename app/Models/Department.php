@@ -18,7 +18,8 @@ class Department extends Model
     protected $fillable = [
         'uni_branch_id',
         'dept_name', 
-        'added_by'
+        'added_by',
+        'dept_acronym'
     ];
 
     public function course(): HasMany
@@ -30,5 +31,9 @@ class Department extends Model
     {
         return $this->belongsTo(UniversityBranch::class, 'uni_branch_id');
     }
+
+    
+   
+
 
 }

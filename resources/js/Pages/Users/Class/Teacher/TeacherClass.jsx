@@ -402,6 +402,7 @@ const handleAddStudent = async () => {
     Alchemist Room
 </div>
 
+<<<<<<< HEAD
         </Link>
     </div>
             {isCreating ? (
@@ -420,6 +421,21 @@ const handleAddStudent = async () => {
                     <>
                         {/* Render selected class information */}
                         {selectedClass && (
+=======
+            <div className="h-screen bg-white m-4 rounded-xl">
+                <div className="w-full mx-auto sm:px-6 lg:px-8">
+                    <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                        <div className="p-6 text-gray-900 w-full">
+                            <div className="flex justify-between items-center mb-4">
+                                <div className="text-xl">
+                                    {selectedClass ? 'GROUP CLASS' : selectedCourse ? 'SECTIONS' : 'COURSES'}
+                                </div>
+                            </div>
+                            <hr className="mb-4" />
+                            {isLoading ? (
+                            renderSkeleton()  // Call the skeleton function here
+                        ) : (
+>>>>>>> 66d78ded887d10a7e766660caccee6420cb06945
                             <>
                                 <div className="flex items-center justify-between mb-4">
                                     <div className="w-1/6">
@@ -440,6 +456,7 @@ const handleAddStudent = async () => {
                                                 backdrop: "bg-gradient-to-t from-zinc-900 to-zinc-900/10 backdrop-opacity-20",
                                             }}
                                         >
+<<<<<<< HEAD
                                             <ModalContent>
                                                 {(onClose) => (
                                                     <>
@@ -454,6 +471,185 @@ const handleAddStudent = async () => {
                                                                     onChange={(e) => setClassName(e.target.value)}
                                                                     value={className}
                                                                 />
+=======
+                                            <div className="flex justify-between items-center mb-2">
+                                                <span className="text-sm">10 Members</span>
+                                            </div>
+                                            <div className="flex justify-center mb-2">
+                                                <FontAwesomeIcon icon={faUsers} size="4x" />
+                                            </div>
+                                            <div className="text-center">{classItem.class_name}</div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+
+                            {/* Render selected class information */}
+                            {selectedClass && (
+                                <>
+                                    <div className="flex items-center justify-between mb-4">
+                                        <div className="w-1/6">
+                                            <Button
+                                                color="primary"
+                                                variant="bordered"
+                                                onClick={() => setIsGroupModalOpen(true)}
+                                                startContent={<FontAwesomeIcon icon={faUser} />}
+                                            >
+                                                New Group Class
+                                            </Button>
+
+                                            <Modal
+                                                backdrop="opaque"
+                                                isOpen={isGroupModalOpen}
+                                                onOpenChange={handleModalClose}
+                                                classNames={{
+                                                    backdrop: "bg-gradient-to-t from-zinc-900 to-zinc-900/10 backdrop-opacity-20",
+                                                }}
+                                            >
+                                                <ModalContent>
+                                                    {(onClose) => (
+                                                        <>
+                                                            <ModalHeader className="flex flex-col gap-1">New Class Group</ModalHeader>
+                                                            <ModalBody>
+                                                                <div className="flex flex-col gap-4">
+                                                                    <input
+                                                                        id="className"
+                                                                        type="text"
+                                                                        className={`border p-2 rounded-md ${!className ? 'border-red-500' : 'border-gray-300'}`}
+                                                                        placeholder="Enter class group name"
+                                                                        onChange={(e) => setClassName(e.target.value)}
+                                                                        value={className}
+                                                                    />
+                                                                </div>
+                                                            </ModalBody>
+                                                            <ModalFooter>
+                                                                <Button
+                                                                    color="primary"
+                                                                    auto
+                                                                    flat
+                                                                    onClick={handleCreate}
+                                                                    disabled={isLoading}
+                                                                >
+                                                                    {isLoading ? 'Creating...' : 'Create'}
+                                                                </Button>
+                                                                <Button auto flat onClick={handleModalClose}>
+                                                                    Close
+                                                                </Button>
+                                                            </ModalFooter>
+                                                        </>
+                                                    )}
+                                                </ModalContent>
+                                            </Modal>
+
+
+                                        </div>
+                                        <div className="flex justify-end space-x-4">
+                                            <ClassDropdown ins_id={selectedClass.ins_id} onUpdate={fetchUpdatedManuscripts} />
+                                        </div>
+                                    </div>
+                                    <hr className="mb-4" />
+
+                                    <div className="flex">
+                                        <div className="w-full">
+                                            <Table>
+                                                <TableHeader>
+                                                    <TableColumn className="w-[10%] text-left">Class Name</TableColumn>
+                                                    <TableColumn className="w-[60%] text-center">Title</TableColumn>
+                                                    <TableColumn className="text-center">Created</TableColumn>
+                                                    <TableColumn className="text-center">Updated</TableColumn>
+                                                    <TableColumn className="text-center">Status</TableColumn>
+                                                    <TableColumn className="text-center">Actions</TableColumn>
+                                                </TableHeader>
+
+                                                <TableBody>
+                                                    {classes.map((classItem) => (
+                                                        <TableRow key={classItem.id}>
+                                                    <TableCell className="w-[10%] text-left">
+                                <span
+                                    className="cursor-pointer text-blue-500 hover:underline"
+                                    onMouseEnter={() => handleMouseEnter(classItem)}
+                                >
+                                    {classItem.class_name}
+                                </span>
+                            </TableCell>
+                            <TableCell className="text-left">
+                                                                {classItem.man_doc_title|| "No manuscript submission from the group."}
+                                                            </TableCell>
+                                                                                 <TableCell className="text-center">
+                                                                {new Date(classItem.created_at).toLocaleDateString() || "N/A"}
+                                                            </TableCell>
+                                                            <TableCell className="text-center">
+                                                                {new Date(classItem.updated_at).toLocaleDateString() || "N/A"}
+                                                            </TableCell>
+                                                            <TableCell className="text-center">
+                                                                {getStatusButton(classItem.man_doc_status || "norecords")}
+                                                            </TableCell>
+                                                            <TableCell className="text-center">
+                                                                <Dropdown >
+                                                                    <DropdownTrigger>
+                                                                        <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-300 text-white">
+                                                                            <FontAwesomeIcon icon={faEllipsisV} />
+                                                                        </div>
+                                                                    </DropdownTrigger>
+                                                                    <DropdownMenu aria-label="Actions" >
+                                                                        {/* <DropdownItem key="code" onClick={() => handleStatusChange(classItem.id, 'X')}>Copy group code</DropdownItem> */}
+                                                                        <DropdownItem key="add" onClick={() => openModal(classItem.class_name, classItem.class_code)}>Add student</DropdownItem>
+                                                                        <DropdownItem key="approve" onClick={() => handleStatusChange(classItem.id, 'Y')}>Approve</DropdownItem>
+                                                                        <DropdownItem key="decline" onClick={() => handleStatusChange(classItem.id, 'X')}>Decline</DropdownItem>
+                                                                        <DropdownItem key="delete" className="text-danger" color="danger">Delete</DropdownItem>
+                                                                    </DropdownMenu>
+                                                                </Dropdown>
+                                                            </TableCell>
+                                                        </TableRow>
+                                                    ))}
+                                                </TableBody>
+                                            </Table>
+
+                                            {/* Modal for Adding Authors */}
+                                            <Modal isOpen={isModalOpen} onClose={closeModal}>
+                                                <ModalContent>
+                                                    <ModalHeader>Add Student</ModalHeader>
+                                                    <ModalBody>
+                                                        <div className="flex flex-col gap-4">
+                                                            <input
+                                                                type="text"
+                                                                placeholder="Enter authors name and press Enter"
+                                                                className="w-full p-2 border rounded mb-2"
+                                                                value={authorInputValue}
+                                                                onChange={handleAuthorInputChange}
+                                                                onKeyDown={handleAuthorKeyDown}
+                                                            />
+                                                            {errors.users && <div className="text-red-600 text-sm mb-2">{errors.users}</div>}
+                            {errorMessage && <div className="text-red-600 text-sm mb-2">{errorMessage}</div>} {/* Error message display */}
+
+                                                            {authorSuggestions.length > 0 && (
+                                                                <ul className="absolute bg-white border border-gray-300 mt-1 max-h-60 overflow-auto z-10 w-full">
+                                                                    {authorSuggestions.map((suggestion, index) => (
+                                                                        <li
+                                                                            key={index}
+                                                                            className="p-2 cursor-pointer hover:bg-gray-200"
+                                                                            onClick={() => handleAuthorSuggestionSelect(suggestion.name)}
+                                                                        >
+                                                                            {suggestion.name}
+                                                                        </li>
+                                                                    ))}
+                                                                </ul>
+                                                            )}
+
+                                                            <div className="tags-container flex flex-wrap mt-2">
+                                                                {users.map((author, index) => (
+                                                                    <div key={index} className="tag bg-gray-200 p-1 rounded mr-2 mb-2 flex items-center">
+                                                                        {author}
+                                                                        <button
+                                                                            type="button"
+                                                                            className="ml-1 text-red-600"
+                                                                            onClick={() => handleAuthorsRemove(index)}
+                                                                        >
+                                                                            &times;
+                                                                        </button>
+                                                                    </div>
+                                                                ))}
+>>>>>>> 66d78ded887d10a7e766660caccee6420cb06945
                                                             </div>
                                                         </ModalBody>
                                                         <ModalFooter>

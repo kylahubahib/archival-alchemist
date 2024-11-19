@@ -9,10 +9,10 @@ import Dropdown from '@/Components/Dropdown';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
 import Sidebar, { SidebarItem, SidebarSeparator } from '@/Components/Sidebar';
 
-import SearchBar from '@/Components/SearchBar';
 import { FaCrown, FaEnvelope } from "react-icons/fa";
 import GiveFeedbackModal from "@/Components/GiveFeedbackModal";
 import ToastNotification, { showToast } from "@/Components/Toast";
+import UserNotification from "@/Components/Notifications/UserNotification";
 
 export default function Authenticated({ user, children, newProfile = null }) {
     const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
@@ -72,26 +72,31 @@ export default function Authenticated({ user, children, newProfile = null }) {
                                     </div> */}
                         </div>
 
-                <div className="hidden sm:flex sm:items-center sm:ml-6 ml-auto">
-                    <button className="rounded-full py-1 px-6 bg-green-300 flex flex-row space-x-2">
-                        <span>{isPremium ? [<FaCrown size={20} color="#FFD700" />] : null}</span>
-                        <span>{user.user_type.charAt(0).toUpperCase() + user.user_type.slice(1).toLowerCase()}</span>
-                    </button>
+                            <div className="hidden sm:flex sm:items-center sm:ml-6">
+                                <button className="rounded-full py-1 px-6 bg-green-300 flex flex-row space-x-2">
+                                    <span>{isPremium ? (<FaCrown size={20} color="#FFD700" />) : null}</span>
+                                    <span>{user.user_type.charAt(0).toUpperCase() + user.user_type.slice(1).toLowerCase()}</span>
+                                </button>
 
-                    <FiBell size={24} className="ml-3 text-white" />
+                                {/* <FiBell size={24} className="ml-3 text-white" /> */}
 
-                    <div className="ml-3 relative">
-                        <Dropdown>
-                            <Dropdown.Trigger>
-                                <span className="inline-flex rounded-md ">
-                                    <button
-                                        type="button"
-                                        className="relative items-center px-0 py-0 border border-transparent text-sm leading-4 font-medium rounded-full h-10 w-10 flex justify-center text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150"
-                                    >
-                                        <img src={profilePic} className="w-full h-full rounded-full object-cover" />
-                                    </button>
-                                </span>
-                            </Dropdown.Trigger>
+                                <div className="flex items-center mx-3">
+                                        <UserNotification user={user} />
+                                </div>
+
+                                <div className=" relative">
+                                    <Dropdown>
+                                        <Dropdown.Trigger>
+                                            <span className="inline-flex rounded-md">
+                                                <button
+                                                    type="button"
+                                                    className="relative items-center px-0 py-0 border border-transparent text-sm leading-4 font-medium rounded-full h-10 w-10 flex justify-center text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150"
+                                                >
+                                                    <img src={profilePic} className="w-full h-full rounded-full object-cover" />
+
+                                                </button>
+                                            </span>
+                                        </Dropdown.Trigger>
 
                             <Dropdown.Content>
                                 <Dropdown.Link href={route('profile.update')}>Profile</Dropdown.Link>
@@ -130,13 +135,15 @@ export default function Authenticated({ user, children, newProfile = null }) {
             </div>
         </div>
 
-        {/* This part here is for responsive layout. Not yet configured */}
-        <div className={(showingNavigationDropdown ? 'block' : 'hidden') + ' sm:hidden'}>
-            <div className="pt-2 pb-3 space-y-1">
-                <ResponsiveNavLink href={route('dashboard')} active={route().current('dashboard')}>
-                    Dashboard
-                </ResponsiveNavLink>
-            </div>
+
+                     {/* This part here is for responsive layout. Not yet configured*/}
+
+                    <div className={(showingNavigationDropdown ? 'block' : 'hidden') + ' sm:hidden'}>
+                        <div className="pt-2 pb-3 space-y-1">
+                            <ResponsiveNavLink href={route('library')} active={route().current('library')}>
+                                Library
+                            </ResponsiveNavLink>
+                        </div>
 
             <div className="pt-4 pb-1 border-t border-gray-200">
                 <div className="px-4">

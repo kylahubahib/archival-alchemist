@@ -9,9 +9,13 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Validation\Rules;
 use Illuminate\Http\Request;
 use App\Models\Feedback;
+use App\Models\User;
 use Inertia\Response;
 use Inertia\Inertia;
 use Carbon\Carbon;
+
+use App\Events\FeedbackNotification;
+use App\Notifications\SuperadminNotification;
 
 class UserFeedbacksController extends Controller
 {
@@ -82,6 +86,8 @@ class UserFeedbacksController extends Controller
         return response()->json($filteredFeedbacks);
     }
 
+    
+
      /**
      * Store a newly created resource in storage.
      */
@@ -95,8 +101,10 @@ class UserFeedbacksController extends Controller
             'feedback_content' => 'nullable|string',
         ]);
 
+        $user = Auth::user();
+
         try {
-            $existingFeedback = Feedback::where('user_id', Auth::id())->first();
+            $existingFeedback = Feedback::where('user_id',  $user->id)->first();
 
             if ($existingFeedback) {
 
@@ -105,6 +113,23 @@ class UserFeedbacksController extends Controller
                     'feedback_content' => $request->feedback_content
                 ]);
 
+                // event(new FeedbackNotification([
+                //     'message' => $user->name . ' updated their feedback.',
+                //     'feedback_content' => $existingFeedback->feedback_content
+                // ]));
+
+                $superadmins = User::where('user_type', 'superadmin')->get();
+
+                //Notify the superadmin for the updated feedbcak
+                if ($superadmins->isNotEmpty()) {
+                    foreach ($superadmins as $superadmin) {
+                        $superadmin->notify(new SuperadminNotification([
+                            'message' => $user->name . ' updated their feedback.',
+                            'feedback_content' => $existingFeedback->feedback_content
+                        ]));
+                    }
+                }
+
                 return response()->json([
                     'success' => true,
                     'message' => 'Thank you for your feedback again!'
@@ -112,10 +137,30 @@ class UserFeedbacksController extends Controller
             }
 
             $feedback = Feedback::create([
-                'user_id' => Auth::id(),
+                'user_id' => $user->id,
                 'feedback_rating' => $request->feedback_rating,
                 'feedback_content' => $request->feedback_content
             ]);
+
+            //Dispatch the event with the feedback data
+            if($feedback) 
+            {
+                // event(new FeedbackNotification([
+                    
+                // ]));
+
+                $superadmins = User::where('user_type', 'superadmin')->get();
+
+                //Notify the superadmin for the updated feedbcak
+                if ($superadmins->isNotEmpty()) {
+                    foreach ($superadmins as $superadmin) {
+                        $superadmin->notify(new SuperadminNotification([
+                            'message' => $user->name . ' submitted a feedback.',
+                            'feedback_content' => $feedback->feedback_content
+                        ]));
+                    }
+                }
+            }
 
             \Log::info($feedback->toArray());
 

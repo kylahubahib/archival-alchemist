@@ -18,6 +18,7 @@ export default function RegistrationForm() {
         user_dob:'',
         password_confirmation: '',
         ins_admin_proof: '',
+        course_id: ''
     });
 
     const nextStep = () => setStep((prevStep) => prevStep + 1);
@@ -29,10 +30,10 @@ export default function RegistrationForm() {
 
     useEffect(() => {
         
-        console.log(data.role);
-        console.log(data.user_dob);
-        console.log(data.ins_admin_proof);
-        console.log(data.uni_branch_id);
+        // console.log(data.role);
+        // console.log(data.user_dob);
+        // console.log(data.ins_admin_proof);
+        // console.log(data.uni_branch_id);
     })
 
     const handleSubmit = (e) => {
@@ -57,7 +58,7 @@ export default function RegistrationForm() {
         //<GuestLayout>
 
         <div className="flex flex-col md:flex-row align-middle">
-            <div className="h-64 md:min-h-screen md:w-1/2">
+            <div className="min-h-screen md:w-1/2">
                 <img src="/images/img2.png" alt="books" className="w-full h-full object-cover" />
             </div>
         
@@ -66,7 +67,7 @@ export default function RegistrationForm() {
                     <p className="text-2xl md:text-4xl font-bold text-customBlue text-center">WELCOME TO <br/> ARCHIVAL ALCHEMIST!</p>
                 </div>
         
-                <div className="w-full max-w-md mt-6 px-6 py-4 bg-white shadow-md overflow-hidden sm:rounded-lg">
+                <div className="w-full max-w-[600px] px-6 py-4 bg-white shadow-md overflow-hidden sm:rounded-lg">
                     {renderStepContent()}
                 </div>
         

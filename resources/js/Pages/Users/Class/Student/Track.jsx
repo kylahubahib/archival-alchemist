@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Modal from '@/Components/Modal';
 import { VerticalTimeline, VerticalTimelineElement } from 'react-vertical-timeline-component';
 import 'react-vertical-timeline-component/style.min.css';
 import {Card, CardFooter, Image, Button, ModalBody} from "@nextui-org/react";
+import axios from 'axios';
 
 export default function Track({manuscript=[]}) {
     const [expanded, setExpanded] = useState(false);
@@ -11,13 +12,15 @@ export default function Track({manuscript=[]}) {
     const [selectedData, setSelectedData] = useState(null);
     const [revisionHistory, setRevisionHistory] = useState(null);
 
-    
-
     const toggleTimeline = (data) => {
         setRevisionHistory(data);
         setModalContent('');
         setExpanded(!expanded);
     };
+
+    useEffect(() => {
+        console.log(manuscript);
+    })
 
     const openModal = (data, content) => {
         setModalContent(content);
@@ -30,6 +33,10 @@ export default function Track({manuscript=[]}) {
         setSelectedData(null);
         setModalContent('');
         setIsModalOpen(false);
+    };
+
+    const modifyDocument = (link) => {
+        window.open(link, '_blank', 'noopener,noreferrer');
     };
 
     return (
@@ -47,7 +54,7 @@ export default function Track({manuscript=[]}) {
 
                         <div>
                             <div className="text-base font-bold">
-                                Status: {data.man_doc_status != 'X' ? 'APPROVED' : 'PENDING'}
+                                Status: {data.man_doc_status != 'P' ? 'APPROVED' : 'PENDING'}
                             </div>
                             <div className="text-base text-blue-500 cursor-pointer" onClick={() => toggleTimeline(data)}>
                                 {expanded ? 'See Less' : 'See More'}
@@ -150,19 +157,12 @@ export default function Track({manuscript=[]}) {
                 <div className="p-5 flex flex-col md:flex-row md:space-x-4 space-y-4 md:space-y-0">
                     
                     {/* Left side - Image Card */}
-                    <div className="w-full md:w-1/2">
+                    <div className="md:w-1/2">
                     <Card isFooterBlurred radius="lg" className="border-none">
-                        <Image
-                        alt="Woman listing to music"
-                        className="object-cover w-full"
-                        height={300}
-                        src="https://nextui.org/images/hero-card.jpeg"
-                        width={250}
-                        />
+                        <iframe width={500} height={400} allowFullScreen src={selectedData.man_doc_content + '/preview'}/>
                         <CardFooter className="justify-between before:bg-white/10 border-white/20 border-1 overflow-hidden py-1 absolute before:rounded-xl rounded-large bottom-1 w-[calc(100%_-_8px)] shadow-small ml-1 z-10">
-                        <p className="text-tiny text-white/80">Available soon.</p>
-                        <Button className="text-tiny text-white bg-black/20" variant="flat" color="default" radius="lg" size="sm">
-                            Notify me
+                       <Button onClick={() => modifyDocument(selectedData.man_doc_content)} className="text-tiny text-white bg-black/20" variant="flat" color="default" radius="lg" size="sm">
+                            Open
                         </Button>
                         </CardFooter>
                     </Card>

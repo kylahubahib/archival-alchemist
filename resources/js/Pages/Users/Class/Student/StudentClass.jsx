@@ -475,6 +475,17 @@ const handleAddStudent = async () => {
                                             </ModalContent>
                                         </Modal>
                                     </div>
+                                    <div className="border-b border-gray-300 w-full"></div> {/* Gray Divider Below Buttons */}
+
+                                    {/* Section with background color */}
+
+                                    <div className="bg-gray-100 flex-grow rounded-b-lg w-full"> {/* Ensure this section grows */}
+                                        {/* Conditionally Render Active Tab Component */}
+                                        <div className="mt-6">
+                                            {activeTab === 'upload' && <UploadCapstone class_code={classId}  />}
+                                            {activeTab === 'track' && <Track manuscript={manuscript}/>}
+                                            {activeTab === 'approve' && <Approve />}
+                                        </div>
                                     <div className="flex justify-end space-x-4">
                                         <ClassDropdown ins_id={selectedClass.ins_id} onUpdate={fetchUpdatedManuscripts} />
                                     </div>

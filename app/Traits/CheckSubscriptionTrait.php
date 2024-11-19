@@ -17,11 +17,6 @@ trait CheckSubscriptionTrait
             // Retrieve the CSV file path from the subscription
             $filePath = $checkInSub->insub_content;
 
-            if (!file_exists($filePath)) {
-                Log::error('CSV file not found: ' . $filePath);
-                return false;
-            }
-
             // Retrieve data from the CSV file
             $csvData = Excel::toArray(new UsersImport, public_path($filePath));
 

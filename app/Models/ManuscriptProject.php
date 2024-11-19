@@ -17,6 +17,7 @@ class ManuscriptProject extends Model
     protected $fillable = [
         'man_doc_title',
         'man_doc_description',
+        'man_doc_description',
         'man_doc_content',
         'man_doc_status',
         'man_doc_adviser',

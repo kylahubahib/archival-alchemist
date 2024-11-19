@@ -6,17 +6,25 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow; 
+use Illuminate\Broadcasting\Channel; 
+use Illuminate\Notifications\Messages\BroadcastMessage;
+use Illuminate\Broadcasting\PrivateChannel;
 
-class UserNotification extends Notification
+class UserNotification extends Notification implements ShouldBroadcastNow
 {
     use Queueable;
 
+    protected $data;
+
     /**
      * Create a new notification instance.
+     *
+     * @param array $data
      */
-    public function __construct()
+    public function __construct(array $data)
     {
-        //
+        $this->data = $data;
     }
 
     /**
@@ -26,18 +34,49 @@ class UserNotification extends Notification
      */
     public function via(object $notifiable): array
     {
-        return ['mail'];
+        return ['database', 'broadcast'];
     }
 
     /**
-     * Get the mail representation of the notification.
+     * Get the database representation of the notification.
+     *
+     * @return array<int, string>
      */
-    public function toMail(object $notifiable): MailMessage
+    public function toDatabase($notifiable)
     {
-        return (new MailMessage)
-                    ->line('The introduction to the notification.')
-                    ->action('Notification Action', url('/'))
-                    ->line('Thank you for using our application!');
+        return $this->data;
+    }
+
+    /**
+     * Get the data to broadcast.
+     *
+     * @return BroadcastMessage
+     */
+    public function toBroadcast($notifiable): BroadcastMessage
+    {
+        return new BroadcastMessage($this->data);
+    }
+
+    /**
+     * Get the channels the notification should broadcast on.
+     *
+     * @return Channel
+     */
+    public function broadcastOn()
+    {
+        \Log::info('Broadcasting on channel: user-notifications.');
+
+        return new PrivateChannel('user-notifications.' . $this->data['user_id']);
+    }
+
+    /**
+     * Get the name of the event to broadcast.
+     *
+     * @return string
+     */
+    public function broadcastAs()
+    {
+        return 'notification';
     }
 
     /**
@@ -47,8 +86,6 @@ class UserNotification extends Notification
      */
     public function toArray(object $notifiable): array
     {
-        return [
-            //
-        ];
+        return $this->data;
     }
 }
