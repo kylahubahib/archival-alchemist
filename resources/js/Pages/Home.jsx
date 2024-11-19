@@ -123,8 +123,8 @@ export default function Home({ auth }) {
                         >
                         <div className="flex flex-col p-6 mx-auto min-w-80 max-w-md space-y-4">
                             <img src={service.subject} className="h-16 w-16" />
-                            <p className="text-2xl font-semibold">{service.content_title}</p>
-                            <p>{service.content_text}</p>
+                            <p className="text-2xl font-semibold">{service.content_title || ''}</p>
+                            <p>{service.content_text || ''}</p>
                         </div>
                         </motion.div>
                     ))}

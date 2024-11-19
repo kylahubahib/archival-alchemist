@@ -43,22 +43,24 @@ class StudentController extends Controller
         $query = DB::table('users')
             ->join('students', 'users.id', '=', 'students.user_id')
             ->join('university_branches', 'students.uni_branch_id', '=', 'university_branches.id')
-            ->join('courses', 'students.course_id', '=', 'courses.id')
+            ->leftJoin('class_students', 'students.id', '=', 'class_students.stud_id')
+            ->leftJoin('class', 'class_students.class_id', '=', 'class.id')
+            ->leftJoin('sections', 'class.section_id', '=', 'sections.id')
+            ->leftJoin('courses', 'sections.course_id', '=', 'courses.id')
+            ->leftJoin('departments', 'courses.dept_id', '=', 'departments.id')
             ->leftJoin('personal_subscriptions', 'users.id', '=', 'personal_subscriptions.user_id')
             ->leftJoin('subscription_plans', 'personal_subscriptions.plan_id', '=', 'subscription_plans.id')
             ->select(
-                'students.id',
-                'students.course_id',
-                'users.id',
                 'users.name',
                 'users.created_at',
                 'users.email',
                 'users.is_premium',
                 'users.user_pic',
                 'users.user_status',
-                'departments.dept_name',
-                'courses.id',
-                'courses.course_name',
+                'students.id',
+                'departments.dept_acronym',
+                'courses.course_acronym',
+                'sections.section_name',
                 'subscription_plans.plan_name',
                 'personal_subscriptions.start_date',
                 'personal_subscriptions.end_date',
@@ -171,8 +173,8 @@ class StudentController extends Controller
 
             // Create the student
             Student::create([
+                'id' => $validatedData['student_id'],
                 'user_id' => $user->user_id,
-                'stud_id' => $validatedData['student_id'],
                 'uni_branch_id' => $this->insAdminUniBranchId,
                 'dept_id' => $validatedData['department_id'],
                 'course_id' => $validatedData['course_id'],

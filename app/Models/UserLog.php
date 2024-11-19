@@ -11,7 +11,6 @@ class UserLog extends Model
     use HasFactory;
 
     const CREATED_AT = 'created_at';
-    protected $primaryKey = 'log_id';
     public $timestamps = false;
 
     public function user(): BelongsTo

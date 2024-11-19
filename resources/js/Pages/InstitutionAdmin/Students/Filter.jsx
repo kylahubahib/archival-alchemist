@@ -5,7 +5,7 @@ import { FaFilter } from "react-icons/fa";
 import { toast } from 'react-toastify';
 import Modal from '@/Components/Modal';
 import axios from 'axios';
-import { autocompleteInputProps, capitalize, encodeParam, getAcronymAndOrigText, onChangeHandler, parseDateTime, renderAutocompleteItems, sanitizeParam, updateUrl } from "@/Components/Admins/Functions";
+import { autocompleteInputProps, capitalize, encodeParam, onChangeHandler, parseDateTime, renderAutocompleteItems, sanitizeParam, updateUrl } from "@/Components/Admins/Functions";
 import { Link, router } from "@inertiajs/react";
 import { motion } from 'framer-motion'; // Import Framer Motion
 
