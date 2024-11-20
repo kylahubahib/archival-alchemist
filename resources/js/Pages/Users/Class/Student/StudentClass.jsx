@@ -489,6 +489,7 @@ const handleAddStudent = async () => {
                                     <div className="flex justify-end space-x-4">
                                         <ClassDropdown ins_id={selectedClass.ins_id} onUpdate={fetchUpdatedManuscripts} />
                                     </div>
+                                    </div>
                                 </div>
                                 <hr className="mb-4" />
 

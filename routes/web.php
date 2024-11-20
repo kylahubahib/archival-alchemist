@@ -3,6 +3,7 @@
 
 use App\Http\Controllers\Pages\InsAdminCommonDataController;
 
+use App\Http\Controllers\CommentController;
 use App\Http\Controllers\Pages\InstitutionAdmin\FacultyController;
 use App\Http\Controllers\Pages\InstitutionAdmin\StudentController;
 use App\Http\Controllers\Pages\SuperAdmin\UserController;
@@ -535,5 +536,6 @@ Route::middleware(['web'])->group(function () {
 
 Route::get('/view_file/{filename}', [StudentClassController::class, 'view'])->name('view_file');
 
-
+Route::get('comments/{documentId}', [CommentController::class, 'getComments']);
+Route::post('comments', [CommentController::class, 'storeComment']);
 require __DIR__.'/auth.php';

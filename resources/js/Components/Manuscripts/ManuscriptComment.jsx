@@ -12,8 +12,20 @@ const ManuscriptComment = ({ manuscriptId }) => {
     const [replyingTo, setReplyingTo] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
 
-    // Initialize Laravel Echo
     useEffect(() => {
+        // Fetch comments initially
+        axios
+            .get(`/api/comments/${manuscriptId}`)
+            .then((response) => {
+                if (response.data && Array.isArray(response.data)) {
+                    setComments(response.data);
+                } else {
+                    console.error("Unexpected response format:", response.data);
+                }
+            })
+            .catch((error) => console.error('Error fetching comments:', error));
+
+        // Initialize Laravel Echo
         const echo = new Echo({
             broadcaster: 'pusher',
             key: process.env.REACT_APP_PUSHER_KEY,
@@ -22,52 +34,21 @@ const ManuscriptComment = ({ manuscriptId }) => {
         });
 
         // Subscribe to the manuscript-specific channel
-        echo.channel(`manuscript.${manuscriptId}`)
+        const channel = echo.channel(`manuscript.${manuscriptId}`)
             .listen('CommentAdded', (event) => {
                 setComments((prevComments) => [event.comment, ...prevComments]);
             });
 
         // Cleanup Echo on unmount
         return () => {
-            echo.leaveChannel(`manuscript.${manuscriptId}`);
+            channel.leave();
         };
     }, [manuscriptId]);
 
-    // Fetch comments when the component mounts
-useEffect(() => {
-    axios
-        .get(`/api/comments/${manuscriptId}`)
-        .then((response) => {
-            if (response.data && Array.isArray(response.data)) {
-                setComments(response.data);
-            } else {
-                console.error("Unexpected response format:", response.data);
-            }
-        })
-        .catch((error) => console.error('Error fetching comments:', error));
-
-    const echo = new Echo({
-        broadcaster: 'pusher',
-        key: process.env.REACT_APP_PUSHER_KEY,
-        cluster: process.env.REACT_APP_PUSHER_CLUSTER,
-        forceTLS: true,
-    });
-
-    echo.channel('manuscript.' + manuscriptId)
-        .listen('CommentAdded', (event) => {
-            setComments((prevComments) => [event.comment, ...prevComments]);
-        });
-
-    return () => {
-        echo.leaveChannel('manuscript.' + manuscriptId);
-    };
-}, [manuscriptId]);
-
-    // Handle adding a new comment or reply
     const handleAddComment = () => {
-        if (!newComment) return;
-        setIsLoading(true);
+        if (!newComment.trim()) return;
 
+        setIsLoading(true);
         axios
             .post('/api/comments', {
                 manuscript_id: manuscriptId,
@@ -76,7 +57,6 @@ useEffect(() => {
             })
             .then((response) => {
                 if (replyingTo) {
-                    // Update parent comment with new reply
                     setComments((prevComments) =>
                         prevComments.map((comment) =>
                             comment.id === replyingTo
@@ -97,20 +77,19 @@ useEffect(() => {
             });
     };
 
-    // Close comment form
     const handleSlideCloseToRight = () => {
         setIsFormVisible(false);
     };
 
     return (
-        <div  className="w-[95%] mx-auto my-3 pt-10">
+        <div className="w-[95%] mx-auto my-3 pt-10">
             <AnimatePresence>
                 {isFormVisible && (
                     <motion.div
                         initial={{ opacity: 0, x: '100%' }}
                         animate={{ opacity: 1, x: 0 }}
                         exit={{ opacity: 0, x: '100%' }}
-                        transition={{ type: 'spring', stiffness: 100, damping: 15 }}
+                        transition={{ type: 'spring', stiffness: 100, damping: 25 }}
                         className="w-1/2 bg-white rounded-lg p-6 shadow-2xl"
                         style={{ position: 'absolute', top: 0, right: 0, height: '100vh' }}
                     >
@@ -125,11 +104,7 @@ useEffect(() => {
                             <h2 className="text-xl font-bold mb-6 text-gray-600">Comments Section</h2>
 
                             <Textarea
-                                placeholder={
-                                    replyingTo
-                                        ? `Replying to comment #${replyingTo}...`
-                                        : 'Write your comment here...'
-                                }
+                                placeholder={replyingTo ? `Replying to comment #${replyingTo}...` : 'Write your comment here...'}
                                 value={newComment}
                                 onChange={(e) => setNewComment(e.target.value)}
                                 rows={4}

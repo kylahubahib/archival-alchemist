@@ -20,7 +20,7 @@ export default function UserNotification({user}) {
             forceTLS: true
         });
 
-        const userId = user.id; 
+        const userId = user.id;
 
         const channel = window.Echo.private(`user-notifications.${userId}`);
         channel.listen('.notification', (data) => {
@@ -36,7 +36,7 @@ export default function UserNotification({user}) {
             .then(response => {
                 //console.log(response.data.unreadNotif)
                 if(response.data.unreadNotif != []) {
-                    setNotifying(true); 
+                    setNotifying(true);
                 };
             })
             .catch(error => {
@@ -46,23 +46,23 @@ export default function UserNotification({user}) {
 
     const handleClick = () => {
         if (!dropdownOpen) {
-            setLoading(true); 
+            setLoading(true);
 
             axios.get('/get-notifications')
                 .then(response => {
                     setNotificationData(response.data.notificationData);
-                    setLoading(false); 
-                    setNotifying(false); 
+                    setLoading(false);
+                    setNotifying(false);
 
                     axios.post('/mark-as-read');
                 })
                 .catch(error => {
                     console.error(error);
-                    setLoading(false); 
+                    setLoading(false);
                 });
         }
 
-        setDropdownOpen(!dropdownOpen); 
+        setDropdownOpen(!dropdownOpen);
     };
 
     const clearNotifications = () => {
@@ -76,7 +76,7 @@ export default function UserNotification({user}) {
 
     // const markAsRead = () => {
     //     axios.post('/mark-as-read').then(response => {
-            
+
     //     })
     //     .catch(error => {
     //         console.error(error);
@@ -100,7 +100,7 @@ export default function UserNotification({user}) {
                     width="18"
                     height="18"
                     viewBox="0 0 18 18"
-                    fill="currentColor" 
+                    fill="currentColor"
                     xmlns="http://www.w3.org/2000/svg"
                 >
                     <path
@@ -110,7 +110,7 @@ export default function UserNotification({user}) {
             </button>
 
             {dropdownOpen && (
-                <div 
+                <div
                     className="absolute -right-[108px] mt-2.5 flex max-h-[550px] min-w-[450px] flex-col rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark sm:right-0 sm:w-[320px]"
                 >
                     <div className="px-8 pr-8 py-3 flex justify-between">

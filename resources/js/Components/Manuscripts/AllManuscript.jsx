@@ -10,11 +10,13 @@ import SearchBar from '@/Components/SearchBars/LibrarySearchBar'; // Import the 
 import { Tooltip, Button } from '@nextui-org/react';
 import {Dropdown, DropdownTrigger, DropdownMenu, DropdownItem} from "@nextui-org/react";
 import { Skeleton } from '@nextui-org/skeleton'; // Import //Skeleton
-import PdfViewer from '@/Components/PdfViewer'
-
+import CommentSections from '@/Components/CommentSection'; // Import the LibrarySearchBar component
 import ManuscriptComment from '@/Components/Manuscripts/ManuscriptComment'; // Import the LibrarySearchBar component
+//import { CommentSection } from 'react-comments-section';
 
+import PdfViewer from '@/Components/PdfViewer'
 const Manuscript = ({user, choice}) => {
+    const [isPdfOpen, setPdfOpen] = useState(false);
     const [favorites, setFavorites] = useState(new Set());
      const [userId, setUserId] = useState(null); // Store the current logged-in user ID
     const [manuscripts, setManuscripts] = useState([]);
@@ -28,6 +30,7 @@ const Manuscript = ({user, choice}) => {
         { user: 'Commenter 3', text: 'This is yet another comment.' },
     ]);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isCommentOpen, setisCommentOpen] = useState(false);
     const [isCiteModalOpen, setIsCiteModalOpen] = useState(false);
     const [selectedRating, setSelectedRating] = useState(0); // Store the rating value
     const [selectedManuscript, setSelectedManuscript] = useState(null); // Track selected manuscript
@@ -38,12 +41,45 @@ const Manuscript = ({user, choice}) => {
 
     const [commentStates, setCommentStates] = useState({}); // This will store the state for each manuscript
 
-    const handleCommentClick = (id) => {
-        setCommentStates(prevState => ({
-            ...prevState,
-            [id]: !prevState[id], // Toggle the comment visibility for the specific manuscript
-        }));
+
+    const [ismodalOpen, setIsmodalOpen] = useState(false);
+    const [pdfUrl, setPdfUrl] = useState("");
+
+    const openModal = (url) => {
+        console.log("It is now open");
+        setPdfUrl(url);
+        setIsmodalOpen(true);
     };
+
+    const closeModal = () => {
+        setPdfUrl("");
+        setIsmodalOpen(false);
+    };
+    // const handleCommentClick = (id) => {
+    //     setCommentStates(prevState => ({
+    //         ...prevState,
+    //         [id]: !prevState[id], // Toggle the comment visibility for the specific manuscript
+    //     }));
+    // };
+
+
+    // Handle opening the modal and setting the title
+    const handleViewPdf = (manuscript) => {
+        if (manuscript && manuscript.man_doc_content) {
+            console.log("Viewing PDF for manuscript:", manuscript);
+            setSelectedManuscript(manuscript); // Set the selected manuscript
+            setPdfOpen(true); // Open the modal
+        } else {
+            console.error("Manuscript or PDF URL is missing.");
+        }
+    };
+
+
+         // Handle opening the modal and setting the title
+         const handleCommentClick = () => {
+            setSelectedManuscript(); // Store the manuscript for later use
+            setisCommentOpen(true);
+        };
 
 
 
@@ -404,7 +440,7 @@ const handleDropdownChange = (selectedKey) => {
                      */}
 
 
-{manuscript.man_doc_content ? (
+{/* {manuscript.man_doc_content ? (
     <PdfViewer pdfUrl={manuscript.man_doc_content} />
     // <PdfViewer pdfUrl="http://127.0.0.1:8000/storage/capstone_files/1728959708_Designing%20Student%20Centric%20Solutions%20through%20Collaboration.pdf" />
 
@@ -412,13 +448,13 @@ const handleDropdownChange = (selectedKey) => {
     <div className="flex items-center justify-center h-full w-full text-gray-500">
         <p>No PDF available</p>
     </div>
-)}
+)} */}
 
 
 
 
                 </div>
-            <div className="flex-1 p-4">
+            {/* <div className="flex-1 p-4">
                 <h2 className="text-xl font-bold text-gray-900">
                 <a
                     href={`http://127.0.0.1:8000/${manuscript.man_doc_content}`}
@@ -427,10 +463,33 @@ const handleDropdownChange = (selectedKey) => {
                     className="text-gray-700 hover:text-blue-600 hover:underline cursor-pointer transition-all duration-300 ease-in-out"
                 >
                     {manuscript.man_doc_title}
-                </a>
+                </a> */}
+
+<div className="flex-1 p-4">
+            <h2 className="text-xl font-bold text-gray-900">
+                <span
+                    onClick={() => openModal(`http://127.0.0.1:8000/${manuscript.man_doc_content}`)}
+                    className="text-gray-700 hover:text-blue-600 hover:underline cursor-pointer transition-all duration-300 ease-in-out"
+                >
+                    {manuscript.man_doc_title}
+                </span>
+            </h2>
+
+            <Modal show={ismodalOpen} onClose={closeModal} maxWidth="2xl" maxHeight="2xl">
+    <div className="relative h-[80vh]">
+        <iframe
+            src={`http://127.0.0.1:8000/${manuscript.man_doc_content}`}
+            className="w-full h-full border-0"
+            title="PDF Viewer"
+        ></iframe>
+    </div>
+</Modal>
 
 
-                    </h2>
+
+
+
+
                 {/* <p className="text-gray-700 mt-1">Author: {user.name}</p> */}
 
                 {/* Display the users here */}
@@ -464,23 +523,38 @@ const handleDropdownChange = (selectedKey) => {
 
                 <div className="mt-4 flex items-center gap-4">
                 <Tooltip content="Views">
-                    <div className={`flex items-center ${manuscript.man_doc_view_count > 0 ? 'text-blue-500' : 'text-gray-600'} hover:text-blue-700 cursor-pointer`}>
-                        <FaEye size={20} />
-                        <span className="ml-1">{manuscript.man_doc_view_count}</span>
-                    </div>
-                    </Tooltip>
+                                            <button
+                                                className={`text-gray-600 hover:text-blue-500 ${manuscript.man_doc_content ? 'text-blue-500' : ''}`}
+                                                onClick={() => handleViewPdf(manuscript)} // Pass entire manuscript object
+                                            >
+                                                <FaEye size={20} />
+                                                <span className="ml-1">{manuscript.man_doc_view_count}</span>
+                                            </button>
+                                        </Tooltip>
 
-                    {/* <div className={`flex items-center ${comments.length > 0 ? 'text-blue-500' : 'text-gray-600'} hover:text-blue-700 cursor-pointer`} onClick={toggleComments}>
+                {/* <Tooltip content="Views">
+    <button
+        className={`text-gray-600 hover:text-blue-500 ${manuscript.man_doc_content > 0 ? 'text-blue-500' : ''}`}
+        onClick={() => handleViewPdf(manuscript.man_doc_con > 0 ? 'text-blue-500' : 'text-gray-600')}
+    >
+        <FaEye size={20} />
+        <span className="ml-1">{manuscript.man_doc_view_count}</span>
+    </button>
+</Tooltip> */}
+
+
+                    {/* <div className={`flex items-center ${comments.length > 0 ? 'text-blue-500' : 'text-gray-200'} hover:text-blue-700 cursor-pointer`} onClick={toggleComments}>
                         <FaComment size={20} />
+                        onClick={() => handleCommentClick(manuscript.id)}
                         <span className="ml-1">
                             {comments.length > 0 ? `${comments.length} Comment${comments.length > 1 ? 's' : ''}` : 'No comments yet'}
                         </span>
-                    </div>
-                     */}
+                    </div> */}
+
 
 <button
                 className="flex items-center hover:text-blue-700 bg-transparent border-none"
-                onClick={() => handleCommentClick(manuscript.id)}
+                onClick={() => handleCommentClick()}
                 aria-label="Toggle Comment Section"
             >
                 <FaComment size={20} />
@@ -521,6 +595,39 @@ const handleDropdownChange = (selectedKey) => {
                                 </button>
                             </Tooltip>
 
+
+
+
+
+            {/* Rendering the PDF preview */}
+            {isPdfOpen && selectedManuscript && (
+                <Modal show={isPdfOpen} onClose={() => setPdfOpen(false)}>
+                    <button disabled className="bg-gray-300 text-gray-500 py-4 px-4 font-bold rounded w-full">
+                        We systematically review all ratings to enhance our services, and we highly value them.
+                    </button>
+                    <div className="flex flex-col items-center justify-center p-6 rounded-lg shadow-md">
+                        <h2 className="text-2xl font-bold mb-4 text-center text-gray-500">
+                            {selectedManuscript.man_doc_title}
+                        </h2>
+
+                        {selectedManuscript.man_doc_content ? (
+                            <PdfViewer pdfUrl={selectedManuscript.man_doc_content} />
+                        ) : (
+                            <div className="flex items-center justify-center h-full w-full text-gray-500">
+                                <p>No PDF available</p>
+                            </div>
+                        )}
+                    </div>
+                </Modal>
+            )}
+
+
+
+
+
+
+
+
                 {/* Rendering the ratings modal */}
                 {isModalOpen && (
                     <Modal show={isModalOpen} onClose={() => setIsModalOpen(false)}>
@@ -543,6 +650,38 @@ const handleDropdownChange = (selectedKey) => {
                                     setSelectedRating(newRating);
 
                                 }} // Capture rating
+                            />
+
+                            {/* Submit button */}
+                            <button
+                                className="mt-4 bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition duration-200"
+                                onClick={handleSubmit}
+                            >
+                                Submit
+                            </button>
+                        </div>
+                    </Modal>
+                )}
+
+
+
+                               {/* Rendering the comment modal */}
+                               {isCommentOpen && (
+                    <Modal show={isCommentOpen} onClose={() => setisCommentOpen(false)}>
+                        <button
+                                Disable='true'
+                                className="bg-gray-300 text-gray-500 py-4 px-4 font-bold rounded w-full"
+                                // onClick={handleSubmit}
+                            >
+                                We systematically review all ratings to enhance our services, and we highly value them.
+                            </button>
+                        <div className="flex flex-col items-center justify-center p-6 rounded-lg shadow-md">
+                            <h2 className="text-2xl font-bold mb-4  text-center text-gray-500">
+                                {selectedManuscript ? selectedManuscript.man_doc_title : ''}
+                            </h2>
+
+                            {/* Ratings component */}
+                            <CommentSections
                             />
 
                             {/* Submit button */}
@@ -621,6 +760,11 @@ const handleDropdownChange = (selectedKey) => {
                     </Modal>
                 )}
 
+
+
+
+
+
             </div>
 
                 {showComments && (
@@ -644,6 +788,8 @@ const handleDropdownChange = (selectedKey) => {
             </div>
             </div>
 ))}
+
+
             <ToastContainer // Include ToastContainer for displaying toasts
                 position="bottom-center"
                 autoClose={2000}

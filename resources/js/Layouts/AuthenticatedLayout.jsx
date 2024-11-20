@@ -80,9 +80,9 @@ export default function Authenticated({ user, children, newProfile = null }) {
 
                                 {/* <FiBell size={24} className="ml-3 text-white" /> */}
 
-                                <div className="flex items-center mx-3">
+                                {/* <div className="flex items-center mx-3">
                                         <UserNotification user={user} />
-                                </div>
+                                </div> */}
 
                                 <div className=" relative">
                                     <Dropdown>
