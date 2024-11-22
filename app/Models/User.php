@@ -202,4 +202,10 @@ class User extends Authenticatable
         }
     }
 
+
+
+    public function groupMembers()
+    {
+        return $this->hasMany(GroupMember::class, 'section_id');
+    }
 }
