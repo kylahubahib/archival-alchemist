@@ -253,7 +253,7 @@ const handleClick = (value) => {
 
     if (loading) {
         return (
-            <section className="w-full mx-auto my-4 mt-3 pt-10">
+            <section className="w-full mx-auto my-4 mt-10 pt-10">
                 {[...Array(3)].map((_, index) => (
                     <div key={index} className="w-full bg-white shadow-lg flex mb-4">
                         <Skeleton className="rounded w-40 h-full" />
@@ -311,7 +311,7 @@ const handleClick = (value) => {
                         </button>
                     </div>
 
-                    
+
                     <div className="flex-1 p-4">
                         <h2 className="text-xl font-bold text-gray-900">{manuscript.man_doc_title}</h2>
                         <p className="text-gray-700 mt-1">Author: {manuscript.authors?.map(author => author.name).join(', ') || 'No authors available'}</p>

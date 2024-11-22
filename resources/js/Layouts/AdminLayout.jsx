@@ -46,7 +46,7 @@ export default function AdminLayout({ user, header, children }) {
         <div className="sm:block hidden">
         {user.user_type == 'superadmin' ? (
              //SIDEBAR FOR THE SUPER ADMIN
-            <Sidebar color="customBlue" borderRadius="none" margin="0">
+            <Sidebar color="customBlue" borderRadius="none" margin="0"> 
                 <SidebarItem icon={<MdSpaceDashboard size={20} className="text-white group-hover:text-gray-600" />} text="Dashboard" color="white" to="/dashboard" />
                 <SidebarTitle title="MANAGEMENT"></SidebarTitle>
                 <SidebarItem icon={<FaUsers size={20} className="text-white group-hover:text-gray-600" />} text="Users" color="white" to="/users" />
@@ -181,7 +181,7 @@ export default function AdminLayout({ user, header, children }) {
                                     <ResponsiveNavLink href={route('manage-terms-and-conditions.index')}>Terms & Conditions</ResponsiveNavLink>
                                     <ResponsiveNavLink href={route('manage-subscription-plans.index')}>Subscription Plans</ResponsiveNavLink>
                                     <ResponsiveNavLink href={route('manage-faqs.index')}>FAQs</ResponsiveNavLink>
-                                    <ResponsiveNavLink href={route('advanced-forum')}>Advanced</ResponsiveNavLink>
+                                    <ResponsiveNavLink href={route('manage-forum-posts.index')}>Advanced</ResponsiveNavLink>
                                     </>
                             ) : (
                                     <> 

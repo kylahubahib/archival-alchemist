@@ -103,7 +103,7 @@ const ClassDropdown = ({ ins_id, onUpdate }) => {
                     <DropdownItem
                         key="to-review"
                         showDivider
-                        description="Display To-check manuscripts"
+                        description="Display in-progress manuscripts"
                         startContent={<PendingIcon className={iconClasses} />}
                         onClick={() => handleFilterChange('to-review')}
                     >

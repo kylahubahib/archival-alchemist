@@ -39,19 +39,21 @@ export default function Authenticated({ user, children, newProfile = null }) {
     });
 
     return (
-        <div className="bg-customlightBlue min-h-screen flex flex-col ">
+        <div className="bg-customlightBlue min-h-screen flex flex-col">
          <div className="flex-1 flex">
             {/* Sidebar */}
-            <Sidebar color="white" borderRadius="xl" margin="3"  className="z-10">
+            <Sidebar color="white" borderRadius="xl" margin="3">
                 <SidebarItem icon={<BiBookBookmark size={20} />} text="Favorites" to="/savedlist" />
                 <SidebarItem icon={<BiBookOpen size={20} />} text="Library" to="/library" />
                 <SidebarItem icon={<MdOutlineForum size={20} />} text="Forum" to="/forum" />
                 {/* <SidebarItem icon={<MdOutlineLabel size={20} />} text="Tags" to="/tags" /> */}
-                {user.user_type === 'teacher' ? (
+                {user.user_type !== 'general_user' &&
+                (user.user_type === 'teacher' ? (
                     <SidebarItem icon={<SiGoogleclassroom size={20} />} text="Class" to="/teacherclass" />
                 ) : (
                     <SidebarItem icon={<SiGoogleclassroom size={20} />} text="Class" to="/studentclass" />
-                )}
+                ))
+                }
                 <SidebarItem icon={<MdChatBubbleOutline size={20} />} text="Inbox" to="/chatify" />
                 <SidebarSeparator marginTop={80}/>
 
@@ -62,20 +64,24 @@ export default function Authenticated({ user, children, newProfile = null }) {
 
             <GiveFeedbackModal isOpen={isModalOpen} onClose={closeModal} />
 
-            <div className="flex-1 flex flex-col ">
-                <nav className="bg-customBlue border-b fixed top-0 left-0 w-full z-20">
-                    <div className="w-full mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex justify-between items-center py-3 pb-2">
-                        <div className="flex-1 flex ">
-                                    {/* <div className="shrink-0 flex items-center">
-                                        <SearchBar />
-                                    </div> */}
-                        </div>
+            <div className="flex-1 flex flex-col">
+                <nav className="bg-customBlue border-b rounded-xl m-3 sticky top-3 z-50">
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <div className="flex justify-between h-16">
+                            <div className="flex">
+                                {/* <div className="shrink-0 flex items-center">
+                                    <SearchBar />
+                                </div> */}
+                            </div>
 
                             <div className="hidden sm:flex sm:items-center sm:ml-6">
                                 <button className="rounded-full py-1 px-6 bg-green-300 flex flex-row space-x-2">
                                     <span>{isPremium ? (<FaCrown size={20} color="#FFD700" />) : null}</span>
-                                    <span>{user.user_type.charAt(0).toUpperCase() + user.user_type.slice(1).toLowerCase()}</span>
+                                    {user.user_type === 'general_user' ? (
+                                       <span>General User</span>
+                                    ) : (
+                                        <span>{user.user_type.charAt(0).toUpperCase() + user.user_type.slice(1).toLowerCase()}</span>
+                                    )}
                                 </button>
 
                                 {/* <FiBell size={24} className="ml-3 text-white" /> */}
@@ -145,29 +151,29 @@ export default function Authenticated({ user, children, newProfile = null }) {
                             </ResponsiveNavLink>
                         </div>
 
-            <div className="pt-4 pb-1 border-t border-gray-200">
-                <div className="px-4">
-                    <div className="font-medium text-base text-gray-800">{user.name}</div>
-                    <div className="font-medium text-sm text-gray-500">{user.email}</div>
-                </div>
+                        <div className="pt-4 pb-1 border-t border-gray-200">
+                            <div className="px-4">
+                                <div className="font-medium text-base text-gray-800">{user.name}</div>
+                                <div className="font-medium text-sm text-gray-500">{user.email}</div>
+                            </div>
 
-                <div className="mt-3 space-y-1">
-                    <ResponsiveNavLink href={route('profile.edit')}>Profile</ResponsiveNavLink>
-                    <ResponsiveNavLink method="post" href={route('logout')} as="button">
-                        Log Out
-                    </ResponsiveNavLink>
+                            <div className="mt-3 space-y-1">
+                                <ResponsiveNavLink href={route('profile.edit')}>Profile</ResponsiveNavLink>
+                                <ResponsiveNavLink method="post" href={route('logout')} as="button">
+                                    Log Out
+                                </ResponsiveNavLink>
+                            </div>
+                        </div>
+                    </div>
+                </nav>
+
+                {/* Main content */}
+
+                <div className="flex-1">
+                <main>{children}</main>
+                <ToastNotification/>
                 </div>
             </div>
-        </div>
-    </nav>
-
-    {/* Main content */}
-    <div className="flex-1 relative z-0 mt-8 ml-10 w-full">
-        <main>{children}</main>
-        <ToastNotification />
-    </div>
-</div>
-
         </div>
     </div>
     );

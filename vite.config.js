@@ -19,12 +19,9 @@ export default defineConfig({
     },
     plugins: [
         laravel({
-            input: 'resources/js/app.jsx',  // Entry point for your JS/React code
-            refresh: true,                  // This will automatically refresh the page in the browser on changes
+            input: 'resources/js/app.jsx',
+            refresh: true,
         }),
-        react(), // React plugin to handle React JSX files
+        react(),
     ],
-    optimizeDeps: {
-        include: ['pdfjs-dist'] // Ensures pdfjs-dist is bundled correctly during development
-    }
 });

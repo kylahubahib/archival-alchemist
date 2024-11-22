@@ -2,22 +2,31 @@
 
 namespace App\Http\Middleware;
 
-use Closure;
-use Illuminate\Http\Request;
-use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken as Middleware;
 
-class VerifyCsrfToken
+class VerifyCsrfToken extends Middleware
 {
     /**
-     * Handle an incoming request.
+     * The URIs that should be excluded from CSRF verification.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \Closure  $next
-     * @return mixed
+     * @var array
      */
-    public function handle($request, Closure $next)
-    {
-        // Add CSRF verification logic here if needed
-        return $next($request);
-    }
+    protected $except = [
+        'login',  
+        'register',
+        'auth/*', 
+    ];
+    
+    // /**
+    //  * Handle an incoming request.
+    //  *
+    //  * @param  \Illuminate\Http\Request  $request
+    //  * @param  \Closure  $next
+    //  * @return mixed
+    //  */
+    // public function handle($request, Closure $next)
+    // {
+    //     // Add CSRF verification logic here if needed
+    //     return $next($request);
+    // }
 }

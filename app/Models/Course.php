@@ -18,8 +18,8 @@ class Course extends Model
     protected $fillable = [
         'dept_id',
         'course_name',
-        'course_acronym',
-        'added_by'
+        'added_by',
+        'course_acronym'
     ];
 
     public function sections(): HasMany  // Renamed to sections

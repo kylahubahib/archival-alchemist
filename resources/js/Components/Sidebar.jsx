@@ -4,20 +4,34 @@ import { createContext, useContext, useEffect, useState } from "react";
 
 const SidebarContext = createContext();
 
-export default function Sidebar({children, color, borderRadius, margin }) {
-    const [expanded, setExpanded] = useState(true)
-    const bgColor= `bg-${color}`;
+
+export default function Sidebar({ children, color, borderRadius, margin }) {
+    const [expanded, setExpanded] = useState(true);
+
+    const handleResize = () => {
+        if (window.innerWidth < 768) {
+            setExpanded(false);
+        } else {
+            setExpanded(true);
+        }
+    };
+
+    useEffect(() => {
+        handleResize();
+
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
+    const bgColor = `bg-${color}`;
     const radius = `rounded-${borderRadius}`;
-    const SidebarMargin = `m-${margin}`
+    const SidebarMargin = `m-${margin}`;
 
     return (
         <>
-            <aside className="fixed top-0 left-0 h-screen z-50">
-            <nav className={`h-full flex flex-col ${bgColor} shadow-sm rounded-none`} style={{ marginLeft: 0 }}>
-
-
-            <div className="p-4 pb-2 flex justify-between items-center bg-customBlue">
-
+            <aside className="sticky top-0 h-screen">
+                <nav className={`h-full flex flex-col ${bgColor} border-r shadow-sm ${radius} ${SidebarMargin}`}>
+                    <div className="p-4 pb-2 flex justify-between items-center bg-customBlue rounded-t-xl">
                         <button onClick={() => setExpanded((curr) => !curr)} className="p-1.5 rounded-lg text-customlightBlue hover:text-gray-100">
                             <HiMenu size={30} />
                         </button>
@@ -142,3 +156,41 @@ export function SidebarSeparator({ marginTop=56 }) {
       </span>
     );
   }
+
+{/*To use the sidebar here's the code:
+    <div className="flex">
+        <Sidebar>
+          <SidebarItem icon={<Home size={20} />} text="Home" alert />
+          <SidebarItem icon={<LayoutDashboard size={20} />} text="Dashboard" href="#" />
+          <SidebarItem icon={<StickyNote size={20} />} text="Projects" alert />
+          <SidebarItem icon={<Calendar size={20} />} text="Calendar" />
+          <SidebarItem icon={<Layers size={20} />} text="Tasks" />
+          <SidebarItem icon={<Flag size={20} />} text="Reporting" />
+          <hr className="my-3" />
+          <SidebarItem icon={<Settings size={20} />} text="Settings" />
+          <SidebarItem icon={<LifeBuoy size={20} />} text="Help" />
+        </Sidebar>
+      </div>
+
+
+
+*/}
+
+{/*To use the sidebar here's the code:
+    <div className="flex">
+        <Sidebar>
+          <SidebarItem icon={<Home size={20} />} text="Home" alert />
+          <SidebarItem icon={<LayoutDashboard size={20} />} text="Dashboard" href="#" />
+          <SidebarItem icon={<StickyNote size={20} />} text="Projects" alert />
+          <SidebarItem icon={<Calendar size={20} />} text="Calendar" />
+          <SidebarItem icon={<Layers size={20} />} text="Tasks" />
+          <SidebarItem icon={<Flag size={20} />} text="Reporting" />
+          <hr className="my-3" />
+          <SidebarItem icon={<Settings size={20} />} text="Settings" />
+          <SidebarItem icon={<LifeBuoy size={20} />} text="Help" />
+        </Sidebar>
+      </div>
+
+
+
+*/}

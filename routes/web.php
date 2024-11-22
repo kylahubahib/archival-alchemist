@@ -24,7 +24,6 @@ use App\Http\Controllers\Auth\AuthenticatedSessionController;
 
 use App\Http\Controllers\GoogleController;
 
-
 use App\Http\Controllers\UserReportController;
 use App\Http\Controllers\AdvancedTagsController;
 use App\Http\Controllers\TermsAndConditionController;
@@ -44,6 +43,8 @@ use App\Http\Controllers\LandingPageController;
 use App\Http\Controllers\ReportReasonController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\AdvancedForumController;
+
 
 use App\Http\Controllers\PostController;
 
@@ -68,15 +69,13 @@ use Illuminate\Support\Facades\Auth;
 Route::get('/admin-registration/{token}', [UserController::class, 'adminRegistrationForm'])->name('admin.registration-form');
 Route::post('/submit-admin-registration', [UserController::class, 'submitAdminRegistration'])->name('admin.submit-admin-registration');
 
-
-
-Route::get('/auth/user', function (Request $request) {
-    return response()->json([
-        'id' => $request->user()->id,
-        'user_type' => $request->user()->user_type,
-        // Add any other fields you might need
-    ]);
-})->middleware('auth');
+// Route::get('/auth/user', function (Request $request) {
+//         return response()->json([
+//             'id' => $request->user()->id,
+//             'user_type' => $request->user()->user_type,
+//             // Add any other fields you might need
+//         ]);
+//     })->middleware('auth');
 
 Route::get('/', function () {
     return Inertia::render('Home');
@@ -94,11 +93,11 @@ Route::post('/cancel-subscription',[InstitutionSubscriptionController::class, 'c
 
 Route::get('/library', function () {
     return Inertia::render('Users/Library');
-})->middleware(['user-type:student,teacher,guest'])->name('library');
+})->middleware(['user-type:student,teacher,guest,general_user'])->name('library');
 
 Route::get('/forum', function () {
     return Inertia::render('Users/Forum');
-})->middleware(['user-type:student,teacher,guest'])->name('forum');
+})->middleware(['user-type:student,teacher,guest,general_user'])->name('forum');
 
 Route::get('/studentclass', function () {
     return Inertia::render('Users/Class/Student/StudentClass');
@@ -116,21 +115,14 @@ Route::get('/tags', function () {
     return Inertia::render('Users/Tags');
 })->middleware(['auth', 'verified', 'user-type:student,teacher'])->name('tags');
 
+
 Route::get('/savedlist', function () {
     return Inertia::render('Users/SavedList');
-})->middleware(['auth', 'verified', 'user-type:student,teacher'])->name('savedlist');
+})->middleware(['auth', 'verified', 'user-type:student,teacher,general_user'])->name('savedlist');
 
 Route::get('/inbox', function () {
     return Inertia::render('Users/Inbox');
-})->middleware(['auth', 'verified', 'user-type:student,teacher'])->name('inbox');
-
-Route::get('/authors', function () {
-    return Inertia::render('Users/Authors');
-})->middleware(['auth', 'verified', 'user-type:student,teacher'])->name('authors');
-
-Route::get('/tags', function () {
-    return Inertia::render('Users/Tags');
-})->middleware(['auth', 'verified', 'user-type:student,teacher'])->name('tags');
+})->middleware(['auth', 'verified', 'user-type:student,teacher,general_user'])->name('inbox');
 
 // Route::get('/subscription', function () {
 //     return Inertia::render('Users/UserSubscription');
@@ -156,10 +148,6 @@ Route::get('/connect/google', [GoogleController::class, 'promptGoogleConnection'
 Route::post('/remove-affiliation', [ProfileController::class, 'removeAffiliation'])->name('remove-affiliation');
 
 use App\Events\MessageSent;
-
-
-
-
 use App\Mail\SubscriptionInquiryMail;
 use App\Mail\NewAccountMail;
 use Illuminate\Support\Facades\Mail;
@@ -278,7 +266,7 @@ Route::middleware(['auth', 'verified', 'user-type:superadmin'])->group(function 
        Route::get('get-branches', [UniversityController::class, 'getBranches'])->name('get-branches');
 
         Route::middleware('access:dashboard_access')->group(function () {
-           //Route::inertia('/dashboard', 'SuperAdmin/Dashboard')->name('dashboard');
+            //Route::inertia('/dashboard', 'SuperAdmin/Dashboard')->name('dashboard');
             //DASHBOARD ROUTES
        Route::resource('dashboard', DashboardController::class)->names('dashboard');
        Route::get('get-weekly-manuscript', [DashboardController::class, 'getWeeklyManuscript']);
@@ -368,8 +356,6 @@ Route::get('/terms-and-conditions', [TermsAndConditionController::class, 'terms_
 
 Route::inertia('/privacy-policy', 'PrivacyPolicy')->name('privacy-policy');
 
-Route::inertia('/terms-and-conditions', 'TermsandConditions')->name('terms-and-conditions');
-
 Route::get('/faq', [ForumPostController::class, 'faq'])->name('faq');
 
 
@@ -410,7 +396,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/api/check-title', [StudentClassController::class, 'checkTitle'])->name('capstone.checkTitle');
 
 //Add a route for fetching tag suggestions:
-    // In api.php or web.php
+// In api.php or web.php
 Route::get('/api/tags/suggestions', [TagController::class, 'suggestions']);
 
 Route::get('tags/existing', [TagController::class, 'existingTags']);
@@ -424,9 +410,9 @@ Route::get('/api/tags', [TagController::class, 'index']);
 
 
 //Add a route for fetching tag suggestions:
-    // In api.php or web.php
-    Route::get('/api/authors/suggestions', [TagController::class, 'Authorsuggestions']);
-    Route::get('/api/title/suggestions', [TagController::class, 'Titlesuggestions']);
+// In api.php or web.php
+Route::get('/api/authors/suggestions', [TagController::class, 'Authorsuggestions']);
+Route::get('/api/title/suggestions', [TagController::class, 'Titlesuggestions']);
 
 //route for checking the class code
 Route::post('/check-class-code', [StudentClassController::class, 'checkClassCode']);
@@ -496,10 +482,6 @@ Route::middleware('auth')->group(function () {
 //     Route::get('/display/groupclass', [TeacherClassController::class, 'DisplayGroupClass'])->name('teacher.class');
 // });
 
-
-
-
-
 //Ratings
 // Route::post('/ratings', [StudentClassController::class, 'storeRatings'])
 // ->middleware(['auth', 'user-type:student, teacher'])->name('storeRatings');
@@ -509,6 +491,7 @@ Route::post('/ratings', [StudentClassController::class, 'storeRatings']);
 Route::get('/groupmembers/{manuscriptId}', [TeacherClassController::class, 'ViewGroupMembers']);
 
 
+//FORUM ROUTES
 // Route for displaying a specific post
 Route::middleware(['web'])->group(function () {
     // Route to get all forum posts
@@ -536,6 +519,28 @@ Route::middleware(['web'])->group(function () {
 
 
 Route::get('/view_file/{filename}', [StudentClassController::class, 'view'])->name('view_file');
+
+
+//class controller
+// routes/api.php
+
+
+Route::get('/fetch-courses', [ClassController::class, 'fetchCourses']);
+Route::post('/store-sections', [ClassController::class, 'storeSection']); // Route for storing data
+Route::get('/fetch-classes', [ClassController::class, 'fetchClasses']);
+
+Route::post('/store-groupmembers', [ClassController::class, 'addStudentsToClass']);
+Route::get('/fetch-currentuser', [ClassController::class, 'getCurrentUser']);
+
+Route::get('/fetch-groupmembers', [ClassController::class, 'getGroupMembers']);
+// In web.php or api.php
+Route::delete('/delete-groupmembers/{id}', [ClassController::class, 'deleteStudent']);
+
+Route::post('/store-assignedTask/{section_id}', [ClassController::class, 'storeAssignedTask']);
+Route::get('/fetch-AssignedTask/{section_id}', [ClassController::class, 'fetchAssignedTask']);
+Route::get('/fetch-specificAssignedTask/{section_id}', [ClassController::class, 'specificAssignedTask']);
+
+Route::post('/store-feedback/{manuscript_id}', [ClassController::class, 'storeFeedback']);
 
 Route::get('comments/{documentId}', [DocCommentsController::class, 'getComments']);
 Route::post('comments', [DocCommentsController::class, 'storeComment']);

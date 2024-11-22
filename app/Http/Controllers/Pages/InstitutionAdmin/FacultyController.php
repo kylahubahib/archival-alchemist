@@ -42,29 +42,26 @@ class FacultyController extends Controller
         Log::info('search', ['search' => $search]);
 
         $query = DB::table('users')
-            ->join('faculties', 'users.user_id', '=', 'faculties.user_id')
-            ->join('university_branches', 'faculties.uni_branch_id', '=', 'university_branches.uni_branch_id')
-            ->join('departments', 'faculties.dept_id', '=', 'departments.dept_id')
-            ->leftJoin('personal_subscriptions', 'users.user_id', '=', 'personal_subscriptions.user_id')
-            ->leftJoin('subscription_plans', 'personal_subscriptions.plan_id', '=', 'subscription_plans.plan_id')
+            ->join('faculties', 'users.id', '=', 'faculties.user_id')
+            ->join('university_branches', 'faculties.uni_branch_id', '=', 'university_branches.id')
+            ->leftJoin('personal_subscriptions', 'users.id', '=', 'personal_subscriptions.user_id')
+            ->leftJoin('subscription_plans', 'personal_subscriptions.plan_id', '=', 'subscription_plans.id')
             ->select(
-                'faculties.fac_id',
-                'faculties.course_id',
-                'faculties.fac_position',
-                'users.user_id',
+                'faculties.id',
+                'faculties.faculty_position',
+                'users.id',
                 'users.name',
                 'users.created_at',
                 'users.email',
                 'users.is_premium',
                 'users.user_pic',
                 'users.user_status',
-                'departments.dept_name',
                 'subscription_plans.plan_name',
                 'personal_subscriptions.start_date',
                 'personal_subscriptions.end_date',
                 'personal_subscriptions.persub_status',
             )
-            ->where('university_branches.uni_branch_id', $this->insAdminUniBranchId);
+            ->where('university_branches.id', $this->insAdminUniBranchId);
 
         if ($hasFacultyPremiumAccess === 'with-premium-access') {
             $query->where('users.is_premium', true);
@@ -77,13 +74,13 @@ class FacultyController extends Controller
             // to avoid canceling out the next where queries
             $query->where(function ($q) use ($search) {
                 $q->where('users.name', 'LIKE', '%' . $search . '%')
-                    ->orWhere('faculties.fac_id', 'LIKE', '%' . $search . '%');
+                    ->orWhere('faculties.id', 'LIKE', '%' . $search . '%');
             });
         }
 
-        if ($department) {
-            $query->where('departments.dept_name', $department);
-        }
+        // if ($department) {
+        //     $query->where('departments.dept_name', $department);
+        // }
 
         if ($plan) {
             $query->where('subscription_plans.plan_name', $plan);
@@ -103,7 +100,7 @@ class FacultyController extends Controller
         }
 
         $faculties = $query
-            ->orderBy('faculties.fac_id', 'asc')
+            ->orderBy('faculties.id', 'asc')
             ->paginate($entriesPerPage)
             ->withQueryString();
 
@@ -135,7 +132,7 @@ class FacultyController extends Controller
     {
         $validatedData = request()->validate(
             [
-                'faculty_id' => 'required|integer|unique:faculties,fac_id',
+                'faculty_id' => 'required|integer|unique:faculties,id',
                 'department_id' => 'required|integer',
                 'name' => 'required|string|max:255',
                 'department.origText' => 'required|string|max:100',
@@ -164,8 +161,8 @@ class FacultyController extends Controller
 
             // Create the student
             Faculty::create([
-                'user_id' => $user->user_id,
-                'fac_id' => $validatedData['faculty_id'],
+                'id' => $validatedData['faculty_id'],
+                'user_id' => $user->id,
                 'uni_branch_id' => $this->insAdminUniBranchId,
                 'dept_id' => $validatedData['department_id'],
             ]);

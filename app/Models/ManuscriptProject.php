@@ -68,16 +68,6 @@ class ManuscriptProject extends Model
         return $this->belongsTo(ClassModel::class, 'class_code');
     }
 
-    public function section()
-    {
-        return $this->belongsTo(Section::class, 'section_id');
-    }
-
-    public function group()
-    {
-        return $this->belongsTo(Group::class, 'group_id');
-    }
-
     //A manuscript can have many ratings.
     public function ratings()
     {

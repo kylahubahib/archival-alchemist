@@ -85,7 +85,7 @@ export default function Home({ auth }) {
                         transition={{ duration: 1.5, delay: 0.5 }}
                     >
                         <h6 className="text-3xl md:text-5xl lg:text-7xl font-serif mt-6">
-                        {hero.content_title}
+                        {hero.content_title || ''}
                         </h6>
                         <h4 className="mt-6">{hero.subject || 'Archival Alchemist'}</h4>
                     </motion.div>
@@ -96,7 +96,7 @@ export default function Home({ auth }) {
                         animate={isHeroInView ? { opacity: 1, y: 0 } : {}}
                         transition={{ duration: 2, delay: 1 }}
                     >
-                        {hero.content_text || 'Hello'}
+                        {hero.content_text || ''}
                     </motion.p>
                     </div>
                 </div>
@@ -123,8 +123,8 @@ export default function Home({ auth }) {
                         >
                         <div className="flex flex-col p-6 mx-auto min-w-80 max-w-md space-y-4">
                             <img src={service.subject} className="h-16 w-16" />
-                            <p className="text-2xl font-semibold">{service.content_title}</p>
-                            <p>{service.content_text}</p>
+                            <p className="text-2xl font-semibold">{service.content_title || ''}</p>
+                            <p>{service.content_text || ''}</p>
                         </div>
                         </motion.div>
                     ))}

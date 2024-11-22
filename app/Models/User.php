@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Laravel\Sanctum\HasApiTokens;
 
 
 use Google\Client as GoogleClient;
@@ -18,7 +19,7 @@ use Google\Client as GoogleClient;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, HasApiTokens;
 
     /**
      * The attributes that are mass assignable.
@@ -161,11 +162,48 @@ class User extends Authenticatable
     }
 
     // Define the relationship with the Author model
-    // public function authors(): HasMany
-    // {
-    //     return $this->hasMany(Author::class, 'user_id');
-    // }
+     // If a User has many Authors
+     public function authors()
+     {
+         return $this->hasMany(Author::class, 'user_id', 'id');
+     }
 
+<<<<<<<<< Temporary merge branch 1
+     public function section()
+     {
+         return $this->hasMany(Section::class, 'ins_id');
+     }
+
+     public function access_control(): HasOne
+     {
+         return $this->hasOne(AccessControl::class, 'user_id');
+     }
+     public function user_log(): HasMany
+     {
+         return $this->hasMany(UserLog::class, 'user_id');
+     }
+
+    // Google access tokens expires after one hour so this method will automatically
+    // create a new access token using the refresh token.
+    // Each time you need to make a request to Google Drive or Docs APIs,
+    // call refreshGoogleToken() to ensure the token is valid.
+    public function refreshGoogleToken()
+    {
+        if (Carbon::now()->greaterThan($this->google_token_expiry)) {
+            $client = new GoogleClient();
+            $client->setClientId(config('services.google.client_id'));
+            $client->setClientSecret(config('services.google.client_secret'));
+            $client->refreshToken($this->google_refresh_token);
+
+            $newAccessToken = $client->getAccessToken();
+            $this->update([
+                'google_access_token' => $newAccessToken['access_token'],
+                'google_token_expiry' => Carbon::now()->addSeconds($newAccessToken['expires_in']),
+            ]);
+        }
+    }
+
+=========
     // If a User has many Authors
     public function authors()
     {
@@ -176,4 +214,5 @@ class User extends Authenticatable
     {
         return $this->hasMany(GroupMember::class, 'section_id');
     }
+>>>>>>>>> Temporary merge branch 2
 }
