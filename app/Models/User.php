@@ -168,7 +168,6 @@ class User extends Authenticatable
          return $this->hasMany(Author::class, 'user_id', 'id');
      }
 
-<<<<<<<<< Temporary merge branch 1
      public function section()
      {
          return $this->hasMany(Section::class, 'ins_id');
@@ -203,16 +202,4 @@ class User extends Authenticatable
         }
     }
 
-=========
-    // If a User has many Authors
-    public function authors()
-    {
-        return $this->hasMany(Author::class, 'user_id', 'id');
-    }
-
-    public function groupMembers()
-    {
-        return $this->hasMany(GroupMember::class, 'section_id');
-    }
->>>>>>>>> Temporary merge branch 2
 }
