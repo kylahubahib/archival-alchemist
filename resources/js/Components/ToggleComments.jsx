@@ -35,7 +35,11 @@ const ToggleComments = ({manuscripts, isOpen, toggleSidebar }) => {
             };
 
             try {
-                const response = await axios.post('/comments', commentData);
+                const response = await axios.post('/comments', commentData, {
+                    headers: {
+                        'X-CSRF-TOKEN': csrfToken, // Ensure the CSRF token is sent with the request
+                    },
+                });
                 console.log('Comment added successfully:', response.data);
                 // Handle success, like updating the comments list
                 setComments([...comments, response.data]);

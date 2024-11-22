@@ -543,7 +543,7 @@ Route::get('/fetch-specificAssignedTask/{section_id}', [ClassController::class, 
 Route::post('/store-feedback/{manuscript_id}', [ClassController::class, 'storeFeedback']);
 
 Route::get('comments/{documentId}', [DocCommentsController::class, 'getComments']);
-Route::post('comments', [DocCommentsController::class, 'storeComment']);
+Route::post('/comments', [DocCommentsController::class, 'storeComment']);
 
 Route::get('/ispremium', [StudentClassController::class, 'isPremium'])->name('ispremium');
 
