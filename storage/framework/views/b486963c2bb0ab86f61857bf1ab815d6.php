@@ -1,24 +1,27 @@
 <?php $__env->startSection('content'); ?>
-    <h1><?php echo e($post->title); ?></h1>
-    <p><?php echo e($post->body); ?></p>
+    <div id="manuscript-container">
+        <!-- Your manuscript content goes here -->
+    </div>
+<?php $__env->stopSection(); ?>
 
-    <h3>Comments</h3>
-    <?php
-$__split = function ($name, $params = []) {
-    return [$name, $params];
-};
-[$__name, $__params] = $__split('comment-manager');
+<?php $__env->startSection('scripts'); ?>
+    <!-- Pusher Script -->
+    <script src="https://js.pusher.com/8.4/pusher.min.js"></script>
+    <script>
+        // Initialize Pusher with your app's key and cluster
+        var pusher = new Pusher('de9d8a76e8ee6c4a4d9a', {
+            cluster: 'ap1',
+            encrypted: true
+        });
 
-$__html = app('livewire')->mount($__name, $__params, 'lw-3200716898-0', $__slots ?? [], get_defined_vars());
+        // Subscribe to the desired channel
+        var channel = pusher.subscribe('manuscript.<?php echo e($manuscriptId); ?>'); // replace with your actual channel name
 
-echo $__html;
-
-unset($__html);
-unset($__name);
-unset($__params);
-unset($__split);
-if (isset($__slots)) unset($__slots);
-?>
+        // Bind an event to the channel
+        channel.bind('NewComment', function(data) {
+            console.log(data);
+        });
+    </script>
 <?php $__env->stopSection(); ?>
 
 <?php echo $__env->make('layouts.app', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?><?php /**PATH C:\xampp\htdocs\archival-alchemist-main\resources\views\livewire\show.blade.php ENDPATH**/ ?>

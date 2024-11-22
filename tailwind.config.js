@@ -66,7 +66,11 @@ export default {
                 //     "100%": { transform: "translateX(0) translateY(0)" }, // Back to original position
                 // },
             },
+            blur: {
+                md: '10px', // Extend the blur effect here
+            },
         },
     },
+
     plugins: [forms, nextui()],
 };

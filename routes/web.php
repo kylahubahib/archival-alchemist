@@ -2,11 +2,12 @@
 
 
 use App\Http\Controllers\Pages\InsAdminCommonDataController;
-
+use App\Models\User;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\Pages\InstitutionAdmin\FacultyController;
 use App\Http\Controllers\Pages\InstitutionAdmin\StudentController;
 use App\Http\Controllers\Pages\SuperAdmin\UserController;
+use Illuminate\Support\Facades\Redis;
 
 use App\Http\Controllers\ClassController;
 use App\Http\Controllers\StudentClassController;
@@ -536,6 +537,13 @@ Route::middleware(['web'])->group(function () {
 
 Route::get('/view_file/{filename}', [StudentClassController::class, 'view'])->name('view_file');
 
-Route::get('comments/{documentId}', [CommentController::class, 'getComments']);
-Route::post('comments', [CommentController::class, 'storeComment']);
+Route::get('comments/{documentId}', [DocCommentsController::class, 'getComments']);
+Route::post('comments', [DocCommentsController::class, 'storeComment']);
+
+Route::get('/ispremium', [StudentClassController::class, 'isPremium'])->name('ispremium');
+
+Route::get('/test-redis', function () {
+    return Redis::ping();
+});
+
 require __DIR__.'/auth.php';

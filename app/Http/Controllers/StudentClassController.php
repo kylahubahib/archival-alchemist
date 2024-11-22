@@ -1042,4 +1042,56 @@ public function view($filename)
 }
 
 
+public function isPremium()
+{
+    // Ensure the user is authenticated
+    $user = Auth::user();
+
+    // If user is not authenticated, return an error response
+    if (!$user) {
+        return response()->json([
+            'is_premium' => false,
+            'is_authenticated' => false,  // Add an is_authenticated field for easier front-end check
+            'message' => 'User is not authenticated.',
+        ], 401); // Unauthorized
+    }
+
+    // Check if the user is premium
+    if ($user->is_premium == 1) {
+        return response()->json([
+            'is_premium' => true,
+            'is_authenticated' => true, // User is authenticated and premium
+            'message' => 'User is a premium member.',
+        ]);
+    } else {
+        return response()->json([
+            'is_premium' => false,
+            'is_authenticated' => true, // User is authenticated but not premium
+            'message' => 'User is not a premium member.',
+        ]);
+    }
+}
+
+
+
+// public function isPremium()
+// {
+//     // Ensure the user is authenticated
+//     $user = Auth::user();
+
+//     // If user is not authenticated or not premium, return false with a message
+//     if (!$user || $user->is_premium != 1) {
+//         return response()->json([
+//             'is_premium' => false,
+//             'message' => 'User is either not authenticated or not a premium member.',
+//         ]);
+//     }
+
+//     // If user is authenticated and premium, return true with a message
+//     return response()->json([
+//         'is_premium' => true,
+//         'message' => 'User is a premium member.',
+//     ]);
+// }
+
 }

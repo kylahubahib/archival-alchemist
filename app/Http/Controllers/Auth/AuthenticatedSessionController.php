@@ -54,7 +54,7 @@ class AuthenticatedSessionController extends Controller
             } elseif ($user->user_type == 'teacher') {
                 $checkInSub = InstitutionSubscription::where('uni_branch_id', $user->faculty->first()->uni_branch_id)->first();
             }
-            
+
 
             if($user->is_premium == 0 || $user->is_affiliated == 0) {
                 $this->checkInstitutionSubscription($checkInSub, $user);
@@ -91,4 +91,6 @@ class AuthenticatedSessionController extends Controller
             return redirect('/home');
         }
 
+
+        
 }
