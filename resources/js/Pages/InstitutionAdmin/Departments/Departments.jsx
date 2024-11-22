@@ -1,3 +1,4 @@
+import { FaBuilding } from "react-icons/fa"; 
 import { RiFolderUnknowFill } from "react-icons/ri"; 
 import { FcFolder } from "react-icons/fc"; 
 import { MdFolderDelete } from "react-icons/md"; 
@@ -26,8 +27,9 @@ import { formatDate, formatPrice } from '@/utils';
 import RemoveDepartment from "./RemoveDepartment";
 import AddExistingCourse from "./AddExistingCourse";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import SearchBar from "@/Components/Admins/SearchBar";
 
-export default function Departments({ auth, departments, uniBranch_id}) {
+export default function Departments({ auth, departments, uniBranch_id, branch}) {
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
@@ -264,11 +266,16 @@ export default function Departments({ auth, departments, uniBranch_id}) {
         }
     };
 
+    useEffect(() => {
+        console.log('Branch:', branch);
+    })
+
     return (
         
         <AdminLayout
              user={auth.user}
             header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Department</h2>}
+            university={branch?.university?.uni_name + ' - ' + branch?.uni_branch_name}
         >
         
             <Head title="Department" />
@@ -278,31 +285,27 @@ export default function Departments({ auth, departments, uniBranch_id}) {
             {/* DEPARTMENTS TABLE */}
             {displayedData === 'Departments' && (   
                 <div className="max-w-full mx-auto sm:px-6 lg:px-8">
-                    <div className="text-gray-600 text-2xl font-bold mb-3 mt-7">
+                    <div className="text-customGray text-lg font-bold mb-3 mt-7">
                         <div className="flex flex-row space-x-2">
                             <button onClick={() => displayDepts()} className="flex items-center hover:text-customBlue"> <span>Departments</span></button>
                         </div>
                     </div>
 
-                    <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg flex flex-col min-h-custom p-5">
+                    <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg flex flex-col min-h-custom">
                         <div className="overflow-x-auto flex-grow px-5 pb-5 space-y-4 sm:px-5">
                             <div className="flex items-center justify-between flex-column md:flex-row flex-wrap space-y-4 mt-4 md:space-y-0 bg-white">
                                 {/* Search Filter */}
-                                <div className="relative">
-                                    <div className="absolute inset-y-0 rtl:inset-r-0 start-0 flex items-center ps-3 pointer-events-none">
-                                        <svg className="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
-                                            <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
-                                        </svg>
-                                    </div>
-                                    <input 
-                                        type="text" 
-                                        id="table-search-users" 
-                                        className="block pt-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg w-80 bg-gray-50 focus:ring-blue-500 focus:border-blue-500" 
-                                        placeholder="Search" 
+                                <div className="w-1/2">
+                                    <SearchBar 
+                                        name='search'
                                         value={wordEntered}
+                                        variant="bordered"
                                         onChange={handleFilter}
+                                        placeholder="Search"
+                                        className=" min-w-sm flex-1"
                                     />
                                 </div>
+                              
                                 {/* Adding a new department */}
                                 <div>
                                     <AddButton onClick={openCreateModal} className="text-customBlue hover:text-white space-x-1">
@@ -347,10 +350,11 @@ export default function Departments({ auth, departments, uniBranch_id}) {
                                     </Card>
                                 ))
                             ) : (
-                                <div className="flex flex-col items-center justify-center">
-                                    <Divider/> 
-                                    <div className="mt-3 text-gray-400">No department found</div>
+                                <div className="flex flex-col items-center pt-20 justify-centers">
+                                    <FaBuilding size={100} color="#d1d5db" />
+                                    <div className="mt-3 text-gray-400 font-semibold">No department found.</div>
                                 </div>
+
                             )}
                             </div>
 
@@ -365,7 +369,7 @@ export default function Departments({ auth, departments, uniBranch_id}) {
             {/* COURSES TABLE */}
             {displayedData === 'Courses' && (
                 <div className="max-w-full mx-auto sm:px-6 lg:px-8">
-                    <div className="text-gray-600 text-2xl font-bold mb-3 mt-7">
+                    <div className="text-customGray text-lg font-bold mb-3 mt-7">
                         <div className="flex flex-row space-x-2">
                             <button onClick={() => displayDepts()} className="flex items-center hover:text-customBlue"> <span>{selectedDept.dept_name}</span></button>
                             <button onClick={() => {}} className="flex items-center hover:text-customBlue"><FiChevronRight /><span>Courses</span></button>
@@ -373,10 +377,22 @@ export default function Departments({ auth, departments, uniBranch_id}) {
                         </div>
                     </div>
 
-                    <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg flex flex-col min-h-custom p-5">
+                    <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg flex flex-col min-h-custom">
                         <div className="overflow-x-auto flex-grow px-5 pb-5 space-y-4 sm:px-5">
                             <div className="flex items-center justify-between flex-column md:flex-row flex-wrap space-y-4 mt-4 md:space-y-0 bg-white">
-                                <div className="relative">
+                                 {/* Search Filter */}
+                                 <div className="w-1/2">
+                                    <SearchBar 
+                                        name='search'
+                                        value={wordEntered}
+                                        variant="bordered"
+                                        onChange={handleFilter}
+                                        placeholder="Search"
+                                        className=" min-w-sm flex-1"
+                                    />
+                                </div>
+                                
+                                {/* <div className="relative">
                                     <div className="absolute inset-y-0 rtl:inset-r-0 start-0 flex items-center ps-3 pointer-events-none">
                                         <svg className="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
                                             <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
@@ -390,7 +406,7 @@ export default function Departments({ auth, departments, uniBranch_id}) {
                                         value={wordEntered}
                                         onChange={handleFilter}
                                     />
-                                </div>
+                                </div> */}
                                 <div className="flex flex-row items-center space-x-5">
                                     <AddButton onClick={openCreateModal} className="text-customBlue hover:text-white space-x-1">
                                         <FaPlus /><span>New Course</span>
@@ -441,9 +457,9 @@ export default function Departments({ auth, departments, uniBranch_id}) {
                                     </Card>
                                 ))
                             ) : (
-                                <div className="flex flex-col items-center justify-center">
-                                    <Divider/> 
-                                    <div className="mt-3 text-gray-400">No courses found</div>
+                                <div className="flex flex-col items-center pt-20 justify-centers">
+                                    <FaBuilding size={100} color="#d1d5db" />
+                                    <div className="mt-3 text-gray-400 font-semibold">No courses found.</div>
                                 </div>
                             )}
                             </div>
@@ -459,7 +475,7 @@ export default function Departments({ auth, departments, uniBranch_id}) {
             {displayedData === 'Sections' && (
                             
                 <div className="max-w-full mx-auto sm:px-6 lg:px-8">
-                    <div className="text-gray-600 text-2xl font-bold mb-3 mt-7">
+                     <div className="text-customGray text-lg font-bold mb-3 mt-7">
                         <div className="flex flex-row space-x-2">
                             <button onClick={() => displayCourses(selectedDept)} className="flex items-center hover:text-customBlue"><span>{selectedCourse.course_name}</span></button>
                             <button onClick={() => {}} className="flex items-center  hover:text-customBlue"><FiChevronRight /><span>Sections</span></button>

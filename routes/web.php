@@ -65,25 +65,47 @@ use Illuminate\Support\Facades\Auth;
 Route::get('/admin-registration/{token}', [UserController::class, 'adminRegistrationForm'])->name('admin.registration-form');
 Route::post('/submit-admin-registration', [UserController::class, 'submitAdminRegistration'])->name('admin.submit-admin-registration');
 
-// Route::get('/auth/user', function (Request $request) {
-//         return response()->json([
-//             'id' => $request->user()->id,
-//             'user_type' => $request->user()->user_type,
-//             // Add any other fields you might need
-//         ]);
-//     })->middleware('auth');
-
 Route::get('/', function () {
     return Inertia::render('Home');
 });
 
-//Route::post('/create-checkout-session', [StripeController::class, 'createCheckoutSession']);
-//Route::post('/subscribe', [SubscriptionController::class, 'subscribe']);
 Route::get('/payment/success', [PaymentSessionController::class, "paymentSuccess"])->name('payment.success');
 Route::get('/payment/cancel', [PaymentSessionController::class, "paymentCancel"])->name('payment.cancel');
 Route::post('/payment', [PaymentSessionController::class, 'PaymentSession'])->name('payment');
-
+Route::post('/register-institution', [PaymentSessionController::class, 'registerInstitution'])->name('register.institution');
 Route::post('/cancel-subscription',[InstitutionSubscriptionController::class, 'cancelSubscription']);
+
+use Illuminate\Support\Facades\Crypt;
+
+Route::get('/institution-subscriptions/get-started', function (Request $request) {
+    $encryptedPlanId = $request->query('plan_id'); 
+    try {
+        $planId = Crypt::decrypt($encryptedPlanId);
+        $plan = \App\Models\SubscriptionPlan::find($planId);
+
+        if (!$plan) {
+            abort(404, 'Plan not found.');
+        }
+
+        return Inertia::render('InstitutionSubForm', [
+            'plan' => $plan,
+        ]);
+    } catch (\Exception $e) {
+        abort(400, 'Invalid plan ID.');
+    }
+})->name('institution-subscriptions.get-started');
+
+//Encrypt the id when you try to pass it using get
+Route::post('/encrypt', function (Request $request) {
+    $validated = $request->validate([
+        'id' => 'required|integer',
+    ]);
+
+    return response()->json([
+        'encryptedPlanId' => Crypt::encrypt($validated['id']),
+    ]);
+});
+
 
 
 
@@ -138,6 +160,7 @@ Route::post('/affiliate-university', [ProfileController::class, 'affiliateUniver
 Route::get('/auth/google', [GoogleController::class, 'redirectToGoogle'])->name('google.auth');
 Route::get('/auth/google/callback', [GoogleController::class, 'handleGoogleCallback']);
 Route::get('/connect/google', [GoogleController::class, 'promptGoogleConnection'])->name('prompt.google.connection');
+
 //Route::get('/document/{fileId}/link', [GoogleDocsController::class, 'getGoogleDocLinkAPI']);
 
 
@@ -274,7 +297,7 @@ Route::middleware(['auth', 'verified', 'user-type:superadmin'])->group(function 
 
 
    //institution admin
-Route::middleware(['auth', 'verified', 'user-type:admin'])->prefix('institution')->group(function () {
+Route::middleware(['auth', 'verified', 'user-type:institution_admin'])->prefix('institution')->group(function () {
             
     // Common data for all pages
     Route::get('/get-departments-with-courses', [InsAdminCommonDataController::class, 'getDepartmentsWithCourses'])
@@ -325,7 +348,6 @@ Route::middleware(['auth', 'verified', 'user-type:admin'])->prefix('institution'
 
     Route::post('/upload-csv', [InstitutionSubscriptionController::class, 'uploadCSV'])->name('upload-csv');
     Route::get('/read-csv', [InstitutionSubscriptionController::class, 'readCSV'])->name('read-csv');
-    Route::get('/get-plans', [SubscriptionPlanController::class, 'getPlans'])->name('get-plans');
 
 });
 
@@ -360,6 +382,9 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     Route::post('/profile/picture', [ProfileController::class, 'updatePicture'])->name('profile.updatePicture');
+
+    Route::post('/assign-user-role', [ProfileController::class, 'assignUserRole']);
+    Route::get('/get-plans', [SubscriptionPlanController::class, 'getPlans'])->name('get-plans');
 });
 
 //Universities Controller Route
@@ -381,7 +406,7 @@ Route::middleware(['auth'])->group(function () {
     // Route for approving a student's project
     Route::post('/student/approve-project', [StudentClassController::class, 'approveProject'])
         ->name('student.approveProject.store');
-    });
+
     Route::post('/api/check-title', [StudentClassController::class, 'checkTitle'])->name('capstone.checkTitle');
 
 //Add a route for fetching tag suggestions:
@@ -449,6 +474,11 @@ Route::post('/check-user-in-spreadsheet', [CheckSubscriptionController::class, '
 //Search and filter
 Route::get('/search', [SearchController::class, 'search']);
 Route::get('/searchlib', [SearchController::class, 'searchlib']);
+
+});
+
+
+
 
 
 

@@ -9,10 +9,10 @@ export default defineConfig({
         fs: {
             strict: true,
         },
-        hmr: {
-            timeout: 3000,
-            overlay: false,
-        },
+        // hmr: {
+        //     timeout: 3000,
+        //     overlay: false,
+        // },
     },
     build: {
         target: 'esnext',

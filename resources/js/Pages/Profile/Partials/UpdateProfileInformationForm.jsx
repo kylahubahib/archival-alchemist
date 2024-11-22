@@ -22,11 +22,11 @@ export default function UpdateProfileInformationForm({ mustVerifyEmail, status, 
         user_dob: user.user_dob || ''
     });
 
-    useEffect(() => {
-        console.log('dob: ', formatDateString(data.user_dob))
-        console.log(data.user_pnum);
-        console.log(user.university);
-    })
+    // useEffect(() => {
+    //     console.log('dob: ', formatDateString(data.user_dob))
+    //     console.log(data.user_pnum);
+    //     console.log(user.university);
+    // })
 
     const [profilePic, setProfilePic] = useState(user.user_pic);
     const [message, setMessage] = useState('');
@@ -72,16 +72,17 @@ export default function UpdateProfileInformationForm({ mustVerifyEmail, status, 
     return (
         <section className={className}>
             <header>
-                {/* <h2 className="text-lg font-medium text-gray-900">Profile Information</h2> */}
+                <h2 className="text-lg font-medium text-gray-900">Profile Information</h2>
                 <p className="mt-1 text-sm text-gray-600">
                     Update your account's profile information and email address.
                 </p>
             </header>
 
-            <div>{user.university || 'No affiliated university'}</div>
+            {/* <div>{user.university || 'No affiliated university'}</div> */}
 
             <form onSubmit={submit}  method="POST" encType="multipart/form-data" className="mt-6 space-y-6">
-                {/* <div className="flex items-center space-x-4">
+               {(user.user_type === 'superadmin' || user.user_type === 'institution_admin') && 
+                <div className="flex items-center space-x-4">
                     <div className="relative w-20 h-20">
                         {profilePic ? (
                             <img
@@ -104,7 +105,8 @@ export default function UpdateProfileInformationForm({ mustVerifyEmail, status, 
                         />
                         <InputError className="mt-2" message={errors.user_pic} />
                     </div>
-                </div> */}
+                </div>
+               }
 
                 <div>
                     <InputLabel htmlFor="name" value="Name" />
@@ -134,7 +136,7 @@ export default function UpdateProfileInformationForm({ mustVerifyEmail, status, 
                     <InputError className="mt-2" message={errors.email} />
                 </div>
 
-
+                {(user.user_type !== 'superadmin' && user.user_type !== 'institution_admin') && 
                 <div>
                     <InputLabel htmlFor="uni_id_num" value="School ID #" />
                     <TextInput
@@ -146,6 +148,7 @@ export default function UpdateProfileInformationForm({ mustVerifyEmail, status, 
                     />
                     <InputError className="mt-2" message={errors.uni_id_num} />
                 </div>
+                }
 
 
                 <div>
@@ -166,14 +169,14 @@ export default function UpdateProfileInformationForm({ mustVerifyEmail, status, 
                         id="user_dob"
                         type="date"
                         name="user_dob"
-                        value={formatDateString(data.user_dob)}
+                        value={data.user_dob}
                         className="my-1 block w-full"
                         onChange={(e) => setData('user_dob', e.target.value)}
                     />
                     <InputError message={errors.user_dob} className="mt-2" />
                 </div>
 
-
+                {(user.user_type != 'superadmin' && user.user_type != 'institution_admin') && 
                 <div>
                     <InputLabel htmlFor="user_aboutme" value="About Me" />
                     <TextInput
@@ -185,6 +188,7 @@ export default function UpdateProfileInformationForm({ mustVerifyEmail, status, 
                     />
                     <InputError className="mt-2" message={errors.user_aboutme} />
                 </div>
+                }
 
                 {mustVerifyEmail && user.email_verified_at === null && (
                     <div>
