@@ -20,6 +20,7 @@ import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 import relativeTime from "dayjs/plugin/relativeTime";
+import ReportModal from '@/Components/ReportModal';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -45,6 +46,8 @@ export default function Forum({ auth }) {
     
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+
 
   // Set up Axios CSRF token configuration globally
   axios.defaults.headers.common['X-CSRF-TOKEN'] = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
@@ -182,6 +185,7 @@ const handleTitleClick = async (postId) => {
       const closeModal = () => {
         setIsModalOpen(false); // Close the modal
         setSelectedPost(null); // Clear the selected post
+        setIsReportModalOpen(false);
       };
 
 
@@ -266,8 +270,10 @@ const handleTitleClick = async (postId) => {
   };
 
   const handleReportPost = (postId) => {
-    alert(`Post ${postId} has been reported.`);
-    toast.info('Post ${postId} has been reported.');
+    setSelectedPost(postId);
+    setIsReportModalOpen(true);
+    // alert(`Post ${postId} has been reported.`);
+    // toast.info('Post ${postId} has been reported.');
   };
 
   
@@ -500,6 +506,8 @@ const handleTitleClick = async (postId) => {
           </ModalContent>
         </Modal>
       </div>
+
+      <ReportModal isOpen={isReportModalOpen} onClose={closeModal} reportLocation={'Forum'} reportedID={selectedPost}/> 
     </MainLayout>
   );
 }

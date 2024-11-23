@@ -99,6 +99,7 @@ export default function AdminLayout({ user, header, children, university = '' })
                             <PageHeader className="uppercase">{university}</PageHeader>
                         </div>
                         }
+                        <div></div>
 
                         <div className="flex">
                         <div className="flex items-center mx-3">
