@@ -38,10 +38,12 @@ class GoogleController extends Controller
      */
     public function handleGoogleCallback()
     {
+        \Log::info('Checking google...');
+
         try {
             $googleUser = Socialite::driver('google')->stateless()->user();
 
-            \Log::info((array)$googleUser);
+            \Log::info('Google:', (array)$googleUser);
 
             // Check if the logged-in user already has a Google account linked
             $user = Auth::user();

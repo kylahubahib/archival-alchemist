@@ -3,6 +3,7 @@
 namespace App\Http\Controllers; 
 
 use App\Models\Department;
+use App\Models\UniversityBranch;
 use App\Models\Course;
 use App\Models\Section;
 use Illuminate\Http\Request;
@@ -20,7 +21,7 @@ class DepartmentsController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index() 
     {
         // Initialize the departments variable as an empty collection
         $departments = collect();
@@ -47,28 +48,39 @@ class DepartmentsController extends Controller
 
                     // Get departments for the university branch
                     $departments = Department::where('uni_branch_id', $uniBranch_id)->paginate(100);
-                   
-                    $departmentIds = $departments->pluck('id')->toArray();
-                    // Get courses where the department_id matches the department IDs
-                    $courses = Course::whereIn('dept_id', $departmentIds)->with(['department'])->paginate(100);
 
-                    \Log::info('Courses: ', $courses->toArray());
+                    $branch = UniversityBranch::with('university')
+                        ->where('id', $uniBranch_id)
+                        ->first();
+
+                    \Log::info('University Branch:', $branch->toArray());
+
+                   
+                    // $departmentIds = $departments->pluck('id')->toArray();
+                    // // Get courses where the department_id matches the department IDs
+                    // $courses = Course::whereIn('dept_id', $departmentIds)->with(['department'])->paginate(100);
+
+                    // \Log::info('Courses: ', $courses->toArray());
 
                     // Get sections where the course_id matches the course IDs
-                    $courseIds = $courses->pluck('id')->toArray();
-                    $sections = Section::whereIn('course_id', $courseIds)->with(['course'])->paginate(100);
+                    // $courseIds = $courses->pluck('id')->toArray();
+                    // $sections = Section::whereIn('course_id', $courseIds)->with(['course'])->paginate(100);
                 }
             }
         } 
 
+      
+
+
         
-            \Log::info('Departments: ', $departments->toArray());
+        \Log::info('Departments: ', $departments->toArray());
 
         return Inertia::render('InstitutionAdmin/Departments/Departments', [
             'departments' => $departments,
             'uniBranch_id' => $uniBranch_id,
-            'courses' => $courses,
-            'sections' => $sections
+            'branch' => $branch,
+            // 'courses' => $courses,
+            // 'sections' => $sections
         ]);
     }
 

@@ -17,10 +17,24 @@ class UniversityBranch extends Model
 
     protected $table = 'university_branches';
 
+    public $incrementing = false;
+
+    protected $keyType = 'bigInteger';
+
     protected $fillable = [
         'uni_id',
         'uni_branch_name'
     ];
+
+    protected static function booted()
+    {
+        static::creating(function ($uniBranch) {
+            $uniBranch->id = mt_rand(1000000000, 9999999999);  
+            while (self::where('id', $uniBranch->id)->exists()) {
+                $uniBranch->id = mt_rand(1000000000, 9999999999);
+            }
+        });
+    }
 
     public function getUpdatedAtAttribute($value)
     {

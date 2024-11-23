@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button } from '@nextui-org/react';
 import People from '@/Pages/Users/Class/Teacher/People';
 import Grades from '@/Pages/Users/Class/Teacher/Grades';
@@ -9,7 +9,11 @@ const ViewClass = ({ onBack, folders }) => {
     const [showForm, setShowForm] = useState(false);
     const [activeSection, setActiveSection] = useState('assignedProject');
 
-    const handleShowGrades = () => {
+    useEffect(() => {
+        console.log('Folders: ',folders);
+    })
+
+    const handleShowGrades = () => { 
         setActiveSection('grades');
     };
 

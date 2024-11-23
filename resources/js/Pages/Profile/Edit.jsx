@@ -13,6 +13,7 @@ import { Accordion, AccordionItem } from '@nextui-org/react';
 import UpdateProfileInformationForm from './Partials/UpdateProfileInformationForm';
 import DeleteUserForm from './Partials/DeleteUserForm';
 import UpdatePasswordForm from './Partials/UpdatePasswordForm';
+import ChooseARole from './Partials/ChooseARole';
 
 
 
@@ -151,12 +152,12 @@ export default function Edit({ auth, mustVerifyEmail, status }) {
                         >
                             Posts
                         </button>
-                        <button
+                        {auth.user.user_type !== 'general_user' && <button
                             className={`bg-white text-gray-600 hover:text-gray-800 py-2 px-4 border-0 ${activeTab === 'repository' ? 'border-b-2 border-gray-800' : ''}`}
                             onClick={() => setActiveTab('repository')}
                         >
                             Repository
-                        </button>
+                        </button>}
                         <button
                             className={`bg-white text-gray-600 hover:text-gray-800 py-2 px-4 border-0 ${activeTab === 'accountSettings' ? 'border-b-2 border-gray-800' : ''}`}
                             onClick={() => setActiveTab('accountSettings')}
@@ -171,6 +172,12 @@ export default function Edit({ auth, mustVerifyEmail, status }) {
                         <>
 
                         <div className="mx-auto sm:px-6 lg:px-10 space-y-4">
+
+                            {auth.user.user_type === 'general_user' && <div className=" p-4 bg-white shadow sm:rounded-lg m-2">
+                                <ChooseARole className="max-w-xl" user={auth.user}/>
+                            </div>
+                            }
+
                             <div className=" p-4 bg-white shadow sm:rounded-lg m-2">
                                 <SubscriptionForm className="max-w-xl" user={auth.user}/>
                             </div>
