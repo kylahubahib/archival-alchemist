@@ -137,6 +137,7 @@ class ClassController extends Controller
             ->select('sections.*', 'courses.*')
             ->get();
 
+
             return response()->json($classes);
         } catch (\Exception $e) {
             // Log the error for debugging
@@ -267,6 +268,7 @@ class ClassController extends Controller
         $user = Auth::user();
         Log::info('Authenticated user found: ' . $user->id);
 
+        
         return response()->json($user);
     }
 

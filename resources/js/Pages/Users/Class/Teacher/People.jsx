@@ -249,8 +249,8 @@ useEffect(() => {
                     </Button>
                 </div>
 
-<div className="space-y-4">
-{isLoading ? (
+                <div className="space-y-4">
+                {isLoading ? (
                         // Display Skeleton loader for students if loading
                         <Skeleton height={40} width="100%" />
                     ) : StudentsUsers && StudentsUsers.length > 0 ? (
@@ -280,65 +280,65 @@ useEffect(() => {
                     ) : (
                         <p>No students enrolled.</p>
                     )}
-</div>
+                </div>
 
             </div>
 
-                                            {/* Modal for Adding Authors */}
-                                            <Modal isOpen={isModalOpen} onClose={closeModal}>
-                                                <ModalContent>
-                                                    <ModalHeader>Add Student</ModalHeader>
-                                                    <ModalBody>
-                                                        <div className="flex flex-col gap-4">
-                                                            <input
-                                                                type="text"
-                                                                placeholder="Enter authors name and press Enter"
-                                                                className="w-full p-2 border rounded mb-2"
-                                                                value={authorInputValue}
-                                                                onChange={handleAuthorInputChange}
-                                                                onKeyDown={handleAuthorKeyDown}
-                                                            />
-                                                            {errors.users && <div className="text-red-600 text-sm mb-2">{errors.users}</div>}
-                            {errorMessage && <div className="text-red-600 text-sm mb-2">{errorMessage}</div>} {/* Error message display */}
+            {/* Modal for Adding Authors */}
+            <Modal isOpen={isModalOpen} onClose={closeModal}>
+                <ModalContent>
+                    <ModalHeader>Add Student</ModalHeader>
+                    <ModalBody>
+                        <div className="flex flex-col gap-4">
+                            <input
+                                type="text"
+                                placeholder="Enter authors name and press Enter"
+                                className="w-full p-2 border rounded mb-2"
+                                value={authorInputValue}
+                                onChange={handleAuthorInputChange}
+                                onKeyDown={handleAuthorKeyDown}
+                            />
+                            {errors.users && <div className="text-red-600 text-sm mb-2">{errors.users}</div>}
+{errorMessage && <div className="text-red-600 text-sm mb-2">{errorMessage}</div>} {/* Error message display */}
 
-                                                            {authorSuggestions.length > 0 && (
-                                                                <ul className="absolute bg-white border border-gray-300 mt-1 max-h-60 overflow-auto z-10 w-full">
-                                                                    {authorSuggestions.map((suggestion, index) => (
-                                                                        <li
-                                                                            key={index}
-                                                                            className="p-2 cursor-pointer hover:bg-gray-200"
-                                                                            onClick={() => handleAuthorSuggestionSelect(suggestion.name)}
-                                                                        >
-                                                                            {suggestion.name}
-                                                                        </li>
-                                                                    ))}
-                                                                </ul>
-                                                            )}
+                            {authorSuggestions.length > 0 && (
+                                <ul className="absolute bg-white border border-gray-300 mt-1 max-h-60 overflow-auto z-10 w-full">
+                                    {authorSuggestions.map((suggestion, index) => (
+                                        <li
+                                            key={index}
+                                            className="p-2 cursor-pointer hover:bg-gray-200"
+                                            onClick={() => handleAuthorSuggestionSelect(suggestion.name)}
+                                        >
+                                            {suggestion.name}
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
 
-                                                            <div className="tags-container flex flex-wrap mt-2">
-                                                                {users.map((author, index) => (
-                                                                    <div key={index} className="tag bg-gray-200 p-1 rounded mr-2 mb-2 flex items-center">
-                                                                        {author}
-                                                                        <button
-                                                                            type="button"
-                                                                            className="ml-1 text-red-600"
-                                                                            onClick={() => handleAuthorsRemove(index)}
-                                                                        >
-                                                                            &times;
-                                                                        </button>
-                                                                    </div>
-                                                                ))}
-                                                            </div>
-                                                        </div>
-                                                    </ModalBody>
-                                                    <ModalFooter>
-                                                        <Button color="primary" auto onClick={handleAddStudent} disabled={isLoading}>
-                                                            {isLoading ? 'Adding...' : 'Add'}
-                                                        </Button>
-                                                        <Button auto onClick={closeModal}>Close</Button>
-                                                    </ModalFooter>
-                                                </ModalContent>
-                                            </Modal>
+                            <div className="tags-container flex flex-wrap mt-2">
+                                {users.map((author, index) => (
+                                    <div key={index} className="tag bg-gray-200 p-1 rounded mr-2 mb-2 flex items-center">
+                                        {author}
+                                        <button
+                                            type="button"
+                                            className="ml-1 text-red-600"
+                                            onClick={() => handleAuthorsRemove(index)}
+                                        >
+                                            &times;
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </ModalBody>
+                    <ModalFooter>
+                        <Button color="primary" auto onClick={handleAddStudent} disabled={isLoading}>
+                            {isLoading ? 'Adding...' : 'Add'}
+                        </Button>
+                        <Button auto onClick={closeModal}>Close</Button>
+                    </ModalFooter>
+                </ModalContent>
+            </Modal>
 
         </div>
     );

@@ -67,7 +67,7 @@ export default function Authenticated({ user, children, newProfile = null }) {
             <div className="flex-1 flex flex-col">
                 <nav className="bg-customBlue border-b rounded-xl m-3 sticky top-3 z-50">
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                        <div className="flex justify-between h-16">
+                        <div className="flex justify-between h-16 ">
                             <div className="flex">
                                 {/* <div className="shrink-0 flex items-center">
                                     <SearchBar />
@@ -86,9 +86,9 @@ export default function Authenticated({ user, children, newProfile = null }) {
 
                                 {/* <FiBell size={24} className="ml-3 text-white" /> */}
 
-                                {/* <div className="flex items-center mx-3">
+                                <div className="flex items-center mx-3">
                                         <UserNotification user={user} />
-                                </div> */}
+                                </div>
 
                                 <div className=" relative">
                                     <Dropdown>
@@ -104,15 +104,15 @@ export default function Authenticated({ user, children, newProfile = null }) {
                                             </span>
                                         </Dropdown.Trigger>
 
-                            <Dropdown.Content>
-                                <Dropdown.Link href={route('profile.update')}>Profile</Dropdown.Link>
-                                <Dropdown.Link href={route('logout')} method="post" as="button">
-                                    Log Out
-                                </Dropdown.Link>
-                            </Dropdown.Content>
-                        </Dropdown>
-                    </div>
-                </div>
+                                        <Dropdown.Content>
+                                            <Dropdown.Link href={route('profile.update')}>Profile</Dropdown.Link>
+                                            <Dropdown.Link href={route('logout')} method="post" as="button">
+                                                Log Out
+                                            </Dropdown.Link>
+                                        </Dropdown.Content>
+                                    </Dropdown>
+                                    </div>
+                                </div>
 
                 {/* This part here is for responsive layout. Not yet configured */}
                 <div className="-mr-2 flex items-center sm:hidden">

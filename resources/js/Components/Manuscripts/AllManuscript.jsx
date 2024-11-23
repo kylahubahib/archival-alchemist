@@ -16,7 +16,7 @@ import ManuscriptComment from '@/Components/Manuscripts/ManuscriptComment'; // I
 import SubscriptionCard from '@/Components/SubscriptionCard';
 import AskUserToLogin from '@/Components/AskUserToLogin';
 import PdfViewer from '@/Components/PdfViewer';
-import ToggleComments from '@/Components/ToggleComments'
+// import ToggleComments from '@/Components/ToggleComments'
 
 const Manuscript = ({user, choice}) => {
     const [isPdfOpen, setPdfOpen] = useState(false);
@@ -792,7 +792,7 @@ const handleDropdownChange = (selectedKey) => {
                 <FaComment size={20} />
             </div>
             {/* Sidebar Component */}
-            <ToggleComments manuscripts={manuscriptsToDisplay[0]} isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+            {/* <ToggleComments manuscripts={manuscriptsToDisplay[0]} isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} /> */}
 
 
 <Tooltip content="Bookmark">

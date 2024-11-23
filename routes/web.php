@@ -558,6 +558,7 @@ Route::get('/view_file/{filename}', [StudentClassController::class, 'view'])->na
 Route::get('/fetch-courses', [ClassController::class, 'fetchCourses']);
 Route::post('/store-sections', [ClassController::class, 'storeSection']); // Route for storing data
 Route::get('/fetch-classes', [ClassController::class, 'fetchClasses']);
+Route::get('/fetch-studentClasses', [ClassController::class, 'fetchStudentClasses']);
 
 Route::post('/store-groupmembers', [ClassController::class, 'addStudentsToClass']);
 Route::get('/fetch-currentuser', [ClassController::class, 'getCurrentUser']);

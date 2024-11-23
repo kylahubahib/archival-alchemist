@@ -386,21 +386,21 @@ const handleAddStudent = async () => {
                 </div>
             }
         >
-        <div className="flex bg-white justify-start items-start w-h-screen mt-8 mx-8 border-b border-gray-300 ">
+        <div className="flex bg-white justify-start items-start mt-8 mx-8 border-b border-gray-300 ">
         <Link
             to="/teacherclass"
             className="flex justify-start items-start my-3 mt-5 mx-5 w-full text-gray-700 text-2xl hover:underline hover:text-blue-500"
         >
-<div className="flex items-center space-x-10 border-gray-200">
-    <div className="pr-3">
-        <Avatar
-            src="images/img1.png"
-            alt="Teacher"
-            size="8"
-        />
-    </div>
-    Alchemist Room
-</div>
+            <div className="flex items-center space-x-10 border-gray-200">
+                <div className="pr-3">
+                    <Avatar
+                        src="images/img1.png"
+                        alt="Teacher"
+                        size="8"
+                    />
+                </div>
+                Alchemist Room
+            </div>
 
         </Link>
     </div>
@@ -412,9 +412,9 @@ const handleAddStudent = async () => {
                 </div>
             )}
 
-            <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+            <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg min-h-screen">
 
-                <div className="p-6 text-gray-900 w-full">
+                <div className="p-6 text-gray-900">
 
                     <hr className="mb-4" />
                     <>
