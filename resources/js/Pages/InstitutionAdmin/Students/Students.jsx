@@ -181,6 +181,7 @@ export default function Students({ auth, insAdminAffiliation, retrievedStudents,
     return (
         <AdminLayout
             user={auth.user}
+            university={`${university.uni_name} - ${uni_branch_name}`}
         >
             <div className="p-4">
                 <div className="flex">

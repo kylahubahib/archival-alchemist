@@ -14,6 +14,7 @@ import { formatDate, formatPrice } from '@/utils';
 import TextInput from '@/Components/TextInput';
 import InputLabel from '@/Components/InputLabel';
 import InputError from '@/Components/InputError';
+import PageHeader from '@/Components/Admins/PageHeader';
 
 export default function InsAdminSubscriptionBilling({ auth, ins_sub, transactionHistory, agreement }) {
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -81,7 +82,7 @@ export default function InsAdminSubscriptionBilling({ auth, ins_sub, transaction
 
     const viewPlanList = async () => {
         try {
-            const response = await axios.get('/institution/get-plans');
+            const response = await axios.get('/get-plans');
 
             if (response.data) {
                 setInstitutionalPlans(response.data.institutionalPlans);
@@ -94,7 +95,6 @@ export default function InsAdminSubscriptionBilling({ auth, ins_sub, transaction
             console.error('Error fetching plans:', error.response ? error.response.data : error);
         }
     };
-
     
 
     const downloadReceipt = () => {
@@ -110,13 +110,16 @@ export default function InsAdminSubscriptionBilling({ auth, ins_sub, transaction
         <AdminLayout
             user={auth.user}
             header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Subscription and Billing</h2>}
+            university={ins_sub.university_branch.university.uni_name + ' - ' + ins_sub.university_branch.uni_branch_name}
         >
             <Head title="Subscription & Billing" />
 
             {!viewPlans ? (
             <div className="py-4 select-none">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
-                    <div className="text-gray-700 text-3xl font-bold my-3">Subscription and Billing</div>
+                <div className="flex mb-5">
+                    <PageHeader>SUBSCRIPTION AND BILLING</PageHeader>
+                </div>
                     <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg p-8 min-h-custom flex flex-col">
                         <div className="text-gray-700 text-3xl font-bold pb-2">Current Plan</div>
                         <div className="flex flex-row justify-between px-2">

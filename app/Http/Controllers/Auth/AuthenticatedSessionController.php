@@ -43,79 +43,67 @@ class AuthenticatedSessionController extends Controller
         //Get the data of the user and student table
         $user = Auth::user()->load(['student', 'faculty']);
 
-        //Check if user is affiliated with an institution
-        // $user->student->uni_branch_id : Eloquent way of retrieving data from the student table
-        if($user->user_type != 'admin' && $user->user_type != 'superadmin')
-        {
+            // Check if user is affiliated with an institution
+            if ($user->user_type != 'institution_admin' && $user->user_type != 'superadmin') {
+                if ($user->user_type == 'student') {
+                    $checkInSub = InstitutionSubscription::where('uni_branch_id', $user->student->uni_branch_id)->first();
+                } elseif ($user->user_type == 'teacher') {
+                    $checkInSub = InstitutionSubscription::where('uni_branch_id', $user->faculty->first()->uni_branch_id)->first();
+                }
 
-            if($user->user_type == 'student') {
-                $checkInSub = InstitutionSubscription::where('uni_branch_id', $user->student->uni_branch_id)->first();
-            }
-
-            if($user->user_type == 'teacher') {
-                $checkInSub = InstitutionSubscription::where('uni_branch_id', $user->faculty->uni_branch_id)->first();
-            }
-
-            //\Log::info('Check Subscription:', $checkInSub ? $checkInSub->toArray() : 'No subscription found');
-
-            //\Log::info('Before checkinsub');
-            //\Log::info($checkInSub->toArray());
-
-            //Check if $checkInSub retrieve a data or is it null
-            if ($checkInSub != null && $checkInSub->insub_content != null)
-            {
-                //\Log::info('Enter checkinsub ok');
-
-                //Retrieve the path of the csv from the data stored in $checkInSub
-                $filePath = $checkInSub->insub_content;
-                //Retrieve data from a CSV file and convert it into a PHP array using Laravel Excel
-                $csvData = Excel::toArray(new UsersImport, public_path($filePath));
-
-                //Logging the data retrieved in Auth::user()
-                Log::info('Auth ' . $user->uni_id_num . ' ' . $user->name . ' ' . $user->user_dob);
-
-                //Check if
-                if (!empty($csvData) && !empty($csvData[0])) {
-                    $data = $csvData[0];
-                    foreach ($data as $row) {
-                        if (count($row) >= 5) {
-                            Log::info($row['id_number'] . ' ' . $row['name'] . ' ' . $row['dob']);
-                            if ($row['id_number'] == $user->uni_id_num && $row['name'] == $user->name && $row['dob'] == $user->user_dob) {
-                                $user->update([
-                                    'is_premium' => true
-                                ]);
-                                Log::info('User upgraded to premium: ', $user->toArray());
-                                break;
-                            }
-                        }
-                    }
-                } else {
-                    Log::warning('CSV data is empty or not in the expected format.');
+                if($user->is_premium == 0 || $user->is_affiliated == 0) {
+                    $this->checkInstitutionSubscription($checkInSub, $user);
                 }
             }
 
-        }
+            // Check if the request expects JSON (API request)
+            if ($request->expectsJson()) {
+                $token = $user->createToken('API Token')->plainTextToken;
 
-        // Redirect based on user_type
-        switch ($user->user_type) {
-            case 'student':
-                return redirect()->route('library')->with('user', $user);
-                break;
-            case 'teacher':
-                return redirect()->route('library');
-                break;
-            case 'admin':
-                return redirect()->route('institution-students');
-                break;
-            case 'superadmin':
-                return redirect()->route('dashboard');
-                break;
-            default:
-                return redirect('/');
-                break;
+                return response()->json([
+                    'token' => $token,
+                ]);
+            }
+
+            // If it's not a JSON request, regenerate session and redirect
+            if (!$request->expectsJson()) {
+                $request->session()->regenerate();
+
+                // Redirect based on user_type
+                switch ($user->user_type) {
+                    case 'student':
+                        return redirect()->route('library')->with('user', $user);
+                    case 'teacher':
+                        return redirect()->route('library');
+                    case 'institution_admin':
+                        return redirect()->route('institution-students');
+                    case 'superadmin':
+                        return redirect()->route('dashboard.index');
+                    default:
+                        return redirect('/');
+                }
+            }
+
+        } else 
+        {
+            if ($request->expectsJson()) {
+                $token = $authenticatedUser->createToken('API Token')->plainTextToken;
+    
+                return response()->json([
+                    'token' => $token,
+                ]);
+            }
+    
+            // If it's not a JSON request, regenerate session and redirect
+            if (!$request->expectsJson()) {
+                $request->session()->regenerate();
+                return redirect()->route('library')->with('user', $authenticatedUser);
+            }
         }
 
     }
+
+
 
     /**
      * Destroy an authenticated session.

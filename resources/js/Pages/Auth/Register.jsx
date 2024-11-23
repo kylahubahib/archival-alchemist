@@ -127,7 +127,7 @@ export default function Register({}) {
                         <Checkbox isSelected={isSelected} onValueChange={setIsSelected}>
                             I agree to the 
                         </Checkbox>
-                        <a className="text-blue-500 cursor-pointer">terms and condition</a>
+                        <a href={route('terms-and-conditions')}   target="_blank" rel="noopener noreferrer" className="text-blue-500 cursor-pointer">terms and condition</a>
                     </div>
 
                    

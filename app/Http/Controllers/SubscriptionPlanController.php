@@ -41,6 +41,8 @@ class SubscriptionPlanController extends Controller
      */
     public function pricing()
     {
+        $allPlans = SubscriptionPlan::where('plan_status', 'available')->get();
+
         $personalPlans = SubscriptionPlan::where('plan_status', 'available')
             ->where('plan_type', 'Personal')
             ->get();
@@ -55,7 +57,8 @@ class SubscriptionPlanController extends Controller
         return Inertia::render('Pricing', [
             'personalPlans' => $personalPlans,
             'institutionalPlans' => $institutionalPlans,
-            'planFeatures' => $planFeatures
+            'planFeatures' => $planFeatures,
+            'allPlans' => $allPlans,
         ]);
     }
 
@@ -75,6 +78,7 @@ class SubscriptionPlanController extends Controller
 
         return response()->json([
             'institutionalPlans' => $institutionalPlans,
+            'personalPlans' => $personalPlans,
             'planFeatures' => $planFeatures
         ]);
     }

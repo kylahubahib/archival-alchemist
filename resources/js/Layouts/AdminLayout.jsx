@@ -19,8 +19,9 @@ import SuperAdminNotification from "@/Components/Notifications/SuperAdminNotific
 import InsAdminNotification from "@/Components/Notifications/InsAdminNotification";
 import { User } from "@nextui-org/react";
 import { useForm } from "@inertiajs/react";
+import PageHeader from "@/Components/Admins/PageHeader";
 
-export default function AdminLayout({ user, header, children }) {
+export default function AdminLayout({ user, header, children, university = '' }) {
     const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const { post } = useForm();
@@ -51,12 +52,12 @@ export default function AdminLayout({ user, header, children }) {
                 <SidebarTitle title="MANAGEMENT"></SidebarTitle>
                 <SidebarItem icon={<FaUsers size={20} className="text-white group-hover:text-gray-600" />} text="Users" color="white" to="/users" />
                 <SidebarItem icon={<FaBook size={20} className="text-white group-hover:text-gray-600" />} text="Archives" color="white" to="/archives" />
-                <SidebarItem icon={<MdSubscriptions size={20} className="text-white group-hover:text-gray-600" />} text="Subscription & Billing" color="white" to="/subscription-billing"/>
+                <SidebarItem icon={<MdSubscriptions size={20} className="text-white group-hover:text-gray-600" />} text="User Subscriptions" color="white" to="/subscription-billing"/>
                 <SidebarItem icon={<FaFlag size={20} className="text-white group-hover:text-gray-600" />} text="User Reports" color="white" to="/user-reports" />
                 <SidebarItem icon={<FaEnvelopeOpen size={20} className="text-white group-hover:text-gray-600" />} text="User Feedbacks" color="white" to="/user-feedbacks" />
 
                 <SidebarTitle title="CUSTOMIZATION"></SidebarTitle>
-                <SidebarItem icon={<FaFileContract size={20} className="text-white group-hover:text-gray-600" />} text="Terms & Conditions" color="white" to="/manage-terms-and-conditions" />
+                <SidebarItem icon={<FaFileContract size={20} className="text-white group-hover:text-gray-600" />} text="Terms & Agreements" color="white" to="/manage-terms-and-conditions" />
                 <SidebarItem icon={<FaScroll size={20} className="text-white group-hover:text-gray-600" />} text="Subscription Plans" color="white" to="/manage-subscription-plans" />
                 <SidebarItem icon={<BsQuestionCircleFill size={20} className="text-white group-hover:text-gray-600" />} text="FAQs" color="white" to="/manage-faqs" />
                 <SidebarItem icon={<FaWrench size={20} className="text-white group-hover:text-gray-600" />} text="Advanced" color="white" to="/advanced/forum" />
@@ -92,8 +93,14 @@ export default function AdminLayout({ user, header, children }) {
 
             <nav className="bg-white sticky top-0 shadow-sm z-50">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
-                    <div className="flex justify-end">
+                    <div className="flex justify-between">
+                        {user.user_type === 'institution_admin' &&
+                        <div className="flex items-center">
+                            <PageHeader className="uppercase">{university}</PageHeader>
+                        </div>
+                        }
 
+                        <div className="flex">
                         <div className="flex items-center mx-3">
                             {/* <FiBell size={24} className="ml-3 text-gray-500" /> */}
 
@@ -131,6 +138,7 @@ export default function AdminLayout({ user, header, children }) {
                                     </Dropdown.Content>
                                 </Dropdown>
                             </div>
+                        </div>
                         </div>
 
                          {/* This part here is for responsive layout. Not yet configured*/}
@@ -175,10 +183,10 @@ export default function AdminLayout({ user, header, children }) {
                                     <ResponsiveNavLink href={route('dashboard.index')}>Dashboard</ResponsiveNavLink>
                                     <ResponsiveNavLink href={route('users')}>Users</ResponsiveNavLink>
                                     <ResponsiveNavLink href={route('archives')}>Archives</ResponsiveNavLink>
-                                    <ResponsiveNavLink href={route('subscription-billing')}>Subscription & Billing</ResponsiveNavLink>
+                                    <ResponsiveNavLink href={route('subscription-billing')}>User Subscriptions</ResponsiveNavLink>
                                     <ResponsiveNavLink href={route('user-reports.index')}>User Reports</ResponsiveNavLink>
                                     <ResponsiveNavLink href={route('user-feedbacks.index')}>User Feedbacks</ResponsiveNavLink>
-                                    <ResponsiveNavLink href={route('manage-terms-and-conditions.index')}>Terms & Conditions</ResponsiveNavLink>
+                                    <ResponsiveNavLink href={route('manage-terms-and-conditions.index')}>Terms & Agreements</ResponsiveNavLink>
                                     <ResponsiveNavLink href={route('manage-subscription-plans.index')}>Subscription Plans</ResponsiveNavLink>
                                     <ResponsiveNavLink href={route('manage-faqs.index')}>FAQs</ResponsiveNavLink>
                                     <ResponsiveNavLink href={route('manage-forum-posts.index')}>Advanced</ResponsiveNavLink>
