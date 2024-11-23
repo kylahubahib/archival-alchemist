@@ -16,7 +16,7 @@ import ManuscriptComment from '@/Components/Manuscripts/ManuscriptComment'; // I
 import SubscriptionCard from '@/Components/SubscriptionCard';
 import AskUserToLogin from '@/Components/AskUserToLogin';
 import PdfViewer from '@/Components/PdfViewer';
-// import ToggleComments from '@/Components/ToggleComments'
+import ToggleComments from '@/Components/ToggleComments'
 
 const Manuscript = ({user, choice}) => {
     const [isPdfOpen, setPdfOpen] = useState(false);
