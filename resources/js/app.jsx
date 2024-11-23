@@ -1,3 +1,8 @@
+// Polyfill the global object for browser environments
+if (typeof global === 'undefined') {
+    window.global = window;
+}
+
 import './bootstrap';
 import '../css/app.css';
 import 'react-toastify/dist/ReactToastify.css';
@@ -7,7 +12,6 @@ import { createInertiaApp } from '@inertiajs/react';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { NextUIProvider } from '@nextui-org/react';
 
-import CommentSection from "./components/CommentSection";
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 

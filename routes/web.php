@@ -265,9 +265,9 @@ Route::middleware(['auth', 'verified', 'user-type:superadmin'])->group(function 
            //ADVANCED ROUTES
         //Decided to create routes for the buttons in advanced page to simplify or easily create the crud functionality
 
-       Route::get('/advanced/forum', function () {
-           return Inertia::render('SuperAdmin/Advanced/Forum/Forum');})->name('advanced-forum');
-
+    //    Route::get('/advanced/forum', function () {
+    //        return Inertia::render('SuperAdmin/Advanced/Forum/Forum');})->name('advanced-forum');
+        Route::resource('advanced/forum', AdvancedForumController::class)->names('manage-forum-posts'); 
        Route::resource('advanced/custom-messages', CustomMessagesController::class)->names('manage-custom-messages');
 
        Route::resource('advanced/universities', UniversityController::class)->names('manage-universities');
