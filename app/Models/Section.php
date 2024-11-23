@@ -13,7 +13,8 @@ class Section extends Model
     protected $table = 'sections';
 
     protected $fillable = [
-        'course_id',  
+        'course_id',  // Corrected spelling here
+        'subject_name',
         'section_name',
         'added_by'
     ];
@@ -22,6 +23,15 @@ class Section extends Model
     {
         return $this->belongsTo(Course::class, 'course_id');
     }
+
+    public function groups()
+    {
+        return $this->hasMany(Group::class, 'section_id');
+
+
+    }
+
+
 
     public function user()
     {

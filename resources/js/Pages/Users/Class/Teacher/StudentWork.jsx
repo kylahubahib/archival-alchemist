@@ -201,17 +201,28 @@ useEffect(() => {
                         {status.charAt(0).toUpperCase() + status.slice(1)}
                     </Button>
                 );
-            case 'in progress':
+            case 'to-review':
                 return (
                     <Button
                         size="xs"
-                        color="warning"
+                        color="primary"
                         radius="full"
                         className="text-center text-[13px] p-1 h-auto min-h-0"
                     >
                         {status.charAt(0).toUpperCase() + status.slice(1)}
                     </Button>
                 );
+
+                case 'missing':
+                    <Button
+                        size="xs"
+                        color="danger"
+                        radius="full"
+                        className="text-center text-[13px] p-1 h-auto min-h-0"
+                        >
+                        {status.charAt(0).toUpperCase() + status.slice(1)}
+                    </Button>
+
             default:
                 return (
                     <Button
@@ -402,6 +413,7 @@ const handleShowStudentWork = () => {
                     taskID={taskID}
                     closeModal={closeModal}
                     classes={classes} // Pass the fetched data
+                    manuscript = {reviewManuscriptProps}
                     {...reviewManuscriptProps}
                 />
             </div>

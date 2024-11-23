@@ -73,6 +73,13 @@ export default function Authenticated({ user, children, newProfile = null }) {
                                     <SearchBar />
                                 </div> */}
                             </div>
+            {/* <div className="flex-1 flex flex-col ">
+                <nav className="bg-customBlue border-b fixed top-0 left-0 w-full z-20">
+                    <div className="w-full mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="flex justify-between items-center py-3 pb-2">
+                        <div className="flex-1 flex ">
+                                    
+                        </div> */}
 
                             <div className="hidden sm:flex sm:items-center sm:ml-6">
                                 <button className="rounded-full py-1 px-6 bg-green-300 flex flex-row space-x-2">
@@ -104,43 +111,42 @@ export default function Authenticated({ user, children, newProfile = null }) {
                                             </span>
                                         </Dropdown.Trigger>
 
-                                        <Dropdown.Content>
-                                            <Dropdown.Link href={route('profile.update')}>Profile</Dropdown.Link>
-                                            <Dropdown.Link href={route('logout')} method="post" as="button">
-                                                Log Out
-                                            </Dropdown.Link>
-                                        </Dropdown.Content>
-                                    </Dropdown>
-                                </div>
-                            </div>
-
-                             {/* This part here is for responsive layout. Not yet configured*/}
-
-                            <div className="-mr-2 flex items-center sm:hidden">
-                                <button
-                                    onClick={() => setShowingNavigationDropdown((previousState) => !previousState)}
-                                    className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 focus:text-gray-500 transition duration-150 ease-in-out"
-                                >
-                                    <svg className="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
-                                        <path
-                                            className={!showingNavigationDropdown ? 'inline-flex' : 'hidden'}
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            strokeWidth="2"
-                                            d="M4 6h16M4 12h16M4 18h16"
-                                        />
-                                        <path
-                                            className={showingNavigationDropdown ? 'inline-flex' : 'hidden'}
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            strokeWidth="2"
-                                            d="M6 18L18 6M6 6l12 12"
-                                        />
-                                    </svg>
-                                </button>
-                            </div>
-                        </div>
+                            <Dropdown.Content>
+                                <Dropdown.Link href={route('profile.update')}>Profile</Dropdown.Link>
+                                <Dropdown.Link href={route('logout')} method="post" as="button">
+                                    Log Out
+                                </Dropdown.Link>
+                            </Dropdown.Content>
+                        </Dropdown>
                     </div>
+                </div>
+
+                {/* This part here is for responsive layout. Not yet configured */}
+                <div className="-mr-2 flex items-center sm:hidden">
+                    <button
+                        onClick={() => setShowingNavigationDropdown((previousState) => !previousState)}
+                        className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 focus:text-gray-500 transition duration-150 ease-in-out"
+                    >
+                        <svg className="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
+                            <path
+                                className={!showingNavigationDropdown ? 'inline-flex' : 'hidden'}
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth="2"
+                                d="M4 6h16M4 12h16M4 18h16"
+                            />
+                            <path
+                                className={showingNavigationDropdown ? 'inline-flex' : 'hidden'}
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth="2"
+                                d="M6 18L18 6M6 6l12 12"
+                            />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
 
 
                      {/* This part here is for responsive layout. Not yet configured*/}

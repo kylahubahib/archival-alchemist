@@ -123,12 +123,14 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
-    // 'providers' => [
+     //'providers' => [
     //     /*
     //     * Package Service Providers...
     //     */
+        App\Providers\AuthServiceProvider::class,
+        //Usamamuneerchaudhary\Commentify\Providers\CommentifyServiceProvider::class,
     //     Maatwebsite\Excel\ExcelServiceProvider::class,
-    // ],
+     //],
 
     // 'aliases' => [
     //     'Excel' => Maatwebsite\Excel\Facades\Excel::class,

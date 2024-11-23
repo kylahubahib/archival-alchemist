@@ -12,6 +12,8 @@ import {Dropdown, DropdownTrigger, DropdownMenu, DropdownItem} from "@nextui-org
 import { Skeleton } from '@nextui-org/skeleton'; // Import //Skeleton
 import PdfViewer from '@/Components/PdfViewer'
 
+import ManuscriptComment from '@/Components/Manuscripts/ManuscriptComment'; // Import the LibrarySearchBar component
+
 const Manuscript = ({user, choice}) => {
     const [favorites, setFavorites] = useState(new Set());
      const [userId, setUserId] = useState(null); // Store the current logged-in user ID
@@ -34,6 +36,14 @@ const Manuscript = ({user, choice}) => {
     const [titleInputValue, setTitleInputValue] = useState(''); // State for the title input
     const [selectedSearchField, setSelectedSearchField] = useState("Title"); // Track selected search field
 
+    const [commentStates, setCommentStates] = useState({}); // This will store the state for each manuscript
+
+    const handleCommentClick = (id) => {
+        setCommentStates(prevState => ({
+            ...prevState,
+            [id]: !prevState[id], // Toggle the comment visibility for the specific manuscript
+        }));
+    };
 
 
 
@@ -355,7 +365,7 @@ const handleDropdownChange = (selectedKey) => {
                         )}
                     </div>
             </div>
-                <div className="w-[200px]"> {/* Set dropdown button width to 50px */}
+                <div className="w-[200px] relative z-[0]"> {/* Set dropdown button width to 50px */}
                 <Dropdown>
                     <DropdownTrigger className="w-full">
                         <Button variant="bordered" className="capitalize w-full flex justify-between items-center">
@@ -460,12 +470,21 @@ const handleDropdownChange = (selectedKey) => {
                     </div>
                     </Tooltip>
 
-                    <div className={`flex items-center ${comments.length > 0 ? 'text-blue-500' : 'text-gray-600'} hover:text-blue-700 cursor-pointer`} onClick={toggleComments}>
+                    {/* <div className={`flex items-center ${comments.length > 0 ? 'text-blue-500' : 'text-gray-600'} hover:text-blue-700 cursor-pointer`} onClick={toggleComments}>
                         <FaComment size={20} />
                         <span className="ml-1">
                             {comments.length > 0 ? `${comments.length} Comment${comments.length > 1 ? 's' : ''}` : 'No comments yet'}
                         </span>
                     </div>
+                     */}
+
+<button
+                className="flex items-center hover:text-blue-700 bg-transparent border-none"
+                onClick={() => handleCommentClick(manuscript.id)}
+                aria-label="Toggle Comment Section"
+            >
+                <FaComment size={20} />
+            </button>
 
                     <Tooltip content="Bookmark">
                                     <button
@@ -614,6 +633,14 @@ const handleDropdownChange = (selectedKey) => {
                         ))}
                     </div>
                 )}
+
+                {/* Conditionally Render ManuscriptComment */}
+                {commentStates[manuscript.id] && (
+                    <div>
+                        <ManuscriptComment manuscriptId={manuscript.id} /> {/* You can pass the manuscriptId to the comment component if needed */}
+                    </div>
+                )}
+
             </div>
             </div>
 ))}

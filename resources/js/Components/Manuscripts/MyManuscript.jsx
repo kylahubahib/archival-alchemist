@@ -220,9 +220,9 @@ const handleClick = (value) => {
     }
 
     return (
-        <section className="w-full mx-auto my-4">
+        <section className="w-full mx-auto my-4 ">
             {manuscriptsToDisplay.map((manuscript) => (
-                <div key={manuscript.id} className="w-full bg-white shadow-lg flex mb-4">
+                <div key={manuscript.id} className="w-relative bg-white shadow-lg flex ">
                     <div className="rounded w-40 h-full bg-gray-200 flex items-center justify-center">
                         <img
                             className="rounded w-36 h-46"

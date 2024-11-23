@@ -6,6 +6,7 @@
 
         <!-- CSRF Token -->
         <meta name="csrf-token" content="{{ csrf_token() }}">
+        @livewireStyles
 
         <title inertia>{{ config('app.name', 'Archival Alchemist') }}</title>
 
@@ -21,8 +22,9 @@
     </head>
     <body class="font-sans antialiased">
         @inertia
-
+        @yield('content')
         <!-- <div id="placeholder"></div>
         <script type="text/javascript" src="http://your-server-ip/web-apps/apps/api/documents/api.js"></script> -->
+        @livewireScripts
     </body>
 </html>

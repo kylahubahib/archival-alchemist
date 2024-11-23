@@ -16,6 +16,7 @@ use App\Models\Tags;
 use App\Models\User;
 use App\Models\ClassStudent;
 use App\Models\RevisionHistory;
+use App\Models\Section;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -305,7 +306,7 @@ class StudentClassController extends Controller
             // Check if the email is valid
             if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
                 Log::warning('Invalid Email Address:', ['email' => $email]);
-                continue; 
+                continue;
             }
 
             // Create permission for the user
@@ -325,7 +326,7 @@ class StudentClassController extends Controller
                 // Set the permission
                 $driveService->permissions->create($fileId, $permission);
                 Log::info('Permission Set Successfully:', ['email' => $email]);
-                
+
             } catch (Exception $e) {
                 Log::error('Error Setting Permissions:', [
                     'email' => $email,
@@ -338,7 +339,7 @@ class StudentClassController extends Controller
 
 
 
-    
+
 
     public function checkClassCode(Request $request)
     {
@@ -348,7 +349,7 @@ class StudentClassController extends Controller
         ]);
 
         // Attempt to find a class in the database where the class_code matches the provided value
-        $class = ClassModel::where('class_code', $request->class_code)->first();
+        $class = Section::where('section_classcode', $request->class_code)->first();
 
         // If a class is found, return a JSON response indicating that it exists
         if ($class) {
@@ -400,10 +401,10 @@ class StudentClassController extends Controller
                     'stud_id' => $userId, // Store the user ID
                 ]);
 
-                
+
                  // Notifies the teacher that a new student joins
                  $teacher = User::find($class->ins_id);
-                 $newStudent = Auth::user()->name; 
+                 $newStudent = Auth::user()->name;
 
                  if ($teacher) {
                          $teacher->notify(new UserNotification([
@@ -413,7 +414,7 @@ class StudentClassController extends Controller
                  }
 
                 return response()->json([
-                    'success' => true, 
+                    'success' => true,
                     'message' => 'Joined class successfully',
                     'classId' => $class->id
                 ]);
@@ -911,15 +912,15 @@ public function checkStudentInClass()
         $userClass = ClassModel::where('ins_id', $user->id)->first();
         $class = ClassModel::where('id', $userClass->id)->first();
     }
-   
+
     if ($userClass) {
         return response()->json([
             'class' => $userClass,
-            'classCode' => $class->class_code, 
+            'classCode' => $class->class_code,
             'manuscripts' => $user->manuscripts
         ]);
     } else {
-        return response()->json(); 
+        return response()->json();
     }
 }
 
