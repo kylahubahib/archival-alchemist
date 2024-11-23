@@ -17,7 +17,7 @@ import axios from "axios";
 import SetPlanStatus from "./SetPlanStatus";
 import ActionButton from "@/Components/Admins/ActionButton";
 import Pagination from "@/Components/Admins/Pagination";
-import { encodeParam, getAcronymAndOrigText, setStatusChip, updateUrl } from "@/Components/Admins/Functions";
+import { encodeParam, setStatusChip, updateUrl } from "@/Components/Admins/Functions";
 import NoDataPrompt from "@/Components/Admins/NoDataPrompt";
 import Filter from "./Filter";
 import { Link, router } from "@inertiajs/react";
@@ -322,7 +322,7 @@ export default function Faculties({ auth, insAdminAffiliation, retrievedFacultie
                                         {renderTableHeader()}
                                         <tbody>
                                             {facultiesToRender.data.map((faculty, index) => {
-                                                const department = getAcronymAndOrigText(faculty.dept_name);
+                                                const department = faculty.dept_acronym;
                                                 const formattedDateCreated = format(new Date(faculty.created_at), 'MM/dd/yyyy HH:mm aa');
 
                                                 const actionButtons = () => {

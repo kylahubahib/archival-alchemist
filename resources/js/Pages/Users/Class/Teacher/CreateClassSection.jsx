@@ -14,6 +14,9 @@ const CreateClassSection = ({ userId }) => {
     const [fetchError, setFetchError] = useState(false);
     const [isViewClassOpen, setIsViewClassOpen] = useState(false);
 
+    // Add this to store the selected section data
+    const [selectedFolder, setSelectedFolder] = useState(null);
+
     const userToken = localStorage.getItem('userToken');
     const DEFAULT_PROFILE_IMAGE = '/path/to/default/profile.jpg';
 
@@ -43,6 +46,8 @@ const CreateClassSection = ({ userId }) => {
             .then(data => {
                 setFolders(data);
                 setFetchError(false);
+
+                console.log('FETCH CLASSES ',data);
             })
             .catch(error => {
                 console.error("Error fetching folders:", error);
@@ -108,7 +113,9 @@ const CreateClassSection = ({ userId }) => {
         }
     };
 
-    const handleViewClass = () => {
+    // Pass a parameter here
+    const handleViewClass = (data) => {
+        setSelectedFolder(data);
         setIsViewClassOpen(true); // Show the ViewClass component
     };
 
@@ -116,10 +123,12 @@ const CreateClassSection = ({ userId }) => {
         setIsViewClassOpen(false); // Function to go back to previous view
     };
 
+
     return (
         <div className="flex flex-col items-start justify-start w-h-screen bg-gray-100 mt-0 relative w-relative mx-8 px-10">
             {isViewClassOpen ? (
-                <ViewClass folders={folders} onBack={handleBack} /> // Pass handleBack as a prop to ViewClass
+                // Pass the selected section or class
+                <ViewClass folders={selectedFolder} onBack={handleBack} /> // Pass handleBack as a prop to ViewClass
             ) : (
                 <>
                     {/* Display folders or empty folder with a plus sign */}

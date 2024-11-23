@@ -21,9 +21,32 @@ class ClassController extends Controller
 {
     public function fetchCourses(Request $request)
     {
-        $courses = Course::where('dept_id', 1)->limit(25)->get();
+        $user = Auth::user()->load('faculty');
+
+        $deptId = null;
+
+        if($user->faculty)
+        {
+            $deptId = $user->faculty->dept_id;
+        }
+
+        
+        // Log::info('Branch Id: ', (array)$user->faculty);
+
+        // $uniBranchId = $user->faculty->first()->uni_branch_id;
+
+
+        // if($uniBranchId)
+        // {
+        //     $dept = Department::with('course')->where('uni_branch_id', $uniBranchId)->get();
+        //     Log::info('Department: ', $dept->toArray());
+        // }
+
+        // $courses = Course::where('dept_id', 1)->limit(25)->get();
+        $courses = Course::where('dept_id', $deptId)->limit(25)->get();
         return response()->json($courses);
     }
+
 
 
 
@@ -132,16 +155,21 @@ class ClassController extends Controller
         ]);
         Log::info('Request data:', $request->all());
 
-        $section_id = $request->json('section_id');
+        $section_id = $request->input('section_id');
         $instructorId = Auth::id();
-        $studentNames = $request->json('students'); // Array of student names
+        $studentNames = $request->input('students'); // Array of student names
+
+        Log::info('Section Id: ', (array)$section_id);
+        Log::info('Student names: ', (array)$studentNames);
 
         DB::beginTransaction();
+
         try {
             // Find the section by instructor ID and section_classcode
-            $section = Section::where('ins_id', $instructorId)
-                                ->where('id', $section_id)
-                                ->first();
+            //Remove the where('ins_id', $instructorId) since id of section is already unique
+            $section = Section::where('id', $section_id)->first();
+                                
+            Log::info('Section Found: ', (array)$section);
 
             if ($section) {
                 Log::info('Adding students to GroupMembers', [
@@ -182,6 +210,7 @@ class ClassController extends Controller
                     'success' => true,
                     'message' => count($newStudentIds) . " student(s) added successfully."
                 ]);
+
             } else {
                 return response()->json(['message' => 'Class not found.'], 404);
             }
@@ -191,6 +220,7 @@ class ClassController extends Controller
             return response()->json(['message' => 'An error occurred while adding students.'], 500);
         }
     }
+
 
 
     private function checkStudentInClass($stud_id)
