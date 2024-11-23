@@ -28,6 +28,8 @@ export default function SubscriptionForm({user}) {
         message: '', 
     });
     const [message, setMessage] = useState(null);
+    const [personalPlans, setPersonalPlans] = useState([]);
+    const [planFeatures, setPlanFeatures] = useState([]); 
 
     const submit = (e) => {
         e.preventDefault();
@@ -35,6 +37,8 @@ export default function SubscriptionForm({user}) {
     }
 
     useEffect(() => {
+        console.log(personalPlans);
+        console.log(planFeatures);
         console.log(isAffiliated); 
         axios.get('/user-subscription')
         .then(response => {
@@ -51,7 +55,7 @@ export default function SubscriptionForm({user}) {
         .catch(error => {
             console.error('Error fetching subscription:', error);
         });
-    }, []);
+    }, [personalPlans, planFeatures, isAffiliated]);
     
     // useEffect(() => {
     //     console.log('Updated personalSubscription:', personalSubscription);
@@ -66,9 +70,24 @@ export default function SubscriptionForm({user}) {
         });
     };
 
-    const viewPlans = async () => {
-        window.location.href = route('pricing');
+    const handleCheckout = async (planId) => {
+
+        try {
+            const response = await axios.post('/payment', { plan_id: planId });
+
+            if (response.data.checkout_url) {
+                
+                // Redirect the user to PayMongo's checkout page
+                window.location.href = response.data.checkout_url;
+            }
+        } catch (err) {
+            console.error("Checkout session failed:", err);
+            setError("Failed to create checkout session. Please try again.");
+        } finally {
+            setLoading(false);
+        }
     };
+
 
     const handleRenewal = async (id) => {
 
@@ -125,6 +144,31 @@ export default function SubscriptionForm({user}) {
             .save(`Receipt_${transaction.reference_number}.pdf`);
     };
 
+    const viewPlanList = async () => {
+
+        try {
+            const response = await axios.get('/get-plans');
+
+            if (response.data) {
+                console.log(response.data.personalPlans);
+                setPersonalPlans(response.data.personalPlans);
+                setPlanFeatures(response.data.planFeatures);
+                setModalContent('pricing-list');
+                setIsModalOpen(true);
+            } else {
+                console.error('No data returned');
+            }
+        } catch (error) {
+            console.error('Error fetching plans:', error.response ? error.response.data : error);
+        }
+    };
+
+    const getFeaturesByPlanId = (planId) => {
+        return planFeatures
+            .filter(planFeature => planFeature.plan.id === planId)
+            .map(planFeature => planFeature.feature.feature_name);
+    };
+
     const cancelSubscription = () => {
         console.log('ok');
         // axios.post('/cancel-subscription', {id: ins_sub.id})
@@ -136,6 +180,8 @@ export default function SubscriptionForm({user}) {
         //     }, 2000);   
         // });
     }
+
+   
 
     if (loading) return (
         <div className="space-y-3">
@@ -163,9 +209,9 @@ export default function SubscriptionForm({user}) {
                 <div>
                     <button className="text-blue-600 text-sm  hover:text-customBlue" onClick={() => {openModal('agreement')}}>View Agreement</button>
                 </div>
-                <div>
+                {/* <div>
                     <button className="text-blue-600 text-sm  hover:text-customBlue" onClick={() => {openModal('inquiry')}}>Inquire</button>
-                </div>
+                </div> */}
             </header>
 
             {personalSubscription ? (
@@ -198,7 +244,7 @@ export default function SubscriptionForm({user}) {
                         <>
                             <div className="text-gray-900">You are currently in the free plan.</div>
                             <div className="flex space-x-3">
-                                <Button radius="large" variant='bordered' size='sm' className="border-customBlue text-customBlue shadow" onClick={viewPlans}>
+                                <Button radius="large" variant='bordered' size='sm' className="border-customBlue text-customBlue shadow" onClick={viewPlanList}>
                                     Upgrade to Premium
                                 </Button>
 
@@ -224,9 +270,9 @@ export default function SubscriptionForm({user}) {
              {modalContent == 'agreement' &&
             <Modal show={isModalOpen} onClose={closeModal} maxWidth='2xl'>
                 <div className="p-6 max-w-4xl mx-auto bg-white rounded-lg shadow-md">
-                    <h2 className="text-2xl font-semibold text-gray-800 mb-4">{agreement.content_title}</h2>
+                    <h2 className="text-2xl font-semibold text-gray-800 mb-4">{agreement.content_title || ''}</h2>
                     <Divider/>
-                    <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap pt-2">{agreement.content_text}</p>
+                    <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap pt-2">{agreement.content_text || ''}</p>
                 </div>
             </Modal>}
 
@@ -349,9 +395,96 @@ export default function SubscriptionForm({user}) {
                 </div>
             </Modal>}
 
+            {/* Choose subscription plan */}
+            {modalContent == 'pricing-list' &&
+                <Modal show={isModalOpen} onClose={closeModal} maxWidth="5xl">
+    <div className="p-6 max-w-5xl mx-auto bg-white rounded-lg relative">
+        {/* Close Button */}
+        <button
+            onClick={closeModal}
+            type="button"
+            className="absolute top-3 right-3 text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-full text-sm w-8 h-8 inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
+            data-modal-hide="popup-modal"
+        >
+            <svg
+                className="w-3 h-3"
+                aria-hidden="true"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 14 14"
+            >
+                <path
+                    stroke="currentColor"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"
+                />
+            </svg>
+            <span className="sr-only">Close modal</span>
+        </button>
 
+        <div className="lg:grid lg:grid-cols-2 sm:gap-6 xl:gap-10 lg:space-y-0 justify-center mt-8">
+            {personalPlans.map((plan) => (
+                <div
+                    key={plan.id}
+                    className={`flex flex-col p-6 mx-auto min-w-80 max-w-md text-center text-gray-900 bg-white rounded-lg border border-gray-100 cursor-pointer shadow`}>
+                    <h3 className="mb-4 text-xl font-semibold">{plan.plan_name}</h3>
+                    
+                    <p className="font-light text-gray-500 sm:text-md">
+                        {plan.plan_text}
+                    </p>
+                    
+                    <div className="flex justify-center items-baseline my-8">
+                        <span className="mr-2 text-2xl font-bold">
+                            ₱ {formatPrice(plan.plan_price)}
+                        </span>
+                        <span className="text-gray-500">{plan.plan_term}</span>
+                    </div>
+                    
+                    {/* Plan Features */}
+                    <ul role="list" className="mb-8 space-y-2 text-left">
+                        {getFeaturesByPlanId(plan.id).map((featureName, index) => (
+                            <li key={index} className="flex items-center">
+                                <svg
+                                    className="flex-shrink-0 w-5 h-5 text-green-500"
+                                    fill="currentColor"
+                                    viewBox="0 0 20 20"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                >
+                                    <path
+                                        fillRule="evenodd"
+                                        d="M16.707 5.293a1 1 0 011.414 0l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                        clipRule="evenodd"
+                                    ></path>
+                                </svg>
+                                <span className="text-sm font-normal leading-tight text-gray-500 ml-3">
+                                    {featureName}
+                                </span>
+                            </li>
+                        ))}
+                    </ul>
+
+                    {/* Subscribe Button */}
+                    <div className="mt-auto">
+                        <button
+                            className={`w-full text-white bg-customBlue hover:bg-blue-900 focus:ring-4 focus:ring-blue-200 font-medium rounded-lg text-sm px-5 py-2.5 text-center ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            onClick={() => handleCheckout(plan.id)}
+                            disabled={loading}
+                        >
+                            {loading ? 'Processing...' : 'Subscribe Now'}
+                        </button>
+                    </div>
+                </div>
+            ))}
+        </div>
+    </div>
+</Modal>
+            }
             
             {modalContent == 'inquiry' &&  <InquiryForm isOpen={isModalOpen} onClose={closeModal} />}
+
+           
 
 
 

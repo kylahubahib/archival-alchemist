@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { FaFilterCircleXmark, FaXmark } from "react-icons/fa6";
 import { FaFilter } from "react-icons/fa";
 import { toast } from 'react-toastify';
-import { getAcronymAndOrigText } from "@/Components/Admins/Functions";
+// import { getAcronymAndOrigText } from "@/Components/Admins/Functions";
 import Modal from '@/Components/Modal';
 import axios from 'axios';
 

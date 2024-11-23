@@ -280,7 +280,7 @@ const handleClick = (value) => {
     const manuscriptsToDisplay = searchResults.length > 0 ? searchResults : manuscripts;
 
     if (manuscriptsToDisplay.length === 0) {
-        return                     <div className="max-w-7xl mx-auto bg-white shadow-lg flex justify-center h-screen items-center shadow-sm sm:rounded-lg sticky">
+        return                     <div className="max-w-7xl mx-auto bg-white  flex justify-center h-screen items-center shadow-sm sm:rounded-lg sticky">
         <FaBookmark size={50} className="text-gray-500" />
         <p className="text-gray-500 mt-2">Favorite Manuscript Capstone will be added here.</p>
     </div>

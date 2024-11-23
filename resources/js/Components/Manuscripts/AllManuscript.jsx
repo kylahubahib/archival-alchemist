@@ -16,7 +16,7 @@ import ManuscriptComment from '@/Components/Manuscripts/ManuscriptComment'; // I
 import SubscriptionCard from '@/Components/SubscriptionCard';
 import AskUserToLogin from '@/Components/AskUserToLogin';
 import PdfViewer from '@/Components/PdfViewer';
-import ToggleComments from '@/Components/ToggleComments'
+// import ToggleComments from '@/Components/ToggleComments'
 
 const Manuscript = ({user, choice}) => {
     const [isPdfOpen, setPdfOpen] = useState(false);
@@ -339,7 +339,7 @@ const handleComments = (id, title) => {
                 //console.log('Response: ', response.data.favorites);
                 const favoritesData = [];
                 if(response.data.favorites) {
-                    favoritesData = response.data.favorites.map((favorite) => `${user.id}-${favorite.man_doc_id}`);
+                    const favoritesData = response.data.favorites.map((favorite) => `${user.id}-${favorite.man_doc_id}`);
                 }
                 setFavorites(new Set(favoritesData));
                 console.log(`Fetched favorites for user ${user.id}:`, favoritesData);

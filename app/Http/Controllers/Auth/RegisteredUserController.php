@@ -175,4 +175,6 @@ class RegisteredUserController extends Controller
             return redirect()->back()->withErrors(['error' => 'An unexpected error occurred. Please try again.']);
         }
     }
+
+   
 }
