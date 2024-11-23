@@ -8,6 +8,7 @@ use App\Models\AssignedTask;
 use App\Models\Course;
 use App\Models\Section;
 use App\Models\User;
+use App\Models\Department;
 use App\Models\GroupMember;
 use App\Models\RevisionHistory;
 use Illuminate\Http\Request;
@@ -21,7 +22,22 @@ class ClassController extends Controller
 {
     public function fetchCourses(Request $request)
     {
-        $courses = Course::where('dept_id', 1)->limit(25)->get();
+        // $user = Auth::user()->load('faculty');
+
+        
+        // Log::info('Branch Id: ', (array)$user->faculty);
+
+        // $uniBranchId = $user->faculty->first()->uni_branch_id;
+
+
+        // if($uniBranchId)
+        // {
+        //     $dept = Department::with('course')->where('uni_branch_id', $uniBranchId)->get();
+        //     Log::info('Department: ', $dept->toArray());
+        // }
+
+        // $courses = Course::where('dept_id', 1)->limit(25)->get();
+        $courses = Course::where('dept_id', 16)->limit(25)->get();
         return response()->json($courses);
     }
 
@@ -109,10 +125,15 @@ class ClassController extends Controller
     public function fetchClasses(Request $request)
     {
         try {
-            $classes = Section::join('courses', 'sections.course_id', '=', 'courses.id')
-            ->where('sections.ins_id', Auth::id())
-            ->select('sections.*', 'courses.*')
-            ->get();
+            //You can use the eloquent way to get the classes together with courses
+            // As long as you define the relationship in the model, you can easily get it 
+            $classes = Section::with('course')->where('ins_id', Auth::id())->get();
+
+            Log::info('Fetch Classes: ', (array)$classes);
+            // $classes = Section::join('courses', 'sections.course_id', '=', 'courses.id')
+            // ->where('sections.ins_id', Auth::id())
+            // ->select('sections.*', 'courses.*')
+            // ->get();
 
             return response()->json($classes);
         } catch (\Exception $e) {
@@ -132,16 +153,21 @@ class ClassController extends Controller
         ]);
         Log::info('Request data:', $request->all());
 
-        $section_id = $request->json('section_id');
+        $section_id = $request->input('section_id');
         $instructorId = Auth::id();
-        $studentNames = $request->json('students'); // Array of student names
+        $studentNames = $request->input('students'); // Array of student names
+
+        Log::info('Section Id: ', (array)$section_id);
+        Log::info('Student names: ', (array)$studentNames);
 
         DB::beginTransaction();
+
         try {
             // Find the section by instructor ID and section_classcode
-            $section = Section::where('ins_id', $instructorId)
-                                ->where('id', $section_id)
-                                ->first();
+            //Remove the where('ins_id', $instructorId) since id of section is already unique
+            $section = Section::where('id', $section_id)->first();
+                                
+            Log::info('Section Found: ', (array)$section);
 
             if ($section) {
                 Log::info('Adding students to GroupMembers', [
@@ -182,6 +208,7 @@ class ClassController extends Controller
                     'success' => true,
                     'message' => count($newStudentIds) . " student(s) added successfully."
                 ]);
+
             } else {
                 return response()->json(['message' => 'Class not found.'], 404);
             }

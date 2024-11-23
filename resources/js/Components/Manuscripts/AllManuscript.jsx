@@ -184,7 +184,7 @@ const Manuscript = ({user, choice}) => {
                 //console.log('Response: ', response.data.favorites);
                 const favoritesData = [];
                 if(response.data.favorites) {
-                    favoritesData = response.data.favorites.map((favorite) => `${user.id}-${favorite.man_doc_id}`);
+                    const favoritesData = response.data.favorites.map((favorite) => `${user.id}-${favorite.man_doc_id}`);
                 }
                 setFavorites(new Set(favoritesData));
                 console.log(`Fetched favorites for user ${user.id}:`, favoritesData);

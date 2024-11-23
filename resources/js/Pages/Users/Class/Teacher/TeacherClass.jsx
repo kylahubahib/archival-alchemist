@@ -259,7 +259,7 @@ const handleAddStudent = async () => {
     };
 
     useEffect(() => {
-        axios.get('http://127.0.0.1:8000/check-student-in-class') 
+        axios.get('http://127.0.0.1:8000/check-student-in-class') // Make sure the URL is correct
         .then(response => {
             if (response.data.class) {
                 setClassCode(response.data.class);
@@ -276,7 +276,7 @@ const handleAddStudent = async () => {
 
     const handleModalClose = () => {
         setIsGroupModalOpen(false);
-        setClassName(''); 
+        setClassName(''); // Reset the class name
     };
 
     useEffect(() => {
@@ -391,16 +391,16 @@ const handleAddStudent = async () => {
             to="/teacherclass"
             className="flex justify-start items-start my-3 mt-5 mx-5 w-full text-gray-700 text-2xl hover:underline hover:text-blue-500"
         >
-        <div className="flex items-center space-x-10 border-gray-200">
-            <div className="pr-3">
-                <Avatar
-                    src="images/img1.png"
-                    alt="Teacher"
-                    size="8"
-                />
-            </div>
-            Alchemist Room
-        </div>
+<div className="flex items-center space-x-10 border-gray-200">
+    <div className="pr-3">
+        <Avatar
+            src="images/img1.png"
+            alt="Teacher"
+            size="8"
+        />
+    </div>
+    Alchemist Room
+</div>
 
         </Link>
     </div>
@@ -412,7 +412,7 @@ const handleAddStudent = async () => {
                 </div>
             )}
 
-            <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg mx-8">
+            <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
 
                 <div className="p-6 text-gray-900 w-full">
 

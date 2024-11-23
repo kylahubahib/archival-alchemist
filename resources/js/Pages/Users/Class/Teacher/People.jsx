@@ -142,7 +142,7 @@ useEffect(() => {
 
 
     const handleAddStudent = async () => {
-        const folder = folders[1];  // Or use a condition to select a specific folder
+        const folder = folders;  // Or use a condition to select a specific folder
         console.log('Folder ID:', folder.id);  // Check if folder.id is valid
 
         if (!csrfToken) {
@@ -161,6 +161,8 @@ useEffect(() => {
                 throw new Error("No students to add");
             }
 
+            console.log('SECTION ID', folder.id);
+
             // Send the POST request to add the student
             const response = await axios.post('/store-groupmembers', {
                 section_id: folder.id,
@@ -173,7 +175,7 @@ useEffect(() => {
             });
 
             // Check the response from the API
-            console.log("API Response:", response.data)/delete-groupmembers;
+            console.log("API Response:", response.data)
 
             // Refetch the students list from the server after the student has been added
             const groupResponse = await axios.get("/fetch-groupmembers");

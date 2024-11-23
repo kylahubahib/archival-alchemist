@@ -17,7 +17,7 @@ import axios from "axios";
 import SetPlanStatus from "./SetPlanStatus";
 import ActionButton from "@/Components/Admins/ActionButton";
 import Pagination from "@/Components/Admins/Pagination";
-import { encodeParam, getAcronymAndOrigText, setStatusChip, updateUrl } from "@/Components/Admins/Functions";
+import { encodeParam, setStatusChip, updateUrl } from "@/Components/Admins/Functions";
 import NoDataPrompt from "@/Components/Admins/NoDataPrompt";
 import Filter from "./Filter";
 import { Link, router } from "@inertiajs/react";

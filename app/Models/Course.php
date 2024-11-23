@@ -32,4 +32,9 @@ class Course extends Model
         return $this->belongsTo(Department::class, 'dept_id');
     }
 
+    public function faculty(): HasMany
+    {
+        return $this->hasMany(Faculty::class, 'course_id');
+    }
+
 }
