@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 use App\Events\NewComment;
-
+use Illuminate\Support\Facades\Log;
 use App\Events\CommentAdded;
 use App\Models\DocComment;
 use App\Models\Manuscript;
@@ -12,16 +12,55 @@ use Illuminate\Support\Facades\Auth;
 class DocCommentsController extends Controller
 {
         // Fetch comments with replies
-        public function getComments($documentId)
+        public function fetchcomments($documentId)
         {
-            $comments = DocComment::where('man_doc_id', $documentId)
-                ->whereNull('parent_id')
-                ->with(['replies', 'user', 'replies.user']) // Load replies and their users
-                ->orderBy('created_at', 'desc')
-                ->get();
+            // Log the incoming request
+            Log::info("Fetching comments for document ID: $documentId");
 
-            return response()->json($comments);
+            try {
+                // Retrieve parent comments with replies and user relationships
+                $comments = DocComment::where('man_doc_id', $documentId)
+                    ->whereNull('parent_id')
+                    ->with(['replies', 'user', 'replies.user'])
+                    ->orderBy('created_at', 'desc')
+                    ->get();
+
+                // Log the comments retrieved from the database
+                Log::info("Retrieved comments:", ['comments' => $comments->toArray()]);
+
+                // Return the response with debug data
+                return response()->json([
+                    'comments' => $comments,
+                    'debug' => [
+                        'raw_comments' => DocComment::all(),
+                        'document_id' => $documentId,
+                    ]
+                ]);
+            } catch (\Exception $e) {
+                // Log any exception that occurs
+                Log::error("Error fetching comments for document ID: $documentId", [
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString(),
+                ]);
+
+                // Return an error response
+                return response()->json(['error' => 'Failed to fetch comments'], 500);
+            }
         }
+
+
+
+            //     // Fetch comments with replies
+            // public function fetchReplies($documentId)
+            // {
+            //     $comments = DocComment::where('man_doc_id', $documentId)
+            //         ->whereNull('parent_id')
+            //         ->with(['replies', 'user', 'replies.user']) // Load replies and their users
+            //         ->orderBy('created_at', 'desc')
+            //         ->get();
+
+            //     return response()->json($comments);
+            // }
 
     /**
      * Retrieve comments for a specific manuscript.

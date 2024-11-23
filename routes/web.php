@@ -574,12 +574,20 @@ Route::get('/fetch-specificAssignedTask/{section_id}', [ClassController::class, 
 Route::post('/store-feedback/{manuscript_id}', [ClassController::class, 'storeFeedback']);
 
 Route::get('comments/{documentId}', [DocCommentsController::class, 'getComments']);
-Route::post('comments', [DocCommentsController::class, 'storeComment']);
+Route::post('/comments', [DocCommentsController::class, 'storeComment']);
 
 Route::get('/ispremium', [StudentClassController::class, 'isPremium'])->name('ispremium');
 
 Route::get('/test-redis', function () {
     return Redis::ping();
 });
+
+
+
+
+//Commments
+Route::get('/fetch-comments/{id}', [DocCommentsController::class, 'fetchComments'])->name('fetch-comments');
+//Route::get('/fetch-replies', [DocCommentsController::class, 'fetchReplies'])->name('fetchrepllies');
+
 
 require __DIR__.'/auth.php';
