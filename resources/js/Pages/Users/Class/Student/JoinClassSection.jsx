@@ -112,7 +112,7 @@ const JoinClassSection = ({ userId }) => {
     };
 
     return (
-        <div className="flex flex-col items-start justify-start w-h-screen bg-gray-100 mt-0 relative w-relative px-10">
+        <div className="flex flex-col items-start justify-start mx-8 bg-gray-100 mt-0 relative min-h-screen px-10">
             {isViewClassOpen ? (
                 <StudentViewClass folders={folders} onBack={handleBack} /> // Pass handleBack as a prop to ViewClass
             ) : (
@@ -121,7 +121,7 @@ const JoinClassSection = ({ userId }) => {
                    {/* <div className="flex bg-gray-200 justify-start items-start w-full ">
                     <p className="flex justify-start items-start my-2 mt-3 mx-5 w-full font-bold text-gray-400 text-2xl">Active Classes</p>
                     </div> */}
-                    <div className="flex justify-start items-start w-full relative w-relative">
+                    <div className="flex justify-start items-start relative w-relative">
                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 w-full m-10 mr-50">
                             {/* First the "Create Class" folder */}
                             <div

@@ -132,10 +132,13 @@ class ClassController extends Controller
     public function fetchClasses(Request $request)
     {
         try {
-            $classes = Section::join('courses', 'sections.course_id', '=', 'courses.id')
-            ->where('sections.ins_id', Auth::id())
-            ->select('sections.*', 'courses.*')
-            ->get();
+            
+            $classes = Section::with(['course'])->where('ins_id', Auth::id())->get();
+
+            // $classes = Section::join('courses', 'sections.course_id', '=', 'courses.id')
+            // ->where('sections.ins_id', Auth::id())
+            // ->select('sections.*', 'courses.*')
+            // ->get();
 
 
             return response()->json($classes);
@@ -321,6 +324,7 @@ class ClassController extends Controller
             $task->task_startdate = Carbon::parse($validatedData['startdate'])->format('Y-m-d H:i:s');
             $task->task_duedate = Carbon::parse($validatedData['duedate'])->format('Y-m-d H:i:s');
             $task->save();
+
         } catch (\Exception $e) {
             // Handle any exception that may occur
             dd($e->getMessage()); // For debugging

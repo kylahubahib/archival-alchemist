@@ -405,14 +405,14 @@ const handleAddStudent = async () => {
         </Link>
     </div>
             {isCreating ? (
-                <JoinClassSection onCreate={handleCreate} className="flex justify-between items-center w-h-full"/>
+                <JoinClassSection onCreate={handleCreate} className="flex justify-between items-center"/>
             ) : (
                 <div>
                     {/* Render classes or other main content here */}
                 </div>
             )}
 
-            <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg min-h-screen">
+            <div className="overflow-hidden shadow-sm sm:rounded-lg min-h-screen:">
 
                 <div className="p-6 text-gray-900">
 

@@ -348,7 +348,7 @@ const TaskInstructions = ({ folders, onBack, task, taskID }) => {
 
   // Return JSX for task list and loading/error states
   return (
-<div className="mt-0 bg-gray-100 rounded-tl-lg rounded-tr-lg  shadow-lg w-full h-screen  left-0 overflow-hidden">
+<div className="mt-0 bg-gray-100 w-full p-4 left-0 overflow-hidden">
 
       {/* Loading & Error States */}
       {loading && tasks.length === 0 && (
@@ -397,14 +397,8 @@ const TaskInstructions = ({ folders, onBack, task, taskID }) => {
 
 
 
-
-
-
-
-
-
-      <div  className="w-[90%] max-relative p-6 bg-white shadow-md rounded-lg ml-20">
-        <div className="upload-capstone-container p-8 rounded shadow-lg bg-gray-100 h-screen">
+      <div  className="w-[90%] max-relative p-6 bg-white shadow-md rounded-lg ml-20 mt-3">
+        <div className="upload-capstone-container p-8">
             {success ? (
                 <div>
                     <h2 className="text-green-600 mb-4"></h2>

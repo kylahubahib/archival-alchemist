@@ -27,9 +27,9 @@ const StudentViewClass = ({ onBack, folders }) => {
     return (
         <div className="w-full">
             {/* Header Bar */}
-            <div className="header-bar w-h-screen bg-gray-100 border-b border-gray-200 shadow-sm ml-5 py-1 flex items-center justify-between">
+            <div className="header-bar w-h-screen bg-gray-100 border-b border-gray-200 shadow-sm py-1 flex items-center justify-between">
                 {/* Left side buttons */}
-                <div className="flex space-x-4 mt-1 mr-5">
+                <div className="flex space-x-4 mt-1 ">
                     <button
                         onClick={handleShowAssignedProject}
                         className={`text-gray-600 font-semibold ${activeSection === 'assignedProject' ? 'text-blue-500' : 'hover:text-blue-500'}`}
