@@ -2,13 +2,17 @@
 
 
 use App\Http\Controllers\Pages\InsAdminCommonDataController;
+use App\Models\User;
+use App\Http\Controllers\CommentController;
 use App\Http\Controllers\Pages\InstitutionAdmin\FacultyController;
 use App\Http\Controllers\Pages\InstitutionAdmin\StudentController;
 use App\Http\Controllers\Pages\SuperAdmin\UserController;
+use Illuminate\Support\Facades\Redis;
 
 use App\Http\Controllers\ClassController;
 use App\Http\Controllers\StudentClassController;
 use App\Http\Controllers\TeacherClassController;
+use App\Http\Controllers\DocCommentsController;
 use Illuminate\Support\Facades\Route;
 
 use App\Models\Forum;
@@ -173,7 +177,7 @@ use Illuminate\Support\Facades\Mail;
 
 Route::post('/send-to-email', function (Request $request) {
 
-    $message = $request->input('message'); 
+    $message = $request->input('message');
     $user = Auth::user();
     $data = [
         'name' => $user->name,
@@ -207,92 +211,99 @@ Route::middleware(['auth', 'verified', 'user-type:superadmin'])->group(function 
            Route::patch('/users/update-admin-access', [UserController::class, 'updateAdminAccess'])->name('users.update-admin-access');
            Route::get('/users/{userId}/logs', [UserController::class, 'logs'])->name('users.logs');
        });
-   
+
         Route::middleware('access:archives_access')->group(function () {
            Route::inertia('/archives', 'SuperAdmin/Archives')->name('archives');
        });
-       
+
         Route::middleware('access:subscriptions_and_billings_access')->group(function () {
            Route::inertia('/subscription-billing', 'SuperAdmin/SubscriptionBilling')->name('subscription-billing');
        });
-       
+
        Route::middleware('access:subscription_plans_access')->group(function () {
            Route::resource('manage-subscription-plans', SubscriptionPlanController::class);
             Route::put('manage-subscription-plans/{id}/change-status', [SubscriptionPlanController::class, 'change_status'])
        ->name('manage-subscription-plans.change_status');
-   
-   
+
+
        });
-       
+
     Route::middleware('access:user_feedbacks_access')->group(function () {
            Route::resource('user-feedbacks', UserFeedbacksController::class)->names('user-feedbacks')->except(['store']);
            Route::get('filter-feedbacks', [UserFeedbacksController::class, 'filterFeedbacks'])->name('filter-feedbacks');
-   
+
        });
-   
+
    Route::middleware('access:user_reports_access')->group(function () {
        Route::resource('user-reports', UserReportController::class)->names('user-reports')->except(['store']);
         Route::post('warn-user/{id}', [UserReportController::class, 'warnUser'])->name('user-reports.warning');
        Route::get('filter-user-reports', [UserReportController::class, 'filterReports'])->name('filter-user-reports');
-   
+
    });
-   
+
      Route::middleware('access:terms_and_conditions_access')->group(function () {
             Route::resource('manage-terms-and-conditions', TermsAndConditionController::class);
            Route::put('manage-terms-and-conditions/{id}/change-status', [TermsAndConditionController::class, 'change_status'])
                ->name('manage-terms-and-conditions.change_status');
        });
-   
+
         Route::middleware('access:faqs_access')->group(function () {
          Route::resource('manage-faqs', FAQController::class);
            //Route::inertia('/faq', 'SuperAdmin/Faq')->name('faq');
-           
+
        // You can use put or patch. Put is used to update a resource entirely
        // while patch is used to update a single fields
-       
-              Route::put('manage-faqs/{id}/change-status', [FAQController::class, 'change_status'])->name('manage-faqs.change_status');
-   
-   
+
+              Route::put('manage-faqs/{id}/change-status', [FAQController::class, 'change_status'])
+       ->name('manage-faqs.change_status');
+
+
        });
-       
+
         Route::middleware('access:advanced_access')->group(function () {
            //Route::inertia('/advanced', 'SuperAdmin/Advanced')->name('advanced');
            //ADVANCED ROUTES
         //Decided to create routes for the buttons in advanced page to simplify or easily create the crud functionality
-   
-            Route::get('/advanced/forum', function () {
-            return Inertia::render('SuperAdmin/Advanced/Forum/Forum');})->name('advanced-forum');
-           
-            Route::resource('advanced/forum', AdvancedForumController::class)->names('manage-forum-posts'); 
-            Route::resource('advanced/custom-messages', CustomMessagesController::class)->names('manage-custom-messages');   
-            Route::resource('advanced/universities', UniversityController::class)->names('manage-universities');
-            Route::resource('advanced/tags', AdvancedTagsController::class)->names('manage-tags');
-            Route::resource('advanced/report-reason', ReportReasonController::class)->names('manage-report-reason');
-        
-            Route::post('store-service', [CustomMessagesController::class, 'storeService'])->name('store-service');
-            Route::post('store-team', [CustomMessagesController::class, 'storeTeam'])->name('store-team');
-            Route::post('update-icon', [CustomMessagesController::class, 'updateIcon'])->name('update-icon');
-        
-            ///END ADVANCED ROUTES
-            });
-   
-    
-        Route::get('get-branches', [UniversityController::class, 'getBranches'])->name('get-branches');
+
+       Route::get('/advanced/forum', function () {
+           return Inertia::render('SuperAdmin/Advanced/Forum/Forum');})->name('advanced-forum');
+
+       Route::resource('advanced/custom-messages', CustomMessagesController::class)->names('manage-custom-messages');
+
+       Route::resource('advanced/universities', UniversityController::class)->names('manage-universities');
+
+       Route::resource('advanced/tags', AdvancedTagsController::class)->names('manage-tags');
+
+       Route::resource('advanced/report-reason', ReportReasonController::class)->names('manage-report-reason');
+
+       Route::post('store-service', [CustomMessagesController::class, 'storeService'])->name('store-service');
+       Route::post('store-team', [CustomMessagesController::class, 'storeTeam'])->name('store-team');
+       Route::post('update-icon', [CustomMessagesController::class, 'updateIcon'])->name('update-icon');
+
+       ///END ADVANCED ROUTES
+
+
+       });
+
+
+       Route::get('get-branches', [UniversityController::class, 'getBranches'])->name('get-branches');
 
         Route::middleware('access:dashboard_access')->group(function () {
             //Route::inertia('/dashboard', 'SuperAdmin/Dashboard')->name('dashboard');
             //DASHBOARD ROUTES
-            Route::resource('dashboard', DashboardController::class)->names('dashboard');
-            Route::get('get-weekly-manuscript', [DashboardController::class, 'getWeeklyManuscript']);
-            Route::get('get-monthly-manuscript', [DashboardController::class, 'getMonthlyManuscript']);
-            Route::get('get-yearly-manuscript', [DashboardController::class, 'getYearlyManuscript']);
-            Route::get('get-monthly-revenue', [DashboardController::class, 'getMonthlyRevenue']);
-            Route::get('get-yearly-revenue', [DashboardController::class, 'getYearlyRevenue']);
-            //END OF DASHBOARD ROUTES
+       Route::resource('dashboard', DashboardController::class)->names('dashboard');
+       Route::get('get-weekly-manuscript', [DashboardController::class, 'getWeeklyManuscript']);
+       Route::get('get-monthly-manuscript', [DashboardController::class, 'getMonthlyManuscript']);
+       Route::get('get-yearly-manuscript', [DashboardController::class, 'getYearlyManuscript']);
+       Route::get('get-monthly-revenue', [DashboardController::class, 'getMonthlyRevenue']);
+       Route::get('get-yearly-revenue', [DashboardController::class, 'getYearlyRevenue']);
+       //END OF DASHBOARD ROUTES
+
+
        });
-   
+
    });
-   
+
 
 
 
@@ -327,7 +338,7 @@ Route::middleware(['auth', 'verified', 'user-type:institution_admin'])->prefix('
     Route::patch('/faculties/{hasFacultyPremiumAccess}', [FacultyController::class, 'setPlanStatus'])->name('institution-faculties.set-plan-status');
     Route::post('/faculties/add', [FacultyController::class, 'addFaculty'])->name('institution-faculties.add');
 
-   
+
 
     Route::resource('/departments', DepartmentsController::class)->names('manage-departments');
     Route::post('/reassign-courses/{id}', [DepartmentsController::class, 'reassignCourses'])->name('reassign-courses');
@@ -431,7 +442,7 @@ Route::get('/api/title/suggestions', [TagController::class, 'Titlesuggestions'])
 //route for checking the class code
 Route::post('/check-class-code', [StudentClassController::class, 'checkClassCode']);
 // routes for storing student in class table
-Route::post('/store-student-class', [StudentClassController::class, 'storeStudentClass']);
+//Route::post('/store-student-class', [StudentClassController::class, 'storeStudentClass']);
 // routes for checking the user premium subscription
 Route::post('/check-user-premium-status', [CheckSubscriptionController::class, 'is_premium']);
 
@@ -529,6 +540,9 @@ Route::middleware(['web'])->group(function () {
     Route::post('/forum-posts/{id}/view', [ForumPostController::class, 'incrementViewCount'])->name('forum-posts.incrementViewCount');
 });
 
+//Forum Comments
+//Route::post('/posts/{post}/comments', [CommentController::class, 'store']);
+
 
 
 // route::get('view_file/{file}', [StudentClassController::class, 'view']);
@@ -558,5 +572,13 @@ Route::get('/fetch-specificAssignedTask/{section_id}', [ClassController::class, 
 
 Route::post('/store-feedback/{manuscript_id}', [ClassController::class, 'storeFeedback']);
 
+Route::get('comments/{documentId}', [DocCommentsController::class, 'getComments']);
+Route::post('comments', [DocCommentsController::class, 'storeComment']);
+
+Route::get('/ispremium', [StudentClassController::class, 'isPremium'])->name('ispremium');
+
+Route::get('/test-redis', function () {
+    return Redis::ping();
+});
 
 require __DIR__.'/auth.php';

@@ -1,4 +1,4 @@
-import { HiMenu } from "react-icons/hi"; 
+import { HiMenu } from "react-icons/hi";
 import { Link, usePage } from '@inertiajs/react';
 import { createContext, useContext, useEffect, useState } from "react";
 
@@ -9,7 +9,7 @@ export default function Sidebar({ children, color, borderRadius, margin }) {
     const [expanded, setExpanded] = useState(true);
 
     const handleResize = () => {
-        if (window.innerWidth < 768) { 
+        if (window.innerWidth < 768) {
             setExpanded(false);
         } else {
             setExpanded(true);
@@ -17,10 +17,10 @@ export default function Sidebar({ children, color, borderRadius, margin }) {
     };
 
     useEffect(() => {
-        handleResize(); 
+        handleResize();
 
-        window.addEventListener('resize', handleResize); 
-        return () => window.removeEventListener('resize', handleResize); 
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
     }, []);
 
     const bgColor = `bg-${color}`;
@@ -50,9 +50,9 @@ export default function Sidebar({ children, color, borderRadius, margin }) {
 
 export function SidebarItem({ icon, text, color, marginTop, marginBottom, alert, to, onClick, isActiveModal, externalLink, ...props }) {
   const { expanded } = useContext(SidebarContext);
-  const { url } = usePage(); 
+  const { url } = usePage();
 
-  const isActive = url === to || isActiveModal; 
+  const isActive = url === to || isActiveModal;
 
   const handleClick = () => {
     if (onClick) {
@@ -62,7 +62,7 @@ export function SidebarItem({ icon, text, color, marginTop, marginBottom, alert,
 
   const itemClasses = `relative flex items-center py-2 px-3 my-1 font-medium rounded-md cursor-pointer transition-colors group ${
     isActive
-      ? 'bg-gradient-to-tr from-indigo-200 to-indigo-100 text-gray-600' 
+      ? 'bg-gradient-to-tr from-indigo-200 to-indigo-100 text-gray-600'
       : 'hover:bg-indigo-50 text-gray-600'
   }`;
 
@@ -149,7 +149,7 @@ export function SidebarSeparator({ marginTop=56 }) {
 
   export function SidebarTitle({title}) {
     const { expanded } = useContext(SidebarContext);
-  
+
     return (
       <span className={`text-white font-bold text-sm transition-width duration-300 ease-in-out m-3 ${expanded ? 'w-52 ml-3 inline-block' : 'w-0 hidden' } overflow-hidden`}>
         {title}
@@ -157,7 +157,26 @@ export function SidebarSeparator({ marginTop=56 }) {
     );
   }
 
-{/*To use the sidebar here's the code: 
+{/*To use the sidebar here's the code:
+    <div className="flex">
+        <Sidebar>
+          <SidebarItem icon={<Home size={20} />} text="Home" alert />
+          <SidebarItem icon={<LayoutDashboard size={20} />} text="Dashboard" href="#" />
+          <SidebarItem icon={<StickyNote size={20} />} text="Projects" alert />
+          <SidebarItem icon={<Calendar size={20} />} text="Calendar" />
+          <SidebarItem icon={<Layers size={20} />} text="Tasks" />
+          <SidebarItem icon={<Flag size={20} />} text="Reporting" />
+          <hr className="my-3" />
+          <SidebarItem icon={<Settings size={20} />} text="Settings" />
+          <SidebarItem icon={<LifeBuoy size={20} />} text="Help" />
+        </Sidebar>
+      </div>
+
+
+
+*/}
+
+{/*To use the sidebar here's the code:
     <div className="flex">
         <Sidebar>
           <SidebarItem icon={<Home size={20} />} text="Home" alert />

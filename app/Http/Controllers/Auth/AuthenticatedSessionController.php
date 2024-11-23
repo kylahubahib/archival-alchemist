@@ -4,22 +4,20 @@ namespace App\Http\Controllers\Auth;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Inertia\Response;
 
-use App\Traits\CheckSubscriptionTrait;
+
 use App\Models\InstitutionSubscription;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\UsersImport;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\RedirectResponse;
 
 class AuthenticatedSessionController extends Controller
 {
-
     /**
      * Display the login view.
      */
@@ -33,22 +31,17 @@ class AuthenticatedSessionController extends Controller
         ]);
     }
 
-    use CheckSubscriptionTrait;
-
     /**
      * Handle an incoming authentication request.
      */
-    public function store(LoginRequest $request)
+    public function store(LoginRequest $request): RedirectResponse
     {
-        \Log::info("hello");
-
         $request->authenticate();
-        $authenticatedUser = Auth::user();
 
-        if($authenticatedUser->user_type !== 'general_user')
-        {
-            // Get the data of the user and student table
-            $user = $authenticatedUser->load(['student', 'faculty']);
+        $request->session()->regenerate();
+
+        //Get the data of the user and student table
+        $user = Auth::user()->load(['student', 'faculty']);
 
             // Check if user is affiliated with an institution
             if ($user->user_type != 'institution_admin' && $user->user_type != 'superadmin') {
@@ -115,15 +108,37 @@ class AuthenticatedSessionController extends Controller
     /**
      * Destroy an authenticated session.
      */
-        public function destroy(Request $request): RedirectResponse
-        {
-            Auth::guard('web')->logout();
+    public function destroy(Request $request): RedirectResponse
+    {
+        Auth::guard('web')->logout();
 
-            $request->session()->invalidate();
+        $request->session()->invalidate();
 
-            $request->session()->regenerateToken();
+        $request->session()->regenerateToken();
 
-            return redirect('/home');
+        return redirect('/home');
+    }
+
+
+           // Method to check if the user is premium
+    public function isPremium()
+    {
+        // Ensure the user is authenticated
+        $user = Auth::user();
+
+        // Check if the user is premium
+        if ($user && $user->is_premium == 1) {
+            return response()->json([
+                'is_premium' => true,
+                'message' => 'User is a premium member.',
+            ]);
+        } else {
+            return response()->json([
+                'is_premium' => false,
+                'message' => 'User is not a premium member.',
+            ]);
         }
+    }
+
 
 }

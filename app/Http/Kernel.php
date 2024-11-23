@@ -2,6 +2,7 @@
 
 namespace Illuminate\Foundation\Http;
 
+
 use Carbon\CarbonInterval;
 use DateTimeInterface;
 use Illuminate\Contracts\Debug\ExceptionHandler;

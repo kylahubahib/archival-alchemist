@@ -26,5 +26,5 @@ class Faculty extends Model
         return $this->belongsTo(UniversityBranch::class, 'uni_branch_id');
     }
 
-  
+
 }

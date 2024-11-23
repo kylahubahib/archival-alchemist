@@ -27,7 +27,8 @@ const Approved = () => {
     if (error) return <div>Error: {error}</div>;
     //if (manuscripts.length === 0) return <div>No approved manuscripts available.</div>;
 
-    return <div className="h-screen bg-white rounded m-4 rounded-xl "><Manuscript manuscripts={manuscripts} /></div>;
+    // <div className="flex flex-col items-start justify-start w-h-screen  relative w-relative px-10">
+    return<div className="flex   relative w-relative px-10"><Manuscript manuscripts={manuscripts} /></div>;
 };
 
 export default Approved;

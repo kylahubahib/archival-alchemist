@@ -2,13 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { FaEye, FaComment, FaBookmark, FaFileDownload, FaFilter, FaStar, FaQuoteLeft } from 'react-icons/fa';
 import { Tooltip } from '@nextui-org/react';
 import { Button } from "@nextui-org/react";
-
 import RatingComponent from '@/Components/Ratings'
 import Modal from '@/Components/Modal'
 import axios from 'axios';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { Skeleton } from '@nextui-org/skeleton'; // Import Skeleton
+import PdfViewer from '@/Components/PdfViewer'
+import Sidebar from '@/Components/ToggleComments'
 
 const Manuscript = ({ user }) => {
     const [favorites, setFavorites] = useState(new Set());
@@ -17,21 +18,33 @@ const Manuscript = ({ user }) => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [showComments, setShowComments] = useState(false);
-    const [comments, setComments] = useState([
-        { user: 'Commenter 1', text: 'This is a comment.' },
-        { user: 'Commenter 2', text: 'This is another comment.' },
-        { user: 'Commenter 3', text: 'This is yet another comment.' },
-    ]);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isCiteModalOpen, setIsCiteModalOpen] = useState(false);
     const [selectedRating, setSelectedRating] = useState(0); // Store the rating value
     const [selectedManuscript, setSelectedManuscript] = useState(null); // Track selected manuscript
     const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false); // State to track sidebar visibility
+
+    const toggleSidebar = () => {
+        setIsSidebarOpen((prevState) => !prevState); // Toggle sidebar visibility
+    };
+    const [isMaximized, setIsMaximized] = useState(false); // State to track if maximized or not
+
+    // Function to toggle maximized state
+    const toggleMaximize = () => {
+        setIsMaximized((prevState) => !prevState);
+    };
+
+    // Dynamic class for maximizing and minimizing
+    const manuscriptClass = isMaximized
+        ? "w-full h-screen"  // Maximize: Full width and height (or full screen)
+        : "w-full h-[400px]"; // Minimize: Set to a smaller size
+
+
 
     const resetRating = () => {
         setSelectedRating(0); // Reset the rating to 0 (or whatever your default is)
     };
-
 
      // Handle opening the modal and setting the title
      const handleRatings = (manuscript) => {
@@ -39,12 +52,9 @@ const Manuscript = ({ user }) => {
         setIsModalOpen(true);
     };
 
-
-
     const resetCitation = () => {
         setSelectedRating(0); // Reset the rating to 0 (or whatever your default is)
     };
-
 
      // Handle opening the modal and setting the title
      const handleCitation = (manuscript) => {
@@ -266,6 +276,7 @@ const handleClick = (value) => {
         );
     }
 
+
     const manuscriptsToDisplay = searchResults.length > 0 ? searchResults : manuscripts;
 
     if (manuscriptsToDisplay.length === 0) {
@@ -276,16 +287,31 @@ const handleClick = (value) => {
     }
 
     return (
-        <section className="w-full mx-auto my-4 mt-10 pt-10">
+        // <section className="w-full mx-auto my-4 mt-10 pt-10">
+        <section className="w-[95%] mx-auto my-3 pt-10">
             {manuscriptsToDisplay.map((manuscript) => (
-                <div key={manuscript.id} className="w-full bg-white shadow-lg flex mb-4">
-                    <div className="rounded w-40 h-full bg-gray-200 flex items-center justify-center">
-                        <img
-                            className="rounded w-36 h-46"
-                            src="https://via.placeholder.com/150"
-                            alt="Book"
-                        />
+                <div key={manuscript.id} className="w-full bg-white shadow-lg flex mb-4 text-sm">
+                   <div
+                        className={`rounded ${isMaximized ? 'w-full h-full' : 'w-40 h-48'} bg-gray-200 flex items-center justify-center relative transition-all duration-300 ease-in-out`}
+                    >
+                        {manuscript.man_doc_content ? (
+                            <PdfViewer pdfUrl={manuscript.man_doc_content} />
+                        ) : (
+                            <div className="flex items-center justify-center h-full w-full text-gray-500">
+                                <p>No PDF available</p>
+                            </div>
+                        )}
+
+                        {/* Maximize / Minimize Button */}
+                        <button
+                            onClick={toggleMaximize}
+                            className="absolute top-2 right-2 bg-gray-500 text-white p-2 rounded-full shadow-lg hover:bg-gray-600 transition-colors duration-200"
+                        >
+                            {isMaximized ? 'Minimize' : 'Maximize'}
+                        </button>
                     </div>
+
+
                     <div className="flex-1 p-4">
                         <h2 className="text-xl font-bold text-gray-900">{manuscript.man_doc_title}</h2>
                         <p className="text-gray-700 mt-1">Author: {manuscript.authors?.map(author => author.name).join(', ') || 'No authors available'}</p>
@@ -311,12 +337,13 @@ const handleClick = (value) => {
                                 </div>
                             </Tooltip>
 
-                            <div className={`flex items-center ${comments.length > 0 ? 'text-blue-500' : 'text-gray-600'} hover:text-blue-700 cursor-pointer`} onClick={toggleComments}>
-                                <FaComment size={20} />
-                                <span className="ml-1">
-                                    {comments.length > 0 ? `${comments.length} Comment${comments.length > 1 ? 's' : ''}` : 'No comments yet'}
-                                </span>
-                            </div>
+                            <div
+                className="flex items-center text-blue-500 hover:text-blue-700 cursor-pointer"
+                onClick={toggleSidebar}>
+                <FaComment size={20} />
+            </div>
+            {/* Sidebar Component */}
+            <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
 
                             <Tooltip content="Bookmark">
                                 <button

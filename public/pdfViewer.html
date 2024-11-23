@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PDF Viewer</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
+  <style>
+    body { margin: 0; padding: 0; }
+    #pdf-container {
+      overflow-y: auto; /* Enables vertical scroll */
+      height: 100vh; /* Full height */
+      width: 100%;
+      padding: 10px;
+    }
+    canvas {
+      display: block;
+      margin: 10px auto;
+    }
+    .blurred {
+      filter: blur(5px); /* Apply blur to pages after the 10th */
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      justify-content: center;
+      align-items: center;
+      z-index: 999;
+      transition: opacity 0.3s ease-in-out;
+    }
+    .modal-content {
+      background-color: white;
+      padding: 20px;
+      border-radius: 8px;
+      width: 80%;
+      max-width: 500px;
+      text-align: center;
+    }
+    .modal button {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    .modal button:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <div id="pdf-container"></div>
+
+  <!-- Modal for subscription -->
+  <div id="subscriptionModal" class="modal fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center hidden">
+    <div class="modal-content bg-white p-6 rounded-lg max-w-sm text-center">
+      <!-- Circle icon at the center -->
+      <div class="icon-circle w-12 h-12 bg-green-500 text-white rounded-full flex items-center justify-center mx-auto mb-4">
+        <span class="text-3xl">&#128214;</span> <!-- Book icon -->
+      </div>
+
+      <!-- Horizontal Line Below Icon -->
+      <hr class="border-t-2 border-gray-300 mb-4">
+
+      <h2 class="text-xl font-semibold mb-4">You Have Reached the Page Limit</h2>
+      <p class="mb-6">To continue reading the remaining pages in full clarity, please subscribe to unlock the rest of the document.</p>
+      <button onclick="closeModal()" class="bg-green-500 text-white py-2 px-6 rounded-lg hover:bg-green-600 transition">
+        Subscribe Now
+      </button>
+    </div>
+  </div>
+
+  <script>
+    // Function to close the modal
+    function closeModal() {
+      document.getElementById("subscriptionModal").classList.add("hidden");
+    }
+
+    // Example to show the modal (you can call this function from elsewhere)
+    // document.getElementById("subscriptionModal").classList.remove("hidden");
+  </script>
+
+
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const pdfUrl = urlParams.get('pdfUrl') || 'http://127.0.0.1:8000/sample.pdf';
+
+    const pdfContainer = document.getElementById('pdf-container');
+    let currentPage = 1;
+    let totalPages = 0;
+
+    const loadingTask = pdfjsLib.getDocument(pdfUrl);
+
+    loadingTask.promise.then(pdf => {
+      totalPages = pdf.numPages;
+
+      function renderPage(pageNum) {
+        pdf.getPage(pageNum).then(page => {
+          const scale = 1.5;
+          const viewport = page.getViewport({ scale });
+
+          const canvas = document.createElement('canvas');
+          const context = canvas.getContext('2d');
+          canvas.height = viewport.height;
+          canvas.width = viewport.width;
+
+          const renderContext = {
+            canvasContext: context,
+            viewport: viewport
+          };
+
+          page.render(renderContext).promise.then(() => {
+            // Add the canvas to the container
+            pdfContainer.appendChild(canvas);
+
+            // Apply blur effect for pages after 10
+            if (pageNum > 10) {
+              canvas.classList.add('blurred');
+            }
+
+            // Show subscription modal if user reaches 10-page limit
+            if (pageNum > 10 && document.getElementById('subscriptionModal').style.display === '') {
+              openModal();
+            }
+          });
+        });
+      }
+
+      // Initial render
+      renderPage(currentPage);
+
+      // Scroll event to load new pages
+      pdfContainer.addEventListener('scroll', () => {
+        const scrollHeight = pdfContainer.scrollHeight;
+        const scrollTop = pdfContainer.scrollTop;
+        const containerHeight = pdfContainer.clientHeight;
+
+        // When user reaches the bottom, load the next page
+        if (scrollTop + containerHeight >= scrollHeight - 10) {
+          if (currentPage < totalPages) {
+            currentPage++;
+            renderPage(currentPage);
+          }
+        }
+      });
+
+      // Optional: Navigation buttons for testing
+    //   const nextPageBtn = document.createElement('button');
+    //   nextPageBtn.textContent = 'Next Page';
+    //   document.body.appendChild(nextPageBtn);
+
+    //   const prevPageBtn = document.createElement('button');
+    //   prevPageBtn.textContent = 'Previous Page';
+    //   document.body.appendChild(prevPageBtn);
+
+      nextPageBtn.addEventListener('click', () => {
+        if (currentPage < totalPages) {
+          currentPage++;
+          renderPage(currentPage);
+        }
+      });
+
+      prevPageBtn.addEventListener('click', () => {
+        if (currentPage > 1) {
+          currentPage--;
+          renderPage(currentPage);
+        }
+      });
+    });
+
+    function openModal() {
+      const modal = document.getElementById('subscriptionModal');
+      modal.style.display = 'flex';
+      modal.style.opacity = '1';
+    }
+
+    function closeModal() {
+      const modal = document.getElementById('subscriptionModal');
+      modal.style.opacity = '0';
+      setTimeout(() => {
+        modal.style.display = 'none';
+      }, 300); // Wait for opacity transition to complete
+    }
+  </script>
+</body>
+</html>

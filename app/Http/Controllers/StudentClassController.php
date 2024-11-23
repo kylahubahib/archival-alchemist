@@ -16,6 +16,7 @@ use App\Models\Tags;
 use App\Models\User;
 use App\Models\ClassStudent;
 use App\Models\RevisionHistory;
+use App\Models\Section;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -74,6 +75,9 @@ class StudentClassController extends Controller
             // Generate a unique filename
             $fileName = time() . '_' . $file->getClientOriginalName();
 
+            // Move the file to the public/storage/capstone_files directory
+            $file->move(public_path('storage/capstone_files'), $fileName);
+
             // Store the relative path to the file (without the 'public' part)
             $filePath = 'storage/capstone_files/' . $fileName;
 
@@ -84,7 +88,7 @@ class StudentClassController extends Controller
                 'man_doc_adviser' => $validatedData['man_doc_adviser'],
                 'man_doc_content' => $filePath, // Save the relative path to the database
                 'class_code' => $validatedData['class_id'] ?? null,
-                'man_doc_status' => 'P'
+                'man_doc_status' => 'P',
             ]);
 
             Log::info('Manuscript Project Created:', ['id' => $manuscriptProject->id]);
@@ -165,34 +169,6 @@ class StudentClassController extends Controller
                     'user_id' => $userId,
                 ]);
             }
-
-            if($manuscriptProject)
-            {
-               Log::info('Get class code:', ['Code' => $classCode]);
-               $classId = $classCode;
-               Log::info('Class Found:', ['Class Id' => $classId]);
-
-               //$authorIds = Author::whereIn('user_id', $users)->pluck('user_id')->toArray();
-               $manuscriptId = $manuscriptProject->id;
-               $teacherId = ClassModel::where('id', $classId)->pluck('ins_id')->first();
-
-               Log::info('Teacher Id: ', ['id' => $teacherId]);
-       
-               // Upload the file to Google Drive and get the Google Docs URL
-               $googleDocsUrl = $this->uploadToDrive($file, $manuscriptId, $teacherId);
-
-               if($googleDocsUrl) {
-                   $manuscriptProject->update([
-                       'man_doc_content' => $googleDocsUrl,
-                   ]);
-               }
-
-               
-                // Move the file to the public/storage/capstone_files directory
-                $file->move(public_path('storage/capstone_files'), $fileName);
-            }
-
-             $faculty = $teacherId;
 
             // if($manuscriptProject)
             // {
@@ -305,7 +281,7 @@ class StudentClassController extends Controller
             // Check if the email is valid
             if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
                 Log::warning('Invalid Email Address:', ['email' => $email]);
-                continue; 
+                continue;
             }
 
             // Create permission for the user
@@ -325,7 +301,7 @@ class StudentClassController extends Controller
                 // Set the permission
                 $driveService->permissions->create($fileId, $permission);
                 Log::info('Permission Set Successfully:', ['email' => $email]);
-                
+
             } catch (Exception $e) {
                 Log::error('Error Setting Permissions:', [
                     'email' => $email,
@@ -338,7 +314,7 @@ class StudentClassController extends Controller
 
 
 
-    
+
 
     public function checkClassCode(Request $request)
     {
@@ -348,7 +324,7 @@ class StudentClassController extends Controller
         ]);
 
         // Attempt to find a class in the database where the class_code matches the provided value
-        $class = ClassModel::where('class_code', $request->class_code)->first();
+        $class = Section::where('section_classcode', $request->class_code)->first();
 
         // If a class is found, return a JSON response indicating that it exists
         if ($class) {
@@ -400,10 +376,10 @@ class StudentClassController extends Controller
                     'stud_id' => $userId, // Store the user ID
                 ]);
 
-                
+
                  // Notifies the teacher that a new student joins
                  $teacher = User::find($class->ins_id);
-                 $newStudent = Auth::user()->name; 
+                 $newStudent = Auth::user()->name;
 
                  if ($teacher) {
                          $teacher->notify(new UserNotification([
@@ -413,7 +389,7 @@ class StudentClassController extends Controller
                  }
 
                 return response()->json([
-                    'success' => true, 
+                    'success' => true,
                     'message' => 'Joined class successfully',
                     'classId' => $class->id
                 ]);
@@ -911,15 +887,15 @@ public function checkStudentInClass()
         $userClass = ClassModel::where('ins_id', $user->id)->first();
         $class = ClassModel::where('id', $userClass->id)->first();
     }
-   
+
     if ($userClass) {
         return response()->json([
             'class' => $userClass,
-            'classCode' => $class->class_code, 
+            'classCode' => $class->class_code,
             'manuscripts' => $user->manuscripts
         ]);
     } else {
-        return response()->json(); 
+        return response()->json();
     }
 }
 
@@ -1065,5 +1041,57 @@ public function view($filename)
     return view('view_file', compact('filename'));
 }
 
+
+public function isPremium()
+{
+    // Ensure the user is authenticated
+    $user = Auth::user();
+
+    // If user is not authenticated, return an error response
+    if (!$user) {
+        return response()->json([
+            'is_premium' => false,
+            'is_authenticated' => false,  // Add an is_authenticated field for easier front-end check
+            'message' => 'User is not authenticated.',
+        ], 401); // Unauthorized
+    }
+
+    // Check if the user is premium
+    if ($user->is_premium == 1) {
+        return response()->json([
+            'is_premium' => true,
+            'is_authenticated' => true, // User is authenticated and premium
+            'message' => 'User is a premium member.',
+        ]);
+    } else {
+        return response()->json([
+            'is_premium' => false,
+            'is_authenticated' => true, // User is authenticated but not premium
+            'message' => 'User is not a premium member.',
+        ]);
+    }
+}
+
+
+
+// public function isPremium()
+// {
+//     // Ensure the user is authenticated
+//     $user = Auth::user();
+
+//     // If user is not authenticated or not premium, return false with a message
+//     if (!$user || $user->is_premium != 1) {
+//         return response()->json([
+//             'is_premium' => false,
+//             'message' => 'User is either not authenticated or not a premium member.',
+//         ]);
+//     }
+
+//     // If user is authenticated and premium, return true with a message
+//     return response()->json([
+//         'is_premium' => true,
+//         'message' => 'User is a premium member.',
+//     ]);
+// }
 
 }

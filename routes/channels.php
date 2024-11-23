@@ -3,6 +3,12 @@
 use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Support\Facades\Auth;
 
+Broadcast::channel('manuscript.{manuscriptId}', function ($user, $manuscriptId) {
+    // Example of simple authorization: check if user has access to manuscript
+    return true; // or your logic, e.g., check if user can view this manuscript
+});
+
+
 Broadcast::channel('superadmin-notifications', function () {
     $user = Auth::user();
 
