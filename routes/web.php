@@ -82,7 +82,7 @@ Route::post('/cancel-subscription',[InstitutionSubscriptionController::class, 'c
 use Illuminate\Support\Facades\Crypt;
 
 Route::get('/institution-subscriptions/get-started', function (Request $request) {
-    $encryptedPlanId = $request->query('plan_id'); 
+    $encryptedPlanId = $request->query('plan_id');
     try {
         $planId = Crypt::decrypt($encryptedPlanId);
         $plan = \App\Models\SubscriptionPlan::find($planId);
@@ -121,13 +121,21 @@ Route::get('/forum', function () {
     return Inertia::render('Users/Forum');
 })->middleware(['user-type:student,teacher,guest,general_user'])->name('forum');
 
+// Route::get('/studentclass', function () {
+//     return Inertia::render('Users/Class/Student/StudentClass');
+// })->middleware(['auth', 'verified', 'user-type:student', 'check-google' ])->name('studentclass');
+
+// Route::get('/teacherclass', function () {
+//     return Inertia::render('Users/Class/Teacher/TeacherClass');
+// })->middleware(['auth', 'verified', 'user-type:teacher', 'check-google'])->name('teacherclass');
+
 Route::get('/studentclass', function () {
     return Inertia::render('Users/Class/Student/StudentClass');
-})->middleware(['auth', 'verified', 'user-type:student', 'check-google' ])->name('studentclass');
+});
 
 Route::get('/teacherclass', function () {
     return Inertia::render('Users/Class/Teacher/TeacherClass');
-})->middleware(['auth', 'verified', 'user-type:teacher', 'check-google'])->name('teacherclass');
+});
 
 Route::get('/authors', function () {
     return Inertia::render('Users/Authors');
@@ -309,7 +317,7 @@ Route::middleware(['auth', 'verified', 'user-type:superadmin'])->group(function 
 
    //institution admin
 Route::middleware(['auth', 'verified', 'user-type:institution_admin'])->prefix('institution')->group(function () {
-            
+
     // Common data for all pages
     Route::get('/get-departments-with-courses', [InsAdminCommonDataController::class, 'getDepartmentsWithCourses'])
         ->name('institution.get-departments-with-courses');

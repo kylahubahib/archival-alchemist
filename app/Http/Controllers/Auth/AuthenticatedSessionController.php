@@ -91,16 +91,16 @@ class AuthenticatedSessionController extends Controller
                 }
             }
 
-        } else 
+        } else
         {
             if ($request->expectsJson()) {
                 $token = $authenticatedUser->createToken('API Token')->plainTextToken;
-    
+
                 return response()->json([
                     'token' => $token,
                 ]);
             }
-    
+
             // If it's not a JSON request, regenerate session and redirect
             if (!$request->expectsJson()) {
                 $request->session()->regenerate();

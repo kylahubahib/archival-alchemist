@@ -16,7 +16,7 @@ import ManuscriptComment from '@/Components/Manuscripts/ManuscriptComment'; // I
 import SubscriptionCard from '@/Components/SubscriptionCard';
 import AskUserToLogin from '@/Components/AskUserToLogin';
 import PdfViewer from '@/Components/PdfViewer';
-// import ToggleComments from '@/Components/ToggleComments'
+import ToggleComments from '@/Components/ToggleComments';
 
 const Manuscript = ({user, choice}) => {
     const [isPdfOpen, setPdfOpen] = useState(false);
@@ -54,10 +54,11 @@ const Manuscript = ({user, choice}) => {
 
 // Handle manuscript selection and opening the sidebar
 const handleComments = (id, title) => {
-    // Store the selected manuscript's id and title
+    // Store the selected manuscript's id and title in an object
     setSelectedManuscript({ id, title });
     setIsSidebarOpen(true);  // Open the sidebar
 };
+
 
     // Function to toggle maximized state
     const toggleMaximize = () => {
@@ -809,7 +810,7 @@ const handleDropdownChange = (selectedKey) => {
                 man_id={selectedManuscript.id}  // Pass additional properties if needed
                 man_doc_title={selectedManuscript.title}
                 isOpen={isSidebarOpen}
-                toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}  // Toggle the sidebar
+                toggleSidebar={() => setIsSidebarOpen((prevState) => !prevState)} // Toggle the sidebar
             />
         )}
 

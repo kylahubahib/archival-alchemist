@@ -28,6 +28,16 @@ const Manuscript = ({ user }) => {
     const toggleSidebar = () => {
         setIsSidebarOpen((prevState) => !prevState); // Toggle sidebar visibility
     };
+
+    // Handle manuscript selection and opening the sidebar
+const handleComments = (id, title) => {
+    // Store the selected manuscript's id and title
+
+    setIsSidebarOpen((prevState) => !prevState); // Toggle sidebar visibility
+    setIsSidebarOpen(true);  // Open the sidebar
+};
+
+
     const [isMaximized, setIsMaximized] = useState(false); // State to track if maximized or not
 
     // Function to toggle maximized state
@@ -338,14 +348,23 @@ const handleClick = (value) => {
                             </Tooltip>
 
                             <div
+                key={manuscript.id}
                 className="flex items-center text-blue-500 hover:text-blue-700 cursor-pointer"
-                onClick={toggleSidebar}>
+                onClick={() => handleComments(manuscript.id, manuscript.man_doc_title)}  // Pass id and title to handleComments
+            >
                 <FaComment size={20} />
             </div>
-            {/* Sidebar Component */}
-            <ToggleComments manuscripts={manuscriptsToDisplay[0]} isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
 
-
+        {/* Render ToggleComments only if a manuscript is selected and the sidebar is open */}
+        {selectedManuscript && (
+            <ToggleComments
+                manuscripts={selectedManuscript}  // Pass the selected manuscript to ToggleComments
+                man_id={selectedManuscript.id}  // Pass additional properties if needed
+                man_doc_title={selectedManuscript.title}
+                isOpen={isSidebarOpen}
+                toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}  // Toggle the sidebar
+            />
+        )}
 
                             <Tooltip content="Bookmark">
                                 <button
