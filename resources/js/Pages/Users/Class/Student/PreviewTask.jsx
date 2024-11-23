@@ -84,7 +84,7 @@ const PreviewTask = ({ folders, onBack, task, taskID }) => {
             </div>
 
             {/* Content Section with Margin Top */}
-            <div  className="bg-gray-100 mx-auto pt-10 min-h-screen"> {/* Add mt-12 to create space below the header */}
+            <div  className="bg-gray-100 mx-auto pt-10 min-h-screen "> {/* Add mt-12 to create space below the header */}
                 {activeSection === 'taskInstructions' && <TaskInstructions folders={folders} onBack={() => setActiveSection('')}  task={task} taskID={taskID}/>}
                 {activeSection === 'studentWork' && <StudentWork folders={folders} onBack={() => setActiveSection('')}  task={task} taskID={taskID}/>}
                 {activeSection === 'approved' && <Approved folders={folders} onBack={() => setActiveSection('')}  task={task} taskID={taskID}/>}

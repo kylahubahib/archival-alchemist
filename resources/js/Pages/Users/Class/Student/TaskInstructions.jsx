@@ -221,7 +221,7 @@ const TaskInstructions = ({ folders, onBack, task, taskID }) => {
               formData.append('agreed', formValues.agreed);
 
               //Add the class_code
-              formData.append('class_code', class_code);
+              formData.append('section_id', folders.id);
 
               // Submit the form data
               const response = await axios.post('/api/capstone/upload', formData, {
@@ -491,8 +491,7 @@ const TaskInstructions = ({ folders, onBack, task, taskID }) => {
                             </div>
 
                         </div>
-
-
+                        
 
 
                         <div className="relative">

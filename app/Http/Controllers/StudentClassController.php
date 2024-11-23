@@ -9,6 +9,9 @@ use App\Models\ClassModel;
 use App\Models\Rating;
 use App\Models\ManuscriptProject;
 use App\Models\ManuscriptTag;
+use App\Models\Group;
+use App\Models\GroupMember;
+use App\Models\AssignedTask;
 
 use Illuminate\Support\Facades\DB;
 use App\Models\Favorite;
@@ -60,7 +63,7 @@ class StudentClassController extends Controller
             ]);
 
             //Get the class code using request
-            $classCode = $request->get('class_code');
+            $classCode = $request->get('section_id');
 
             // Use the correct key to get tags from the request
             $tags = $request->get('tags_name', []); // Change from 'tags' to 'tags_name'
@@ -80,6 +83,7 @@ class StudentClassController extends Controller
 
             // Store the relative path to the file (without the 'public' part)
             $filePath = 'storage/capstone_files/' . $fileName;
+          
 
             // Create the manuscript project
             $manuscriptProject = ManuscriptProject::create([

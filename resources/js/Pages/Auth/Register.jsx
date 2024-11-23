@@ -5,8 +5,9 @@ import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import Stepper from '@/Components/Stepper';
-import { Checkbox } from '@nextui-org/react';
+import { Checkbox, Divider } from '@nextui-org/react';
 import NavLink from '@/Components/NavLink';
+import GoogleButton from './GoogleButton';
 
 export default function Register({}) {
     const { data, setData, post, processing, errors, reset } = useForm({
@@ -21,7 +22,11 @@ export default function Register({}) {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        post(route('register'));
+        post(route('register'), {
+            onSuccess: (page) => {
+                    window.location.href = route('google.auth') 
+            },
+        });
     };
 
     return (
@@ -34,7 +39,7 @@ export default function Register({}) {
                 <img src="/images/img2.png" alt="books" className="w-full h-full object-cover" />
             </div>
         
-            <div className="flex-grow flex flex-col justify-center items-center space-y-3 p-4 md:p-0">
+            <div className="flex-grow flex flex-col justify-center items-center space-y-3 p-4 md:p-0 my-10">
                 <div className="mb-5">
                     <p className="text-2xl md:text-4xl font-bold text-customBlue text-center">WELCOME TO <br/> ARCHIVAL ALCHEMIST!</p>
                 </div>
@@ -140,6 +145,13 @@ export default function Register({}) {
                         <NavLink href={route('login')} className="text-blue-500 font-semibold"> LOG IN </NavLink>
                     </span>
                 </div>
+
+                <div className="text-center space-y-3 pt-5">
+                    <Divider className=" mb-3"/>
+                    <span className=" text-lg text-gray-500">or</span>
+                    <GoogleButton/>
+                </div> 
+
             </div>
         </div>
           

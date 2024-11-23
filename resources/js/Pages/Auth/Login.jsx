@@ -8,6 +8,8 @@ import TextInput from '@/Components/TextInput';
 import { Head, Link, useForm } from '@inertiajs/react';
 import NavLink from '@/Components/NavLink';
 import React from 'react';
+import GoogleButton from './GoogleButton';
+import { Divider } from '@nextui-org/react';
 
 export default function Login({ status, canResetPassword }) {
     const { data, setData, post, processing, errors, reset } = useForm({
@@ -28,6 +30,8 @@ export default function Login({ status, canResetPassword }) {
 
         post(route('login'));
     };
+
+    
 
     return (
         //<GuestLayout>
@@ -112,6 +116,14 @@ export default function Login({ status, canResetPassword }) {
                 <div className="text-center">
                     <span>Don't have an account? 
                     <NavLink href={route('register')} className=" text-blue-500 font-semibold">REGISTER</NavLink> </span>
+                </div>
+
+                
+
+                <div className="text-center space-y-3 pt-5">
+                    <Divider className=" mb-3"/>
+                    <span className=" text-lg text-gray-500">or</span>
+                    <GoogleButton/>
                 </div>
             </div>
 
