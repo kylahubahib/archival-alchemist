@@ -9,7 +9,7 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { Skeleton } from '@nextui-org/skeleton'; // Import Skeleton
 import PdfViewer from '@/Components/PdfViewer'
-// import Sidebar from '@/Components/ToggleComments'
+import ToggleComments from '@/Components/ToggleComments'
 
 const Manuscript = ({ user }) => {
     const [favorites, setFavorites] = useState(new Set());
@@ -343,7 +343,9 @@ const handleClick = (value) => {
                 <FaComment size={20} />
             </div>
             {/* Sidebar Component */}
-            {/* <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />  */}
+            <ToggleComments manuscripts={manuscriptsToDisplay[0]} isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+
+
 
                             <Tooltip content="Bookmark">
                                 <button

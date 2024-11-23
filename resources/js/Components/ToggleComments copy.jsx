@@ -148,13 +148,8 @@ const ToggleComments = ({ manuscripts, man_id, man_doc_title,  isOpen, toggleSid
                             onClick={handleToggleExpanded}
                             className="mt-4 text-blue-500"
                         >
-                            {comments.length === 0
-                                ? `Comments 0`
-                                : isExpanded
-                                ? 'See Less'
-                                : 'View All Comments'}
-                        </button>
-                        </div>
+                            {isExpanded ? 'See Less' : 'View All Comments'}
+                        </button></div>
                         <div className="mt-6">
                             {displayedComments.map((comment) => (
                                 <div key={comment.id} className="bg-gray-100 p-4 rounded-lg mb-4">
