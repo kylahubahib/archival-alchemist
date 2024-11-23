@@ -551,4 +551,12 @@ Route::get('/test-redis', function () {
     return Redis::ping();
 });
 
+
+
+
+//Commments
+Route::get('/fetch-comments/{id}', [DocCommentsController::class, 'fetchComments'])->name('fetch-comments');
+//Route::get('/fetch-replies', [DocCommentsController::class, 'fetchReplies'])->name('fetchrepllies');
+
+
 require __DIR__.'/auth.php';
