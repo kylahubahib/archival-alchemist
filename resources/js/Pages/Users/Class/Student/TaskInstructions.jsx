@@ -22,6 +22,7 @@ const TaskInstructions = ({ folders, onBack, task, taskID }) => {
       man_doc_content: null,
       man_doc_adviser: '',
       agreed: false,
+      group_name: ''
   });
   const [errors, setErrors] = useState({ users: '', tags: '' });
   const [message, setMessage] = useState('');
@@ -39,6 +40,7 @@ const TaskInstructions = ({ folders, onBack, task, taskID }) => {
           man_doc_content: null,
           man_doc_adviser: '',
           agreed: false,
+          group_name: '',
       });
       setTags([]);
       setAuthors([]);
@@ -157,7 +159,7 @@ const TaskInstructions = ({ folders, onBack, task, taskID }) => {
           setFormValues({ ...formValues, man_doc_content });
       } else {
           setFormValues({ ...formValues, man_doc_content: null });
-          alert('Only PDF and DOCX files are allowed.');
+          alert('Only DOCX files are allowed.');
       }
   };
 
@@ -169,7 +171,8 @@ const TaskInstructions = ({ folders, onBack, task, taskID }) => {
           users.length > 0 &&
           tags.length > 0 &&
           formValues.man_doc_content &&
-          formValues.agreed
+          formValues.agreed &&
+          formValues.group_name 
       );
   };
 
@@ -194,6 +197,7 @@ const TaskInstructions = ({ folders, onBack, task, taskID }) => {
       if (tags.length === 0) newErrors.tags = 'At least one tag is required.';
       if (!formValues.man_doc_content) newErrors.man_doc_content = 'A file is required.';
       if (!formValues.agreed) newErrors.agreed = 'You must agree to the terms and conditions.';
+      if (!formValues.group_name) newErrors.group_name = 'Group name is required';
 
       setErrors(newErrors);
 
@@ -219,6 +223,8 @@ const TaskInstructions = ({ folders, onBack, task, taskID }) => {
               tags.forEach(tag => formData.append('tags_name[]', tag));
               formData.append('man_doc_content', formValues.man_doc_content);
               formData.append('agreed', formValues.agreed);
+              formData.append('group_name', formValues.group_name);
+
 
               //Add the class_code
               formData.append('section_id', folders.id);
@@ -423,7 +429,7 @@ const TaskInstructions = ({ folders, onBack, task, taskID }) => {
                             />
                             {errors.man_doc_title && <div className="text-red-600 text-sm mb-2">{errors.man_doc_title}</div>}
 
-
+                            {/* Description */}
                             <textarea
                                 name="man_doc_description"
                                 placeholder="Enter the description or research abstract"
@@ -444,6 +450,9 @@ const TaskInstructions = ({ folders, onBack, task, taskID }) => {
                                 onChange={handleFormFieldChange}
                             />
                             {errors.man_doc_adviser && <div className="text-red-600 text-sm mb-2">{errors.man_doc_adviser}</div>}
+
+                           
+
                         </div>
 
 
@@ -474,7 +483,18 @@ const TaskInstructions = ({ folders, onBack, task, taskID }) => {
                                 </ul>
                             )}
 
+                             {/* Group Name */}
+                             <input
+                                type="text"
+                                name="group_name"
+                                placeholder="Enter your group name"
+                                className="w-full p-2 border rounded mb-2"
+                                value={formValues.group_name}
+                                onChange={handleFormFieldChange}
+                            />
+                            {errors.group_name && <div className="text-red-600 text-sm mb-2">{errors.group_name}</div>}
 
+                            {/* Tags */}
                             <div className="tags-container flex flex-wrap mt-2">
                                 {users.map((author, index) => (
                                     <div key={index} className="tag bg-gray-200 p-1 rounded mr-2 mb-2 flex items-center">

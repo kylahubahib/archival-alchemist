@@ -14,6 +14,9 @@ use App\Models\User;
 use App\Models\University;
 use App\Models\UniversityBranch;
 
+use App\Mail\AccountCredentialsMail;
+use Illuminate\Support\Facades\Mail;
+
 
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Session;
@@ -350,11 +353,19 @@ class PaymentSessionController extends Controller
                                 foreach ($superadmins as $superadmin) {
                                     $superadmin->notify(new SuperadminNotification([
                                         'message' => 'A new institution admin has registered and sent proof for validation',
-                                        'admin_id' => $institutionAdmin->id,
+                                        'admin_id' => $superadmin->id,
                                         'proof_url' => $institutionAdmin->ins_admin_proof,
                                     ]));
                                 }
                             }
+
+                            Mail::to($user->email)->send(new AccountCredentialsMail([
+                                'name' => $user->name,
+                                'email' => $user->email,
+                                'password' => $password,
+                                'message' => 'Thank you for your subscription! We are excited to welcome your institution to Archival Alchemist! 
+                                With your admin account, you can manage institution-wide capstone projects securely and efficiently.'
+                            ]));
 
                             // Log the user in
                             Auth::login($user);
@@ -493,14 +504,6 @@ class PaymentSessionController extends Controller
                 ]);
     
             if ($response->successful()) {
-    
-                $checkout_id = $response->json('data.id');
-    
-                // Store checkout_id temporarily so that we can use it in paymentSuccess
-                $request->session()->put('checkout_id', $checkout_id);
-    
-                $request->session()->put('plan', $plan);
-                $request->session()->put('finalAmount', $finalAmount);
 
                 $userInfo = ([
                     'name' => $request->name,
@@ -513,6 +516,17 @@ class PaymentSessionController extends Controller
                 ]);
 
                 $request->session()->put('userInfo', $userInfo);
+
+                \Log::info('User Info:', $userInfo);
+
+    
+                $checkout_id = $response->json('data.id');
+    
+                // Store checkout_id temporarily so that we can use it in paymentSuccess
+                $request->session()->put('checkout_id', $checkout_id);
+    
+                $request->session()->put('plan', $plan);
+                $request->session()->put('finalAmount', $finalAmount);
 
                  // Store the file in the 'admin_proof_files' directory
                  $file->storeAs('admin_proof_files', $fileName, 'public');

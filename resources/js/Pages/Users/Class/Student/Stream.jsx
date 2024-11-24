@@ -113,7 +113,7 @@ const Stream = ({ folders, onBack }) => {
   }
 
   return (
-    <div className="mt-0 bg-gray-100 rounded-lg shadow-lg w-full">
+    <div className="mt-0 bg-gray-100 rounded-lg w-full">
       {/* Static Cover Photo Above All Cards with text overlays */}
       <div className="relative w-full h-48 mb-5">
         <img

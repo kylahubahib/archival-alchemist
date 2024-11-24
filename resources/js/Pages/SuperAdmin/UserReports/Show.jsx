@@ -39,10 +39,12 @@ export default function Show({ isOpen, onClose, report, content}) {
         .then(response => {
             onClose();
             showToast('success', 'Report reviewed successfully!')
+            router.reload();
         })
         .catch(error => {
             onClose();
-            showToast('error', 'There was an error.')
+            showToast('error', 'There was an error: ', error);
+            router.reload();
         });
     }
     
@@ -94,7 +96,7 @@ export default function Show({ isOpen, onClose, report, content}) {
                 <div className="font-semibold">Description:</div>
                 <div className="font-semibold border border-gray-200 rounded-lg p-3">{report.report_desc}</div>
             </div>
-            <div className="mt-4">
+            {/* <div className="mt-4">
                 <span className="font-semibold">Attachment:</span> 
                 {report.report_attachment === null ? (<span className="text-gray-500"> N/A</span>) : (
                     <a href={report.report_attachment} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
@@ -102,7 +104,7 @@ export default function Show({ isOpen, onClose, report, content}) {
                 </a>
                 )}
                 
-            </div>
+            </div> */}
 
             </div>
 
@@ -119,16 +121,11 @@ export default function Show({ isOpen, onClose, report, content}) {
                         <span className="font-semibold">Report Details:</span>
                         {report.report_location === 'Forum' &&
                         <div className="space-y-2">
-                            <span className="font-semibold">Title:</span> {content.forum_title}
+                            <span className="font-semibold">Title:</span> {content.title}
                             <div className="mb-2 flex flex-col space-y-1">
                                 <div className="font-semibold">Contents:</div>
-                                <div className="border border-gray-200 rounded-lg p-3">{content.forum_desc}</div>
+                                <div className="border border-gray-200 rounded-lg p-3">{content.body}</div>
                             </div>
-                        </div>}
-                        {report.report_location === 'Post' &&
-                        <div className=" mb-2 flex flex-col space-y-2">\
-                                <div className="font-semibold">Contents:</div>
-                                <div className="border border-gray-200 rounded-lg p-3">{content.post_content}</div>
                         </div>}
                     </div>
                     
@@ -147,7 +144,7 @@ export default function Show({ isOpen, onClose, report, content}) {
                         ) : (
                             <>
                             <div className=" flex flex-col">
-                                <span>Suspension Duration: </span>
+                                <span>Suspension Duration(Days): </span>
                                 <div className=" space-x-3">
                                 <TextInput 
                                     type="number"  

@@ -14,6 +14,9 @@ use App\Models\Faculty;
 use App\Models\Course;
 use Exception;
 
+use App\Mail\AccountCredentialsMail;
+use Illuminate\Support\Facades\Mail;
+
 class UsersImport implements ToCollection, WithHeadingRow
 {
     /**
@@ -38,7 +41,7 @@ class UsersImport implements ToCollection, WithHeadingRow
                 }
 
                 // Generate a secure password
-                $pwd = Str::password();
+                $pwd = Str::random(8);
                 Log::info("Generated password for {$row['email']} is {$pwd}");
 
                 $userType = Str::lower($row['type']);
@@ -56,6 +59,21 @@ class UsersImport implements ToCollection, WithHeadingRow
                     'is_affiliated' => true,
                 ]);
                 Log::info("User created: {$user->id}");
+
+                try {
+                    Mail::to($row['email'])->send(new AccountCredentialsMail([
+                        'name' => $user->name,
+                        'email' => $user->email,
+                        'password' => $pwd,
+                        'message' => 'We are excited to inform you that your account has been successfully created on 
+                        Archival Alchemist! You can now upload and store your capstone projects securely.'
+                    ]));
+
+                    Log::info("Welcome email sent to: {$row['email']}");
+                } catch (\Exception $e) {
+                    Log::error("Error sending email to {$row['email']}: " . $e->getMessage());
+                }
+
 
                 // Find the course and its university branch ID
                 $course = Course::with('department:id,uni_branch_id')
