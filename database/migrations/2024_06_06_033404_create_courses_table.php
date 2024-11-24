@@ -11,18 +11,19 @@ return new class extends Migration
      */
     public function up(): void
     {
-        //This would check if the courses table already exists before attempting to create it.
-        if (!Schema::hasTable('courses')) {
-            Schema::create('courses', function (Blueprint $table) {
-                $table->bigIncrements("course_id");
-                $table->unsignedBigInteger('dept_id');
-                $table->string('course_name');
-                $table->string('added_by');
-                $table->timestamps();
+        Schema::create('courses', function (Blueprint $table) {
+            $table->id(); // Creates `id` as BIGINT UNSIGNED PRIMARY KEY
+            //$table->unsignedBigInteger('dept_id'); // Foreign key column
+            $table->string('course_name');
+            $table->string('added_by');
+            $table->timestamps();
 
-                $table->foreign('dept_id')->references('id')->on('departments')->onDelete('cascade');
-            });
-        }
+             //Foreign key constraint
+            $table->foreign('dept_id')
+                ->references('id') // Matches the primary key in `departments`
+                ->on('departments')
+                ->onDelete('cascade');
+        });
     }
 
     /**

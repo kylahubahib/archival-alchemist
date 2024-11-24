@@ -25,10 +25,10 @@ return new class extends Migration
      */
     public function down(): void
     {
-        // Comment out the down method code
-        // Schema::table('revision_history', function (Blueprint $table) {
-        //     $table->dropColumn('uploaded_at');
-        //     $table->dropColumn('status');
-        // });
+        Schema::table('revision_history', function (Blueprint $table) {
+            $table->foreignId('stud_id')->constrained('users')->onDelete('cascade'); // Restore stud_id
+            $table->dropColumn('uploaded_at'); // Remove uploaded_at column
+            $table->dropColumn('status');
+        });
     }
 };

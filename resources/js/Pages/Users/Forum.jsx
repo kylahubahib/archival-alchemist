@@ -8,7 +8,7 @@ import {
   Spinner
 } from '@nextui-org/react';
 import SearchBar from '@/Components/SearchBar';
-
+import { Inertia } from "@inertiajs/inertia";
 import { toast } from 'react-toastify';
 import axios from 'axios';
 import { useState, useEffect } from 'react';
@@ -42,12 +42,10 @@ export default function Forum({ auth }) {
   const { isOpen: isConfirmOpen, onOpen: onConfirmOpen, onOpenChange: onConfirmOpenChange } = useDisclosure();
   const [postToDelete, setPostToDelete] = useState(null);
   const [selectedSort, setSelectedSort] = useState('latest');
-  const [comments, setComments] = useState([]);
+
     
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [isReportModalOpen, setIsReportModalOpen] = useState(false);
-
 
   // Set up Axios CSRF token configuration globally
   axios.defaults.headers.common['X-CSRF-TOKEN'] = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
@@ -58,16 +56,6 @@ export default function Forum({ auth }) {
     const date = dayjs.utc(dateString).tz(dayjs.tz.guess()); // Adjust to local timezone
     return date.fromNow(); // Display as relative time, e.g., "5 minutes ago"
 };
-
-  // Function to fetch comments for a selected post
-  const fetchComments = async (postId) => {
-    try {
-      const response = await axios.get(`/forum-posts/${postId}/comments`);
-      setComments(response.data);
-    } catch (error) {
-      console.error("Error fetching comments:", error);
-    }
-  };
 
 // Fetch posts with sorting option
 const fetchPosts = async (sortType = 'latest') => {
@@ -137,7 +125,8 @@ useEffect(() => {
               onOpenChange();
               toast.success("Post created successfully!");
               
-              
+              // Optionally, you can call fetchPosts again here if needed
+              // fetchPosts(); 
           }
       } catch (error) {
           handlePostError(error, newPost);
@@ -175,12 +164,12 @@ const handleTitleClick = async (postId) => {
 
 
 
-      // Open the modal and fetch comments
-    const showModal = (postDetails) => {
-      setSelectedPost(postDetails); // Set the selected post details
-      fetchComments(postDetails.id); // Fetch comments for the selected post
-      setIsModalOpen(true); // Open the modal
-    };
+    // Open the modal with post details
+      const showModal = (postDetails) => {
+        setSelectedPost(postDetails); // Set the selected post details
+        setIsModalOpen(true); // Open the modal
+      };
+
       // Close the modal
       const closeModal = () => {
         setIsModalOpen(false); // Close the modal
@@ -294,12 +283,7 @@ const handleTitleClick = async (postId) => {
                 <div className="">
                   {/* /<h2 className="font-semibold text-4xl text-gray-800 leading-tight mt-2 ml-1">Forum</h2> */}
                   <div className='flex flex-col justify-evenly gap-4'>
-                    <Button className="bg-customBlue text-white" variant="solid">
-                      All Discussions
-                    </Button>
-                    <Button className="bg-customBlue  text-white mt-2" variant="solid">
-                      My Posts
-                    </Button>
+                    
                   </div>
                 </div>
                 
@@ -347,7 +331,7 @@ const handleTitleClick = async (postId) => {
 
 
           return (
-            <div className="border-b pb-4 mb-4 w-3/4 relative flex flex-col" key={post.id}>
+            <div className="border-b pb-4 mb-4 w-3/4 relative flex flex-col mt-10 " key={post.id}>
               <div className="flex items-start space-x-4">
               <img
                   // src={post.user?.user_pic ? {post.user.user_pic} : "https://via.placeholder.com/150"}
@@ -430,13 +414,15 @@ const handleTitleClick = async (postId) => {
           );
         })
               ) : (
-                <p className="text-gray-500">No discussions found.</p>
+                <p className="text-gray-500 mt-20">No discussions found.</p>
               )}
               </>) : (
                 <Spinner/>
               )
               }
     </div>
+  
+
 
                     {/* Modal for displaying post details */}
                     <PostDetailModal
