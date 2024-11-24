@@ -11,27 +11,32 @@ const Stream = ({ folders, onBack }) => {
   const [selectedTask, setSelectedTask] = useState(null); // Selected task for preview
   const [isPreviewMode, setIsPreviewMode] = useState(false); // Track if preview mode is active
 
+  console.log("These are inside the props:", folders);
+  console.log("First Folder ID:", folders[0]?.id);  // Safe access using optional chaining
+
+  console.log("This is the section ID :", folders.id);
   // Fetch tasks with pagination
   const fetchAssignedTasks = useCallback(async () => {
-    if (!folders || !folders[0]) return;  // Using the first folder object from the array
+
     try {
-      setLoading(true);
-      const response = await fetch(`/fetch-AssignedTask/${folders[0].id}?page=${page}`);
-      if (!response.ok) throw new Error('Failed to fetch tasks');
+        setLoading(true);
+        const response = await fetch(`/fetch-AssignedTask/${folders.id}?page=${page}`);
+        if (!response.ok) throw new Error('Failed to fetch tasks');
 
-      const data = await response.json();
-      setTasks((prevTasks) => [...prevTasks, ...data]);  // Append tasks
-      setHasMore(data.length > 0); // Check if there are more tasks
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  }, [folders, page]);
+        const data = await response.json();
+        setTasks((prevTasks) => [...prevTasks, ...data]);  // Append tasks
+        setHasMore(data.length > 0); // Check if there are more tasks
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    }, [folders, page]);
 
-  useEffect(() => {
-    fetchAssignedTasks();
-  }, [fetchAssignedTasks]);
+    useEffect(() => {
+      fetchAssignedTasks();
+    }, [fetchAssignedTasks]);
+
 
   // Scroll event listener
   const handleScroll = () => {
@@ -42,6 +47,7 @@ const Stream = ({ folders, onBack }) => {
       setPage((prevPage) => prevPage + 1); // Load next page
     }
   };
+
 
   useEffect(() => {
     // Attach the scroll event listener when the component mounts

@@ -11,6 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
+    
         Schema::create('revision_history', function (Blueprint $table) {
             $table->id();
             $table->string('ins_comment')->nullable();
@@ -19,6 +20,7 @@ return new class extends Migration
             $table->foreignId('ins_id')->constrained('id')->on('users')->onDelete('cascade');
             $table->foreignId('group_id')->constrained('id')->on('groups')->onDelete('cascade');
             $table->foreignId('section_id')->constrained('id')->on('sections')->onDelete('cascade');
+            $table->timestamp('uploaded_at')->nullable(); // Add uploaded_at column
             $table->timestamps();
         });
     }

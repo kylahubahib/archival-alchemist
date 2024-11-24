@@ -61,9 +61,18 @@ const CreateClassSection = ({ userId }) => {
                 'X-CSRF-TOKEN': csrfToken,  // CSRF token applied here
             }
         })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok: ' + response.status);
+                }
+                return response.json(); // Proceed to parse JSON if the response is OK
+            })
             .then(data => setCourses(data))
-            .catch(error => console.error("Error fetching courses:", error));
+            .catch(error => {
+                console.error("Error fetching courses:", error);
+                setFetchError(true);
+            });
+
 
     }, [userId]);
 

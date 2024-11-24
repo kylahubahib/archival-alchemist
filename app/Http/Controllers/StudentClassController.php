@@ -14,7 +14,10 @@ use Illuminate\Support\Facades\DB;
 use App\Models\Favorite;
 use App\Models\Tags;
 use App\Models\User;
+
+use App\Models\GroupMember;
 use App\Models\ClassStudent;
+use App\Models\Group;
 use App\Models\RevisionHistory;
 use App\Models\Section;
 use Illuminate\Support\Facades\Auth;
@@ -48,6 +51,7 @@ class StudentClassController extends Controller
         Log::info('Request Data:', $request->all());
         try {
             $validatedData = $request->validate([
+                'group_name' => 'required|string|max:255',
                 'man_doc_title' => 'required|string|max:255',
                 'man_doc_description' => 'required|string',
                 'man_doc_adviser' => 'required|string|max:255',
@@ -60,7 +64,9 @@ class StudentClassController extends Controller
             ]);
 
             //Get the class code using request
-            $classCode = $request->get('class_code');
+            $section_id = $request->get('section_id');
+            $section_classcode = $request->get('section_classcode');
+            $task_id = $request->get('task_id');
 
             // Use the correct key to get tags from the request
             $tags = $request->get('tags_name', []); // Change from 'tags' to 'tags_name'
@@ -81,13 +87,24 @@ class StudentClassController extends Controller
             // Store the relative path to the file (without the 'public' part)
             $filePath = 'storage/capstone_files/' . $fileName;
 
+            // Create the gorup
+            $group =  Group::create([
+                'group_name' => $validatedData['group_name'],
+                'section_id' => $section_id,
+                'task_id' => $task_id,
+            ]);
+
+            Log::info('Group ID Created:', ['id' => $group->id]);
+
             // Create the manuscript project
             $manuscriptProject = ManuscriptProject::create([
                 'man_doc_title' => $validatedData['man_doc_title'],
                 'man_doc_description' => $validatedData['man_doc_description'],
                 'man_doc_adviser' => $validatedData['man_doc_adviser'],
                 'man_doc_content' => $filePath, // Save the relative path to the database
-                'class_code' => $validatedData['class_id'] ?? null,
+                // 'class_code' => $section_classcode,
+                'group_id' => $group->id, // The group ID from the saved manuscript
+                'section_id' => $section_id,
                 'man_doc_status' => 'P',
             ]);
 
@@ -169,6 +186,25 @@ class StudentClassController extends Controller
                     'user_id' => $userId,
                 ]);
             }
+
+
+// Update users' group_id and section_id into the group members table
+foreach ($userIds as $userId) {
+    // Update the group_id and section_id for each user where the section_id matches
+    GroupMember::where('stud_id', $userId) // Filter by user_id
+        ->where('section_id', $section_id) // Add the filter for section_id
+        ->update([
+            'group_id' => $group->id,    // Set the new group_id
+        ]);
+
+    Log::info("Updated Group Member Table:", [
+        'stud_id' => $userId,
+        'group_id' => $group->id,  // Log the updated group ID
+        'section_id' => $section_id, // Log the section ID
+    ]);
+}
+
+
 
             // if($manuscriptProject)
             // {

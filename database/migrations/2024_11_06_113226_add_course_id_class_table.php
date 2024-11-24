@@ -11,13 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('class', function (Blueprint $table) {
-            $table->dropForeign(['stud_id']);
-            $table->dropColumn('stud_id');
-            $table->unsignedBigInteger('section_id')->nullable();
-            $table->foreign('section_id')->references('id')->on('sections')->onDelete('cascade');
-        });
-        
+        // Schema::table('class', function (Blueprint $table) {
+        //     $table->dropForeign(['stud_id']);
+        //     $table->dropColumn('stud_id');
+        //     $table->unsignedBigInteger('section_id')->nullable();
+        //     $table->foreign('section_id')->references('id')->on('sections')->onDelete('cascade');
+        // });
+
     }
 
     /**
@@ -25,9 +25,9 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('class', function (Blueprint $table) {
-            $table->dropForeign(['section_id']);
-            $table->dropColumn('section_id');
-        });
+        // Schema::table('class', function (Blueprint $table) {
+        //     $table->dropForeign(['section_id']);
+        //     $table->dropColumn('section_id');
+        // });
     }
 };

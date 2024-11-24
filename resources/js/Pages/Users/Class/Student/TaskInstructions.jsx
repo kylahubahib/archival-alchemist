@@ -11,12 +11,13 @@ const TaskInstructions = ({ folders, onBack, task, taskID }) => {
   const [hasMore, setHasMore] = useState(true);  // Whether more tasks are available
   const [isPreviewMode, setIsPreviewMode] = useState(false);  // For preview mode
   const [selectedTask, setSelectedTask] = useState(null);  // Store the selected task for preview
-
-
+console.log("These are inside the folders:", folders);
+console.log("This is the Task ID:", taskID);
   const [tags, setTags] = useState([]);
   const [users, setAuthors] = useState([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [formValues, setFormValues] = useState({
+      group_name: '',
       man_doc_title: '',
       man_doc_description: '',
       man_doc_content: null,
@@ -34,6 +35,7 @@ const TaskInstructions = ({ folders, onBack, task, taskID }) => {
 
   const resetForm = () => {
       setFormValues({
+          group_name: '',
           man_doc_title: '',
           man_doc_description: '',
           man_doc_content: null,
@@ -163,6 +165,7 @@ const TaskInstructions = ({ folders, onBack, task, taskID }) => {
 
   const isFormValid = () => {
       return (
+          formValues.group_name &&
           formValues.man_doc_title &&
           formValues.man_doc_description &&
           formValues.man_doc_adviser &&
@@ -187,6 +190,7 @@ const TaskInstructions = ({ folders, onBack, task, taskID }) => {
       e.preventDefault();
       const newErrors = {};
 
+      if (!formValues.group_name) newErrors.group_name = 'Group name is required.';
       if (!formValues.man_doc_title) newErrors.man_doc_title = 'Title is required.';
       if (!formValues.man_doc_description) newErrors.man_doc_description = 'Description is required.';
       if (users.length === 0) newErrors.users = 'At least one user is required.';
@@ -198,7 +202,7 @@ const TaskInstructions = ({ folders, onBack, task, taskID }) => {
       setErrors(newErrors);
 
       if (Object.keys(newErrors).length === 0) {
-          const titleExists = await checkIfTitleExists(formValues.man_doc_title);
+        const titleExists = await checkIfTitleExists(formValues.man_doc_title);
 
           if (titleExists) {
               setErrors({
@@ -210,6 +214,7 @@ const TaskInstructions = ({ folders, onBack, task, taskID }) => {
           try {
               // Prepare form data
               const formData = new FormData();
+              formData.append('group_name', formValues.group_name);
               formData.append('man_doc_title', formValues.man_doc_title);
 
               formData.append('man_doc_description', formValues.man_doc_description);
@@ -220,8 +225,11 @@ const TaskInstructions = ({ folders, onBack, task, taskID }) => {
               formData.append('man_doc_content', formValues.man_doc_content);
               formData.append('agreed', formValues.agreed);
 
+              folders = folders[0];
               //Add the class_code
-              formData.append('class_code', class_code);
+              formData.append('section_id', folders.section_id);
+              formData.append('section_classcode', folders.section_classcode);
+              formData.append('task_id', taskID);
 
               // Submit the form data
               const response = await axios.post('/api/capstone/upload', formData, {
@@ -413,6 +421,17 @@ const TaskInstructions = ({ folders, onBack, task, taskID }) => {
                 <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4">
                     <div className="left-column">
                         <div className="mb-4">
+                        <input
+                                type="text"
+                                name="group_name"
+                                placeholder="Group name"
+                                className="w-full p-2 border rounded mb-2"
+                                value={formValues.group_name}
+                                onChange={handleFormFieldChange}
+                            />
+                            {errors.group_name && <div className="text-red-600 text-sm mb-2">{errors.group_name}</div>}
+
+
                             <input
                                 type="text"
                                 name="man_doc_title"
