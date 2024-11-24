@@ -22,28 +22,28 @@ class ClassController extends Controller
     public function fetchCourses(Request $request)
     {
         $user = Auth::user()->load('faculty');
+        $deptId = 1; // Default value for dept_id if no faculty is found
 
-        $deptId = null;
+        // Ensure we have at least one faculty record
+        if ($user->faculty->isNotEmpty()) {
+            // Access the first faculty record (or modify to select based on other conditions)
+            $faculty = $user->faculty->first();  // Or use some other condition to get the desired faculty
 
-        if($user->faculty)
-        {
-            $deptId = $user->faculty->dept_id;
+            $deptId = $faculty->dept_id;  // Now, dept_id is accessible on the Faculty model
         }
 
-        
-        // Log::info('Branch Id: ', (array)$user->faculty);
+        if (!$deptId) {
+            return response()->json(['error' => 'Department ID not found'], 400);
+        }
 
-        // $uniBranchId = $user->faculty->first()->uni_branch_id;
+        try {
+            // Fetch courses based on the dept_id
+            $courses = Course::where('dept_id', $deptId)->limit(25)->get();
+        } catch (\Exception $e) {
+            Log::error("Error fetching courses: " . $e->getMessage());
+            return response()->json(['error' => 'Error fetching courses'], 500);
+        }
 
-
-        // if($uniBranchId)
-        // {
-        //     $dept = Department::with('course')->where('uni_branch_id', $uniBranchId)->get();
-        //     Log::info('Department: ', $dept->toArray());
-        // }
-
-        // $courses = Course::where('dept_id', 1)->limit(25)->get();
-        $courses = Course::where('dept_id', $deptId)->limit(25)->get();
         return response()->json($courses);
     }
 
@@ -132,7 +132,7 @@ class ClassController extends Controller
     public function fetchClasses(Request $request)
     {
         try {
-            
+
             $classes = Section::with(['course'])->where('ins_id', Auth::id())->get();
 
             // $classes = Section::join('courses', 'sections.course_id', '=', 'courses.id')
@@ -172,7 +172,7 @@ class ClassController extends Controller
             // Find the section by instructor ID and section_classcode
             //Remove the where('ins_id', $instructorId) since id of section is already unique
             $section = Section::where('id', $section_id)->first();
-                                
+
             Log::info('Section Found: ', (array)$section);
 
             if ($section) {
@@ -271,7 +271,7 @@ class ClassController extends Controller
         $user = Auth::user();
         Log::info('Authenticated user found: ' . $user->id);
 
-        
+
         return response()->json($user);
     }
 
@@ -332,11 +332,30 @@ class ClassController extends Controller
     }
 
 
+    // public function fetchAssignedTask($section_id)
+    // {
+    //     Log::info('STudent tas ID:', ['id' => 1]);
+
+    //     Log::info('Task accessed with GET method');
+
+    //     // Retrieve all tasks assigned to the given section_id
+    //     $tasks = AssignedTask::where('section_id', $section_id) // Filter tasks by section_id
+    //         ->select('id','task_title', 'task_instructions', 'task_startdate', 'task_duedate', 'section_id') // Only select required columns
+    //         ->get(); // Retrieve all tasks for the given section_id
+
+    //     // Log the retrieved tasks
+    //     Log::info('Tasks Retrieved', ['tasks' => $tasks->toArray()]);
+
+    //     return response()->json($tasks); // Return the tasks as a JSON response
+    // }
+
+
     public function fetchAssignedTask($section_id)
     {
         Log::info('STudent tas ID:', ['id' => 1]);
 
-        Log::info('Task accessed with GET method');
+    // Log the section_id with proper context as an array
+    Log::info('Task accessed with GET method', ['section_id' => $section_id]);
 
         // Retrieve all tasks assigned to the given section_id
         $tasks = AssignedTask::where('section_id', $section_id) // Filter tasks by section_id

@@ -1,67 +1,57 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 const PdfViewer = ({ pdfUrl }) => {
-  const viewerRef = useRef(null);
-  const [scriptLoaded, setScriptLoaded] = useState(false);
-  const [pdfLoaded, setPdfLoaded] = useState(false);
-  const [error, setError] = useState(null);
+  const [scrollingTime, setScrollingTime] = useState(0); // Track the scrolling time
+  const [blur, setBlur] = useState(false); // State to apply blur effect
+  const [isScrolling, setIsScrolling] = useState(false); // Flag for scrolling status
 
+  // Timeout to start applying the blur effect after 30 seconds
   useEffect(() => {
-    if (!window.WebViewer && !scriptLoaded) {
-      const script = document.createElement('script');
-      script.src = '/lib/webviewer.min.js';
-      script.async = true;
-
-      script.onload = () => {
-        setScriptLoaded(true);
-        if (window.WebViewer) {
-          new window.WebViewer(
-            {
-              path: '/lib',
-              initialDoc: pdfUrl,
-              showThumbnailView: true,
-              initialView: 'single',
-              fullScreen: false,
-              enableAnnotations: false,
-              enableSearch: false,
-              pageLoadingLimit: 2, // Only load a few pages at a time
-              useOnlyCssZoom: true, // For better performance
-            },
-            viewerRef.current
-          ).then((instance) => {
-            setPdfLoaded(true);
-          }).catch((err) => {
-            console.error('Error initializing WebViewer:', err);
-            setError('Failed to load the PDF viewer.');
-          });
-        } else {
-          setError('WebViewer script not loaded correctly.');
-        }
-      };
-
-      script.onerror = () => {
-        setError('Failed to load WebViewer script.');
-      };
-
-      document.body.appendChild(script);
+    if (scrollingTime >= 30) {
+      setBlur(true); // Apply blur after 30 seconds
     }
+  }, [scrollingTime]);
 
-    return () => {
-      const script = document.querySelector('script[src="/lib/webviewer.min.js"]');
-      if (script) {
-        document.body.removeChild(script);
-      }
-    };
-  }, [pdfUrl, scriptLoaded]);
+  // Function to handle scroll events
+  const handleScroll = () => {
+    if (!isScrolling) {
+      setIsScrolling(true);
+      let timer = 0;
+      const scrollInterval = setInterval(() => {
+        timer += 1;
+        setScrollingTime(timer);
+      }, 1000); // Increment the timer every second
+
+      // Stop counting when scrolling stops
+      const stopScrollTimer = setTimeout(() => {
+        setIsScrolling(false);
+        clearInterval(scrollInterval);
+      }, 300); // Set a small delay after the scroll ends (300ms) before stopping the timer
+    }
+  };
 
   return (
-    <div className="relative w-full h-full">
-      {error && <div className="text-red-500">{error}</div>}
+    <div className="relative w-full h-full p-4 shadow-lg rounded-lg">
       <div
-        ref={viewerRef}
-        className={`w-full h-full ${pdfLoaded ? 'opacity-100' : 'opacity-0'}
-                    transition-opacity duration-500 p-4 shadow-lg rounded-lg`}
-      ></div>
+        id="pdf-container"
+        onScroll={handleScroll}
+        className={`relative w-full h-full overflow-y-auto ${blur ? 'filter blur-sm' : ''}`} // Apply blur when scroll time exceeds 30 seconds
+      >
+        <iframe
+          src={pdfUrl}
+          className="w-full h-full rounded-lg"
+          style={{
+            border: 'none',
+            minHeight: '500px', // Adjust as needed
+          }}
+          title="PDF Viewer"
+        ></iframe>
+      </div>
+
+      {/* Optional: Display the scroll timer to show how much time has passed */}
+      {/* <div className="absolute bottom-4 left-4 text-sm text-gray-600">
+        Time Spent Scrolling: {scrollingTime} seconds
+      </div> */}
     </div>
   );
 };

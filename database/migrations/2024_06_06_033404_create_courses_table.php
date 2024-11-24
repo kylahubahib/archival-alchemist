@@ -3,7 +3,6 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 return new class extends Migration
 {
@@ -12,15 +11,18 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('courses', function (Blueprint $table) {
-            $table->bigIncrements("course_id");
-            $table->unsignedBigInteger('dept_id');
-            $table->string('course_name');
-            $table->string('added_by');
-            $table->timestamps();
+        //This would check if the courses table already exists before attempting to create it.
+        if (!Schema::hasTable('courses')) {
+            Schema::create('courses', function (Blueprint $table) {
+                $table->bigIncrements("course_id");
+                $table->unsignedBigInteger('dept_id');
+                $table->string('course_name');
+                $table->string('added_by');
+                $table->timestamps();
 
-            $table->foreign('dept_id')->references('dept_id')->on('departments')->onDelete('cascade');
-        });
+                $table->foreign('dept_id')->references('id')->on('departments')->onDelete('cascade');
+            });
+        }
     }
 
     /**

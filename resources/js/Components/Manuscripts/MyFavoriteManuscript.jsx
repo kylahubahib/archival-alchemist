@@ -11,6 +11,8 @@ import { Skeleton } from '@nextui-org/skeleton'; // Import Skeleton
 import PdfViewer from '@/Components/PdfViewer'
 import ToggleComments from '@/Components/ToggleComments'
 
+import getPdfThumbnail from '@/Components/getPdfThumbnail'
+
 const Manuscript = ({ user }) => {
     const [favorites, setFavorites] = useState(new Set());
     const [manuscripts, setManuscripts] = useState([]);
@@ -25,15 +27,36 @@ const Manuscript = ({ user }) => {
     const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
     const [isSidebarOpen, setIsSidebarOpen] = useState(false); // State to track sidebar visibility
 
+    const [isMaximized, setIsMaximized] = useState(false);
     const toggleSidebar = () => {
         setIsSidebarOpen((prevState) => !prevState); // Toggle sidebar visibility
     };
-    const [isMaximized, setIsMaximized] = useState(false); // State to track if maximized or not
+
+    // Handle manuscript selection and opening the sidebar
+const handleComments = (id, title) => {
+    // Store the selected manuscript's id and title
+
+    setIsSidebarOpen((prevState) => !prevState); // Toggle sidebar visibility
+    setIsSidebarOpen(true);  // Open the sidebar
+};
+
+
+        const [maximizedId, setMaximizedId] = useState(null); // Tracks which manuscript is maximized
+
+        const handleMaximize = (id) => {
+          setMaximizedId((prevId) => (prevId === id ? null : id)); // Toggle maximization
+        };
+
 
     // Function to toggle maximized state
     const toggleMaximize = () => {
-        setIsMaximized((prevState) => !prevState);
+        setMaximizedId((prevState) => !prevState);
     };
+
+    // // Function to toggle maximized state
+    // const toggleMaximize = () => {
+    //     setIsMaximized((prevState) => !prevState);
+    // };
 
     // Dynamic class for maximizing and minimizing
     const manuscriptClass = isMaximized
@@ -291,26 +314,34 @@ const handleClick = (value) => {
         <section className="w-[95%] mx-auto my-3 pt-10">
             {manuscriptsToDisplay.map((manuscript) => (
                 <div key={manuscript.id} className="w-full bg-white shadow-lg flex mb-4 text-sm">
-                   <div
-                        className={`rounded ${isMaximized ? 'w-full h-full' : 'w-40 h-48'} bg-gray-200 flex items-center justify-center relative transition-all duration-300 ease-in-out`}
-                    >
-                        {manuscript.man_doc_content ? (
-                            <PdfViewer pdfUrl={manuscript.man_doc_content} />
-                        ) : (
-                            <div className="flex items-center justify-center h-full w-full text-gray-500">
-                                <p>No PDF available</p>
-                            </div>
-                        )}
-
-                        {/* Maximize / Minimize Button */}
-                        <button
-                            onClick={toggleMaximize}
-                            className="absolute top-2 right-2 bg-gray-500 text-white p-2 rounded-full shadow-lg hover:bg-gray-600 transition-colors duration-200"
-                        >
-                            {isMaximized ? 'Minimize' : 'Maximize'}
-                        </button>
+        <div
+            className={`rounded ${maximizedId === manuscript.id ? 'w-full h-full' : 'w-40 h-48'} bg-gray-200 flex items-center justify-center relative transition-all duration-300 ease-in-out y-4 m-5`}
+        >
+            {maximizedId === manuscript.id ? (
+                manuscript.man_doc_content ? (
+                    <PdfViewer pdfUrl={manuscript.man_doc_content} />
+                ) : (
+                    <div className="flex items-center justify-center h-full w-full text-gray-500">
+                        <p>No PDF available</p>
                     </div>
+                )
+            ) : (
+                // Display a static thumbnail when the manuscript is not maximized
+                <img
+                    className="rounded w-25 h-30"
+                    src="/images/pdf2.png"
+                    alt="PDF Thumbnail"
+                />
+            )}
 
+            {/* Maximize / Minimize Button */}
+            <button
+                onClick={() => handleMaximize(manuscript.id)}
+                className="absolute top-2 right-2 bg-gray-500 text-white p-2 rounded-full shadow-lg hover:bg-gray-600 transition-colors duration-200"
+            >
+                {maximizedId === manuscript.id ? 'Minimize' : 'Preview'}
+            </button>
+        </div>
 
                     <div className="flex-1 p-4">
                         <h2 className="text-xl font-bold text-gray-900">{manuscript.man_doc_title}</h2>
@@ -338,14 +369,23 @@ const handleClick = (value) => {
                             </Tooltip>
 
                             <div
+                key={manuscript.id}
                 className="flex items-center text-blue-500 hover:text-blue-700 cursor-pointer"
-                onClick={toggleSidebar}>
+                onClick={() => handleComments(manuscript.id, manuscript.man_doc_title)}  // Pass id and title to handleComments
+            >
                 <FaComment size={20} />
             </div>
-            {/* Sidebar Component */}
-            <ToggleComments manuscripts={manuscriptsToDisplay[0]} isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
 
-
+        {/* Render ToggleComments only if a manuscript is selected and the sidebar is open */}
+        {selectedManuscript && (
+            <ToggleComments
+                manuscripts={selectedManuscript}  // Pass the selected manuscript to ToggleComments
+                man_id={selectedManuscript.id}  // Pass additional properties if needed
+                man_doc_title={selectedManuscript.title}
+                isOpen={isSidebarOpen}
+                toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}  // Toggle the sidebar
+            />
+        )}
 
                             <Tooltip content="Bookmark">
                                 <button

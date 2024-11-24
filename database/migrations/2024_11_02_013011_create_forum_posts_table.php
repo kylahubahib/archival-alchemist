@@ -17,10 +17,11 @@ class CreateForumPostsTable extends Migration
             $table->unsignedBigInteger('comments')->default(0); // Comment count field with default value 0
             $table->timestamps(); // Automatically manages created_at and updated_at
         });
+
     }
 
     public function down()
     {
-        Schema::dropIfExists('forum_posts');
+         Schema::dropIfExists('forum_posts');
     }
 }
