@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+
 use Illuminate\Support\Facades\Storage;
 use App\Models\Author;
 use Illuminate\Support\Facades\File;
@@ -27,9 +28,9 @@ use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 
 use Google\Client as GoogleClient;
-use Google\Service\Drive as GoogleDrive;
+use Google\Service\Drive as GoogleDrive; 
+use Google\Service\Drive\DriveFile as GoogleDriveFile;
 use Google\Service\Drive\Permission;
-use App\Notifications\UserNotification;
 
 
 class StudentClassController extends Controller
@@ -82,8 +83,9 @@ class StudentClassController extends Controller
             // Generate a unique filename
             $fileName = time() . '_' . $file->getClientOriginalName();
 
+            //Move the file at the last part of this process
             // Move the file to the public/storage/capstone_files directory
-            $file->move(public_path('storage/capstone_files'), $fileName);
+            // $file->move(public_path('storage/capstone_files'), $fileName);
 
             // Store the relative path to the file (without the 'public' part)
             $filePath = 'storage/capstone_files/' . $fileName;
@@ -189,38 +191,55 @@ class StudentClassController extends Controller
             }
 
 
-// Update users' group_id and section_id into the group members table
-foreach ($userIds as $userId) {
-    // Update the group_id and section_id for each user where the section_id matches
-    GroupMember::where('stud_id', $userId) // Filter by user_id
-        ->where('section_id', $section_id) // Add the filter for section_id
-        ->update([
-            'group_id' => $group->id,    // Set the new group_id
-        ]);
+            // Update users' group_id and section_id into the group members table
+            foreach ($userIds as $userId) {
+                // Update the group_id and section_id for each user where the section_id matches
+                GroupMember::where('stud_id', $userId) // Filter by user_id
+                    ->where('section_id', $section_id) // Add the filter for section_id
+                    ->update([
+                        'group_id' => $group->id,    // Set the new group_id
+                    ]);
 
-    Log::info("Updated Group Member Table:", [
-        'stud_id' => $userId,
-        'group_id' => $group->id,  // Log the updated group ID
-        'section_id' => $section_id, // Log the section ID
-    ]);
-}
+                Log::info("Updated Group Member Table:", [
+                    'stud_id' => $userId,
+                    'group_id' => $group->id,  // Log the updated group ID
+                    'section_id' => $section_id, // Log the section ID
+                ]);
+            }
 
 
 
-            // if($manuscriptProject)
-            // {
-            //     $class = ClassModel::where('class_code', $classCode)->first();
-            //     $faculty = $class->ins_id;
+            if($manuscriptProject)
+             {
+                
+                $section = Section::where('id', $section_id)->first();
+                $authorIds = Author::whereIn('user_id', $users)->pluck('user_id')->toArray();
+                $teacherId = $section->ins_id; 
+        
+                // Upload the file to Google Drive and get the Google Docs URL
+                $googleDocsUrl = $this->uploadToDrive($request->file('man_doc_content'), $authorIds, $teacherId);
 
-            //     RevisionHistory::create([
-            //         'ins_comment' => null,
-            //         'man_doc_id' => $manuscriptProject->id,
-            //         'ins_id' => $faculty,
-            //         'uploaded_at' => $manuscriptProject->created_at,
-            //         'revision_content' => $manuscriptProject->man_doc_content,
-            //         'status' => 'Started'
-            //     ]);
-            // }
+                if($googleDocsUrl) {
+                    $manuscriptProject->update([
+                        'man_doc_content' => $googleDocsUrl,
+                    ]);
+                }
+
+                
+                $file->move(public_path('storage/capstone_files'), $fileName);
+
+
+                 $faculty = $section->ins_id;
+                 
+                //  RevisionHistory::create([
+                //      'ins_comment' => null,
+                //      'man_doc_id' => $manuscriptProject->id,
+                //      'ins_id' => $faculty,
+                //      'uploaded_at' => $manuscriptProject->created_at,
+                //      'revision_content' => $manuscriptProject->man_doc_content,
+                //      'status' => 'Started'
+                //  ]);
+             }
 
             return response()->json(['message' => 'Manuscript project uploaded successfully.'], 200);
 
@@ -241,7 +260,7 @@ foreach ($userIds as $userId) {
         $client->setClientSecret(config('services.google.client_secret'));
         $client->setRedirectUri(config('services.google.redirect'));
         $client->setAccessType('offline');
-        $client->addScope(GoogleDrive::DRIVE);
+        $client->addScope(GoogleDrive::DRIVE_FILE);
 
         // Set the access token
         $accessToken = $user->google_access_token;
@@ -267,7 +286,7 @@ foreach ($userIds as $userId) {
         $driveService = new GoogleDrive($client);
 
         // Upload the file to Google Drive
-        $driveFile = new GoogleDrive\DriveFile();
+        $driveFile = new GoogleDriveFile();
         $driveFile->setName($file->getClientOriginalName());
         $driveFile->setMimeType($file->getMimeType());
 
@@ -381,25 +400,30 @@ foreach ($userIds as $userId) {
 
     public function storeStudentClass(Request $request)
     {
+        // $request->validate([
+        //     'class_code' => 'required|string',
+        //     'class_name' => 'required|string',
+        //     'ins_id' => 'required|integer',
+        // ]);
+
         $request->validate([
             'class_code' => 'required|string',
-            'class_name' => 'required|string',
-            'ins_id' => 'required|integer',
         ]);
+
 
         $userId = Auth::id();
 
         try {
             // Check if the class exists
-            $class = ClassModel::where('class_code', $request->class_code)->first();
+            $section = Section::where('section_classcode', $request->class_code)->first();
 
-            if (!$class) {
+            if (!$section) {
                 return response()->json(['success' => false, 'message' => 'Class code not found']);
             }
 
             // Check if the user is already enrolled in the class
-            $existingEnrollment = ClassStudent::where([
-                ['class_id', $class->id],
+            $existingEnrollment = GroupMember::where([
+                ['section_id', $section->id],
                 ['stud_id', $userId],
             ])->first();
 
@@ -408,19 +432,19 @@ foreach ($userIds as $userId) {
                 return response()->json(['success' => true, 'message' => 'Already enrolled']);
             } else {
                 // Insert the new enrollment
-                ClassStudent::create([
-                    'class_id' => $class->id, // Use the class ID from ClassModel
+                GroupMember::create([
+                    'section_id' => $section->id, // Use the class ID from Section
                     'stud_id' => $userId, // Store the user ID
                 ]);
 
 
                  // Notifies the teacher that a new student joins
-                 $teacher = User::find($class->ins_id);
+                 $teacher = User::find($section->ins_id);
                  $newStudent = Auth::user()->name;
 
                  if ($teacher) {
                          $teacher->notify(new UserNotification([
-                             'message' => $newStudent . ' joins ' . $class->class_name,
+                             'message' => $newStudent . ' joins ' . $section->section_name,
                              'user_id' => $teacher->id
                          ]));
                  }
@@ -428,7 +452,7 @@ foreach ($userIds as $userId) {
                 return response()->json([
                     'success' => true,
                     'message' => 'Joined class successfully',
-                    'classId' => $class->id
+                    'classId' => $section->id
                 ]);
             }
         } catch (\Exception $e) {

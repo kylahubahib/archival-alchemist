@@ -58,6 +58,7 @@ const [groupNames, setgroupNames] = useState(null);
 console.log("These are the props:", reviewManuscriptProps)
 // Fetch members whenever hoveredClass changes
 useEffect(() => {
+
     const fetchMembers = async () => {
         setIsMembersLoading(true); // Set loading state to true before fetching
         try {
@@ -103,6 +104,7 @@ useEffect(() => {
             });
 
     }
+
 }, [authorInputValue]);
 
 
@@ -162,14 +164,14 @@ useEffect(() => {
 useEffect(() => {
     console.log('Selected Class:', selectedClass); // Debugging line
 
-    axios.get('/manuscripts/class', {
+    axios.get('/get-manuscripts', {
         params: {
-            ins_id: selectedClass?.ins_id // Safely access ins_id using optional chaining
+            section_id: folders?.id
         }
     })
     .then(response => {
         console.log(response.data); // Log the response to check its structure
-       // setClasses(response.data); // Store the manuscripts data
+       setClasses(response.data); // Store the manuscripts data
     })
     .catch(error => {
         console.error("Error fetching manuscripts:", error);
@@ -302,7 +304,7 @@ const handleShowStudentWork = () => {
                                         className="cursor-pointer text-blue-500 hover:underline"
                                         onMouseEnter={() => handleMouseEnter(classItem)}
                                     >
-                    {classItem.group_name || "No Name Available"}
+                                        {classItem.group?.group_name || "No Name Available"}
                                     </span>
                                 </TableCell>
                                 <TableCell className="text-left">

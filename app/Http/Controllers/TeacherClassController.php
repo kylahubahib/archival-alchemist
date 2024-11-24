@@ -76,15 +76,13 @@ class TeacherClassController extends Controller
             $courses = Course::where('dept_id', $department->id)->with('sections')->get();
 
             // Retrieve classes where ins_id matches the current user's ID
-            $classes = ClassModel::where('ins_id', Auth::id())->get();
+            $section = Section::where('ins_id', Auth::id())->get();
 
             return response()->json([
                 'courses' => $courses,
-                'classes' => $classes, // Include the classes in the response
+                'classes' => $section, // Include the classes in the response
             ]);
         }
-
-
 
 
         public function newGroupClass(Request $request)
@@ -174,66 +172,57 @@ class TeacherClassController extends Controller
 
 
 
-public function getManuscriptsByClass(Request $request)
-{
-    $ins_id = $request->input('ins_id');
-    $filter = $request->input('filter', null); // Get the filter from the request, default to null
+    public function getManuscriptsByClass(Request $request)
+    {
+        $section_id = $request->get('section_id');
+        $filter = $request->input('filter'); 
 
-    // Base query to join manuscripts and class tables
-    $query = ManuscriptProject::from('class as c')
-        ->leftJoin('manuscripts as m', 'c.id', '=', 'm.class_code')
-        ->select('c.id as id', 'c.class_code', 'c.ins_id', 'c.class_name', 'm.id as id', 'm.man_doc_title', 'm.man_doc_status', 'm.created_at', 'm.updated_at')
-        ->where('c.ins_id', $ins_id);
+        Log::info('Section Id:', (array)$section_id);
 
-        //     // Query to join manuscripts and class tables
-//     $manuscripts = ManuscriptProject::from('class as c')
-//     ->leftJoin('manuscripts as m', 'c.id', '=', 'm.class_code')
-//     ->select('c.id as id', 'c.class_code', 'c.class_name', 'm.id as id', 'm.man_doc_title', 'm.man_doc_status', 'm.created_at', 'm.updated_at')
-//     ->where('c.ins_id', $ins_id)
-//     ->get();
+        // Base query to join manuscripts and class tables
+        $query = ManuscriptProject::with(['authors', 'tags', 'revision_history', 'group'])
+            ->where('section_id', $section_id);
 
-    // Apply filter condition based on the filter, if set
-    if ($filter) {
-        switch ($filter) {
-            case 'approved':
-                $query->where('m.man_doc_status', 'Y');
-                break;
-            case 'declined':
-                $query->where('m.man_doc_status', 'X');
-                break;
-            case 'in_progress':
-                $query->where('m.man_doc_status', 'I');
-                break;
-            case 'pending':
-                $query->whereNull('m.id'); // Pending means no manuscript exists for that class
-                break;
+        // Apply filter condition based on the filter, if set
+        if ($filter) {
+            switch ($filter) {
+                case 'approved':
+                    $query->where('man_doc_status', 'Y');
+                    break;
+                case 'declined':
+                    $query->where('man_doc_status', 'X');
+                    break;
+                case 'in_progress':
+                    $query->where('man_doc_status', 'I');
+                    break;
+                case 'pending':
+                    $query->where('man_doc_status', 'P');
+                    break;
+            }
         }
+
+        $manuscripts = $query->get();
+
+        // Transform statuses into user-friendly labels
+        $manuscripts->transform(function ($manuscript) {
+            switch ($manuscript->man_doc_status) {
+                case 'Y':
+                    $manuscript->man_doc_status = 'Approved';
+                    break;
+                case 'I':
+                    $manuscript->man_doc_status = 'In progress';
+                    break;
+                case 'X':
+                    $manuscript->man_doc_status = 'Declined';
+                    break;
+                default:
+                    $manuscript->man_doc_status = 'Pending';
+            }
+            return $manuscript;
+        });
+
+        return response()->json($manuscripts);
     }
-
-    $manuscripts = $query->get();
-
-    // Transform statuses into user-friendly labels
-    $manuscripts->transform(function ($manuscript) {
-        switch ($manuscript->man_doc_status) {
-            case 'Y':
-                $manuscript->man_doc_status = 'Approved';
-                break;
-            case 'I':
-                $manuscript->man_doc_status = 'In progress';
-                break;
-            case 'X':
-                $manuscript->man_doc_status = 'Declined';
-                break;
-            default:
-                $manuscript->man_doc_status = 'Pending';
-        }
-        return $manuscript;
-    });
-
-    return response()->json($manuscripts);
-}
-
-
 
 
     public function updateManuscriptStatus(Request $request, $id)
@@ -264,10 +253,6 @@ public function getManuscriptsByClass(Request $request)
             ], 500);
         }
     }
-
-
-
-
 
     // Class dropdown controller
     // Fetch students based on search query
@@ -461,27 +446,27 @@ public function getManuscriptsByClass(Request $request)
 
 
     public function ViewGroupMembers($manuscriptId)
-{
-    Log::info("Fetching group members for manuscript ID: $manuscriptId");
+    {
+        Log::info("Fetching group members for manuscript ID: $manuscriptId");
 
-    try {
-        $authors = Author::with('user')
-            ->where('man_doc_id', $manuscriptId)
-            ->get();
+        try {
+            $authors = Author::with('user')
+                ->where('man_doc_id', $manuscriptId)
+                ->get();
 
-        Log::info("Number of authors retrieved: " . $authors->count());
+            Log::info("Number of authors retrieved: " . $authors->count());
 
-        if ($authors->isEmpty()) {
-            Log::warning("No group members found for manuscript ID: $manuscriptId");
-            return response()->json(['message' => 'No group members found for this manuscript.'], 404);
+            if ($authors->isEmpty()) {
+                Log::warning("No group members found for manuscript ID: $manuscriptId");
+                return response()->json(['message' => 'No group members found for this manuscript.'], 404);
+            }
+
+            return response()->json($authors);
+        } catch (\Exception $e) {
+            Log::error("Error fetching group members: " . $e->getMessage());
+            return response()->json(['message' => 'An error occurred while fetching group members.'], 500);
         }
-
-        return response()->json($authors);
-    } catch (\Exception $e) {
-        Log::error("Error fetching group members: " . $e->getMessage());
-        return response()->json(['message' => 'An error occurred while fetching group members.'], 500);
     }
-}
 
 
 

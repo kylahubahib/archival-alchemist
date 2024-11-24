@@ -42,6 +42,7 @@ export default function Forum({ auth }) {
   const { isOpen: isConfirmOpen, onOpen: onConfirmOpen, onOpenChange: onConfirmOpenChange } = useDisclosure();
   const [postToDelete, setPostToDelete] = useState(null);
   const [selectedSort, setSelectedSort] = useState('latest');
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
 
     
     const [loading, setLoading] = useState(true);

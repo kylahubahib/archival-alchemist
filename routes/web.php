@@ -452,7 +452,7 @@ Route::get('/api/title/suggestions', [TagController::class, 'Titlesuggestions'])
 //route for checking the class code
 Route::post('/check-class-code', [StudentClassController::class, 'checkClassCode']);
 // routes for storing student in class table
-//Route::post('/store-student-class', [StudentClassController::class, 'storeStudentClass']);
+Route::post('/store-student-class', [StudentClassController::class, 'storeStudentClass']);
 // routes for checking the user premium subscription
 Route::post('/check-user-premium-status', [CheckSubscriptionController::class, 'is_premium']);
 

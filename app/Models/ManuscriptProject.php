@@ -75,4 +75,14 @@ class ManuscriptProject extends Model
         return $this->hasMany(Rating::class, 'manuscript_id', 'id');
     }
 
+    public function section()
+    {
+        return $this->belongsTo(Section::class, 'section_id');
+    }
+
+    public function group()
+    {
+        return $this->belongsTo(Group::class, 'group_id');
+    }
+
 }
