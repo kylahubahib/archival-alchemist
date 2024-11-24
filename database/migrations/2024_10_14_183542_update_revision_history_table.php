@@ -25,7 +25,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('revision_history', function (Blueprint $table) {
-            //$table->foreignId('stud_id')->constrained('users')->onDelete('cascade'); // Restore stud_id
+            $table->foreignId('stud_id')->constrained('users')->onDelete('cascade'); // Restore stud_id
             $table->dropColumn('uploaded_at'); // Remove uploaded_at column
             $table->dropColumn('status');
         });

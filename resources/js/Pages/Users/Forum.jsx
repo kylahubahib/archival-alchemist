@@ -8,7 +8,7 @@ import {
   Spinner
 } from '@nextui-org/react';
 import SearchBar from '@/Components/SearchBar';
-
+import { Inertia } from "@inertiajs/inertia";
 import { toast } from 'react-toastify';
 import axios from 'axios';
 import { useState, useEffect } from 'react';
@@ -279,12 +279,7 @@ const handleTitleClick = async (postId) => {
                 <div className="">
                   {/* /<h2 className="font-semibold text-4xl text-gray-800 leading-tight mt-2 ml-1">Forum</h2> */}
                   <div className='flex flex-col justify-evenly gap-4'>
-                    <Button className="bg-customBlue text-white" variant="solid">
-                      All Discussions
-                    </Button>
-                    <Button className="bg-customBlue  text-white mt-2" variant="solid">
-                      My Posts
-                    </Button>
+                    
                   </div>
                 </div>
                 
@@ -332,7 +327,7 @@ const handleTitleClick = async (postId) => {
 
 
           return (
-            <div className="border-b pb-4 mb-4 w-3/4 relative flex flex-col" key={post.id}>
+            <div className="border-b pb-4 mb-4 w-3/4 relative flex flex-col mt-10 " key={post.id}>
               <div className="flex items-start space-x-4">
               <img
                   // src={post.user?.user_pic ? {post.user.user_pic} : "https://via.placeholder.com/150"}
@@ -415,7 +410,7 @@ const handleTitleClick = async (postId) => {
           );
         })
               ) : (
-                <p className="text-gray-500">No discussions found.</p>
+                <p className="text-gray-500 mt-20">No discussions found.</p>
               )}
               </>) : (
                 <Spinner/>
@@ -423,10 +418,6 @@ const handleTitleClick = async (postId) => {
               }
     </div>
   
-
-
-
-
 
 
                     {/* Modal for displaying post details */}

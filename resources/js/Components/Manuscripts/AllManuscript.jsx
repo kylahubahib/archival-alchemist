@@ -172,7 +172,7 @@ const Manuscript = ({user, choice}) => {
             try {
                 const response = await axios.get(`/user/${user.id}/favorites`);
                 //console.log('Response: ', response.data.favorites);
-                const favoritesData = [];
+                let favoritesData = [];
                 if(response.data.favorites) {
                     favoritesData = response.data.favorites.map((favorite) => `${user.id}-${favorite.man_doc_id}`);
                 }

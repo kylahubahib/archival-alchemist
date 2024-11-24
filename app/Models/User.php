@@ -202,4 +202,10 @@ class User extends Authenticatable
         }
     }
 
+        public function forumComments()
+    {
+        return $this->hasMany(ForumComment::class);
+    }
+
+
 }

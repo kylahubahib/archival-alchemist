@@ -39,6 +39,8 @@ use App\Http\Controllers\LandingPageController;
 use App\Http\Controllers\ReportReasonController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ForumCommentController;
+
 
 use App\Http\Controllers\PostController;
 
@@ -502,6 +504,10 @@ Route::middleware(['web'])->group(function () {
 
     // Route to increment the view count of a specific post
     Route::post('/forum-posts/{id}/view', [ForumPostController::class, 'incrementViewCount'])->name('forum-posts.incrementViewCount');
+
+    //Route for Forum Comments
+    Route::get('/forum-comments/{postId}', [ForumCommentController::class, 'index']);
+    Route::post('/forum-comments', [ForumCommentController::class, 'store']);
 });
 
 

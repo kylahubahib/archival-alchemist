@@ -12,7 +12,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('departments', function (Blueprint $table) {
-            $table->string('dept_acronym');
+            // Check if the column already exists before adding it
+            if (!Schema::hasColumn('departments', 'dept_acronym')) {
+                $table->string('dept_acronym');
+            }
         });
     }
 
@@ -22,7 +25,11 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('departments', function (Blueprint $table) {
-            //
+            // Drop the column if it exists
+            if (Schema::hasColumn('departments', 'dept_acronym')) {
+                $table->dropColumn('dept_acronym');
+            }
         });
     }
 };
+

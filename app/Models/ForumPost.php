@@ -64,4 +64,10 @@ class ForumPost extends Model
         });
     }
 
+        public function forumComments()
+    {
+        return $this->hasMany(ForumComment::class);
+    }
+
+
 }

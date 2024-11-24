@@ -11,9 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('comments', function (Blueprint $table) {
-            $table->id();
-            $table->timestamps();
+        Schema::table('forum_posts', function (Blueprint $table) {
+            $table->string('status')->default('Visible');
         });
     }
 
@@ -22,6 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('comments');
+        Schema::table('forum_posts', function (Blueprint $table) {
+            $table->dropColumn('status');
+        });
     }
 };
