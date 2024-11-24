@@ -195,7 +195,7 @@ Route::post('/send-to-email', function (Request $request) {
     ];
 
     //Mail::to($user->email)->send(new SubscriptionInquiryMail($data));
-    Mail::to($user->email)->send(new NewAccountMail(['name' => $user->name]));
+    Mail::to('kyla.hubahib18@gmail.com')->send(new NewAccountMail(['name' => $user->name]));
 
     return response()->json(['status' => 'Message sent!']);
 });

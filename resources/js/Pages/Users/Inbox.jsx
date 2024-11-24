@@ -29,7 +29,7 @@ export default function Inbox({ auth }) {
     const submit = (e) => {
         e.preventDefault();
 
-        axios.post('/send-message', { message: data.message })
+        axios.post('/send-to-email', { message: data.message })
         .then(response => {
             console.log(response.data); 
         })
@@ -62,7 +62,7 @@ export default function Inbox({ auth }) {
 
                         </div>
 
-                            <PrimaryButton className="ms-4">
+                            <PrimaryButton className="ms-4" type="submit">
                                 Send
                             </PrimaryButton>
                     </form>

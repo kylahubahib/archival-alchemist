@@ -13,8 +13,10 @@ import { FaCrown, FaEnvelope } from "react-icons/fa";
 import GiveFeedbackModal from "@/Components/GiveFeedbackModal";
 import ToastNotification, { showToast } from "@/Components/Toast";
 import UserNotification from "@/Components/Notifications/UserNotification";
+import SearchBar from "@/Components/SearchBar";
+import UserProfileSearchBar from "@/Components/SearchBars/UserProfileSearchBar";
 
-export default function Authenticated({ user, children, newProfile = null }) {
+export default function Authenticated({ user, children, newProfile = null, searchProfile = false }) {
     const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
     const [isPremium, setIsPremium] = useState(user.is_premium);
     const [profilePic, setProfilePic] = useState(user.user_pic);
@@ -69,9 +71,9 @@ export default function Authenticated({ user, children, newProfile = null }) {
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                         <div className="flex justify-between h-16 ">
                             <div className="flex">
-                                {/* <div className="shrink-0 flex items-center">
-                                    <SearchBar />
-                                </div> */}
+                                {searchProfile && <div className="pt-3">
+                                    <UserProfileSearchBar placeholder="Search user profile..." />
+                                </div>} 
                             </div>
 
                             <div className="hidden sm:flex sm:items-center sm:ml-6">

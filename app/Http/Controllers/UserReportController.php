@@ -5,8 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\ReportType;
 use App\Models\UserReport;
 use App\Models\User;
-use App\Models\Forum;
-use App\Models\Post;
+use App\Models\ForumPost;
+// use App\Models\Post;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\JsonResponse;
@@ -16,6 +16,7 @@ use Inertia\Response;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth; 
 
+use App\Notifications\SuperadminNotification;
 use App\Notifications\InstitutionAdminNotification;
 use App\Notifications\UserNotification;
 
@@ -122,15 +123,12 @@ class UserReportController extends Controller
 
         switch ($report->report_location) {  
             case 'Forum':
-                $content = Forum::with('user:id,name,user_status,user_pic')->find($report->reported_id); 
+                $content = ForumPost::with('user:id,name,user_status,user_pic')->find($report->reported_id); 
                 break;
 
             case 'Profile':
                 $content = User::find($report->reported_id); 
                 $reportedCount = UserReport::where('reported_id', $report->reported_id)->count();
-                break;
-            case 'Post':
-                $content = Post::find($report->reported_id); 
                 break;
 
             default:
@@ -155,7 +153,7 @@ class UserReportController extends Controller
         $request->validate([
             'reported_id' => 'required|integer|min:0',
             'report_type' => 'required|string',
-            'report_attachment' => 'nullable|string',
+            // 'report_attachment' => 'nullable|string',
             'report_desc' => 'required|string',
             'report_location' => 'required|string',
         ]);
@@ -183,6 +181,21 @@ class UserReportController extends Controller
             ]);
 
             \Log::info($report->toArray());
+
+            if($report)
+            {
+                $superadmins = User::where('user_type', 'superadmin')->get();
+            
+                //Notify the superadmin for the newly registered institution admin
+                if ($superadmins->isNotEmpty()) {
+                    foreach ($superadmins as $superadmin) {
+                        $superadmin->notify(new SuperadminNotification([
+                            'message' => 'A new user report has been submitted. Please review the report to take the necessary action.',
+                            'admin_id' => $superadmin->id,
+                        ]));
+                    }
+                }
+            }
 
             return response()->json([
                 'success' => true,
@@ -219,13 +232,13 @@ class UserReportController extends Controller
 
         switch ($report->report_location) {  
             case 'Forum':
-                $content = Forum::find($report->reported_id);
+                $content = ForumPost::find($report->reported_id);
 
                 if ($content) {
                     \Log::info('Content: ', $content->toArray());
                 
                     $content->update([
-                        'forum_status' => 'Hidden',
+                        'status' => 'Hidden',
                     ]);
 
                     $user = User::find($content->user_id);
@@ -261,9 +274,6 @@ class UserReportController extends Controller
                     'closed_at' => Carbon::now()
                 ]);
                 break;
-            // case 'Post':
-            //     // 
-            //     break;
 
             default:
                 break;

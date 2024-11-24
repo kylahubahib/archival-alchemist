@@ -36,6 +36,7 @@ export default function UserReports({ auth, userReports, pendingCount, solvedCou
         setSelectedContent(null);
         setIsReportModalOpen(false);
         setIsModalOpen(false);
+        router.reload();
     }
     //FOR REPORT MODAL
 
@@ -61,8 +62,6 @@ export default function UserReports({ auth, userReports, pendingCount, solvedCou
 
     const viewDetails = (data) => {
         //console.log(data);
-
-    
         axios.get(route('user-reports.show', data.id)).then(response => {
             setSelectedData(response.data.report);
             setSelectedContent(response.data.content);
@@ -109,7 +108,7 @@ export default function UserReports({ auth, userReports, pendingCount, solvedCou
                                 </div>
                         </div>
 
-                        <button onClick={openReportModal}>open report modal</button>
+                        {/* <button onClick={openReportModal}>open report modal</button> */}
                     </div>
 
                     <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
