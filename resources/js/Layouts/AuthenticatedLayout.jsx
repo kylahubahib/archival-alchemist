@@ -47,11 +47,13 @@ export default function Authenticated({ user, children, newProfile = null }) {
                 <SidebarItem icon={<BiBookOpen size={20} />} text="Library" to="/library" />
                 <SidebarItem icon={<MdOutlineForum size={20} />} text="Forum" to="/forum" />
                 {/* <SidebarItem icon={<MdOutlineLabel size={20} />} text="Tags" to="/tags" /> */}
-                {user.user_type === 'teacher' ? (
+                {user.user_type !== 'general_user' &&
+                (user.user_type === 'teacher' ? (
                     <SidebarItem icon={<SiGoogleclassroom size={20} />} text="Class" to="/teacherclass" />
                 ) : (
                     <SidebarItem icon={<SiGoogleclassroom size={20} />} text="Class" to="/studentclass" />
-                )}
+                ))
+                }
                 <SidebarItem icon={<MdChatBubbleOutline size={20} />} text="Inbox" to="/chatify" />
                 <SidebarSeparator marginTop={80}/>
 
@@ -75,7 +77,11 @@ export default function Authenticated({ user, children, newProfile = null }) {
                             <div className="hidden sm:flex sm:items-center sm:ml-6">
                                 <button className="rounded-full py-1 px-6 bg-green-300 flex flex-row space-x-2">
                                     <span>{isPremium ? (<FaCrown size={20} color="#FFD700" />) : null}</span>
-                                    <span>{user.user_type.charAt(0).toUpperCase() + user.user_type.slice(1).toLowerCase()}</span>
+                                    {user.user_type === 'general_user' ? (
+                                       <span>General User</span>
+                                    ) : (
+                                        <span>{user.user_type.charAt(0).toUpperCase() + user.user_type.slice(1).toLowerCase()}</span>
+                                    )}
                                 </button>
 
                                 {/* <FiBell size={24} className="ml-3 text-white" /> */}

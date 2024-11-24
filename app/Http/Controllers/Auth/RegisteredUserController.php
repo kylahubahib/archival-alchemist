@@ -33,8 +33,9 @@ class RegisteredUserController extends Controller
      * Display the registration view.
      */
     public function create(): Response
-    {
-        return Inertia::render('Auth/RegistrationForm');
+    {   
+        // return Inertia::render('Auth/RegistrationForm');
+        return Inertia::render('Auth/Register');
     }
 
     /**
@@ -50,33 +51,33 @@ class RegisteredUserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
-            'role' => 'required|string|in:student,teacher,admin',
-            'uni_branch_id' => 'nullable|integer',
-            'uni_id_num' => 'nullable|string|max:50',
+            // 'role' => 'required|string|in:student,teacher,admin',
+            // 'uni_branch_id' => 'nullable|integer',
+            // 'uni_id_num' => 'nullable|string|max:50',
             'user_dob' => 'required|string|max:255',
-            'ins_admin_proof' => 'nullable|file|mimes:pdf,jpg,png,docx|max:2048'
+            // 'ins_admin_proof' => 'nullable|file|mimes:pdf,jpg,png,docx|max:2048'
         ]);
         
         \Log::info('Validated Data:', $validatedData);
         
-        $file = $request->file('ins_admin_proof');
+        // $file = $request->file('ins_admin_proof');
         
-        if ($file) {
-            \Log::info('File:', [
-                'name' => $file->getClientOriginalName(),
-                'mime_type' => $file->getClientMimeType(),
-                'size' => $file->getSize(),
-            ]);
+        // if ($file) {
+        //     \Log::info('File:', [
+        //         'name' => $file->getClientOriginalName(),
+        //         'mime_type' => $file->getClientMimeType(),
+        //         'size' => $file->getSize(),
+        //     ]);
         
-            // Generate a unique file name
-            $fileName = time() . '_' . $file->getClientOriginalName();
+        //     // Generate a unique file name
+        //     $fileName = time() . '_' . $file->getClientOriginalName();
             
-            // Store the file in the 'admin_proof_files' directory
-            $file->storeAs('admin_proof_files', $fileName, 'public');
+        //     // Store the file in the 'admin_proof_files' directory
+        //     $file->storeAs('admin_proof_files', $fileName, 'public');
             
-        } else {
-            \Log::info('No file uploaded for ins_admin_proof.');
-        }
+        // } else {
+        //     \Log::info('No file uploaded for ins_admin_proof.');
+        // }
         
 
         //\Log::info('File:', $fileName);
@@ -86,10 +87,10 @@ class RegisteredUserController extends Controller
         //Result: 9/1/2005
         $formattedDate = Carbon::createFromFormat('Y-m-d',  $validatedData['user_dob'])->format('n/j/Y');
         
-        if($validatedData['uni_id_num'] != null && $validatedData['uni_branch_id'] != null)
-        {
-            $is_affiliated = true;
-        }
+        // if($validatedData['uni_id_num'] != null && $validatedData['uni_branch_id'] != null)
+        // {
+        //     $is_affiliated = true;
+        // }
         
         \Log::info($formattedDate);
 
@@ -98,78 +99,72 @@ class RegisteredUserController extends Controller
                 'name' => $validatedData['name'],
                 'email' => $validatedData['email'],
                 'password' => Hash::make($validatedData['password']),
-                'uni_id_num' => $validatedData['uni_id_num'] ?? null,
-                'user_type' => $validatedData['role'],
+                // 'uni_id_num' => $validatedData['uni_id_num'] ?? null,
+                'user_type' => 'general_user', //$validatedData['role'],
                 'user_pic' => 'storage/profile_pics/default_pic.png',
                 'user_status' => 'active',
                 'user_dob' => $formattedDate,
                 'is_premium' => false,
-                'is_affiliated' => $is_affiliated ?? false
+                'is_affiliated' => false
             ]);
 
             \Log::info('User created:', $user->toArray());
 
-            if ($validatedData['role'] === 'student') {
-                $student = Student::create([
-                    'user_id' => $user->id,
-                    'uni_branch_id' => $validatedData['uni_branch_id'] ?? null,
-                ]);
+            // if ($validatedData['role'] === 'student') {
+            //     $student = Student::create([
+            //         'user_id' => $user->id,
+            //         'uni_branch_id' => $validatedData['uni_branch_id'] ?? null,
+            //     ]);
 
-                \Log::info('Student created:', ['student_id' => $student->id]);
+            //     \Log::info('Student created:', ['student_id' => $student->id]);
 
 
-            } elseif ($validatedData['role'] === 'teacher') {
-                $faculty = Faculty::create([
-                    'user_id' => $user->id,
-                    'uni_branch_id' => $validatedData['uni_branch_id'],
-                ]);
+            // } elseif ($validatedData['role'] === 'teacher') {
+            //     $faculty = Faculty::create([
+            //         'user_id' => $user->id,
+            //         'uni_branch_id' => $validatedData['uni_branch_id'],
+            //     ]);
 
-                \Log::info('Faculty created:', ['faculty_id' => $faculty->id]);
+            //     \Log::info('Faculty created:', ['faculty_id' => $faculty->id]);
 
-            } elseif ($validatedData['role'] === 'admin') {
+            // } elseif ($validatedData['role'] === 'admin') {
 
-                $institutionSubscription = InstitutionSubscription::create([
-                    'uni_branch_id' => $validatedData['uni_branch_id'],
-                    'plan_id' => 6,
-                    'insub_status' => 'Active',
-                    'total_amount' => 0.00,
-                    'insub_content' => null,
-                    'insub_num_user' => 100,
-                    'start_date' => null,
-                    'end_date' => null,
-                    'notify_renewal' => 0
-                ]);
+            //     $institutionSubscription = InstitutionSubscription::create([
+            //         'uni_branch_id' => $validatedData['uni_branch_id'],
+            //         'plan_id' => 6,
+            //         'insub_status' => 'Active',
+            //         'total_amount' => 0.00,
+            //         'insub_content' => null,
+            //         'insub_num_user' => 100,
+            //         'start_date' => null,
+            //         'end_date' => null,
+            //         'notify_renewal' => 0
+            //     ]);
 
-                $institutionAdmin = InstitutionAdmin::create([
-                    'user_id' => $user->id,
-                    'insub_id' => $institutionSubscription->id,
-                    'ins_admin_proof' => 'storage/admin_proof_files/' . $fileName,
-                ]);
+            //     $institutionAdmin = InstitutionAdmin::create([
+            //         'user_id' => $user->id,
+            //         'insub_id' => $institutionSubscription->id,
+            //         'ins_admin_proof' => 'storage/admin_proof_files/' . $fileName,
+            //     ]);
 
-                \Log::info('Institution Admin created:', ['ins_admin_id' => $institutionAdmin->id]);
+            //     \Log::info('Institution Admin created:', ['ins_admin_id' => $institutionAdmin->id]);
 
-                if($institutionAdmin)
-                {
-                    $superadmins = User::where('user_type', 'superadmin')->get();
+            //     if($institutionAdmin)
+            //     {
+            //         $superadmins = User::where('user_type', 'superadmin')->get();
 
-                    //Notify the superadmin for the newly registered institution admin
-                    if ($superadmins->isNotEmpty()) {
-                        foreach ($superadmins as $superadmin) {
-                            $superadmin->notify(new SuperadminNotification([
-                                'message' => 'A new institution admin has registered and sent proof for validation',
-                                'admin_id' => $institutionAdmin->id,
-                                'proof_url' => $institutionAdmin->ins_admin_proof,
-                            ]));
-                        }
-                    }
-                }
-
-                
-
-                
-            }
-
-    
+            //         //Notify the superadmin for the newly registered institution admin
+            //         if ($superadmins->isNotEmpty()) {
+            //             foreach ($superadmins as $superadmin) {
+            //                 $superadmin->notify(new SuperadminNotification([
+            //                     'message' => 'A new institution admin has registered and sent proof for validation',
+            //                     'admin_id' => $institutionAdmin->id,
+            //                     'proof_url' => $institutionAdmin->ins_admin_proof,
+            //                 ]));
+            //             }
+            //         }
+            //     }                
+            // }
 
             event(new Registered($user));
 

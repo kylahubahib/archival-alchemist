@@ -8,9 +8,8 @@ const SidebarContext = createContext();
 export default function Sidebar({ children, color, borderRadius, margin }) {
     const [expanded, setExpanded] = useState(true);
 
-    // Check window size and update the expanded state
     const handleResize = () => {
-        if (window.innerWidth < 768) { // Adjust this value based on your breakpoint
+        if (window.innerWidth < 768) { 
             setExpanded(false);
         } else {
             setExpanded(true);
@@ -18,10 +17,10 @@ export default function Sidebar({ children, color, borderRadius, margin }) {
     };
 
     useEffect(() => {
-        handleResize(); // Check on mount
+        handleResize(); 
 
-        window.addEventListener('resize', handleResize); // Add event listener
-        return () => window.removeEventListener('resize', handleResize); // Cleanup
+        window.addEventListener('resize', handleResize); 
+        return () => window.removeEventListener('resize', handleResize); 
     }, []);
 
     const bgColor = `bg-${color}`;

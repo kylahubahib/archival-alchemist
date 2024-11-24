@@ -41,7 +41,7 @@ export default function Forum({ auth }) {
   const { isOpen: isConfirmOpen, onOpen: onConfirmOpen, onOpenChange: onConfirmOpenChange } = useDisclosure();
   const [postToDelete, setPostToDelete] = useState(null);
   const [selectedSort, setSelectedSort] = useState('latest');
-  const [comments, setComments] = useState([]);
+
     
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -55,16 +55,6 @@ export default function Forum({ auth }) {
     const date = dayjs.utc(dateString).tz(dayjs.tz.guess()); // Adjust to local timezone
     return date.fromNow(); // Display as relative time, e.g., "5 minutes ago"
 };
-
-  // Function to fetch comments for a selected post
-  const fetchComments = async (postId) => {
-    try {
-      const response = await axios.get(`/forum-posts/${postId}/comments`);
-      setComments(response.data);
-    } catch (error) {
-      console.error("Error fetching comments:", error);
-    }
-  };
 
 // Fetch posts with sorting option
 const fetchPosts = async (sortType = 'latest') => {
@@ -134,7 +124,8 @@ useEffect(() => {
               onOpenChange();
               toast.success("Post created successfully!");
               
-              
+              // Optionally, you can call fetchPosts again here if needed
+              // fetchPosts(); 
           }
       } catch (error) {
           handlePostError(error, newPost);
@@ -172,12 +163,12 @@ const handleTitleClick = async (postId) => {
 
 
 
-      // Open the modal and fetch comments
-    const showModal = (postDetails) => {
-      setSelectedPost(postDetails); // Set the selected post details
-      fetchComments(postDetails.id); // Fetch comments for the selected post
-      setIsModalOpen(true); // Open the modal
-    };
+    // Open the modal with post details
+      const showModal = (postDetails) => {
+        setSelectedPost(postDetails); // Set the selected post details
+        setIsModalOpen(true); // Open the modal
+      };
+
       // Close the modal
       const closeModal = () => {
         setIsModalOpen(false); // Close the modal
@@ -431,6 +422,12 @@ const handleTitleClick = async (postId) => {
               )
               }
     </div>
+  
+
+
+
+
+
 
                     {/* Modal for displaying post details */}
                     <PostDetailModal
