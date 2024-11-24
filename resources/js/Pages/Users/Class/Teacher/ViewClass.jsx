@@ -13,7 +13,7 @@ const ViewClass = ({ onBack, folders }) => {
         console.log('Folders: ',folders);
     })
 
-    const handleShowGrades = () => { 
+    const handleShowGrades = () => {
         setActiveSection('grades');
     };
 

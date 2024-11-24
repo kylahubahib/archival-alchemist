@@ -29,7 +29,8 @@ const PreviewTask = ({ folders, onBack, task, taskID }) => {
     };
 
     return (
-<div className="header-bar w-screen bg-gray-100 border-b border-gray-200 shadow-sm absolute top-0 left-0 items-center z-10">
+<div className="header-bar w-full bg-gray-100 h-full border-b border-gray-200 shadow-sm absolute top-0 left-0 items-center z-10">
+{/* <div className="header-bar w-screen bg-gray-100 border-b border-gray-200 shadow-sm absolute top-0 left-0 items-center z-10"> */}
 {/* Header Bar */}
             <div className="header-bar bg-gray-100 border-b border-gray-200 shadow-sm ml-5 px-10 pt-0 flex items-center justify-between">
 
@@ -89,7 +90,7 @@ const PreviewTask = ({ folders, onBack, task, taskID }) => {
             </div>
 
             {/* Content Section with Margin Top */}
-            <div className="w-full bg-white mt-12"> {/* Add mt-12 to create space below the header */}
+            <div className="w-full bg-gray-100  pt-12 "> {/* Add mt-12 to create space below the header */}
                 {activeSection === 'people' && <People folders={folders} onBack={() => setActiveSection('')} />}
                 {activeSection === 'grades' && <Grades  folders={folders}  onBack={() => setActiveSection('')} />}
                 {activeSection === 'taskInstructions' && <TaskInstructions folders={folders} onBack={() => setActiveSection('')}  task={task} taskID={taskID}/>}

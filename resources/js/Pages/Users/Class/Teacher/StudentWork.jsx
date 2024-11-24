@@ -266,8 +266,10 @@ const handleShowStudentWork = () => {
 
 
     return (
-        <div
-            className="relative bg-white px-6 mb-10 w-full items-center"
+
+    <div className="mt-0 bg-gray-100 rounded-lg shadow-lg relative  mb-10"
+        // <div
+            // className="relative bg-white px-6 mb-10 w-full items-center"
             style={{
                 position: "relative",
                 top: "-48px",
