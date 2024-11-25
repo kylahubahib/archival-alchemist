@@ -229,7 +229,7 @@ useEffect(() => {
                 </div>
             )}
 
-  
+
         </AuthenticatedLayout>
     );
 }

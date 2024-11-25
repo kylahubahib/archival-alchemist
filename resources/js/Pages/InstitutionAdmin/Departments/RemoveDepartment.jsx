@@ -5,15 +5,15 @@ import axios from 'axios';
 import { router } from '@inertiajs/react';
 
 export default function RemoveDepartment({ isOpen, onClose, selectedDept, departments }) {
-    const [choices, setChoices] = useState(false); 
+    const [choices, setChoices] = useState(false);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         if (selectedDept) {
-            setLoading(true); 
+            setLoading(true);
             axios.get('get-courses', {params: { id: selectedDept.id }}).then(response => {
                 setChoices(response.data.courses.data.length > 0);
-                setLoading(false); 
+                setLoading(false);
             }).catch(error => {console.error("Error fetching courses:", error);})
         }
     }, [selectedDept]);

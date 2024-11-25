@@ -4,7 +4,7 @@ import { Radio, RadioGroup, cn } from '@nextui-org/react';
 
 export const CustomRadio = (props) => {
     const {children, ...otherProps} = props;
-  
+
     return (
       <Radio
         {...otherProps}
@@ -66,5 +66,3 @@ export default function ChooseUserType({ nextStep, handleChange, values, errors 
         </div>
     );
 }
-
-

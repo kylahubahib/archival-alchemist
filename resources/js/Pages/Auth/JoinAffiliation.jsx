@@ -12,12 +12,12 @@ export default function JoinAffiliation({ nextStep, prevStep, handleChange, valu
     const [universities, setUniversities] = useState([]);
     const [departments, setDepartments] = useState(null);
     const [courses, setCourses] = useState(null);
-    const [selectedFile, setSelectedFile] = useState(ins_admin_proof); 
+    const [selectedFile, setSelectedFile] = useState(ins_admin_proof);
     const [errorMessage, setErrorMessage] = useState(null);
 
     useEffect(() => {
         axios.get('/api/universities-branches')
-            .then(response => { 
+            .then(response => {
                 setUniversities(response.data);
             })
             .catch(error => {
@@ -61,7 +61,7 @@ export default function JoinAffiliation({ nextStep, prevStep, handleChange, valu
                 const response = await axios.get('/check-university-subscription', {
                     params: { uni_branch_id }
                 });
-        
+
                 if (response.status === 200) {
                     setErrorMessage(response.data.message);
                 } else if (response.status === 204) {
@@ -76,7 +76,7 @@ export default function JoinAffiliation({ nextStep, prevStep, handleChange, valu
     const getCourses = (id) => {
         console.log(id);
     };
-    
+
 
     return (
         <div className="flex flex-col space-y-4 justify-center">
@@ -88,7 +88,7 @@ export default function JoinAffiliation({ nextStep, prevStep, handleChange, valu
                     id="uni_branch_id"
                     name="uni_branch_id"
                     value={uni_branch_id}
-                    onChange={(e) => checkIfUniversityExist(e.target.value)}  
+                    onChange={(e) => checkIfUniversityExist(e.target.value)}
                     className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
                 >
                     <option value="" disabled>Select a university</option>
@@ -100,8 +100,8 @@ export default function JoinAffiliation({ nextStep, prevStep, handleChange, valu
                         ))
                     )}
                 </select>
-                
-                {role === 'admin' &&   
+
+                {role === 'admin' &&
                     <Button size="md" variant="light" color="danger">
                         Can't find your university? Click Here
                     </Button>
@@ -111,13 +111,13 @@ export default function JoinAffiliation({ nextStep, prevStep, handleChange, valu
                     <div>
                         <InputLabel value="Courses" />
                         <select
-                            onChange={(e) => getCourses(e.target.value)}  
+                            onChange={(e) => getCourses(e.target.value)}
                             className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
                         >
                             <option value="" disabled>Select a department</option>
                             {/* {departments.map((dept) => (
                                 <option key={dept.id} value={dept.id}>
-                                    {dept.dept_name} 
+                                    {dept.dept_name}
                                 </option>
                             ))} */}
                             {departments.map((dept) =>
@@ -159,7 +159,7 @@ export default function JoinAffiliation({ nextStep, prevStep, handleChange, valu
                                     id="dropzone-file"
                                     type="file"
                                     className="hidden"
-                                    onChange={handleFileChange} 
+                                    onChange={handleFileChange}
                                 />
                             </label>
                         </div>

@@ -310,4 +310,3 @@ useEffect(() => {
 };
 
 export default People;
-

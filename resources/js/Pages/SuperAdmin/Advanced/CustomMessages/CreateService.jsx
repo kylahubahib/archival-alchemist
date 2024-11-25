@@ -13,14 +13,14 @@ export default function CreateService({close}) {
     const { data, setData, post, processing, errors, reset } = useForm({
         content_text: '',
         content_title: '',
-        subject: '', 
+        subject: '',
         content_type: ''
     });
 
     const handleFileChange = (e) => {
         const file = e.target.files[0];
         if (file) {
-            setData('subject', file);  
+            setData('subject', file);
             setPreviewUrl(URL.createObjectURL(file));
         }
     };
@@ -28,7 +28,7 @@ export default function CreateService({close}) {
     const handleCloseCreate = () => {
         setNewService(false);
         reset();
-        setPreviewUrl(null);  
+        setPreviewUrl(null);
     };
 
 
@@ -101,6 +101,6 @@ export default function CreateService({close}) {
                 </div>
             </form>
         </div>
-          
+
     );
 }

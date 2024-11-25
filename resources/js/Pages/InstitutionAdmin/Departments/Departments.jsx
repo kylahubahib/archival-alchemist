@@ -1,10 +1,10 @@
-import { FaBuilding } from "react-icons/fa"; 
-import { RiFolderUnknowFill } from "react-icons/ri"; 
-import { FcFolder } from "react-icons/fc"; 
-import { MdFolderDelete } from "react-icons/md"; 
-import { FaEdit, FaFolder } from "react-icons/fa"; 
-import { TbDotsVertical } from "react-icons/tb"; 
-import { FiChevronRight } from "react-icons/fi"; 
+import { FaBuilding } from "react-icons/fa";
+import { RiFolderUnknowFill } from "react-icons/ri";
+import { FcFolder } from "react-icons/fc";
+import { MdFolderDelete } from "react-icons/md";
+import { FaEdit, FaFolder } from "react-icons/fa";
+import { TbDotsVertical } from "react-icons/tb";
+import { FiChevronRight } from "react-icons/fi";
 import AddButton from '@/Components/AddButton';
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
@@ -60,7 +60,7 @@ export default function Departments({ auth, departments, uniBranch_id, branch}) 
 
     useEffect(() => {
         if (displayedData === 'Departments') {
-            const deptFilter = departments.data.filter((value) => 
+            const deptFilter = departments.data.filter((value) =>
                 value.dept_name.toLowerCase().startsWith(wordEntered.toLowerCase())
             );
             setFilteredData(deptFilter);
@@ -70,20 +70,20 @@ export default function Departments({ auth, departments, uniBranch_id, branch}) 
                 const courseFilter = courses.data
                     .filter(course => course.department.id === selectedId)
                     .filter(course => course.course_name.toLowerCase().startsWith(wordEntered.toLowerCase()));
-    
+
                 setFilteredData(courseFilter);
-            } 
+            }
         } else if (displayedData === 'Sections') {
             if (selectedId !== null) {
                 const sectionFilter = sections.data
                     .filter(section => section.course.id === selectedId)
                     .filter(section => section.section_name.toLowerCase().startsWith(wordEntered.toLowerCase()));
-    
+
                 setFilteredData(sectionFilter);
-            } 
+            }
         }
     }, [wordEntered, departments.data,  displayedData, selectedId]);
-    
+
 
     const handleFilter = (e) => {
         setWordEntered(e.target.value);
@@ -108,10 +108,10 @@ export default function Departments({ auth, departments, uniBranch_id, branch}) 
         }).then(response => {
             setSelectedId(item.id);
             setDisplayedData('Courses');
-            setFilteredData(response.data.courses.data); 
-            setCourses(response.data.courses); 
+            setFilteredData(response.data.courses.data);
+            setCourses(response.data.courses);
         });
-        
+
     }
 
      // Change the display to the section table
@@ -131,7 +131,7 @@ export default function Departments({ auth, departments, uniBranch_id, branch}) 
             //console.log('Sections: ', filteredData);
         })
     }
-    
+
     //Creation of a new department
     const createSubmit = (e) => {
         e.preventDefault();
@@ -159,13 +159,13 @@ export default function Departments({ auth, departments, uniBranch_id, branch}) 
         }
     };
 
-   
+
     const closeClick = () => {
-        reset(); 
-        clearErrors(); 
+        reset();
+        clearErrors();
         closeModal();
     };
-    
+
     //Deletion of a certain course
     const deleteCourses = (id) => {
             router.delete(route('manage-courses.destroy', id), {
@@ -174,7 +174,7 @@ export default function Departments({ auth, departments, uniBranch_id, branch}) 
                     displayCourses(selectedDept);
                     showToast('success', 'Successfully deleted course!');
                 },
-                
+
             });
     };
 
@@ -194,7 +194,7 @@ export default function Departments({ auth, departments, uniBranch_id, branch}) 
     };
 
     const openEditModal = (data) => {
-        
+
         //Open the edit modal for the department
         if(displayedData === 'Departments'){
             setSelectedDept(data);
@@ -202,7 +202,7 @@ export default function Departments({ auth, departments, uniBranch_id, branch}) 
                 dept_name: data.dept_name,
                 dept_acronym: data.dept_acronym
             });
-            
+
             setIsEditModalOpen(true);
 
         }
@@ -221,13 +221,13 @@ export default function Departments({ auth, departments, uniBranch_id, branch}) 
     const openDeleteProcessModal = (data) => {
         setSelectedDept(data);
         setIsAssignModalOpen(true);
-        //console.log('deptin: ', data);  
+        //console.log('deptin: ', data);
     };
 
     const assignCourseModal = (data) => {
 
         if(displayedData === 'Departments'){
-            setSelectedDept(data);        
+            setSelectedDept(data);
             setIsAddCourseModal(true);
 
         }
@@ -243,7 +243,7 @@ export default function Departments({ auth, departments, uniBranch_id, branch}) 
         setIsCreateModalOpen(false);
         setIsAssignModalOpen(false);
         setIsAddCourseModal(false);
-    
+
         if(displayedData === 'Departments'){
             setFilteredData(departments.data);
             setWordEntered("");
@@ -271,19 +271,19 @@ export default function Departments({ auth, departments, uniBranch_id, branch}) 
     })
 
     return (
-        
+
         <AdminLayout
              user={auth.user}
             header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Department</h2>}
             university={branch?.university?.uni_name + ' - ' + branch?.uni_branch_name}
         >
-        
+
             <Head title="Department" />
 
             <div className="mt-5">
 
             {/* DEPARTMENTS TABLE */}
-            {displayedData === 'Departments' && (   
+            {displayedData === 'Departments' && (
                 <div className="max-w-full mx-auto sm:px-6 lg:px-8">
                     <div className="text-customGray text-lg font-bold mb-3 mt-7">
                         <div className="flex flex-row space-x-2">
@@ -296,7 +296,7 @@ export default function Departments({ auth, departments, uniBranch_id, branch}) 
                             <div className="flex items-center justify-between flex-column md:flex-row flex-wrap space-y-4 mt-4 md:space-y-0 bg-white">
                                 {/* Search Filter */}
                                 <div className="w-1/2">
-                                    <SearchBar 
+                                    <SearchBar
                                         name='search'
                                         value={wordEntered}
                                         variant="bordered"
@@ -305,15 +305,15 @@ export default function Departments({ auth, departments, uniBranch_id, branch}) 
                                         className=" min-w-sm flex-1"
                                     />
                                 </div>
-                              
+
                                 {/* Adding a new department */}
                                 <div>
                                     <AddButton onClick={openCreateModal} className="text-customBlue hover:text-white space-x-1">
                                         <FaPlus /><span>Add Department</span>
-                                    </AddButton> 
-                                </div> 
+                                    </AddButton>
+                                </div>
                             </div>
-                            
+
                             {/* Department List */}
                             <div className=" pt-1">
                             {filteredData.length > 0 ? (
@@ -322,7 +322,7 @@ export default function Departments({ auth, departments, uniBranch_id, branch}) 
                                     className="border-none hover:bg-gray-100 w-full my-5"
                                     shadow="sm"
                                     key={dept.id}
-                                    > 
+                                    >
                                     <CardBody  onClick={() => displayCourses(dept)} className="cursor-pointer">
                                         <div className="w-full flex flex-row justify-between">
                                             <div className=" text-gray-600 font-semibold text-lg">{dept.dept_name} ({dept.dept_acronym})</div>
@@ -333,7 +333,7 @@ export default function Departments({ auth, departments, uniBranch_id, branch}) 
                                                     <TbDotsVertical />
                                                     </Button>
                                                 </DropdownTrigger>
-                                                <DropdownMenu > 
+                                                <DropdownMenu >
                                                     <DropdownItem onClick={() => openEditModal(dept)} showDivider startContent={<FaEdit className=" text-gray-600" />}>Edit</DropdownItem>
                                                     <DropdownItem onClick={() => openDeleteProcessModal(dept)} color="danger" startContent={<MdFolderDelete/>}>Delete</DropdownItem>
                                                 </DropdownMenu>
@@ -341,11 +341,11 @@ export default function Departments({ auth, departments, uniBranch_id, branch}) 
                                             </div>
                                         </div>
                                         <div className="w-full flex flex-row space-x-3">
-                                            <div  className=" text-gray-600 text-small">Added By: {dept.added_by}</div> 
+                                            <div  className=" text-gray-600 text-small">Added By: {dept.added_by}</div>
                                             <div  className=" text-gray-600 text-small">|</div>
-                                            <div  className=" text-gray-600 text-small">Modified At: {formatDate(dept.updated_at)}</div> 
+                                            <div  className=" text-gray-600 text-small">Modified At: {formatDate(dept.updated_at)}</div>
                                         </div>
-                                       
+
                                     </CardBody>
                                     </Card>
                                 ))
@@ -359,7 +359,7 @@ export default function Departments({ auth, departments, uniBranch_id, branch}) 
                             </div>
 
                         </div>
-                     
+
                     </div>
                 </div>
 
@@ -373,7 +373,7 @@ export default function Departments({ auth, departments, uniBranch_id, branch}) 
                         <div className="flex flex-row space-x-2">
                             <button onClick={() => displayDepts()} className="flex items-center hover:text-customBlue"> <span>{selectedDept.dept_name}</span></button>
                             <button onClick={() => {}} className="flex items-center hover:text-customBlue"><FiChevronRight /><span>Courses</span></button>
-                           
+
                         </div>
                     </div>
 
@@ -382,7 +382,7 @@ export default function Departments({ auth, departments, uniBranch_id, branch}) 
                             <div className="flex items-center justify-between flex-column md:flex-row flex-wrap space-y-4 mt-4 md:space-y-0 bg-white">
                                  {/* Search Filter */}
                                  <div className="w-1/2">
-                                    <SearchBar 
+                                    <SearchBar
                                         name='search'
                                         value={wordEntered}
                                         variant="bordered"
@@ -391,18 +391,18 @@ export default function Departments({ auth, departments, uniBranch_id, branch}) 
                                         className=" min-w-sm flex-1"
                                     />
                                 </div>
-                                
+
                                 {/* <div className="relative">
                                     <div className="absolute inset-y-0 rtl:inset-r-0 start-0 flex items-center ps-3 pointer-events-none">
                                         <svg className="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
                                             <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
                                         </svg>
                                     </div>
-                                    <input 
-                                        type="text" 
-                                        id="table-search-users" 
-                                        className="block pt-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg w-80 bg-gray-50 focus:ring-blue-500 focus:border-blue-500" 
-                                        placeholder="Search" 
+                                    <input
+                                        type="text"
+                                        id="table-search-users"
+                                        className="block pt-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg w-80 bg-gray-50 focus:ring-blue-500 focus:border-blue-500"
+                                        placeholder="Search"
                                         value={wordEntered}
                                         onChange={handleFilter}
                                     />
@@ -414,21 +414,21 @@ export default function Departments({ auth, departments, uniBranch_id, branch}) 
 
                                     <AddButton onClick={() => {assignCourseModal(selectedDept)}} className="text-customBlue hover:text-white space-x-1">
                                         <FaPlus /><span>Unassigned Course</span>
-                                    </AddButton>  
+                                    </AddButton>
 
                                     <AddExistingCourse isOpen={isAddCourseModal} onClose={closeModal} deptId={selectedDept.id}/>
-                                </div> 
+                                </div>
                             </div>
 
                             <div className=" pt-1">
-                                
+
                             {filteredData.length > 0 ? (
                                 filteredData.map((course) => (
                                     <Card
                                     className="border-none hover:bg-gray-100 w-full my-5"
                                     shadow="sm"
                                     key={course.id}
-                                    > 
+                                    >
                                     <CardBody  onClick={() =>  displaySections(course)} className="cursor-pointer">
                                         <div className="w-full flex flex-row justify-between">
                                             <div className=" text-gray-600 font-semibold text-lg">{course.course_name} ({course.course_acronym})</div>
@@ -439,7 +439,7 @@ export default function Departments({ auth, departments, uniBranch_id, branch}) 
                                                     <TbDotsVertical />
                                                     </Button>
                                                 </DropdownTrigger>
-                                                <DropdownMenu > 
+                                                <DropdownMenu >
                                                     <DropdownItem onClick={() => openEditModal(course)} showDivider startContent={<FaEdit className=" text-gray-600" />}>Edit</DropdownItem>
                                                     <DropdownItem onClick={() => deleteCourses(course.id)} color="danger" startContent={<MdFolderDelete/>}>Delete</DropdownItem>
                                                 </DropdownMenu>
@@ -448,11 +448,11 @@ export default function Departments({ auth, departments, uniBranch_id, branch}) 
                                         </div>
 
                                         <div className="w-full flex flex-row space-x-3">
-                                            <div  className=" text-gray-600 text-small">Added By: {course.added_by}</div> 
+                                            <div  className=" text-gray-600 text-small">Added By: {course.added_by}</div>
                                             <div  className=" text-gray-600 text-small">|</div>
-                                            <div  className=" text-gray-600 text-small">Modified At: {formatDate(course.updated_at)}</div> 
+                                            <div  className=" text-gray-600 text-small">Modified At: {formatDate(course.updated_at)}</div>
                                         </div>
-                                       
+
                                     </CardBody>
                                     </Card>
                                 ))
@@ -463,17 +463,17 @@ export default function Departments({ auth, departments, uniBranch_id, branch}) 
                                 </div>
                             )}
                             </div>
-                            
+
                         </div>
-                       
+
                     </div>
                 </div>
-            
+
             )}
 
             {/* SECTIONS TABLE */}
             {displayedData === 'Sections' && (
-                            
+
                 <div className="max-w-full mx-auto sm:px-6 lg:px-8">
                      <div className="text-customGray text-lg font-bold mb-3 mt-7">
                         <div className="flex flex-row space-x-2">
@@ -491,11 +491,11 @@ export default function Departments({ auth, departments, uniBranch_id, branch}) 
                                             <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
                                         </svg>
                                     </div>
-                                    <input 
-                                        type="text" 
-                                        id="table-search-users" 
-                                        className="block pt-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg w-80 bg-gray-50 focus:ring-blue-500 focus:border-blue-500" 
-                                        placeholder="Search" 
+                                    <input
+                                        type="text"
+                                        id="table-search-users"
+                                        className="block pt-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg w-80 bg-gray-50 focus:ring-blue-500 focus:border-blue-500"
+                                        placeholder="Search"
                                         value={wordEntered}
                                         onChange={handleFilter}
                                     />
@@ -513,7 +513,7 @@ export default function Departments({ auth, departments, uniBranch_id, branch}) 
                                                 <FcFolder size={70} />
                                             </div>
                                             <div className="text-center text-xl font-semibold mb-4">{section.section_name}</div>
-                                            
+
                                             <div className=" text-sm text-gray-600">
                                                 <p><strong>Assigned Teacher:</strong> {section.user.name || 'N/A'}</p>
                                                 <p><strong>Date Created:</strong> {new Date(section.created_at).toLocaleDateString()}</p>
@@ -524,16 +524,16 @@ export default function Departments({ auth, departments, uniBranch_id, branch}) 
                                     <div className="col-span-full flex flex-col items-center align-middle justify-center text-gray-200">
                                         <RiFolderUnknowFill size={400} />
                                         <p className="mt-4 text-2xl font-semibold">No section found</p>
-                                    </div>    
+                                    </div>
                                  )}
                             </div>
 
 
                         </div>
-                      
+
                     </div>
 			    </div>
-            )} 
+            )}
 
             </div>
 
@@ -641,10 +641,8 @@ export default function Departments({ auth, departments, uniBranch_id, branch}) 
 
 
             {displayedData === 'Sections' && <CreateSections isOpen={isCreateModalOpen} onClose={closeModal} sections={sections.data} courseId={selectedId} /> }
-            {displayedData === 'Sections' && selectedSection && <EditSections isOpen={isEditModalOpen} onClose={closeModal} section={selectedSection} sections={sections.data}/>}  
+            {displayedData === 'Sections' && selectedSection && <EditSections isOpen={isEditModalOpen} onClose={closeModal} section={selectedSection} sections={sections.data}/>}
 
         </AdminLayout>
-    ); 
+    );
 }
-
-

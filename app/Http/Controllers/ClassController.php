@@ -561,7 +561,4 @@ class ClassController extends Controller
         }
     }
 
-
-
-
 }

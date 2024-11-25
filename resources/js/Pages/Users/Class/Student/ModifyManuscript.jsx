@@ -65,7 +65,7 @@ const ReviewManuscript = ({folders, onBack, task, taskID, closeModal, classes, m
     setDropdownError(false);  // Reset the error when an action is selected
   };
 
-  
+
   const handleSendForReview = () => {
     axios.post('/send-for-revision', { manuscript_id: manuscript.id })
       .then(response => {
@@ -79,7 +79,7 @@ const ReviewManuscript = ({folders, onBack, task, taskID, closeModal, classes, m
         console.error('Error occurred:', error.response ? error.response.data : error.message);
       });
   };
-  
+
 
   // Toggle Modal state
   const seeHistory = () => {

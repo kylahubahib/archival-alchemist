@@ -73,7 +73,7 @@ export default function Authenticated({ user, children, newProfile = null, searc
                             <div className="flex">
                                 {searchProfile && <div className="pt-3">
                                     <UserProfileSearchBar placeholder="Search user profile..." />
-                                </div>} 
+                                </div>}
                             </div>
 
                             <div className="hidden sm:flex sm:items-center sm:ml-6">

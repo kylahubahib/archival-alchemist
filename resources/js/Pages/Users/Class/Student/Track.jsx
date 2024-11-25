@@ -19,7 +19,7 @@ export default function Track({folders, onBack, task, taskID }) {
         setExpanded(!expanded);
     };
 
-   
+
     useEffect(() => {
 
         console.log('SETION: ', folders?.id)
@@ -57,7 +57,7 @@ export default function Track({folders, onBack, task, taskID }) {
 
     return (
         <div className={`h-screen w-full border-none rounded-lg shadow-lg p-4 transition-height duration-300 ease-in-out ${expanded ? 'h-auto' : 'h-32'} bg-gray-100`}>
-            
+
             {classes.length > 0 ? (
                 classes.map((data)=> (
                     <div className="flex items-center justify-between pb-3" key={data.id}>
@@ -101,7 +101,7 @@ export default function Track({folders, onBack, task, taskID }) {
                                 <p className="cursor-pointer" onClick={() => openModal(data, 'revision')}>Click for details</p>
                             </VerticalTimelineElement>
                         ))
-                  
+
                     ) : (null)}
 
                     {/* <VerticalTimelineElement
@@ -171,7 +171,7 @@ export default function Track({folders, onBack, task, taskID }) {
             {modalContent == 'manuscript' && (
                 <Modal show={isModalOpen} onClose={closeModal}>
                 <div className="p-5 flex flex-col md:flex-row md:space-x-4 space-y-4 md:space-y-0">
-                    
+
                     {/* Left side - Image Card */}
                     <div className="md:w-1/2">
                     <Card isFooterBlurred radius="lg" className="border-none">
@@ -205,7 +205,7 @@ export default function Track({folders, onBack, task, taskID }) {
                         <p className="text-gray-700 mt-1">Abstract: </p>
                         <p className="text-gray-700 mt-1">{selectedData.man_doc_description}</p>
                     </div>
-                    
+
                     {/* Tags */}
                     <div className="mt-2 flex flex-wrap gap-2">
                         {selectedData.tags && selectedData.tags.length > 0 ? (
@@ -225,11 +225,11 @@ export default function Track({folders, onBack, task, taskID }) {
 
             )}
 
-            {modalContent == 'revision' && 
+            {modalContent == 'revision' &&
             (<Modal show={isModalOpen} onClose={closeModal}>
                 <div className="p-5 md:space-x-4 space-y-5 md:space-y-0">
                     <h2 className="text-xl text-gray-900">Title: {revisionHistory.man_doc_title}</h2>
-                    
+
 
                     <div className="mt-2">
                         <p className="text-gray-700 mt-1">{selectedData.status == 'Started' ? 'To Be Reviewed By:' : 'Reviewed By'}</p>

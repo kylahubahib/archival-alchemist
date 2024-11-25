@@ -27,8 +27,8 @@ export default function CreateCourse({isOpen, onClose, deptId, branchId}) {
     };
 
     const closeClick = () => {
-        reset(); 
-        clearErrors(); 
+        reset();
+        clearErrors();
         onClose();
     };
 
@@ -36,14 +36,14 @@ export default function CreateCourse({isOpen, onClose, deptId, branchId}) {
         axios.get('get-courses', {
             params: { id: id }
         }).then(response => {
-            setFilteredData(response.data.courses.data); 
-            setCourses(response.data.courses.data); 
+            setFilteredData(response.data.courses.data);
+            setCourses(response.data.courses.data);
         });
     }
-    
+
 
     return (
-      
+
         <Modal show={isOpen} onClose={closeClick}>
                 <div className="bg-customBlue p-3" >
                     <h2 className="text-xl text-white font-bold">New Course</h2>

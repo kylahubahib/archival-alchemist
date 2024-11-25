@@ -29,7 +29,7 @@ export default function RegistrationForm() {
     };
 
     useEffect(() => {
-        
+
         // console.log(data.role);
         // console.log(data.user_dob);
         // console.log(data.ins_admin_proof);
@@ -61,25 +61,25 @@ export default function RegistrationForm() {
             <div className="min-h-screen md:w-1/2">
                 <img src="/images/img2.png" alt="books" className="w-full h-full object-cover" />
             </div>
-        
+
             <div className="flex-grow flex flex-col justify-center items-center space-y-3 p-4 md:p-0">
                 <div className="mb-5">
                     <p className="text-2xl md:text-4xl font-bold text-customBlue text-center">WELCOME TO <br/> ARCHIVAL ALCHEMIST!</p>
                 </div>
-        
+
                 <div className="w-full max-w-[600px] px-6 py-4 bg-white shadow-md overflow-hidden sm:rounded-lg">
                     {renderStepContent()}
                 </div>
-        
+
                 <div className="text-center">
-                    <span>Already have an account? 
+                    <span>Already have an account?
                         <NavLink href={route('login')} className="text-blue-500 font-semibold"> LOG IN </NavLink>
                     </span>
                 </div>
             </div>
         </div>
-    
-            
+
+
         //</GuestLayout>
     );
 }

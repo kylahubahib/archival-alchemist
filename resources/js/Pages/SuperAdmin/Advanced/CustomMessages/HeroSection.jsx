@@ -25,9 +25,9 @@ export default function HeroSection({ isOpen, onClose, heroSection = {} }) {
 
         //console.log('ok')
         e.preventDefault();
-        
+
         put(route('manage-custom-messages.update', heroSection.id), {
-            data, 
+            data,
             preserveScroll: true,
             onSuccess: () => {
                 showToast('success', 'Updated Successfully!');
@@ -56,7 +56,7 @@ export default function HeroSection({ isOpen, onClose, heroSection = {} }) {
             <div className="px-5 pb-5 mt-5">
                 <form onSubmit={submit} className="space-y-4">
                     <div className="flex flex-col">
-                        <InputLabel htmlFor="content_title" value="Title" /> 
+                        <InputLabel htmlFor="content_title" value="Title" />
                         <LongTextInput
                             id="content_title"
                             value={data.content_title}
@@ -67,8 +67,8 @@ export default function HeroSection({ isOpen, onClose, heroSection = {} }) {
                         <InputError message={errors.content_title} className="mt-2" />
                     </div>
 
-                    <div className="flex flex-col"> 
-                        <InputLabel htmlFor="subject" value="Subtitle" /> 
+                    <div className="flex flex-col">
+                        <InputLabel htmlFor="subject" value="Subtitle" />
                         <LongTextInput
                             id="subject"
                             value={data.subject}
@@ -80,7 +80,7 @@ export default function HeroSection({ isOpen, onClose, heroSection = {} }) {
                     </div>
 
                     <div className="flex flex-col">
-                        <InputLabel htmlFor="content_text" value="Description" /> 
+                        <InputLabel htmlFor="content_text" value="Description" />
                         <LongTextInput
                             id="content_text"
                             value={data.content_text}
@@ -91,10 +91,10 @@ export default function HeroSection({ isOpen, onClose, heroSection = {} }) {
                         <InputError message={errors.content_text} className="mt-2" />
                     </div>
 
-                    
+
 
                     <PrimaryButton type="submit" disabled={processing}>
-                        Save 
+                        Save
                     </PrimaryButton>
 
                 </form>

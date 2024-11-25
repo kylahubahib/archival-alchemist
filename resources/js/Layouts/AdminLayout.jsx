@@ -40,14 +40,14 @@ export default function AdminLayout({ user, header, children, university = '' })
         setIsModalOpen(false);
     }
 
-    return ( 
+    return (
 
     <div className="min-h-screen bg-customlightBlue flex select-none">
 
         <div className="sm:block hidden">
         {user.user_type == 'superadmin' ? (
              //SIDEBAR FOR THE SUPER ADMIN
-            <Sidebar color="customBlue" borderRadius="none" margin="0"> 
+            <Sidebar color="customBlue" borderRadius="none" margin="0">
                 <SidebarItem icon={<MdSpaceDashboard size={20} className="text-white group-hover:text-gray-600" />} text="Dashboard" color="white" to="/dashboard" />
                 <SidebarTitle title="MANAGEMENT"></SidebarTitle>
                 <SidebarItem icon={<FaUsers size={20} className="text-white group-hover:text-gray-600" />} text="Users" color="white" to="/users" />
@@ -112,14 +112,14 @@ export default function AdminLayout({ user, header, children, university = '' })
                                 )
                             }
                         </div>
-                        
+
 
                         <div className="hidden sm:flex sm:items-center sm:ml-5">
                             <div className=" relative">
                                 <Dropdown>
                                     <Dropdown.Trigger>
-                                    <User 
-                                        color='primary' 
+                                    <User
+                                        color='primary'
                                         as="button"
                                         avatarProps={{
                                             className: "shadow shadow-white outline-[2.5px] outline-customBlue",
@@ -193,7 +193,7 @@ export default function AdminLayout({ user, header, children, university = '' })
                                     <ResponsiveNavLink href={route('manage-forum-posts.index')}>Advanced</ResponsiveNavLink>
                                     </>
                             ) : (
-                                    <> 
+                                    <>
                                     <ResponsiveNavLink href={route('institution-students')}>Students</ResponsiveNavLink>
                                     <ResponsiveNavLink href={route('institution-faculties')}>Faculties</ResponsiveNavLink>
                                     <ResponsiveNavLink href={route('institution-coadmins')}>Co-admins</ResponsiveNavLink>
@@ -203,10 +203,10 @@ export default function AdminLayout({ user, header, children, university = '' })
                                     <ResponsiveNavLink href="https://m.me/432748959923780" externalLink>Chat With Us</ResponsiveNavLink>
                                     <a onClick={openModal} className={`w-full flex font-medium items-start ps-3 pe-4 py-2 border-l-4 text-base focus:outline-none transition duration-150 ease-in-out
                                     text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300`}>
-                                        Give Feedback 
+                                        Give Feedback
                                     </a>
                                     </>
-        
+
                                 )}
                                 <ResponsiveNavLink href={route('profile.edit')}>Profile</ResponsiveNavLink>
                                 <ResponsiveNavLink method="post" href={route('logout')} as="button">

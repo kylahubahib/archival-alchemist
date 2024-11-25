@@ -1,6 +1,4 @@
 import { AiOutlineMenu, AiOutlineClose } from "react-icons/ai";
-
-
 import React, { useState, useEffect } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head } from '@inertiajs/react';
@@ -9,14 +7,11 @@ import { Link } from '@inertiajs/react';
 import ShowMemersModal from '@/Components/Modal';
 import ClassDropdown from "@/Components/ClassDropdown";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-
 import { faFolder, faUsers, faUser, faEllipsisV } from '@fortawesome/free-solid-svg-icons';
 import { Avatar, Button, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, useDisclosure } from "@nextui-org/react";
 import { Skeleton } from '@nextui-org/skeleton'; // Import Skeleton
 import CreateClassSection from '@/Pages/Users/Class/Teacher/CreateClassSection';
-
 import ModifyManuscript from '@/Pages/Users/Class/Student/ModifyManuscript';
-
 import ViewModal from '@/Components/studentworkModal';
 
 //axios.defaults.headers.common['X-CSRF-TOKEN'] = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
@@ -55,6 +50,7 @@ const [reviewManuscriptProps, setReviewManuscriptProps] = useState(null);
 const [groupNames, setgroupNames] = useState(null);
 
 
+console.log("These are the props in folder:", reviewManuscriptProps)
 console.log("These are the props:", reviewManuscriptProps)
 // Fetch members whenever hoveredClass changes
 useEffect(() => {
@@ -317,7 +313,6 @@ const handleShowStudentWork = () => {
                                     {new Date(classItem.updated_at).toLocaleDateString() || "N/A"}
                                 </TableCell>
                                 <TableCell className="text-center">
-
                                     {console.log(classItem.man_doc_status)} {/* Log to check status value */}
                                     {getStatusButton(classItem.man_doc_status || "norecords")}
                                 </TableCell>
