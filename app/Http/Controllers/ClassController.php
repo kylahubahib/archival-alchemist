@@ -419,6 +419,7 @@ class ClassController extends Controller
         }
     }
 
+
     public function fetchHistory(Request $request, $manuscript_id )
     {
         // Get manuscript_id from query parameters

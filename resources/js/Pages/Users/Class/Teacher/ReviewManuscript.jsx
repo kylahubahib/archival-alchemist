@@ -31,10 +31,11 @@ console.log("These are the props in review manuscript :", manuscript)
 
 
 console.log("This is the Manuscrip ID :", manuscript.id)
+
 useEffect(() => {
     const fetchData = async () => {
         try {
-            const response = await fetch(`/fetch-history/${manuscript.manuscript_id}`);
+            const response = await fetch(`/fetch-history/${manuscript.id}`);
 
             if (!response.ok) {
                 throw new Error('Failed to fetch data');
@@ -42,6 +43,7 @@ useEffect(() => {
 
             const data = await response.json();
 
+            console.log("These are the history data: ", data );
             // Sort the data by revision_updated_at in descending order (latest first)
             const sortedData = data.sort((a, b) => new Date(b.revision_updated_at) - new Date(a.revision_updated_at));
 
@@ -58,6 +60,7 @@ useEffect(() => {
 }, [manuscript.manuscript_id]);
 
 
+console.log("These are the history data: ",historyData );
   // Loading and error handling
 
   if (loading) {
@@ -87,15 +90,15 @@ useEffect(() => {
         setDropdownError(true);  // Set error if no dropdown option is selected
         return;  // Prevent form submission if no status is selected
       }
-    const folder = folders[1];  // Or use a condition to select a specific folder
-    console.log('Folder ID:', folder.id);  // Check if folder.id is valid
+    // const folder = folders[0];  // Or use a condition to select a specific folder
+    // console.log('Folder ID:', folder.id);  // Check if folder.id is valid
 
     console.log("These are the classes:", classes);
     // Log to check if startDate and dueDate are set correctly
     console.log("This is the Feedback!");
 
     console.log("This is the manuscript:", manuscript);
-    console.log("Manuscript ID: ", manuscript.manuscript_id);
+    console.log("Manuscript ID: ", manuscript.id);
     const feedbackData = {
         comment,
         status,
@@ -105,6 +108,15 @@ useEffect(() => {
         section_id: manuscript.section_id,
         manuscriptCreated: manuscript.manuscript_created_at,
     };
+    // const feedbackData = {
+    //     comment,
+    //     status,
+    //     manuscript_id: manuscript.id,
+    //     ins_id: manuscript.ins_id,
+    //     group_id: manuscript.group_id,
+    //     section_id: manuscript.section_id,
+    //     manuscriptCreated: manuscript.manuscript_created_at,
+    // };
 
 
     try {
