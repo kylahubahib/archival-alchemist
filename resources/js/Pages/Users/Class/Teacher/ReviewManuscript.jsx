@@ -23,10 +23,18 @@ const ReviewManuscript = ({folders, onBack, task, taskID, closeModal, classes, m
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
+
+
+console.log("These are the props in review folders:", folders)
+console.log("These are the props in review classes:", classes)
+console.log("These are the props in review manuscript :", manuscript)
+
+
+console.log("This is the Manuscrip ID :", manuscript.id)
+useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(`/fetch-history?manuscript_id=${manuscript.manuscript_id}`);
+        const response = await fetch(`/fetch-history?manuscript_id=${manuscript.id}`);
 
         if (!response.ok) {
           throw new Error('Failed to fetch data');
@@ -48,7 +56,10 @@ const ReviewManuscript = ({folders, onBack, task, taskID, closeModal, classes, m
 
     fetchData();
   }, [manuscript.manuscript_id]);
+
+  
   // Loading and error handling
+
   if (loading) {
     return <div>Loading...</div>;
   }

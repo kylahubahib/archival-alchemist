@@ -6,6 +6,8 @@ use App\Models\Faculty;
 use App\Models\Department;
 use App\Models\Course;
 use App\Models\Section;
+use App\Models\Group;
+use App\Models\GroupMember;
 use App\Models\ClassModel;
 use App\Models\ManuscriptProject;
 use App\Models\User;
@@ -75,12 +77,48 @@ class TeacherClassController extends Controller
             // Get the courses in that department along with their sections
             $courses = Course::where('dept_id', $department->id)->with('sections')->get();
 
-            // Retrieve classes where ins_id matches the current user's ID
-            $classes = ClassModel::where('ins_id', Auth::id())->get();
+            // Retrieve sections where ins_id matches the current user's ID
+            $sections = Section::where('ins_id', Auth::id())->get();
+
+            // For each section, retrieve the corresponding groups
+            $groups = $sections->map(function ($section) {
+                return [
+                    'section' => $section,
+                    'groups' => Group::where('section_id', $section->id)->get()
+                ];
+            });
+
+            // For each group, get the members
+            $groupmembers = $groups->map(function ($group) {
+                return [
+                    'section' => $group['section'],
+                    'groups' => $group['groups']->map(function ($groupItem) {
+                        return [
+                            'group' => $groupItem,
+                            'members' => GroupMember::where('group_id', $groupItem->id)->get()  // Get members for this group
+                        ];
+                    })
+                ];
+            });
+
+            // Fetch manuscripts for each group
+            $manuscripts = [];
+            foreach ($groups as $group) {
+                foreach ($group['groups'] as $groupItem) {
+                    $manuscript = ManuscriptProject::where('section_id', $group['section']->id)
+                        ->where('group_id', $groupItem->id)
+                        ->first(); // Use 'first' since it's a 1:1 relation
+
+                    $manuscripts[] = $manuscript;
+                }
+            }
 
             return response()->json([
                 'courses' => $courses,
-                'classes' => $classes, // Include the classes in the response
+                'classes' => $sections, // Include the sections
+                'groups' => $groups,   // Include the groups
+                'groupmembers' => $groupmembers,  // Include group members for each group
+                'manuscripts' => $manuscripts,  // Include manuscript data for each group
             ]);
         }
 
@@ -460,30 +498,57 @@ public function getManuscriptsByClass(Request $request)
     // }
 
 
-    public function ViewGroupMembers($manuscriptId)
+//     public function ViewGroupMembers($manuscriptId)
+// {
+//     Log::info("Fetching group members for manuscript ID: $manuscriptId");
+
+//     try {
+//         $authors = Author::with('user')
+//             ->where('man_doc_id', $manuscriptId)
+//             ->get();
+
+//         Log::info("Number of authors retrieved: " . $authors->count());
+
+//         if ($authors->isEmpty()) {
+//             Log::warning("No group members found for manuscript ID: $manuscriptId");
+//             return response()->json(['message' => 'No group members found for this manuscript.'], 404);
+//         }
+
+//         return response()->json($authors);
+//     } catch (\Exception $e) {
+//         Log::error("Error fetching group members: " . $e->getMessage());
+//         return response()->json(['message' => 'An error occurred while fetching group members.'], 500);
+//     }
+// }
+
+public function ViewGroupMembers($studIds)
 {
-    Log::info("Fetching group members for manuscript ID: $manuscriptId");
+    Log::info("Fetching group members for stud_ids: $studIds");
 
     try {
-        $authors = Author::with('user')
-            ->where('man_doc_id', $manuscriptId)
-            ->get();
+        // Convert the comma-separated list into an array of stud_ids
+        $studIdsArray = explode(',', $studIds);
+        Log::info("Converted stud_ids to array: ", $studIdsArray);  // Log the array of stud_ids
 
-        Log::info("Number of authors retrieved: " . $authors->count());
+        // Fetch members by stud_id
+        $members = User::whereIn('id', $studIdsArray)->get();
+        Log::info("Number of users retrieved: " . $members->count());
 
-        if ($authors->isEmpty()) {
-            Log::warning("No group members found for manuscript ID: $manuscriptId");
-            return response()->json(['message' => 'No group members found for this manuscript.'], 404);
+        if ($members->isEmpty()) {
+            Log::warning("No group members found for stud_ids: $studIds");
+            return response()->json(['message' => 'No group members found for these students.'], 404);
         }
 
-        return response()->json($authors);
+        // Log the names before returning them
+        $membersNames = $members->pluck('name');  // Only get names
+        Log::info("Members found: ", $membersNames->toArray());
+
+        return response()->json($members);
     } catch (\Exception $e) {
         Log::error("Error fetching group members: " . $e->getMessage());
         return response()->json(['message' => 'An error occurred while fetching group members.'], 500);
     }
 }
-
-
 
 
 

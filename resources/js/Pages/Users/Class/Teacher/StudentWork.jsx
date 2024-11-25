@@ -34,6 +34,10 @@ const StudentWork = ({folders, onBack, task, taskID,  fileUrl,  }) => {
     const [isLoading, setIsLoading] = useState(false);
     const [message, setMessage] = useState('');
     const [classes, setClasses] = useState([]);
+
+    const [groupmembers, setgroupmembers] = useState([]);
+    const [section, setSections] = useState([]);
+    const [groups, setGroups] = useState([]);
     const [manuscripts, setManuscripts] = useState([]);
     const [authorInputValue, setAuthorInputValue] = useState('');
     const [authorSuggestions, setAuthorSuggestions] = useState([]);
@@ -55,34 +59,98 @@ const [reviewManuscriptProps, setReviewManuscriptProps] = useState(null);
 const [groupNames, setgroupNames] = useState(null);
 
 
-console.log("These are the props:", reviewManuscriptProps)
+console.log("These are the props in Student Work:", reviewManuscriptProps)
 // Fetch members whenever hoveredClass changes
+// useEffect(() => {
+//     if (hoveredClass?.manuscript?.id) {
+//         console.log("Fetching members for manuscript_id:", hoveredClass.members.stud_id);
+
+//         const fetchMembers = async () => {
+//             setIsMembersLoading(true);
+//             try {
+//                 const response = await axios.get(`/groupmembers/${hoveredClass.manuscript.id}`);
+//                 console.log("Fetched Members:", response.data);  // Check the response
+//                 setMembers(response.data);  // Set members state with fetched data
+//             } catch (err) {
+//                 console.error("Error fetching members:", err);  // Log errors
+//                 setError('Failed to load members.');
+//             } finally {
+//                 setIsMembersLoading(false);
+//             }
+//         };
+
+//         fetchMembers();  // Fetch members when hoveredClass changes
+//     } else {
+//         console.log("hoveredClass or manuscript_id is not available.");
+//     }
+// }, [hoveredClass]);  // Dependency array: only run when hoveredClass changes
+
+
 useEffect(() => {
-    const fetchMembers = async () => {
-        setIsMembersLoading(true); // Set loading state to true before fetching
-        try {
-            const response = await axios.get(`/groupmembers/${hoveredClass.manuscript_id}`);
-            setMembers(response.data);
-
-    console.log(hoveredClass);
-            // setError(''); // Clear any previous error
-        } catch (err) {
-            // setError('Failed to load members.'); // Handle error
-        } finally {
-            setIsMembersLoading(false); // Set loading state to false after fetching
-        }
-    };
-
     if (hoveredClass) {
-        fetchMembers();
-    }
-}, [hoveredClass]); // Only depend on hoveredClass
+        console.log("HoveredClass updated:", hoveredClass);  // Log when hoveredClass is updated
 
-const handleMouseEnter = (classItem) => {
-    setHoveredClass(classItem);
-    console.log(setHoveredClass);
-    setIsShowMembersModalOpen(true);
+        // Check if hoveredClass has a 'members' array
+        if (hoveredClass.members) {
+            console.log("HoveredClass Members:", hoveredClass.members);  // Log the members array
+
+            // Extract stud_ids from members
+            const studIds = hoveredClass.members
+                .map(member => member.stud_id)  // Get stud_id from each member
+                .join(',');  // Join the stud_ids into a string for API request
+
+            console.log("Sending stud_ids:", studIds);  // Log the stud_ids being sent
+
+            if (!studIds) {
+                console.error("No stud_ids found!");
+            }
+
+            // Fetch members only if studIds exists
+            if (studIds) {
+                const fetchMembers = async () => {
+                    setIsMembersLoading(true);
+                    try {
+                        const response = await axios.get(`/groupmembers/${studIds}`);
+                        console.log("Backend Response:", response.data);
+
+                        if (response.data && response.data.length > 0) {
+                            setMembers(response.data);  // Update state with members
+                        } else {
+                            setMembers([]);  // No members found
+                        }
+                    } catch (err) {
+                        console.error("Error fetching members:", err);
+                        setError('Failed to load members.');
+                    } finally {
+                        setIsMembersLoading(false);
+                    }
+                };
+
+                fetchMembers();
+            }
+        } else {
+            console.log("No members in hoveredClass");
+        }
+    } else {
+        console.log("HoveredClass is undefined or null.");
+    }
+}, [hoveredClass]);  // Re-run when hoveredClass changes
+
+
+const handleMouseEnter = (group) => {
+    console.log("Hovered over group:", group);  // Log the group data to confirm
+    setHoveredClass(group);  // Set hoveredClass with the group data
+    setIsShowMembersModalOpen(true);  // Open modal
 };
+
+
+
+
+// const handleMouseEnter = (group) => {
+//     setHoveredClass(group);
+//     setIsShowMembersModalOpen(true); // Open modal when hovering over a group
+//   };
+
 
 const handleModalClose2 = () => {
     setIsShowMembersModalOpen(false);
@@ -119,6 +187,7 @@ useEffect(() => {
         }
     };
 
+    console.log("Classes state:", classes);
 
 
     useEffect(() => {
@@ -144,19 +213,56 @@ useEffect(() => {
 
     useEffect(() => {
         setIsLoading(true); // Set loading to true when the component mounts
+
         axios.get('/teacher/class')
             .then(response => {
-               // setCourses(response.data.courses);
-               console.log("API Response:", response.data); // Log the response to inspect the structure
-                setClasses(response.data.classes); // Store the classes if you need them
+                console.log("API Response:", response.data); // Log the full response to see the data structure
+                console.log("Manuscripts:", response.data.manuscripts); // Log manuscripts data to check if it exists
+
+                // Combine sections, groups, group members, and manuscripts
+                const combinedClasses = response.data.classes.map((classItem) => {
+                    // Find the corresponding groups for this class (section)
+                    const matchingGroups = response.data.groups.find(group => group.section.id === classItem.id)?.groups || [];
+
+                    // For each group, fetch the group members and manuscript data
+                    const groupsWithMembersAndManuscript = matchingGroups.map(group => {
+                        // Check if 'groupmembers' exists in the response, else fallback to empty array
+                        const groupMembers = response.data.groupmembers
+                            ? response.data.groupmembers.find(groupMemberData => groupMemberData.section.id === classItem.id)
+                                ?.groups.find(g => g.group.id === group.id)?.members || []
+                            : [];
+
+                        // Find the corresponding manuscript for the group and section
+                        const manuscript = response.data.manuscripts?.find(manuscriptData =>
+                            manuscriptData?.section_id === classItem.id &&
+                            manuscriptData?.group_id === group.id
+                        ) || null; // Fallback to null if no manuscript is found
+
+                        return {
+                            ...group,  // Spread the group data
+                            members: groupMembers,  // Add the group members (or empty array if not found)
+                            manuscript: manuscript  // Add the manuscript data (or null if not found)
+                        };
+                    });
+
+                    // Combine classItem (section) with the matching groups (and their members and manuscript)
+                    return {
+                        ...classItem,
+                        groups: groupsWithMembersAndManuscript
+                    };
+                });
+
+                // Set the combined data in the state
+                setClasses(combinedClasses);
             })
             .catch(error => {
-                console.error("Error fetching courses:", error);
+                console.error("Error fetching data:", error);
             })
             .finally(() => {
-                setIsLoading(false); // Set loading to false after data is fetched
+                setIsLoading(false); // Set loading to false after the request completes
             });
-    }, []);
+    }, []); // Empty dependency array ensures this effect runs only once on mount
+
 
 
 useEffect(() => {
@@ -252,11 +358,15 @@ const handleShowStudentWork = () => {
     };
 
 
-    const handleViewClick = (classItem) => {
-        setReviewManuscriptProps(classItem); // Set manuscript data
-        console.log("These are the props:", setReviewManuscriptProps);
-        setIsViewModalOpen(true); // Open modal
+    const handleViewClick = (group) => {
+        console.log("Hovered over group:", group);  // Log the group data to confirm
+        setReviewManuscriptProps(group);  // Set manuscript data
+
+        console.log("These are the props:", group); // Log the props directly
+        setIsViewModalOpen(true);  // Open modal
     };
+
+    console.log("Hovered over group:", reviewManuscriptProps);  // Log the group data to confirm
 
     const closeViewModal = () => {
         setIsViewModalOpen(false); // Just close the modal, don't reset the data
@@ -295,41 +405,47 @@ const handleShowStudentWork = () => {
                     </TableHeader>
 
                     <TableBody>
-                        {classes.map((classItem) => (
-                            <TableRow key={classItem.id}>
-                                <TableCell className="w-[10%] text-left">
-                                    <span
-                                        className="cursor-pointer text-blue-500 hover:underline"
-                                        onMouseEnter={() => handleMouseEnter(classItem)}
-                                    >
-                    {classItem.group_name || "No Name Available"}
-                                    </span>
-                                </TableCell>
-                                <TableCell className="text-left">
-                                    {classItem.man_doc_title || "No manuscript submission from the group."}
-                                </TableCell>
-                                <TableCell className="text-center">
-                                    {new Date(classItem.manuscript_created_at).toLocaleDateString() || "N/A"}
-                                </TableCell>
-                                <TableCell className="text-center">
-                                    {new Date(classItem.manuscript_updated_at).toLocaleDateString() || "N/A"}
-                                </TableCell>
-                                <TableCell className="text-center">
+  {classes.length > 0 && classes[0].groups && classes[0].groups.map((group) => (
+    <TableRow key={group.id}>
+      <TableCell className="w-[10%] text-left">
+        <span
+          className="cursor-pointer text-blue-500 hover:underline"
+          onMouseEnter={() => handleMouseEnter(group)} // Pass the entire group object
+        >
+          {group.group_name || "No Name Available"}
+        </span>
+      </TableCell>
+      <TableCell className="text-left">
+        {group.manuscript
+          ? group.manuscript.man_doc_title || "No manuscript submission from the group."
+          : "No manuscript submission from the group."}
+      </TableCell>
+      <TableCell className="text-center">
+        {group.manuscript?.created_at
+          ? new Date(group.manuscript.created_at).toLocaleDateString()
+          : "N/A"}
+      </TableCell>
+      <TableCell className="text-center">
+        {group.manuscript?.updated_at
+          ? new Date(group.manuscript.updated_at).toLocaleDateString()
+          : "N/A"}
+      </TableCell>
+      <TableCell className="text-center">
+        {console.log(group.manuscript?.man_doc_status)}
+        {getStatusButton(group.manuscript?.man_doc_status || "norecords")}
+      </TableCell>
+      <TableCell className="text-center">
+        <button
+          onClick={() => handleViewClick(group)}
+          className="text-gray-600 font-semibold hover:text-blue-500"
+        >
+          View
+        </button>
+      </TableCell>
+    </TableRow>
+  ))}
+</TableBody>
 
-    {console.log(classItem.man_doc_status)} {/* Log to check status value */}
-                                    {getStatusButton(classItem.man_doc_status || "norecords")}
-                                </TableCell>
-                                <TableCell className="text-center">
-                                <button
-                    onClick={() => handleViewClick(classItem)}
-                    className="text-gray-600 font-semibold hover:text-blue-500"
-                >
-                    View
-                </button>
-                                </TableCell>
-                            </TableRow>
-                        ))}
-                    </TableBody>
                 </Table>
 
                 <ViewModal show={isViewModalOpen} onClose={closeViewModal}>
@@ -342,7 +458,7 @@ const handleShowStudentWork = () => {
             >
                 <div className="flex justify-between items-center">
                     <h1 className="text-lg font-medium text-gray-500">
-                    {reviewManuscriptProps.man_doc_title || "No manuscript submission from the group."}
+                    {reviewManuscriptProps.manuscript.man_doc_title || "No manuscript submission from the group."}
                     </h1>
 
                     {/* Filter Options */}
@@ -352,18 +468,19 @@ const handleShowStudentWork = () => {
                                 Filter:
                             </label>
                             <select
-                                id="filter"
-                defaultValue="all"
-                                className="p-2 rounded border border-gray-300 text-sm w-56"
-                            >
-                                <option value="all" disabled>Group names</option>
-                                {/* Dynamically render group names */}
-                                {classes.map((group) => (
-                                    <option key={group.id} value={group.group_name}>
-                                        {group.group_name}
-                                    </option>
-                                ))}
-                            </select>
+    id="filter"
+    defaultValue="all"
+    className="p-2 rounded border border-gray-300 text-sm w-56"
+>
+    <option value="all" disabled>Group names</option>
+    {/* Dynamically render group names */}
+    {classes.flatMap(course => course.groups.map(group => (
+        <option key={group.id} value={group.group_name}>
+            {group.group_name}
+        </option>
+    )))}
+</select>
+
                         </div>
 
                         <div className="flex items-center space-x-2">
@@ -435,13 +552,13 @@ const handleShowStudentWork = () => {
             </button>
             <div className="flex flex-col items-center justify-center p-6 rounded-lg shadow-md">
                 <h5 className="mb-4 text-center font-bold text-gray-500">
-                    {hoveredClass.man_doc_title || "No manuscript submission from the group."}
+                    {hoveredClass.manuscript ? hoveredClass.manuscript.man_doc_title : "No manuscript submission from the group."}
                 </h5>
+
                 {error && <p className="text-red-500">{error}</p>}
+
                 {isMembersLoading ? (
-                    // Customized Skeleton
                     <div className="flex flex-col space-y-2 w-full">
-                        {/* Title Skeleton */}
                         <Skeleton className="mb-2 w-full h-6" />
                         <Skeleton className="mb-2 w-full h-6" />
                         <Skeleton className="mb-2 w-full h-6" />
@@ -449,8 +566,10 @@ const handleShowStudentWork = () => {
                         <Skeleton className="mb-2 w-full h-6" />
                     </div>
                 ) : members.length > 0 ? (
-                    members.map(member => (
-                        <p key={member.user.id} className="mb-2 text-gray-600">{member.user.name}</p>
+                    members.map((member, index) => (
+                        <p key={index} className="mb-2 text-gray-600">
+                            {member.name}
+                        </p>
                     ))
                 ) : (
                     <p className="mb-2 text-gray-600">No members found.</p>
@@ -459,6 +578,10 @@ const handleShowStudentWork = () => {
         </ModalContent>
     </Modal>
 )}
+
+
+
+
 
                 {/* Add other modals if necessary */}
             </div>

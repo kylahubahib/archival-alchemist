@@ -526,7 +526,7 @@ Route::middleware('auth')->group(function () {
 
 //Ratings
 Route::post('/ratings', [StudentClassController::class, 'storeRatings']);
-Route::get('/groupmembers/{manuscriptId}', [TeacherClassController::class, 'ViewGroupMembers']);
+Route::get('/groupmembers/{studIds}', [TeacherClassController::class, 'ViewGroupMembers']);
 
 
 //FORUM ROUTES
@@ -562,7 +562,7 @@ Route::get('/view_file/{filename}', [StudentClassController::class, 'view'])->na
 //class controller
 // routes/api.php
 
-
+Route::get('/fetch-history', [ClassController::class, 'fetchHistory'])->name('fetch-history');
 Route::get('/fetch-courses', [ClassController::class, 'fetchCourses']);
 Route::post('/store-sections', [ClassController::class, 'storeSection']); // Route for storing data
 Route::get('/fetch-classes', [ClassController::class, 'fetchClasses']);
