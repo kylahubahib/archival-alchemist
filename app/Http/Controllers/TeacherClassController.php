@@ -221,6 +221,9 @@ class TeacherClassController extends Controller
                 case 'X':
                     $manuscript->man_doc_status = 'Declined';
                     break;
+                case 'T':
+                    $manuscript->man_doc_status = 'To Review';
+                    break;
                 default:
                     $manuscript->man_doc_status = 'Pending';
             }

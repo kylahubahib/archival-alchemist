@@ -564,8 +564,6 @@ Route::get('/view_file/{filename}', [StudentClassController::class, 'view'])->na
 
 //class controller
 // routes/api.php
-
-
 Route::get('/fetch-courses', [ClassController::class, 'fetchCourses']);
 Route::post('/store-sections', [ClassController::class, 'storeSection']); // Route for storing data
 Route::get('/fetch-classes', [ClassController::class, 'fetchClasses']);
@@ -593,7 +591,7 @@ Route::get('/test-redis', function () {
     return Redis::ping();
 });
 
-
+Route::post('/send-for-revision', [StudentClassController::class, 'sendForRevision'])->name('send-for-revision');
 
 
 //Commments

@@ -204,6 +204,7 @@ console.log("This is the Task ID:", taskID);
       if (Object.keys(newErrors).length === 0) {
         const titleExists = await checkIfTitleExists(formValues.man_doc_title);
 
+
           if (titleExists) {
               setErrors({
                   man_doc_title: 'Oops, this project already exists. You may track your project and update it if necessary.'
@@ -225,11 +226,12 @@ console.log("This is the Task ID:", taskID);
               formData.append('man_doc_content', formValues.man_doc_content);
               formData.append('agreed', formValues.agreed);
 
-              folders = folders[0];
               //Add the class_code
-              formData.append('section_id', folders.section_id);
+              formData.append('section_id', folders.id);
               formData.append('section_classcode', folders.section_classcode);
               formData.append('task_id', taskID);
+
+              console.log('In here...')
 
               // Submit the form data
               const response = await axios.post('/api/capstone/upload', formData, {

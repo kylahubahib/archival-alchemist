@@ -342,7 +342,7 @@ const handleShowStudentWork = () => {
                                 className="w-full bg-white text-gray-800 py-4 px-6 shadow-md border-t border-b border-gray-300"
                                 style={{ zIndex: 100 }}
                             >
-                                <div className="flex justify-between items-center">
+                                <div className="flex justify-between w-full items-center">
                                     <h1 className="text-lg font-medium text-gray-500">
                                     {reviewManuscriptProps.man_doc_title || "No manuscript submission from the group."}
                                     </h1>

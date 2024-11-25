@@ -177,6 +177,7 @@ class StudentClassController extends Controller
             } else {
                 Log::info('No users provided or users is not an array.');
             }
+            $authorIds = [];
 
             // Insert the users into the author table
             foreach ($userIds as $userId) {
@@ -188,6 +189,8 @@ class StudentClassController extends Controller
                     'man_doc_id' => $manuscriptProject->id,
                     'user_id' => $userId,
                 ]);
+
+                $authorIds[] = $userId;
             }
 
 
@@ -213,8 +216,9 @@ class StudentClassController extends Controller
              {
                 
                 $section = Section::where('id', $section_id)->first();
-                $authorIds = Author::whereIn('user_id', $users)->pluck('user_id')->toArray();
                 $teacherId = $section->ins_id; 
+
+                Log::info('Fetched Author Emails:', ['Autho Ids' => $authorIds]);
         
                 // Upload the file to Google Drive and get the Google Docs URL
                 $googleDocsUrl = $this->uploadToDrive($request->file('man_doc_content'), $authorIds, $teacherId);
@@ -250,9 +254,9 @@ class StudentClassController extends Controller
     }
 
 
-    public function uploadToDrive($file, $manuscriptId, $teacherId)
+    public function uploadToDrive($file, $authorIds, $teacherId)
     {
-        $user = Auth::user();
+        $user = User::find($teacherId);
 
         // Initialize Google Client
         $client = new GoogleClient();
@@ -302,23 +306,20 @@ class StudentClassController extends Controller
         $uploadedFile = $driveService->files->create($driveFile, $uploadOptions);
 
         //Set permissions for users
-        $this->setPermissions($driveService, $uploadedFile->id, $manuscriptId, $teacherId);
+        $this->setPermissions($driveService, $uploadedFile->id, $authorIds, $teacherId);
 
         return 'https://docs.google.com/document/d/' . $uploadedFile->id;
     }
 
 
-    private function setPermissions($driveService, $fileId, $manuscriptId, $teacherId)
+    private function setPermissions($driveService, $fileId, $authorIds, $teacherId)
     {
         Log::info('Drive Service Instance:', ['driveService' => $driveService]);
         Log::info('File ID:', ['fileId' => $fileId]);
-        Log::info('Manuscript ID:', ['manuscriptId' => $manuscriptId]);
         Log::info('Teacher ID:', ['teacherId' => $teacherId]);
 
         // Get author emails from the Author table
-        $authorEmails = Author::with('user')
-            ->where('man_doc_id', $manuscriptId)->get()
-            ->pluck('user.email')->toArray();
+        $authorEmails = User::whereIn('id', $authorIds)->pluck('email')->toArray();
 
         //$authorEmails = User::whereIn('user_id', $authorIds)->pluck('email')->toArray();
         Log::info('Fetched Author Emails:', ['authorEmails' => $authorEmails]);
@@ -1156,8 +1157,6 @@ public function isPremium()
 // }
 
 
-            
-        
     public function sendForRevision(Request $request)
     {
         $manuscriptId = $request->get('manuscript_id');
@@ -1177,7 +1176,7 @@ public function isPremium()
         $manuscript->update([
             'man_doc_status' => 'To Review'
         ]);
-        
+
         Log::info("Manuscript status updated to 'To Review' for manuscript ID: $manuscriptId");
 
         // Get the Google Doc URL 
@@ -1206,11 +1205,17 @@ public function isPremium()
         $client->setAccessType('offline');
         $client->addScope(GoogleDrive::DRIVE_FILE);
 
-        // Set the access token
-        $accessToken = Auth::user()->google_access_token;
-        Log::info("Access token retrieved for user: " . Auth::user()->email);
+        $teacher = Section::with('user')
+            ->where('id', $manuscript->section_id)->first();
 
-        // Check if the access token is expired since access token expired in one hour so we need the refresh token to get a new access token
+        Log::info('Teacher Email:', ['email' => $teacher]);
+
+        // Get the current authenticated user
+        $user = User::find($teacher->ins_id);
+        $accessToken = $user->google_access_token;
+        Log::info("Access token retrieved for user: " . $user->email);
+
+        // Check if the access token is expired and refresh it if needed
         if (Carbon::now()->greaterThanOrEqualTo(Carbon::parse($user->google_token_expiry))) {
             $client->refreshToken($user->google_refresh_token);
             $newAccessToken = $client->getAccessToken();
@@ -1224,56 +1229,64 @@ public function isPremium()
             $accessToken = $newAccessToken['access_token'];
         }
 
-        // Set the access the new access token
+        // Set the new access token
         $client->setAccessToken($accessToken);
-
-        $authorEmails = Author::with('user')
-            ->where('man_doc_id', $manuscriptId)->get()
-            ->pluck('user.email')->toArray();
-
-        $teacherEmail = Section::with('user')
-            ->where('id', $manuscript->section_id)
-            ->pluck('user.email')->toArray();
 
         // Initialize Google Drive Service
         $driveService = new GoogleDrive($client);
         Log::info("Google Drive service initialized.");
 
-        // Create a new permission object to set the "commenter" role
-        $permission = new Permission();
-        $permission->setType('user');
-        $permission->setRole('commenter');  // Set the role to "commenter"
-        $permission->setEmailAddress(Auth::user()->email);  
-        Log::info("Permission object created for email: " . Auth::user()->email);
+     
+        $emails = Author::with('user')
+            ->where('man_doc_id', $manuscriptId)->get()
+            ->pluck('user.email')->toArray();
 
-        try {
-            // Set the permission on the Google Doc
-            $driveService->permissions->create($googleDocId, $permission);
-            Log::info("Document permission updated successfully to commenter for document ID: $googleDocId");
+        // Set permissions for students and others (readers)
+        foreach ($emails as $email) {
+            Log::info('Processing Email:', ['email' => $email]);
 
-            return response()->json(['success' => 'Document permission updated successfully to commenter.']);
-        } catch (Exception $e) {
-            // Log and handle any errors
-            Log::error("Error setting permission for document ID: $googleDocId", ['error' => $e->getMessage()]);
-            return response()->json(['error' => 'Error setting permission: ' . $e->getMessage()], 500);
+            // Check if the email is valid
+            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                Log::warning('Invalid Email Address:', ['email' => $email]);
+                continue;
+            }
+
+            // Create permission for the user
+            $permission = new Permission();
+            $permission->setType('user');
+            $permission->setRole('reader');  
+            $permission->setEmailAddress($email);
+
+            try {
+                // Set the permission on the Google Doc
+                $driveService->permissions->create($googleDocId, $permission);
+                Log::info("Document permission updated successfully to viewer for document ID: $googleDocId");
+            } catch (Exception $e) {
+                // Log and handle any errors
+                Log::error("Error setting permission for document ID: $googleDocId", ['error' => $e->getMessage()]);
+                return response()->json(['error' => 'Error setting permission: ' . $e->getMessage()], 500);
+            }
         }
+
+        return response()->json(['success' => 'Document permissions updated successfully.']);
     }
+
 
     // Method to extract Google Doc ID from the URL
     private function extractGoogleDocId($url)
     {
-        $parsedUrl = parse_url($url);
-        Log::info("Parsing URL: $url");
+        // Remove the base URL portion
+        $baseUrl = "https://docs.google.com/document/d/";
 
-        // Check if the URL contains '/d/' and extract the document ID
-        if (isset($parsedUrl['path'])) {
-            $pathSegments = explode('/', $parsedUrl['path']);
-            if (count($pathSegments) >= 3 && $pathSegments[2]) {
-                return $pathSegments[2]; 
-            }
+        // Check if the URL starts with the expected base URL
+        if (strpos($url, $baseUrl) === 0) {
+            // Remove the base URL and return the remaining part of the URL as the document ID
+            return substr($url, strlen($baseUrl));
         }
 
+        // If the URL doesn't match the expected format, return null
         return null;
     }
+
 
 }
