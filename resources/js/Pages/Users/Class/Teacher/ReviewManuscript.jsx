@@ -92,6 +92,8 @@ console.log("These are the history data: ",historyData );
       }
     // const folder = folders[0];  // Or use a condition to select a specific folder
     // console.log('Folder ID:', folder.id);  // Check if folder.id is valid
+    // const ins_id = folders[0].ins_id;
+    // console.log("ins_id from folder:", ins_id);
 
     console.log("These are the classes:", classes);
     // Log to check if startDate and dueDate are set correctly
@@ -99,30 +101,25 @@ console.log("These are the history data: ",historyData );
 
     console.log("This is the manuscript:", manuscript);
     console.log("Manuscript ID: ", manuscript.id);
+    console.log('ins_id:', manuscript.ins_id);
+
     const feedbackData = {
         comment,
         status,
         manuscript_id: manuscript.manuscript_id,
-        ins_id: manuscript.ins_id,
+        // ins_id: manuscript.ins_id,
+        // ins_id: (folders && folders.length > 0) ? folders[0].ins_id : null, // Fallback to null if no folders
         group_id: manuscript.group_id,
         section_id: manuscript.section_id,
         manuscriptCreated: manuscript.manuscript_created_at,
     };
-    // const feedbackData = {
-    //     comment,
-    //     status,
-    //     manuscript_id: manuscript.id,
-    //     ins_id: manuscript.ins_id,
-    //     group_id: manuscript.group_id,
-    //     section_id: manuscript.section_id,
-    //     manuscriptCreated: manuscript.manuscript_created_at,
-    // };
-
 
     try {
         // Correct the URL template literal
 
-        const response = await axios.post(`/store-feedback`, feedbackData);
+        // const response = await axios.post(`/store-feedback`, feedbackData);
+        const response = await axios.post(`/store-feedback/${manuscript.id}`, feedbackData);
+
         // Handle successful save
         console.log(response.data);
 

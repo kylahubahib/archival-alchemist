@@ -404,7 +404,9 @@ class ClassController extends Controller
             $history->ins_comment = $validatedData['comment'];
             $history->man_doc_id = $request->manuscript_id;
             $history->man_doc_status = $validatedData['status'];
-            $history->ins_id = $request->ins_id; // Ensure these values are passed in the request
+            // $history->ins_id = $request->ins_id; // Ensure these values are passed in the request
+            $history->ins_id = Auth::id(); // Ensure these values are passed in the request
+
             $history->group_id = $request->group_id;
             $history->section_id = $request->section_id;
             $history->created_at = $request->manuscriptCreated;
