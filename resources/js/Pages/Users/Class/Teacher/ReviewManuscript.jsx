@@ -33,31 +33,31 @@ console.log("These are the props in review manuscript :", manuscript)
 console.log("This is the Manuscrip ID :", manuscript.id)
 useEffect(() => {
     const fetchData = async () => {
-      try {
-        const response = await fetch(`/fetch-history?manuscript_id=${manuscript.id}`);
+        try {
+            const response = await fetch(`/fetch-history/${manuscript.manuscript_id}`);
 
-        if (!response.ok) {
-          throw new Error('Failed to fetch data');
+            if (!response.ok) {
+                throw new Error('Failed to fetch data');
+            }
+
+            const data = await response.json();
+
+            // Sort the data by revision_updated_at in descending order (latest first)
+            const sortedData = data.sort((a, b) => new Date(b.revision_updated_at) - new Date(a.revision_updated_at));
+
+            // Set the latest revision as the first element
+            setHistoryData(sortedData[0]);
+            setLoading(false);
+        } catch (error) {
+            setError(error.message);
+            setLoading(false);
         }
-
-        const data = await response.json();
-
-        // Sort the data by revision_updated_at in descending order (latest first)
-        const sortedData = data.sort((a, b) => new Date(b.revision_updated_at) - new Date(a.revision_updated_at));
-
-        // Set the latest revision as the first element
-        setHistoryData(sortedData[0]);
-        setLoading(false);
-      } catch (error) {
-        setError(error.message);
-        setLoading(false);
-      }
     };
 
     fetchData();
-  }, [manuscript.manuscript_id]);
+}, [manuscript.manuscript_id]);
 
-  
+
   // Loading and error handling
 
   if (loading) {
@@ -301,7 +301,7 @@ useEffect(() => {
       </p>
     </div>
   ) : (
-    <p>No revision history found for this manuscript.</p>
+    <p ClassName="text-base text-gray-100">No revision history.</p>
   )}
 </div>
 

@@ -419,10 +419,10 @@ class ClassController extends Controller
         }
     }
 
-    public function fetchHistory(Request $request)
+    public function fetchHistory(Request $request, $manuscript_id )
     {
         // Get manuscript_id from query parameters
-        $manuscript_id = $request->query('manuscript_id');
+        // $manuscript_id = $request->query('manuscript_id');
         Log::info('Fetching Manuscript ID:', ['manuscript_id' => $manuscript_id]);
 
         $getHistory = DB::table('revision_history as r')
