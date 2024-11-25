@@ -15,7 +15,7 @@ import { Avatar, Button, Table, TableHeader, TableColumn, TableBody, TableRow, T
 import { Skeleton } from '@nextui-org/skeleton'; // Import Skeleton
 import CreateClassSection from '@/Pages/Users/Class/Teacher/CreateClassSection';
 
-import ReviewManuscript from '@/Pages/Users/Class/Teacher/ReviewManuscript';
+import ModifyManuscript from '@/Pages/Users/Class/Student/ModifyManuscript';
 
 import ViewModal from '@/Components/studentworkModal';
 
@@ -410,7 +410,7 @@ const handleShowStudentWork = () => {
 
                             {/* Content of the Modal */}
                             <div className="w-full">
-                                <ReviewManuscript
+                                <ModifyManuscript
                                     folders={folders}
                                     onBack={onBack}
                                     task={task}

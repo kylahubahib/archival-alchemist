@@ -134,7 +134,7 @@ const CreateClassSection = ({ userId }) => {
 
 
     return (
-        <div className="flex flex-col items-start justify-start w-h-screen bg-gray-100 mt-0 relative w-relative mx-8 px-10">
+        <div className="flex flex-col items-start justify-start min-h-screen my-5 bg-gray-100 mt-0 relative w-relative mx-8 px-10">
             {isViewClassOpen ? (
                 // Pass the selected section or class
                 <ViewClass folders={selectedFolder} onBack={handleBack} /> // Pass handleBack as a prop to ViewClass

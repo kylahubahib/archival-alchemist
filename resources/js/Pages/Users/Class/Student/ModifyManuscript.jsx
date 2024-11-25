@@ -26,12 +26,6 @@ const ReviewManuscript = ({folders, onBack, task, taskID, closeModal, classes, m
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // const response = await fetch(`/fetch-history?manuscript_id=${manuscript.id}`);
-
-        // if (!response.ok) {
-        //   throw new Error('Failed to fetch data');
-        // }
-
         const data = manuscript.revision_history;
 
         // Sort the data by revision_updated_at in descending order (latest first)
@@ -71,47 +65,9 @@ const ReviewManuscript = ({folders, onBack, task, taskID, closeModal, classes, m
     setDropdownError(false);  // Reset the error when an action is selected
   };
 
-
-  const giveFeedback = async () => {
-    if (!status) {  // Check if status is selected
-        setDropdownError(true);  // Set error if no dropdown option is selected
-        return;  // Prevent form submission if no status is selected
-      }
-    const folder = folders;  // Or use a condition to select a specific folder
-    console.log('Folder ID:', folder.id);  // Check if folder.id is valid
-
-    console.log("These are the classes:", classes);
-    // Log to check if startDate and dueDate are set correctly
-    console.log("This is the Feedback!");
-
-    console.log("This is the manuscript:", manuscript);
-    console.log("Manuscript ID: ", manuscript.id);
-    const feedbackData = {
-        comment,
-        status,
-        manuscript_id: manuscript.id,
-        ins_id: folders.ins_id,
-        group_id: manuscript.group_id,
-        section_id: manuscript.section_id,
-        manuscriptCreated: manuscript.created_at,
-    };
-
-
-    try {
-        // Correct the URL template literal
-        const response = await axios.post(`/store-feedback/${manuscript.id}`, feedbackData)
-        // Handle successful save
-        console.log(response.data);
-
-        toast.info('Feedback submitted successfully!');
-
-        setComment('');
-        setStatus('');
-    } catch (error) {
-        // Handle error
-        console.error("Error saving project:", error);
-    }
-};
+  const handleSendForReview = () => {
+    
+  }
 
 
   // Toggle Modal state
@@ -216,40 +172,6 @@ const ReviewManuscript = ({folders, onBack, task, taskID, closeModal, classes, m
           {/* Main sidebar content */}
           {!isSidebarCollapsed && (
             <div className="px-6 py-4 ml-10 mr-mb-10 w-relative flex flex-col">
-              <div className="flex  justify-between items-center mb-4">
-                <h2 className="text-lg font-bold text-blue-600">Feedback</h2>
-                <div className="relative">
-                  {/* Dropdown Toggle Button */}
-                  <button
-                    className={`bg-gray-200 text-gray-700 px-3 py-1 rounded-lg focus:outline-none hover:bg-gray-300
-                      ${dropdownError ? 'shadow-lg shadow-red-500' : ''}`}  // Adds a red shadow if error
-                    onClick={toggleDropdown}
-                  >
-                    {status ? (status === 'A' ? "Approved ▼" : "Declined ▼") : "Options ▼"}
-                  </button>
-
-
-                  {/* Dropdown Menu */}
-                  {isOpen && (
-                    <div className="absolute right-0 mt-2 bg-white border rounded shadow-lg z-10 w-40">
-                      <button
-                        onClick={() => handleAction('A')} // Approve action
-                        className="block w-full text-left px-4 py-2 text-sm text-blue-600 hover:bg-blue-100"
-                      >
-                        Approve
-                      </button>
-                      <button
-                        onClick={() => handleAction('D')} // Decline action
-                        className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-100"
-                      >
-                        Decline
-                      </button>
-                    </div>
-
-      )}
-    </div>
-
-              </div>
               <div className="flex items-center">
                 <p className="mr-2 text-sm py-2">Status:</p>
                 <h1
@@ -285,7 +207,7 @@ const ReviewManuscript = ({folders, onBack, task, taskID, closeModal, classes, m
                     <p>
                     <strong >Last Updated:</strong>
                       <p ClassName="text-base"></p>{' '}
-                      {new Date(historyData.revision_updated_at).toLocaleString()}
+                      {new Date(historyData.updated_at).toLocaleString()}
                     </p>
                   </div>
                 ) : (
@@ -293,30 +215,25 @@ const ReviewManuscript = ({folders, onBack, task, taskID, closeModal, classes, m
                 )}
               </div>
 
-              <textarea
-                className="w-full h-48 border border-gray-300 rounded-lg p-3 mb-4 resize-none shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Write your feedback here..."
-                value={comment}
-                onChange={(e) => setComment(e.target.value)}
-                rows={6}
-              ></textarea>
-
-              <button onClick={giveFeedback}
+              <button onClick={handleSendForReview}
               className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white py-2 rounded-lg hover:from-blue-600 hover:to-blue-700 shadow-md">
-                Return Feedback
+                Send For Review
               </button>
+
             </div>
           )}
 
-{isModalOpen && (
-    <Modal isOpen={isModalOpen} onClose={handleModalClose}>
-                <h5 className="mb-4 text-center font-bold text-gray-500">
-                    This is the History Model
-                </h5>
-    </Modal>
-)}
+          {isModalOpen && (
+              <Modal isOpen={isModalOpen} onClose={handleModalClose}>
+                  <h5 className="mb-4 text-center font-bold text-gray-500">
+                      This is the History Model
+                  </h5>
+              </Modal>
+          )}
         </div>
       </div>
+
+
       <ToastContainer
         position="bottom-right"
         autoClose={2000}

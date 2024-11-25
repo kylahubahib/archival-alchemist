@@ -464,9 +464,6 @@ class ClassController extends Controller
 
 
 
-
-
-
     //STUDENT
 
     public function enrollInClass(Request $request)
@@ -537,12 +534,15 @@ class ClassController extends Controller
             DB::enableQueryLog();
 
             // Fetch classes with proper joins
-            $classes = Section::join('group_members', 'sections.id', '=', 'group_members.section_id')
-            ->join('courses', 'courses.id', '=', 'sections.course_id')
-            ->where('group_members.stud_id', Auth::id())
-            ->select('sections.*', 'courses.*', 'group_members.*')
-            ->get();
+            // $classes = Section::join('group_members', 'sections.id', '=', 'group_members.section_id')
+            // ->join('courses', 'courses.id', '=', 'sections.course_id')
+            // ->where('group_members.stud_id', Auth::id())
+            // ->select('sections.*', 'courses.*', 'group_members.*')
+            // ->get();
 
+            $section_id = GroupMember::where('stud_id', Auth::id())->pluck('section_id');
+
+            $classes = Section::with(['course', 'group'])->where('id', $section_id)->get();
 
             // Log the SQL query for debugging
             Log::info('SQL Query: ' . DB::getQueryLog()[0]['query']);

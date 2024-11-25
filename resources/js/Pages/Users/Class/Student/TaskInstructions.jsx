@@ -261,12 +261,12 @@ console.log("This is the Task ID:", taskID);
 
   // Fetch tasks based on scroll (this is the only place we get new data)
   const fetchAssignedTasks = useCallback(async () => {
-    if (!folders || !folders[0]) return;  // Ensure we have folder data
+    if (!folders || !folders) return;  // Ensure we have folder data
     try {
       setLoading(true);
 
-      console.log('Fetching tasks for folder:', folders[0]?.section_id);
-      const response = await fetch(`/fetch-specificAssignedTask/${folders[0]?.section_id}?taskID=${taskID}`);
+      console.log('Fetching tasks for folder:', folders.id);
+      const response = await fetch(`/fetch-specificAssignedTask/${folders.id}?taskID=${taskID}`);
       if (!response.ok) throw new Error('Failed to fetch tasks');
       const data = await response.json();
       console.log('Fetched tasks:', data);
@@ -563,7 +563,7 @@ console.log("This is the Task ID:", taskID);
                                     type="file"
                                     className="w-full mt-2 cursor-pointer file:py-2 file:px-4 file:border file:border-gray-300 file:rounded-lg file:bg-gray-200 file:text-gray-700 hover:file:bg-gray-300"
                                     onChange={handleFileChange}
-                                    accept=".pdf,.docx"
+                                    accept=".docx"
                                 />
                             </div>
                             {errors.man_doc_content && (

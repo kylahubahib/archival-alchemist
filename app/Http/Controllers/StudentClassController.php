@@ -91,7 +91,7 @@ class StudentClassController extends Controller
             $filePath = 'storage/capstone_files/' . $fileName;
 
             // Create the gorup
-            $group =  Group::create([
+            $group =  Group::firstOrCreate([
                 'group_name' => $validatedData['group_name'],
                 'section_id' => $section_id,
                 'task_id' => $task_id,
@@ -231,14 +231,14 @@ class StudentClassController extends Controller
 
                  $faculty = $section->ins_id;
                  
-                //  RevisionHistory::create([
-                //      'ins_comment' => null,
-                //      'man_doc_id' => $manuscriptProject->id,
-                //      'ins_id' => $faculty,
-                //      'uploaded_at' => $manuscriptProject->created_at,
-                //      'revision_content' => $manuscriptProject->man_doc_content,
-                //      'status' => 'Started'
-                //  ]);
+                 RevisionHistory::create([
+                     'ins_comment' => null,
+                     'man_doc_id' => $manuscriptProject->id,
+                     'ins_id' => $faculty,
+                     'man_doc_status' => 'P',
+                     'group_id' => $group->id,
+                     'section_id' =>$section_id,
+                 ]);
              }
 
             return response()->json(['message' => 'Manuscript project uploaded successfully.'], 200);
@@ -1154,5 +1154,126 @@ public function isPremium()
 //         'message' => 'User is a premium member.',
 //     ]);
 // }
+
+
+            
+        
+    public function sendForRevision(Request $request)
+    {
+        $manuscriptId = $request->get('manuscript_id');
+        Log::info("Starting 'sendForRevision' process for manuscript ID: $manuscriptId");
+
+        // Find the manuscript
+        $manuscript = ManuscriptProject::find($manuscriptId);
+
+        if (!$manuscript || empty($manuscript->man_doc_adviser)) {
+            Log::warning("Manuscript not found or invalid data. Manuscript ID: $manuscriptId");
+            return response()->json(['error' => 'Manuscript not found or invalid data.'], 404);
+        }
+
+        Log::info("Manuscript found, updating status for manuscript ID: $manuscriptId");
+
+        // Update manuscript status to 'To Review'
+        $manuscript->update([
+            'man_doc_status' => 'To Review'
+        ]);
+        
+        Log::info("Manuscript status updated to 'To Review' for manuscript ID: $manuscriptId");
+
+        // Get the Google Doc URL 
+        $googleDocUrl = $manuscript->man_doc_content;  
+        Log::info("Google Doc URL retrieved: $googleDocUrl");
+
+        if (!$googleDocUrl) {
+            Log::warning("Google Doc URL is missing for manuscript ID: $manuscriptId");
+            return response()->json(['error' => 'Google Doc URL is missing.'], 400);
+        }
+
+        // Extract Google Doc ID from the URL
+        $googleDocId = $this->extractGoogleDocId($googleDocUrl);
+        Log::info("Extracted Google Doc ID: $googleDocId");
+
+        if (!$googleDocId) {
+            Log::warning("Invalid Google Doc URL for manuscript ID: $manuscriptId");
+            return response()->json(['error' => 'Invalid Google Doc URL.'], 400);
+        }
+
+        // Initialize Google Client
+        $client = new GoogleClient();
+        $client->setClientId(config('services.google.client_id'));
+        $client->setClientSecret(config('services.google.client_secret'));
+        $client->setRedirectUri(config('services.google.redirect'));
+        $client->setAccessType('offline');
+        $client->addScope(GoogleDrive::DRIVE_FILE);
+
+        // Set the access token
+        $accessToken = Auth::user()->google_access_token;
+        Log::info("Access token retrieved for user: " . Auth::user()->email);
+
+        // Check if the access token is expired since access token expired in one hour so we need the refresh token to get a new access token
+        if (Carbon::now()->greaterThanOrEqualTo(Carbon::parse($user->google_token_expiry))) {
+            $client->refreshToken($user->google_refresh_token);
+            $newAccessToken = $client->getAccessToken();
+
+            // Update the user's token and expiry in the database
+            $user->update([
+                'google_access_token' => $newAccessToken['access_token'],
+                'google_token_expiry' => Carbon::now()->addSeconds($newAccessToken['expires_in']),
+            ]);
+
+            $accessToken = $newAccessToken['access_token'];
+        }
+
+        // Set the access the new access token
+        $client->setAccessToken($accessToken);
+
+        $authorEmails = Author::with('user')
+            ->where('man_doc_id', $manuscriptId)->get()
+            ->pluck('user.email')->toArray();
+
+        $teacherEmail = Section::with('user')
+            ->where('id', $manuscript->section_id)
+            ->pluck('user.email')->toArray();
+
+        // Initialize Google Drive Service
+        $driveService = new GoogleDrive($client);
+        Log::info("Google Drive service initialized.");
+
+        // Create a new permission object to set the "commenter" role
+        $permission = new Permission();
+        $permission->setType('user');
+        $permission->setRole('commenter');  // Set the role to "commenter"
+        $permission->setEmailAddress(Auth::user()->email);  
+        Log::info("Permission object created for email: " . Auth::user()->email);
+
+        try {
+            // Set the permission on the Google Doc
+            $driveService->permissions->create($googleDocId, $permission);
+            Log::info("Document permission updated successfully to commenter for document ID: $googleDocId");
+
+            return response()->json(['success' => 'Document permission updated successfully to commenter.']);
+        } catch (Exception $e) {
+            // Log and handle any errors
+            Log::error("Error setting permission for document ID: $googleDocId", ['error' => $e->getMessage()]);
+            return response()->json(['error' => 'Error setting permission: ' . $e->getMessage()], 500);
+        }
+    }
+
+    // Method to extract Google Doc ID from the URL
+    private function extractGoogleDocId($url)
+    {
+        $parsedUrl = parse_url($url);
+        Log::info("Parsing URL: $url");
+
+        // Check if the URL contains '/d/' and extract the document ID
+        if (isset($parsedUrl['path'])) {
+            $pathSegments = explode('/', $parsedUrl['path']);
+            if (count($pathSegments) >= 3 && $pathSegments[2]) {
+                return $pathSegments[2]; 
+            }
+        }
+
+        return null;
+    }
 
 }

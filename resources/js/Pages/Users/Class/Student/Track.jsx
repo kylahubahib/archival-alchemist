@@ -5,12 +5,13 @@ import 'react-vertical-timeline-component/style.min.css';
 import {Card, CardFooter, Image, Button, ModalBody} from "@nextui-org/react";
 import axios from 'axios';
 
-export default function Track({manuscript=[]}) {
+export default function Track({folders, onBack, task, taskID }) {
     const [expanded, setExpanded] = useState(false);
     const [modalContent, setModalContent] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedData, setSelectedData] = useState(null);
     const [revisionHistory, setRevisionHistory] = useState(null);
+    const [classes, setClasses] = useState([]);
 
     const toggleTimeline = (data) => {
         setRevisionHistory(data);
@@ -18,9 +19,24 @@ export default function Track({manuscript=[]}) {
         setExpanded(!expanded);
     };
 
+   
     useEffect(() => {
-        console.log(manuscript);
-    })
+
+        console.log('SETION: ', folders?.id)
+
+        axios.get('/get-manuscripts', {
+            params: {
+                section_id: folders?.id
+            }
+        })
+        .then(response => {
+            console.log(response.data); // Log the response to check its structure
+            setClasses(response.data); // Store the manuscripts data
+        })
+        .catch(error => {
+            console.error("Error fetching manuscripts:", error);
+        });
+    }, []);
 
     const openModal = (data, content) => {
         setModalContent(content);
@@ -42,8 +58,8 @@ export default function Track({manuscript=[]}) {
     return (
         <div className={`h-screen w-full border-none rounded-lg shadow-lg p-4 transition-height duration-300 ease-in-out ${expanded ? 'h-auto' : 'h-32'} bg-gray-100`}>
             
-            {manuscript.length > 0 ? (
-                manuscript.map((data)=> (
+            {classes.length > 0 ? (
+                classes.map((data)=> (
                     <div className="flex items-center justify-between pb-3" key={data.id}>
                         <div>
                             <div className="text-lg font-bold">{data.man_doc_title}</div>
@@ -81,7 +97,7 @@ export default function Track({manuscript=[]}) {
                                 date={data.created_at}
                                 iconStyle={{ background: "rgb(33, 150, 243)", color: "#000" }}
                             >
-                                <h3 className="vertical-timeline-element-title">{data.status}</h3>
+                                <h3 className="vertical-timeline-element-title">{data.man_doc_status}</h3>
                                 <p className="cursor-pointer" onClick={() => openModal(data, 'revision')}>Click for details</p>
                             </VerticalTimelineElement>
                         ))

@@ -201,23 +201,23 @@ useEffect(() => {
 
         {/* <div className="max-w-7xl mx-auto bg-white  flex justify-center h-screen items-center shadow-sm sm:rounded-lg sticky"> */}
         <div className="flex bg-white justify-start  items-start w-h-screen mt-8 mx-8 border-b border-gray-300 ">
-        <Link
-            to="/teacherclass"
-            className="flex justify-start items-start my-3 mt-5 mx-5 w-full text-gray-700 text-2xl hover:underline hover:text-blue-500"
-        >
-        <div className="flex items-center space-x-10  border-gray-200">
-            <div className="pr-3">
-                <Avatar
-                    src="images/img1.png"
-                    alt="Teacher"
-                    size="8"
-                />
+            <Link
+                to="/teacherclass"
+                className="flex justify-start items-start my-3 mt-5 mx-5 w-full text-gray-700 text-2xl hover:underline hover:text-blue-500"
+            >
+            <div className="flex items-center space-x-10  border-gray-200">
+                <div className="pr-3">
+                    <Avatar
+                        src="images/img1.png"
+                        alt="Teacher"
+                        size="8"
+                    />
+                </div>
+                Alchemist Room
             </div>
-            Alchemist Room
-        </div>
 
-        </Link>
-    </div>
+            </Link>
+        </div>
             {isCreating ? (
                 <CreateClassSection
                     onCreate={handleCreate}

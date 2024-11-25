@@ -105,7 +105,8 @@ const JoinClassSection = ({ userId }) => {
         }
     };
 
-    const handleViewClass = () => {
+    const handleViewClass = (data) => {
+        setFolders(data)
         setIsViewClassOpen(true); // Show the ViewClass component
     };
 

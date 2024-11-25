@@ -24,7 +24,7 @@ class Section extends Model
         return $this->belongsTo(Course::class, 'course_id');
     }
 
-    public function groups()
+    public function group()
     {
         return $this->hasMany(Group::class, 'section_id');
     }

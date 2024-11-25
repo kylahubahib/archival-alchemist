@@ -67,7 +67,13 @@ class TeacherClassController extends Controller
         public function index()
         {
             // Get the logged-in faculty
-            $faculty = Faculty::with('university_branch')->where('user_id', Auth::id())->firstOrFail();
+            $user = Auth::user();
+
+            if($user->user_type === 'teacher')
+            {
+                $faculty = Faculty::with('university_branch')->where('user_id', Auth::id())->firstOrFail();
+            }
+           
 
             // Get the department associated with the faculty
             $department = Department::where('uni_branch_id', $faculty->uni_branch_id)->first();

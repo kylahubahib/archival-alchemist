@@ -72,25 +72,25 @@ const PreviewTask = ({ folders, onBack, task, taskID }) => {
                     <Button onClick={onBack} auto bordered color="error" className="text-gray-600 font-semibold hover:text-blue-500">
                         Back to Stream
                         <svg
-    xmlns="http://www.w3.org/2000/svg"
-    className="h-6 w-6 transform rotate-180 group-hover:text-blue-600"
-    fill="none"
-    viewBox="0 0 24 24"
-    stroke="currentColor"
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M15 19l-7-7 7-7"
-    />
-  </svg>
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-6 w-6 transform rotate-180 group-hover:text-blue-600"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                        >
+                            <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M15 19l-7-7 7-7"
+                            />
+                        </svg>
                     </Button>
                 </div>
             </div>
 
             {/* Content Section with Margin Top */}
-            <div className="w-full bg-gray-100  pt-12 "> {/* Add mt-12 to create space below the header */}
+            <div className="w-full bg-gray-100  pt-12"> {/* Add mt-12 to create space below the header */}
                 {activeSection === 'people' && <People folders={folders} onBack={() => setActiveSection('')} />}
                 {activeSection === 'grades' && <Grades  folders={folders}  onBack={() => setActiveSection('')} />}
                 {activeSection === 'taskInstructions' && <TaskInstructions folders={folders} onBack={() => setActiveSection('')}  task={task} taskID={taskID}/>}
