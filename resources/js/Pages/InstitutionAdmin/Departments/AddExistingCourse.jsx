@@ -49,7 +49,7 @@ export default function AddExistingCourse({isOpen, onClose, deptId}) {
                 >
                     {unassignedCourses.map(course => (
                         <Checkbox key={course.id} value={course.id}>
-                            {course.course_name} 
+                            {course.course_name}
                         </Checkbox>
                     ))}
                 </CheckboxGroup>
@@ -57,7 +57,7 @@ export default function AddExistingCourse({isOpen, onClose, deptId}) {
                 <Button variant='ghost' color='primary' onClick={handleAssigningCourses}> SAVE AND ASSIGN COURSES</Button>
             </div>
 
-           
+
 
             <div className="bg-customBlue p-2 flex justify-end">
                 <button onClick={onClose} className="text-white text-right mr-5">Close</button>

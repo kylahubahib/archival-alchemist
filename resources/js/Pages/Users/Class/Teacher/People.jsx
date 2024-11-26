@@ -345,4 +345,3 @@ useEffect(() => {
 };
 
 export default People;
-

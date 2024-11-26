@@ -1,6 +1,4 @@
 import { AiOutlineMenu, AiOutlineClose } from "react-icons/ai";
-
-
 import React, { useState, useEffect } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head } from '@inertiajs/react';
@@ -9,14 +7,11 @@ import { Link } from '@inertiajs/react';
 import ShowMemersModal from '@/Components/Modal';
 import ClassDropdown from "@/Components/ClassDropdown";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-
 import { faFolder, faUsers, faUser, faEllipsisV } from '@fortawesome/free-solid-svg-icons';
 import { Avatar, Button, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, useDisclosure } from "@nextui-org/react";
 import { Skeleton } from '@nextui-org/skeleton'; // Import Skeleton
 import CreateClassSection from '@/Pages/Users/Class/Teacher/CreateClassSection';
-
 import ReviewManuscript from '@/Pages/Users/Class/Teacher/ReviewManuscript';
-
 import ViewModal from '@/Components/studentworkModal';
 
 //axios.defaults.headers.common['X-CSRF-TOKEN'] = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
@@ -179,35 +174,47 @@ useEffect(() => {
 }, [selectedClass]);
 
 
-    const getStatusButton = (status) => {
-        switch (status.toLowerCase()) {  // Make sure to handle case sensitivity
-            case 'approved':
+const getStatusButton = (status) => {
+    switch (status.toLowerCase()) {  // Make sure to handle case sensitivity
+        case 'approved':
+            return (
+                <Button
+                    size="xs"
+                    color="success"
+                    radius="full"
+                    className="text-center text-[13px] p-1 h-auto min-h-0"
+                >
+                    {status.charAt(0).toUpperCase() + status.slice(1)}
+                </Button>
+            );
+        case 'declined':
+            return (
+                <Button
+                    size="xs"
+                    color="danger"
+                    radius="full"
+                    className="text-center text-[13px] p-1 h-auto min-h-0"
+                >
+                    {status.charAt(0).toUpperCase() + status.slice(1)}
+                </Button>
+            );
+        case 'to-review':
+            return (
+                <Button
+                    size="xs"
+                    color="primary"
+                    radius="full"
+                    className="text-center text-[13px] p-1 h-auto min-h-0"
+                >
+                    {status.charAt(0).toUpperCase() + status.slice(1)}
+                </Button>
+            );
+
+            case 'pending':
                 return (
                     <Button
                         size="xs"
-                        color="success"
-                        radius="full"
-                        className="text-center text-[13px] p-1 h-auto min-h-0"
-                    >
-                        {status.charAt(0).toUpperCase() + status.slice(1)}
-                    </Button>
-                );
-            case 'declined':
-                return (
-                    <Button
-                        size="xs"
-                        color="danger"
-                        radius="full"
-                        className="text-center text-[13px] p-1 h-auto min-h-0"
-                    >
-                        {status.charAt(0).toUpperCase() + status.slice(1)}
-                    </Button>
-                );
-            case 'to-review':
-                return (
-                    <Button
-                        size="xs"
-                        color="primary"
+                        color="warning"
                         radius="full"
                         className="text-center text-[13px] p-1 h-auto min-h-0"
                     >
@@ -215,29 +222,29 @@ useEffect(() => {
                     </Button>
                 );
 
-                case 'missing':
-                    <Button
-                        size="xs"
-                        color="danger"
-                        radius="full"
-                        className="text-center text-[13px] p-1 h-auto min-h-0"
-                        >
-                        {status.charAt(0).toUpperCase() + status.slice(1)}
-                    </Button>
-
-            default:
-                return (
-                    <Button
-                        size="xs"
-                        color="default"
-                        radius="full"
-                        className="text-center text-[13px] p-1 h-auto min-h-0"
+            case 'missing':
+                <Button
+                    size="xs"
+                    color="danger"
+                    radius="full"
+                    className="text-center text-[13px] p-1 h-auto min-h-0"
                     >
-                        {status.charAt(0).toUpperCase() + status.slice(1)}
-                    </Button>
-                );
-        }
-    };
+                    {status.charAt(0).toUpperCase() + status.slice(1)}
+                </Button>
+
+        default:
+            return (
+                <Button
+                    size="xs"
+                    color="default"
+                    radius="full"
+                    className="text-center text-[13px] p-1 h-auto min-h-0"
+                >
+                    {status.charAt(0).toUpperCase() + status.slice(1)}
+                </Button>
+            );
+    }
+};
 
     const [activeSection, setActiveSection] = useState('');
 
@@ -317,7 +324,6 @@ const handleShowStudentWork = () => {
                                     {new Date(classItem.updated_at).toLocaleDateString() || "N/A"}
                                 </TableCell>
                                 <TableCell className="text-center">
-
                                     {console.log(classItem.man_doc_status)} {/* Log to check status value */}
                                     {getStatusButton(classItem.man_doc_status || "norecords")}
                                 </TableCell>

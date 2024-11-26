@@ -68,6 +68,7 @@ class TeacherClassController extends Controller
             return response()->json(['classes' => $classes]);
         }
 
+
         public function index()
         {
             // Get the logged-in faculty
@@ -77,7 +78,7 @@ class TeacherClassController extends Controller
             {
                 $faculty = Faculty::with('university_branch')->where('user_id', Auth::id())->firstOrFail();
             }
-           
+
 
             // Get the department associated with the faculty
             $department = Department::where('uni_branch_id', $faculty->uni_branch_id)->first();
@@ -145,47 +146,10 @@ class TeacherClassController extends Controller
 
 
 
-// // In your controller
-// public function getManuscriptsByClass(Request $request)
-// {
-//     // $classCode = $request->input('class_code'); // Get the class code from the request
-//     $ins_id = $request->input('ins_id'); // Get the class code from the request
-
-//     // Query to join manuscripts and class tables
-//     $manuscripts = ManuscriptProject::from('class as c')
-//     ->leftJoin('manuscripts as m', 'c.id', '=', 'm.class_code')
-//     ->select('c.id as id', 'c.class_code', 'c.class_name', 'm.id as id', 'm.man_doc_title', 'm.man_doc_status', 'm.created_at', 'm.updated_at')
-//     ->where('c.ins_id', $ins_id)
-//     ->get();
-
-
-//     // Transform the statuses into user-friendly labels
-//     $manuscripts->transform(function ($manuscript) {
-//         switch ($manuscript->man_doc_status) {
-//             case 'Y':
-//                 $manuscript->man_doc_status = 'Approved';
-//                 break;
-//             case 'I':
-//                 $manuscript->man_doc_status = 'In progress';
-//                 break;
-//             case 'X':
-//                 $manuscript->man_doc_status = 'Declined';
-//                 break;
-//             default:
-//                 $manuscript->man_doc_status = 'Pending';
-//         }
-//         return $manuscript;
-//     });
-
-//     return response()->json($manuscripts);
-// }
-
-
-
     public function getManuscriptsByClass(Request $request)
     {
         $section_id = $request->get('section_id');
-        $filter = $request->input('filter'); 
+        $filter = $request->input('filter');
 
         Log::info('Section Id:', (array)$section_id);
 
@@ -197,16 +161,19 @@ class TeacherClassController extends Controller
         if ($filter) {
             switch ($filter) {
                 case 'approved':
-                    $query->where('man_doc_status', 'Y');
+                    $query->where('man_doc_status', 'A');
                     break;
                 case 'declined':
-                    $query->where('man_doc_status', 'X');
+                    $query->where('man_doc_status', 'D');
                     break;
                 case 'in_progress':
                     $query->where('man_doc_status', 'I');
                     break;
                 case 'pending':
                     $query->where('man_doc_status', 'P');
+                    break;
+                case 'missing':
+                    $query->where('man_doc_status', 'M');
                     break;
             }
         }
@@ -216,20 +183,23 @@ class TeacherClassController extends Controller
         // Transform statuses into user-friendly labels
         $manuscripts->transform(function ($manuscript) {
             switch ($manuscript->man_doc_status) {
-                case 'Y':
+                case 'A':
                     $manuscript->man_doc_status = 'Approved';
                     break;
                 case 'I':
                     $manuscript->man_doc_status = 'In progress';
                     break;
-                case 'X':
+                case 'D':
                     $manuscript->man_doc_status = 'Declined';
                     break;
                 case 'T':
-                    $manuscript->man_doc_status = 'To Review';
+                    $manuscript->man_doc_status = 'To-Review';
+                    break;
+                case 'P':
+                    $manuscript->man_doc_status = 'Pending';
                     break;
                 default:
-                    $manuscript->man_doc_status = 'Pending';
+                    $manuscript->man_doc_status = 'Missing';
             }
             return $manuscript;
         });

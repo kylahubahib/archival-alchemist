@@ -33,7 +33,7 @@ export default function ServicesSection({ isOpen, onClose, services }) {
                 content_type: service?.content_type || '',
             });
             setIconPic(service?.subject || '')
-            setPreviewUrl(null);  
+            setPreviewUrl(null);
         }
     }, [index]);
 
@@ -75,19 +75,19 @@ export default function ServicesSection({ isOpen, onClose, services }) {
         setNewService(true);
         setIndex(null);
         reset();
-        setPreviewUrl(null);  
+        setPreviewUrl(null);
     };
 
     const handleCloseCreate = () => {
         setNewService(false);
         reset();
-        setPreviewUrl(null);  
+        setPreviewUrl(null);
     };
 
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        
+
         if (iconPic instanceof File) {
            uploadIcon(index);
         }
@@ -128,7 +128,7 @@ export default function ServicesSection({ isOpen, onClose, services }) {
                     <CgClose />
                 </button>
             </div>
- 
+
             <div className="px-4 flex justify-between">
                 <h2 className="text-xl text-gray-700 font-bold">Services Section</h2>
                 <Button onClick={handleCreateItem} radius="large" variant='bordered' size='sm' className="border-customBlue text-customBlue shadow">
@@ -138,7 +138,7 @@ export default function ServicesSection({ isOpen, onClose, services }) {
 
             {!newService ? (
             <div className="px-5 py-5">
-                <div > 
+                <div >
                     <Table>
                         <TableHeader>
                             <TableColumn>Icon</TableColumn>
@@ -153,7 +153,7 @@ export default function ServicesSection({ isOpen, onClose, services }) {
                                         {index === service.id ? (
                                             <div className="relative w-14 h-14">
                                                 <img
-                                                    src={previewUrl || `/${iconPic || service.subject}`}  
+                                                    src={previewUrl || `/${iconPic || service.subject}`}
                                                     alt="icon"
                                                     className="h-14 w-14 rounded-t-lg object-cover p-2"
                                                 />
@@ -170,8 +170,8 @@ export default function ServicesSection({ isOpen, onClose, services }) {
                                                 onChange={handleFileChange}
                                                 className="absolute inset-0 opacity-0 cursor-pointer z-20"
                                                 />
-                                                
-                                                
+
+
                                             </div>
 
                                         ) : (

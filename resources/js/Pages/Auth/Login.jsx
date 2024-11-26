@@ -23,7 +23,7 @@ export default function Login({ status, canResetPassword }) {
             reset('password');
         };
     }, []);
-    
+
 
     const submit = (e) => {
         e.preventDefault();
@@ -31,11 +31,11 @@ export default function Login({ status, canResetPassword }) {
         post(route('login'));
     };
 
-    
+
 
     return (
         //<GuestLayout>
-         
+
         <div className="flex flex-col md:flex-row align-middle">
             <div className="h-64 md:min-h-screen md:w-1/2">
                 <img src="/images/img2.png" alt="books" className="w-full h-full object-cover" />
@@ -45,7 +45,7 @@ export default function Login({ status, canResetPassword }) {
                 <div className="mb-5">
                     <p className=" text-4xl font-bold text-customBlue text-center">ARCHIVAL <br/> ALCHEMIST</p>
                 </div>
-               
+
                 <div className="w-full max-w-md mt-6 px-6 py-4 bg-white shadow-md overflow-hidden sm:rounded-lg">
 
                     <Head title="Log in" />
@@ -114,11 +114,11 @@ export default function Login({ status, canResetPassword }) {
                     </form>
                 </div>
                 <div className="text-center">
-                    <span>Don't have an account? 
+                    <span>Don't have an account?
                     <NavLink href={route('register')} className=" text-blue-500 font-semibold">REGISTER</NavLink> </span>
                 </div>
 
-                
+
 
                 <div className="text-center space-y-3 pt-5">
                     <Divider className=" mb-3"/>
@@ -127,9 +127,9 @@ export default function Login({ status, canResetPassword }) {
                 </div>
             </div>
 
-    
+
         </div>
-        
+
         //</GuestLayout>
     );
 }
