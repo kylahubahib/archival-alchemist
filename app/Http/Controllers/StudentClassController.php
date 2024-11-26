@@ -31,6 +31,7 @@ use Google\Client as GoogleClient;
 use Google\Service\Drive as GoogleDrive; 
 use Google\Service\Drive\DriveFile as GoogleDriveFile;
 use Google\Service\Drive\Permission;
+use App\Notifications\UserNotification;
 
 
 class StudentClassController extends Controller

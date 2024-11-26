@@ -18,6 +18,8 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
+use App\Notifications\UserNotification;
+
 class ClassController extends Controller
 {
     public function fetchCourses(Request $request)

@@ -265,7 +265,7 @@ const handleShowStudentWork = () => {
 
     return (
 
-    <div className="mt-0 relative  mb-10"
+    <div className="mt-0 relative mb-10"
         // <div
             // className="relative bg-white px-6 mb-10 w-full items-center"
             style={{

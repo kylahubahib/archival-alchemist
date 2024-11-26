@@ -131,7 +131,7 @@ const JoinClassSection = ({ userId }) => {
                                 onClick={() => setIsModalOpen(true)}
                                 className="bg-[#dfe1e5] flex justify-center items-center h-44 rounded-lg border-2 border-[#c1c8d0] cursor-pointer transform hover:scale-105 transition-all duration-200 shadow-md hover:shadow-lg"
                             >
-                                <div className="flex flex-col items-center text-center">
+                                <div className="flex flex-col items-center text-center mx-16">
                                     <div className="text-5xl text-[#4285f4]">+</div>
                                     <span className="mt-4 text-lg text-[#4285f4] font-semibold">Join Class</span>
                                 </div>

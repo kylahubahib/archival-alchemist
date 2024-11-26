@@ -787,7 +787,7 @@ const handleDropdownChange = (selectedKey) => {
                             {manuscript.authors.map(author => author.name).join(', ')}
                         </p>
                     ) : (
-                        <p className="text-gray-700 mt-1">No authors Avialable</p>
+                        <p className="text-gray-700 mt-1">Unknown Authors</p>
                     )}
                 </div>
 
@@ -809,53 +809,53 @@ const handleDropdownChange = (selectedKey) => {
 
 
                 <div className="mt-4 flex items-center gap-4">
-                <Tooltip content="Views">
+                    <Tooltip content="Views">
+                        <button
+                            className={`text-gray-600 hover:text-blue-500 ${manuscript.man_doc_content ? 'text-blue-500' : ''}`}>
+                            <FaEye size={20} />
+                            <span className="ml-1">{manuscript.man_doc_view_count}</span>
+                        </button>
+                    </Tooltip>
+
+
+                    <div
+                    key={manuscript.id}
+                    className="flex items-center text-blue-500 hover:text-blue-700 cursor-pointer"
+                    onClick={() => handleComments(manuscript.id, manuscript.man_doc_title)}  // Pass id and title to handleComments
+                    >
+                    <FaComment size={20} />
+                    </div>
+
+                {/* Render ToggleComments only if a manuscript is selected and the sidebar is open */}
+                {selectedManuscript && (
+                    <ToggleComments
+                        manuscripts={selectedManuscript}  // Pass the selected manuscript to ToggleComments
+                        man_id={selectedManuscript.id}  // Pass additional properties if needed
+                        man_doc_title={selectedManuscript.title}
+                        isOpen={isSidebarOpen}
+                        toggleSidebar={() => setIsSidebarOpen((prevState) => !prevState)} // Toggle the sidebar
+                    />
+                )}
+
+                <Tooltip content="Bookmark">
                     <button
-                        className={`text-gray-600 hover:text-blue-500 ${manuscript.man_doc_content ? 'text-blue-500' : ''}`}>
-                        <FaEye size={20} />
-                        <span className="ml-1">{manuscript.man_doc_view_count}</span>
+                        className="text-gray-600 hover:text-blue-500"
+                        onClick={() => {
+                            if (!isAuthenticated) {
+                                // Show the login modal if the user is not authenticated
+                                openLogInModal();
+                            } else if (!isPremium) {
+                                // Show the subscription modal if the user is not premium
+                                openSubsModal();
+                            } else {
+                                // Proceed with the bookmark action if the user is premium and authenticated
+                                handleBookmark(manuscript.id);
+                            }
+                        }}
+                    >
+                        <FaBookmark size={20} />
                     </button>
                 </Tooltip>
-
-
-                <div
-                key={manuscript.id}
-                className="flex items-center text-blue-500 hover:text-blue-700 cursor-pointer"
-                onClick={() => handleComments(manuscript.id, manuscript.man_doc_title)}  // Pass id and title to handleComments
-            >
-                <FaComment size={20} />
-            </div>
-
-        {/* Render ToggleComments only if a manuscript is selected and the sidebar is open */}
-        {selectedManuscript && (
-            <ToggleComments
-                manuscripts={selectedManuscript}  // Pass the selected manuscript to ToggleComments
-                man_id={selectedManuscript.id}  // Pass additional properties if needed
-                man_doc_title={selectedManuscript.title}
-                isOpen={isSidebarOpen}
-                toggleSidebar={() => setIsSidebarOpen((prevState) => !prevState)} // Toggle the sidebar
-            />
-        )}
-
-<Tooltip content="Bookmark">
-    <button
-        className="text-gray-600 hover:text-blue-500"
-        onClick={() => {
-            if (!isAuthenticated) {
-                // Show the login modal if the user is not authenticated
-                openLogInModal();
-            } else if (!isPremium) {
-                // Show the subscription modal if the user is not premium
-                openSubsModal();
-            } else {
-                // Proceed with the bookmark action if the user is premium and authenticated
-                handleBookmark(manuscript.id);
-            }
-        }}
-    >
-        <FaBookmark size={20} />
-    </button>
-</Tooltip>
 
 
                 <Tooltip content="Download">
@@ -878,6 +878,7 @@ const handleDropdownChange = (selectedKey) => {
                         <FaFileDownload size={20} />
                     </button>
                 </Tooltip>
+
                 {/* Modal for Non-Premium Users */}
                 {isSubsModal && (
                     <Modal show={isSubsModal} onClose={closeModal}>

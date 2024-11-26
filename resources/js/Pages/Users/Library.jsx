@@ -150,12 +150,12 @@ const handleEndYearChange = (e) => {
                                 >
                                     Recommended
                                 </button>
-                                <button
+                                {/* <button
                                     onClick={() => handleTabClick('ByUniversity')}
                                     className={buttonStyle('ByUniversity')}
                                 >
                                     University
-                                </button>
+                                </button> */}
                             </div>
 
                             <div className="flex items-center space-x-2">
@@ -211,5 +211,4 @@ const handleEndYearChange = (e) => {
         </MainLayout>
     );
 }
-
 
