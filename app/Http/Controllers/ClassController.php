@@ -10,6 +10,7 @@ use App\Models\Section;
 use App\Models\User;
 use App\Models\GroupMember;
 use App\Models\RevisionHistory;
+use App\Models\ManuscriptProject;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
@@ -559,6 +560,28 @@ class ClassController extends Controller
 
             return response()->json(['error' => 'An error occurred while fetching classes.'], 500);
         }
+    }
+
+
+
+
+        /**
+     * Fetch manuscripts by group ID.
+     *
+     * @param  int  $groupId
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getManuscriptsByGroup($groupId)
+    {
+        // Validate the input to ensure groupId is numeric
+        if (!is_numeric($groupId)) {
+            return response()->json(['error' => 'Invalid group ID'], 400);
+        }
+        // Fetch manuscripts associated with the group ID
+        $manuscripts = ManuscriptProject::where('group_id', $groupId)->get();
+
+        // Return the manuscripts as JSON
+        return response()->json($manuscripts);
     }
 
 }

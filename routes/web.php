@@ -592,6 +592,8 @@ Route::get('/test-redis', function () {
 });
 
 Route::post('/send-for-revision', [StudentClassController::class, 'sendForRevision'])->name('send-for-revision');
+Route::get('/manuscripts/group/{groupId}', [ClassController::class, 'getManuscriptsByGroup']);
+
 
 
 //Commments
