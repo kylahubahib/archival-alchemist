@@ -8,6 +8,17 @@ use Symfony\Component\HttpFoundation\Response;
 
 class VerifyCsrfToken
 {
+
+     /**
+     * The URIs that should be excluded from CSRF verification.
+     *
+     * @var array<int, string>
+     */
+    protected $except = [
+        '/login',
+        '/logout'
+    ];
+
     /**
      * Handle an incoming request.
      *

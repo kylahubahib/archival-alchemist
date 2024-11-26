@@ -17,6 +17,10 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB; // Add this line
 use Illuminate\Support\Facades\Log;
 
+use App\Notifications\UserNotification;
+
+
+
 class TeacherClassController extends Controller
 {
     //create class
