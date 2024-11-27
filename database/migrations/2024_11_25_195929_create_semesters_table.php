@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('uni_branch_id')->nullable(); 
             $table->string('name', 30)->nullable();
+            $table->string('school_year')->nullable();
             $table->date('start_date')->nullable();
             $table->date('end_date')->nullable();
             $table->string('status', 10)->default('Upcoming');
