@@ -19,33 +19,35 @@ use Carbon\Carbon;
 
 class ClassController extends Controller
 {
+   
     public function fetchCourses(Request $request)
     {
         $user = Auth::user()->load('faculty');
+        $deptId = 1; // Default value for dept_id if no faculty is found
 
-        $deptId = null;
+        // Ensure we have at least one faculty record
+        if ($user->faculty->isNotEmpty()) {
+            // Access the first faculty record (or modify to select based on other conditions)
+            $faculty = $user->faculty->first();  // Or use some other condition to get the desired faculty
 
-        if($user->faculty)
-        {
-            $deptId = $user->faculty->dept_id;
+            $deptId = $faculty->dept_id;  // Now, dept_id is accessible on the Faculty model
         }
 
-        
-        // Log::info('Branch Id: ', (array)$user->faculty);
+        if (!$deptId) {
+            return response()->json(['error' => 'Department ID not found'], 400);
+        }
 
-        // $uniBranchId = $user->faculty->first()->uni_branch_id;
+        try {
+            // Fetch courses based on the dept_id
+            $courses = Course::where('dept_id', $deptId)->limit(25)->get();
+        } catch (\Exception $e) {
+            Log::error("Error fetching courses: " . $e->getMessage());
+            return response()->json(['error' => 'Error fetching courses'], 500);
+        }
 
-
-        // if($uniBranchId)
-        // {
-        //     $dept = Department::with('course')->where('uni_branch_id', $uniBranchId)->get();
-        //     Log::info('Department: ', $dept->toArray());
-        // }
-
-        // $courses = Course::where('dept_id', 1)->limit(25)->get();
-        $courses = Course::where('dept_id', $deptId)->limit(25)->get();
         return response()->json($courses);
     }
+
 
 
 

@@ -44,6 +44,7 @@ use App\Http\Controllers\ReportReasonController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\AdvancedForumController;
+use App\Http\Controllers\SemesterController;
 
 
 use App\Http\Controllers\PostController;
@@ -307,7 +308,7 @@ Route::middleware(['auth', 'verified', 'user-type:superadmin'])->group(function 
 
 
 
-   //institution admin
+//institution admin
 Route::middleware(['auth', 'verified', 'user-type:institution_admin'])->prefix('institution')->group(function () {
             
     // Common data for all pages
@@ -319,10 +320,6 @@ Route::middleware(['auth', 'verified', 'user-type:institution_admin'])->prefix('
     // Pages
     Route::inertia('/archives', 'InstitutionAdmin/Archives/Archives')->name('institution-archives');
     Route::inertia('/coadmins', 'InstitutionAdmin/CoAdmin/CoAdmin')->name('institution-coadmins');
-    //Route::inertia('/courses', 'InstitutionAdmin/Courses')->name('institution-courses');
-    //Route::inertia('/departments', 'InstitutionAdmin/Departments')->name('institution-departments');
-    //Route::inertia('/institution/subscription-billing', 'InstitutionAdmin/SubscriptionBilling')->name('institution-subscription-billing');
-
 
     // Students Page
     Route::redirect('/students', '/institution/students/with-premium-access');
@@ -339,7 +336,7 @@ Route::middleware(['auth', 'verified', 'user-type:institution_admin'])->prefix('
     Route::post('/faculties/add', [FacultyController::class, 'addFaculty'])->name('institution-faculties.add');
 
 
-
+    // Departments and Courses Page
     Route::resource('/departments', DepartmentsController::class)->names('manage-departments');
     Route::post('/reassign-courses/{id}', [DepartmentsController::class, 'reassignCourses'])->name('reassign-courses');
     Route::post('/unassign-courses/{id}', [DepartmentsController::class, 'unassignCourses'])->name('unassign-courses');
@@ -352,11 +349,16 @@ Route::middleware(['auth', 'verified', 'user-type:institution_admin'])->prefix('
     Route::get('/get-unassigned-faculty', [CoursesController::class, 'getUnassignedFaculty'])->name('get-unassigned-faculty');
     Route::post('/assign-courses', [CoursesController::class, 'assignCourses'])->name('assign-courses');
 
-    Route::get('/get-sections', [SectionsController::class, 'getSections'])->name('get-sections');
+    //Sections and Group Page
     Route::resource('/sections', SectionsController::class)->names('manage-sections');
-
+    Route::get('/get-sections', [SectionsController::class, 'getSections'])->name('get-sections');
+    Route::get('/sections/filter-by-course', [SectionsController::class, 'filterSectionByCourse']);
+    Route::get('/filter-by-faculty', [SectionsController::class, 'filterSectionByFaculty']);
+    Route::get('/filter-by-semester', [SectionsController::class, 'filterSectionBySemester']);
+    Route::resource('/semester', SemesterController::class)->names('manage-semester');
+    
+    // Subscription and Billing Page
     Route::resource('/subscription-billing', InstitutionSubscriptionController::class)->names('institution-subscription-billing');
-
     Route::post('/upload-csv', [InstitutionSubscriptionController::class, 'uploadCSV'])->name('upload-csv');
     Route::get('/read-csv', [InstitutionSubscriptionController::class, 'readCSV'])->name('read-csv');
 
@@ -381,10 +383,6 @@ Route::inertia('/privacy-policy', 'PrivacyPolicy')->name('privacy-policy');
 Route::get('/faq', [ForumPostController::class, 'faq'])->name('faq');
 
 
-
-
-
-
 Route::get('profile-pic/{filename}', [ProfileController::class, 'showProfilePic'])->name('profile.pic');
 
 
@@ -396,6 +394,7 @@ Route::middleware('auth')->group(function () {
 
     Route::post('/assign-user-role', [ProfileController::class, 'assignUserRole']);
     Route::get('/get-plans', [SubscriptionPlanController::class, 'getPlans'])->name('get-plans');
+    Route::get('/get-semesters', [SemesterController::class, 'getSemester'])->name('get-semester');
 });
 
 //Universities Controller Route

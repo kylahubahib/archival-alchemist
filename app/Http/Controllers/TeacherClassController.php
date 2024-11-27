@@ -45,7 +45,7 @@ class TeacherClassController extends Controller
         //     // Get the courses in the department
         //     $courses = Course::where('dept_id', $department->id)->with('section')->get();
 
-        //     // Return courses and their associated sections
+        //     // Return courses and their associated sectionsfet
         //     return response()->json([
         //         'faculty' => $faculty,
         //         'department' => $department,

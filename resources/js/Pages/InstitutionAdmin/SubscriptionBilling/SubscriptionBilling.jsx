@@ -24,6 +24,7 @@ export default function InsAdminSubscriptionBilling({ auth, ins_sub, transaction
     const [viewPlans, setViewPlans] = useState(null);
     const [transaction, setTransaction] = useState(null);
     const [message, setMessage] = useState(null);
+    const [error, setError] = useState(null);
 
     const handleRenewal = async (id) => {
 

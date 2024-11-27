@@ -132,14 +132,17 @@ class PaymentSessionController extends Controller
         $checkoutId = $request->session()->get('checkout_id');
         $plan = $request->session()->get('plan');
         $finalAmount = $request->session()->get('finalAmount');
+        $userInfo = $request->session()->get('userInfo');
+        $insub_id = $request->session()->get('ins_sub_id');
         
         $user = Auth::user();
 
         \Log::info('Checkout session id:'. $checkoutId);
 
+        dd($request->session()->all());
+
         if($user) 
         {
-            $insub_id = $request->session()->get('ins_sub_id');
 
             try {
 
@@ -250,10 +253,6 @@ class PaymentSessionController extends Controller
         }
 
         else {
-
-            $userInfo = $request->session()->get('userInfo');
-
-            \Log::info('User Info:', $userInfo);
 
             $password = Str::random(8);
 
@@ -516,7 +515,7 @@ class PaymentSessionController extends Controller
                 ]);
 
                 $request->session()->put('userInfo', $userInfo);
-
+                
                 \Log::info('User Info:', $userInfo);
 
     

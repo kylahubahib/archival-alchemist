@@ -24,3 +24,14 @@ export const formatDateString = (dobString) => {
   // Reformat to "YYYY-MM-DD"
   return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
 };
+
+// For mm/dd/yyyy
+export const getYearFromDate = (dateString) => {
+  if (!dateString || typeof dateString !== 'string') {
+      return null; // Invalid input
+  }
+
+  const parts = dateString.split('/'); // Split the string by "/"
+  const year = parts.length === 3 ? parts[2] : null; // Extract the year (last part in MM/DD/YYYY)
+  return year && !isNaN(year) ? parseInt(year, 10) : null; // Parse and return the year
+};
