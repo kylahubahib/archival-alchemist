@@ -20,7 +20,7 @@ export default function InsAdminSubscriptionBilling({ auth, ins_sub, transaction
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [modalContent, setModalContent] = useState(null);
     const [institutionalPlans, setInstitutionalPlans] = useState([]);
-    const [planFeatures, setPlanFeatures] = useState([]); 
+    const [planFeatures, setPlanFeatures] = useState([]);
     const [viewPlans, setViewPlans] = useState(null);
     const [transaction, setTransaction] = useState(null);
     const [message, setMessage] = useState(null);
@@ -29,9 +29,9 @@ export default function InsAdminSubscriptionBilling({ auth, ins_sub, transaction
     const handleRenewal = async (id) => {
 
         const currentDate = new Date();
-        const subscriptionEndDate = new Date(ins_sub.end_date); 
+        const subscriptionEndDate = new Date(ins_sub.end_date);
         console.log(currentDate, ' and ', subscriptionEndDate  );
-      
+
         if(currentDate < subscriptionEndDate){
             console.log('You still have an active subscription');
             showToast('success', 'You still have an active subscription!');
@@ -40,21 +40,21 @@ export default function InsAdminSubscriptionBilling({ auth, ins_sub, transaction
         {
             try {
                 const response = await axios.post('/payment', { plan_id: id });
-    
+
                 if (response.data.checkout_url) {
                     window.open(response.data.checkout_url, '_blank');
                 }
             } catch (err) {
                 console.error("Checkout session failed:", err);
                 setError("Failed to create checkout session. Please try again.");
-            } 
+            }
         }
     }
 
     const openModal = (content) => {
         setModalContent(content);
         setIsModalOpen(true);
-    } 
+    }
 
     const closeModal = () => {
         setModalContent(null);
@@ -77,7 +77,7 @@ export default function InsAdminSubscriptionBilling({ auth, ins_sub, transaction
             setTimeout(() => {
                 closeModal();
                 setMessage(null);
-            }, 2000);   
+            }, 2000);
         });
     }
 
@@ -96,7 +96,7 @@ export default function InsAdminSubscriptionBilling({ auth, ins_sub, transaction
             console.error('Error fetching plans:', error.response ? error.response.data : error);
         }
     };
-    
+
 
     const downloadReceipt = () => {
         console.log('download')
@@ -106,7 +106,7 @@ export default function InsAdminSubscriptionBilling({ auth, ins_sub, transaction
             .save(`Receipt_${transaction.reference_number}.pdf`);
     };
 
-    
+
     return (
         <AdminLayout
             user={auth.user}
@@ -181,7 +181,7 @@ export default function InsAdminSubscriptionBilling({ auth, ins_sub, transaction
             }
 
             {modalContent == 'csv' && <ViewCSV isOpen={isModalOpen} onClose={closeModal} file={ins_sub.insub_content} ins_sub={ins_sub} />}
-            
+
             {/* Billing Agreement Modal */}
             {modalContent == 'agreement' &&
             <Modal show={isModalOpen} onClose={closeModal} maxWidth='2xl'>
@@ -257,7 +257,7 @@ export default function InsAdminSubscriptionBilling({ auth, ins_sub, transaction
                 )}
                 </div>
             </Modal>}
-            
+
             {/* Cancel Subscription Confirmation */}
             {modalContent == 'popup' &&
             <Modal show={isModalOpen} onClose={closeModal} maxWidth='lg'>
@@ -268,16 +268,16 @@ export default function InsAdminSubscriptionBilling({ auth, ins_sub, transaction
                     </svg>
                     <span className="sr-only">Close modal</span>
                 </button>
-                
+
                 <div className="p-4 md:p-5 text-center">
                     <svg className="mx-auto mb-4 text-gray-400 w-12 h-12 dark:text-gray-200" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
                         <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 11V6m0 8h.01M19 10a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
                     </svg>
-                    
+
                     <h3 className="my-5 text-lg  text-gray-700 font-semibold dark:text-gray-600">Are you sure you want to proceed?</h3>
-                    
+
                     <p className="mb-5 text-md font-normal text-gray-500 dark:text-gray-600">
-                        You are about to cancel your subscription. Since it is non-recurring, you will no longer receive expiration notifications. 
+                        You are about to cancel your subscription. Since it is non-recurring, you will no longer receive expiration notifications.
                     </p>
 
                     {!message ? (
@@ -296,7 +296,7 @@ export default function InsAdminSubscriptionBilling({ auth, ins_sub, transaction
                         <h3 className="my-5 text-lg text-green-500 font-medium dark:text-gray-600">{message}</h3>
                         </>
                     )}
-                    
+
                 </div>
                 </div>
             </Modal>}

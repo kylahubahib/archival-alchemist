@@ -13,14 +13,14 @@ const Stream = ({ folders, onBack }) => {
 
   // Fetch tasks with pagination
   const fetchAssignedTasks = useCallback(async () => {
-    if (!folders || !folders[0]) return;  // Using the first folder object from the array
+    if (!folders || !folders) return;  // Using the first folder object from the array
 
     console.log("This is the folder:", folders);
-    console.log("This is the Section ID:", folders[0]?.section_id);
+    console.log("This is the Section ID:",folders.id);
 
     try {
       setLoading(true);
-      const response = await fetch(`/fetch-AssignedTask/${folders[0]?.section_id}?page=${page}`);
+      const response = await fetch(`/fetch-AssignedTask/${folders.id}?page=${page}`);
       if (!response.ok) throw new Error('Failed to fetch tasks');
 
       const data = await response.json();
@@ -35,7 +35,9 @@ const Stream = ({ folders, onBack }) => {
 
   useEffect(() => {
     fetchAssignedTasks();
-  }, [fetchAssignedTasks]);
+    console.log('FOLDERS: ', folders);
+
+  }, [fetchAssignedTasks, folders]);
 
   // Scroll event listener
   const handleScroll = () => {
@@ -104,9 +106,9 @@ const Stream = ({ folders, onBack }) => {
   ));
 
   // Access first folder from the folders array
-  const folder = folders[0]; // Assuming you want the first folder's details
-  const courseAcronym = folder?.course_acronym || 'Unknown Course';
-  const sectionName = folder?.section_name || 'Unknown Section';
+  const folder = folders; // Assuming you want the first folder's details
+  const courseAcronym = folder.course?.course_acronym || 'Unknown Course';
+  const sectionName = folder.section_name || 'Unknown Section';
 
   if (isPreviewMode) {
     return <PreviewTask folders={folders} onBack={handleBackToStream} task={selectedTask} taskID={selectedTask?.id}/>;

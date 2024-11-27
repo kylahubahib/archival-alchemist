@@ -16,7 +16,7 @@ import ManuscriptComment from '@/Components/Manuscripts/ManuscriptComment'; // I
 import SubscriptionCard from '@/Components/SubscriptionCard';
 import AskUserToLogin from '@/Components/AskUserToLogin';
 import PdfViewer from '@/Components/PdfViewer';
-import ToggleComments from '@/Components/ToggleComments'
+import ToggleComments from '@/Components/ToggleComments';
 
 const Manuscript = ({user, choice}) => {
     const [isPdfOpen, setPdfOpen] = useState(false);
@@ -46,6 +46,12 @@ const Manuscript = ({user, choice}) => {
     const [isLoginModalOpen, setIsLoginModalOpen] = useState(false); // For the login modal
     const [isMaximized, setIsMaximized] = useState(false); // State to track if maximized or not
     const [isSidebarOpen, setIsSidebarOpen] = useState(false); // State to track sidebar visibility
+    const [maximizedId, setMaximizedId] = useState(null); // Tracks which manuscript is maximized
+
+    const handleMaximize = (id) => {
+      setMaximizedId((prevId) => (prevId === id ? null : id)); // Toggle maximization
+    };
+
 
 
     const toggleSidebar = () => {
@@ -54,10 +60,11 @@ const Manuscript = ({user, choice}) => {
 
 // Handle manuscript selection and opening the sidebar
 const handleComments = (id, title) => {
-    // Store the selected manuscript's id and title
+    // Store the selected manuscript's id and title in an object
     setSelectedManuscript({ id, title });
     setIsSidebarOpen(true);  // Open the sidebar
 };
+
 
     // Function to toggle maximized state
     const toggleMaximize = () => {
@@ -558,44 +565,61 @@ const handleDropdownChange = (selectedKey) => {
                 </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
             {manuscriptsToDisplay.map((manuscript) => (
-             <div key={manuscript.id} className="w-full bg-white shadow-lg flex mb-4 p-2 items-center justify-center ">
-             <div className="relative flex flex-col items-center justify-center bg-gray-200 rounded w-40">
-               <img
-                 className="rounded w-25 h-30"
-                 src="http://127.0.0.1:8000/storage/images/pdfimg.jpg"
-                 alt="PDF Thumbnail"
-               />
-               <div className="absolute inset-0 bg-gray-500 opacity-30 rounded"></div>
+                <div key={manuscript.id} className="w-full bg-white shadow-lg flex mb-4 text-sm">
+
+        <div
+            className={`rounded ${maximizedId === manuscript.id ? 'w-full h-full' : 'w-40 h-48'} bg-gray-200 flex items-center justify-center relative transition-all duration-300 ease-in-out y-4 m-5`}
+        >
 
                    {isPremium ? (
                      // If the user is premium, show the link directly
-                     <a
-                       href={`http://127.0.0.1:8000/${manuscript.man_doc_content}`}
-                       target="_blank"
-                       rel="noopener noreferrer"
-                       className="absolute bottom-6 w-max bg-white opacity-75 border-2 border-gray-600 text-gray-800 px-12 py-2 rounded transition duration-300 ease-in-out hover:bg-blue-500 hover:text-white hover:text-opacity-100 focus:outline-none"
-                     >
-                       Preview
-                     </a>
+                      // If the user is premium, show the link directly
+  <div className="flex items-center justify-center h-full w-full text-gray-500">
+  {maximizedId === manuscript.id ? (
+    manuscript.man_doc_content ? (
+      <PdfViewer pdfUrl={manuscript.man_doc_content} />
+    ) : (
+      <div className="flex items-center justify-center h-full w-full text-gray-500">
+        <p>No PDF available</p>
+      </div>
+    )
+  ) : (
+    <img
+      className="rounded w-25 h-30"
+      src="/images/pdf2.png"
+      alt="PDF Thumbnail"
+    />
+  )}
+
+  {/* Maximize / Minimize Button */}
+  <button
+    onClick={() => handleMaximize(manuscript.id)}
+    className="absolute top-2 right-2 bg-gray-500 text-white p-2 rounded-full shadow-lg hover:bg-gray-600 transition-colors duration-200 z-40"
+  >
+    {maximizedId === manuscript.id ? 'X' : 'Preview'}
+  </button>
+</div>
                    ) : isAuthenticated ? (
-                     // If the user is not premium but authenticated, open modal on click
-                     <button
-                       onClick={openModal}
-                       className="absolute bottom-6 w-max bg-white opacity-75 border-2 border-gray-600 text-gray-800 px-12 py-2 rounded transition duration-300 ease-in-out hover:bg-blue-500 hover:text-white hover:text-opacity-100 focus:outline-none"
-                     >
-                       Preview
-                     </button>
-                   ) : (
-                     // If the user is not authenticated, show the login/signup modal
-                     <button
-                       onClick={openLoginModal}
-                       className="absolute bottom-6 w-max bg-white opacity-75 border-2 border-gray-600 text-gray-800 px-12 py-2 rounded transition duration-300 ease-in-out hover:bg-blue-500 hover:text-white hover:text-opacity-100 focus:outline-none"
-                     >
-                       Preview
-                     </button>
-                   )}
+                    <div className="relative">
+                      {/* Static Thumbnail for Authenticated User */}
+                      <div className="flex items-center justify-center h-full w-full text-gray-500">
+                        <img
+                          className="rounded w-25 h-30"
+      src="/images/pdf2.png"
+                          alt="PDF Thumbnail"
+                        />
+                      </div>
+
+                      {/* Preview Button at bottom */}
+                      <button
+                        onClick={openModal}
+                        className="absolute bottom-6 w-max bg-white opacity-75 border-2 border-gray-600 text-gray-800 px-12 py-2 rounded transition duration-300 ease-in-out hover:bg-blue-500 hover:text-white hover:text-opacity-100 focus:outline-none"
+                      >
+                        Preview
+                      </button>
+                    </div>
+                   ):null}
 
                     {/* Modal for non-premium authenticated users */}
                    {isModalOpen &&  (
@@ -763,7 +787,7 @@ const handleDropdownChange = (selectedKey) => {
                             {manuscript.authors.map(author => author.name).join(', ')}
                         </p>
                     ) : (
-                        <p className="text-gray-700 mt-1">No authors Avialable</p>
+                        <p className="text-gray-700 mt-1">Unknown Authors</p>
                     )}
                 </div>
 
@@ -785,53 +809,53 @@ const handleDropdownChange = (selectedKey) => {
 
 
                 <div className="mt-4 flex items-center gap-4">
-                <Tooltip content="Views">
+                    <Tooltip content="Views">
+                        <button
+                            className={`text-gray-600 hover:text-blue-500 ${manuscript.man_doc_content ? 'text-blue-500' : ''}`}>
+                            <FaEye size={20} />
+                            <span className="ml-1">{manuscript.man_doc_view_count}</span>
+                        </button>
+                    </Tooltip>
+
+
+                    <div
+                    key={manuscript.id}
+                    className="flex items-center text-blue-500 hover:text-blue-700 cursor-pointer"
+                    onClick={() => handleComments(manuscript.id, manuscript.man_doc_title)}  // Pass id and title to handleComments
+                    >
+                    <FaComment size={20} />
+                    </div>
+
+                {/* Render ToggleComments only if a manuscript is selected and the sidebar is open */}
+                {selectedManuscript && (
+                    <ToggleComments
+                        manuscripts={selectedManuscript}  // Pass the selected manuscript to ToggleComments
+                        man_id={selectedManuscript.id}  // Pass additional properties if needed
+                        man_doc_title={selectedManuscript.title}
+                        isOpen={isSidebarOpen}
+                        toggleSidebar={() => setIsSidebarOpen((prevState) => !prevState)} // Toggle the sidebar
+                    />
+                )}
+
+                <Tooltip content="Bookmark">
                     <button
-                        className={`text-gray-600 hover:text-blue-500 ${manuscript.man_doc_content ? 'text-blue-500' : ''}`}>
-                        <FaEye size={20} />
-                        <span className="ml-1">{manuscript.man_doc_view_count}</span>
+                        className="text-gray-600 hover:text-blue-500"
+                        onClick={() => {
+                            if (!isAuthenticated) {
+                                // Show the login modal if the user is not authenticated
+                                openLogInModal();
+                            } else if (!isPremium) {
+                                // Show the subscription modal if the user is not premium
+                                openSubsModal();
+                            } else {
+                                // Proceed with the bookmark action if the user is premium and authenticated
+                                handleBookmark(manuscript.id);
+                            }
+                        }}
+                    >
+                        <FaBookmark size={20} />
                     </button>
                 </Tooltip>
-
-
-                <div
-                key={manuscript.id}
-                className="flex items-center text-blue-500 hover:text-blue-700 cursor-pointer"
-                onClick={() => handleComments(manuscript.id, manuscript.man_doc_title)}  // Pass id and title to handleComments
-            >
-                <FaComment size={20} />
-            </div>
-
-        {/* Render ToggleComments only if a manuscript is selected and the sidebar is open */}
-        {selectedManuscript && (
-            <ToggleComments
-                manuscripts={selectedManuscript}  // Pass the selected manuscript to ToggleComments
-                man_id={selectedManuscript.id}  // Pass additional properties if needed
-                man_doc_title={selectedManuscript.title}
-                isOpen={isSidebarOpen}
-                toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}  // Toggle the sidebar
-            />
-        )}
-
-<Tooltip content="Bookmark">
-    <button
-        className="text-gray-600 hover:text-blue-500"
-        onClick={() => {
-            if (!isAuthenticated) {
-                // Show the login modal if the user is not authenticated
-                openLogInModal();
-            } else if (!isPremium) {
-                // Show the subscription modal if the user is not premium
-                openSubsModal();
-            } else {
-                // Proceed with the bookmark action if the user is premium and authenticated
-                handleBookmark(manuscript.id);
-            }
-        }}
-    >
-        <FaBookmark size={20} />
-    </button>
-</Tooltip>
 
 
                 <Tooltip content="Download">
@@ -854,6 +878,7 @@ const handleDropdownChange = (selectedKey) => {
                         <FaFileDownload size={20} />
                     </button>
                 </Tooltip>
+
                 {/* Modal for Non-Premium Users */}
                 {isSubsModal && (
                     <Modal show={isSubsModal} onClose={closeModal}>
@@ -1092,8 +1117,6 @@ const handleDropdownChange = (selectedKey) => {
             </div>
         </div>
     ))}
-</div>
-
                 <ToastContainer // Include ToastContainer for displaying toasts
                     position="bottom-center"
                     autoClose={2000}

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Card, CardFooter, Image, Button } from '@nextui-org/react';
 import StudentViewClass from '@/Pages/Users/Class/Student/StudentViewClass';
+import { router } from '@inertiajs/react';
 
 const JoinClassSection = ({ userId }) => {
     const [folders, setFolders] = useState([]);
@@ -87,7 +88,8 @@ const JoinClassSection = ({ userId }) => {
                     // Join the class
                     await axios.post('/store-student-class', { class_code: ClassCode });
                     setClassCode('');
-                    alert('Successfully joined the class!');
+                    // alert('Successfully joined the class!');
+                    router.reload();
                     setIsModalOpen(false); // Close modal
                 } else {
                     alert('Class code not found. Please try again.');
@@ -103,7 +105,8 @@ const JoinClassSection = ({ userId }) => {
         }
     };
 
-    const handleViewClass = () => {
+    const handleViewClass = (data) => {
+        setFolders(data)
         setIsViewClassOpen(true); // Show the ViewClass component
     };
 
@@ -128,7 +131,7 @@ const JoinClassSection = ({ userId }) => {
                                 onClick={() => setIsModalOpen(true)}
                                 className="bg-[#dfe1e5] flex justify-center items-center h-44 rounded-lg border-2 border-[#c1c8d0] cursor-pointer transform hover:scale-105 transition-all duration-200 shadow-md hover:shadow-lg"
                             >
-                                <div className="flex flex-col items-center text-center">
+                                <div className="flex flex-col items-center text-center mx-16">
                                     <div className="text-5xl text-[#4285f4]">+</div>
                                     <span className="mt-4 text-lg text-[#4285f4] font-semibold">Join Class</span>
                                 </div>
@@ -184,7 +187,7 @@ const JoinClassSection = ({ userId }) => {
                                     className={`mt-6 w-full p-4 rounded-md text-white ${isJoining ? 'bg-gray-400' : 'bg-blue-500 hover:bg-blue-600'}`}
                                     disabled={isJoining}
                                 >
-                                    {isJoining ? 'Creating...' : 'Join Class'}
+                                    {isJoining ? 'Joining...' : 'Join Class'}
                                 </button>
                                 <button
                                     onClick={() => setIsModalOpen(false)}

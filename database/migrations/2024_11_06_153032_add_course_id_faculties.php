@@ -11,10 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('faculties', function (Blueprint $table) {
-            $table->unsignedBigInteger('course_id')->nullable()->after('uni_branch_id');
-            $table->foreign('course_id')->references('id')->on('courses')->onDelete('cascade');
-        });
+        // Schema::table('faculties', function (Blueprint $table) {
+        //     $table->unsignedBigInteger('course_id')->nullable()->after('uni_branch_id');
+        //     $table->foreign('course_id')->references('id')->on('courses')->onDelete('cascade');
+        // });
     }
 
     /**
@@ -22,9 +22,9 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('faculties', function (Blueprint $table) {
-            $table->dropForeign(['course_id']);
-            $table->dropColumn('course_id');
-        });
+        // Schema::table('faculties', function (Blueprint $table) {
+        //     $table->dropForeign(['course_id']);
+        //     $table->dropColumn('course_id');
+        // });
     }
 };

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Button } from '@nextui-org/react';
-import People from '@/Pages/Users/Class/Teacher/People';
+import People from '@/Pages/Users/Class/Student/People';
 import Grades from '@/Pages/Users/Class/Teacher/Grades';
 import Stream from '@/Pages/Users/Class/Student/Stream';
 

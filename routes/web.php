@@ -46,6 +46,8 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\AdvancedForumController;
 use App\Http\Controllers\SemesterController;
 
+use App\Http\Controllers\ForumCommentController;
+
 
 use App\Http\Controllers\PostController;
 
@@ -83,7 +85,7 @@ Route::post('/cancel-subscription',[InstitutionSubscriptionController::class, 'c
 use Illuminate\Support\Facades\Crypt;
 
 Route::get('/institution-subscriptions/get-started', function (Request $request) {
-    $encryptedPlanId = $request->query('plan_id'); 
+    $encryptedPlanId = $request->query('plan_id');
     try {
         $planId = Crypt::decrypt($encryptedPlanId);
         $plan = \App\Models\SubscriptionPlan::find($planId);
@@ -122,13 +124,21 @@ Route::get('/forum', function () {
     return Inertia::render('Users/Forum');
 })->middleware(['user-type:student,teacher,guest,general_user'])->name('forum');
 
+// Route::get('/studentclass', function () {
+//     return Inertia::render('Users/Class/Student/StudentClass');
+// })->middleware(['auth', 'verified', 'user-type:student', 'check-google' ])->name('studentclass');
+
+// Route::get('/teacherclass', function () {
+//     return Inertia::render('Users/Class/Teacher/TeacherClass');
+// })->middleware(['auth', 'verified', 'user-type:teacher', 'check-google'])->name('teacherclass');
+
 Route::get('/studentclass', function () {
     return Inertia::render('Users/Class/Student/StudentClass');
-})->middleware(['auth', 'verified', 'user-type:student', 'check-google' ])->name('studentclass');
+});
 
 Route::get('/teacherclass', function () {
     return Inertia::render('Users/Class/Teacher/TeacherClass');
-})->middleware(['auth', 'verified', 'user-type:teacher', 'check-google'])->name('teacherclass');
+});
 
 Route::get('/authors', function () {
     return Inertia::render('Users/Authors');
@@ -268,7 +278,7 @@ Route::middleware(['auth', 'verified', 'user-type:superadmin'])->group(function 
 
     //    Route::get('/advanced/forum', function () {
     //        return Inertia::render('SuperAdmin/Advanced/Forum/Forum');})->name('advanced-forum');
-        Route::resource('advanced/forum', AdvancedForumController::class)->names('manage-forum-posts'); 
+        Route::resource('advanced/forum', AdvancedForumController::class)->names('manage-forum-posts');
        Route::resource('advanced/custom-messages', CustomMessagesController::class)->names('manage-custom-messages');
 
        Route::resource('advanced/universities', UniversityController::class)->names('manage-universities');
@@ -310,7 +320,7 @@ Route::middleware(['auth', 'verified', 'user-type:superadmin'])->group(function 
 
 //institution admin
 Route::middleware(['auth', 'verified', 'user-type:institution_admin'])->prefix('institution')->group(function () {
-            
+
     // Common data for all pages
     Route::get('/get-departments-with-courses', [InsAdminCommonDataController::class, 'getDepartmentsWithCourses'])
         ->name('institution.get-departments-with-courses');
@@ -441,7 +451,7 @@ Route::get('/api/title/suggestions', [TagController::class, 'Titlesuggestions'])
 //route for checking the class code
 Route::post('/check-class-code', [StudentClassController::class, 'checkClassCode']);
 // routes for storing student in class table
-//Route::post('/store-student-class', [StudentClassController::class, 'storeStudentClass']);
+Route::post('/store-student-class', [StudentClassController::class, 'storeStudentClass']);
 // routes for checking the user premium subscription
 Route::post('/check-user-premium-status', [CheckSubscriptionController::class, 'is_premium']);
 
@@ -537,10 +547,11 @@ Route::middleware(['web'])->group(function () {
 
     // Route to increment the view count of a specific post
     Route::post('/forum-posts/{id}/view', [ForumPostController::class, 'incrementViewCount'])->name('forum-posts.incrementViewCount');
-});
 
-//Forum Comments
-//Route::post('/posts/{post}/comments', [CommentController::class, 'store']);
+    //Route for Forum Comments
+    Route::get('/forum-comments/{postId}', [ForumCommentController::class, 'index']);
+    Route::post('/forum-comments', [ForumCommentController::class, 'store']);
+});
 
 
 
@@ -552,8 +563,6 @@ Route::get('/view_file/{filename}', [StudentClassController::class, 'view'])->na
 
 //class controller
 // routes/api.php
-
-
 Route::get('/fetch-courses', [ClassController::class, 'fetchCourses']);
 Route::post('/store-sections', [ClassController::class, 'storeSection']); // Route for storing data
 Route::get('/fetch-classes', [ClassController::class, 'fetchClasses']);
@@ -581,7 +590,7 @@ Route::get('/test-redis', function () {
     return Redis::ping();
 });
 
-
+Route::post('/send-for-revision', [StudentClassController::class, 'sendForRevision'])->name('send-for-revision');
 
 
 //Commments

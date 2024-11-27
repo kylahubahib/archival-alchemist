@@ -19,8 +19,9 @@ class RevisionHistory extends Model
         'ins_comment',
         'man_doc_id',
         'ins_id',
-        'uploaded_at',
-        'status'
+        'group_id',
+        'section_id',
+        'man_doc_status'
     ];
 
 

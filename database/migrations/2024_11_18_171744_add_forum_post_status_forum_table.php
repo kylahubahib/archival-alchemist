@@ -13,6 +13,14 @@ return new class extends Migration
     {
         Schema::table('forum_posts', function (Blueprint $table) {
             $table->string('status')->default('Visible');
+
+        });
+
+        Schema::table('departments', function (Blueprint $table) {
+            // Check if the column already exists before adding it
+            if (!Schema::hasColumn('departments', 'dept_acronym')) {
+                $table->string('dept_acronym');
+            }
         });
     }
 
@@ -23,6 +31,14 @@ return new class extends Migration
     {
         Schema::table('forum_posts', function (Blueprint $table) {
             $table->dropColumn('status');
+
         });
+        
+        Schema::table('departments', function (Blueprint $table) {
+            // Drop the column if it exists
+            if (Schema::hasColumn('departments', 'dept_acronym')) {
+                $table->dropColumn('dept_acronym');
+            }});
     }
 };
+

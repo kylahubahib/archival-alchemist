@@ -1,4 +1,4 @@
-import { FaUniversity } from "react-icons/fa"; 
+import { FaUniversity } from "react-icons/fa";
 import { Head, useForm } from '@inertiajs/react';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
@@ -27,8 +27,8 @@ export default function AffiliateUniversity({ isOpen, onOpenChange, setIsAffilia
     }, []);
 
     const submit = (e) => {
-        e.preventDefault(); 
-        
+        e.preventDefault();
+
         setMessage('');
         axios.post('/affiliate-university', data)
             .then((response) => {
@@ -51,8 +51,8 @@ export default function AffiliateUniversity({ isOpen, onOpenChange, setIsAffilia
                 }
             });
     };
-    
-    
+
+
 
     return (
         <>

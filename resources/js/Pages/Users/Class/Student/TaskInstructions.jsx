@@ -11,18 +11,18 @@ const TaskInstructions = ({ folders, onBack, task, taskID }) => {
   const [hasMore, setHasMore] = useState(true);  // Whether more tasks are available
   const [isPreviewMode, setIsPreviewMode] = useState(false);  // For preview mode
   const [selectedTask, setSelectedTask] = useState(null);  // Store the selected task for preview
-
-
+console.log("These are inside the folders:", folders);
+console.log("This is the Task ID:", taskID);
   const [tags, setTags] = useState([]);
   const [users, setAuthors] = useState([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [formValues, setFormValues] = useState({
+      group_name: '',
       man_doc_title: '',
       man_doc_description: '',
       man_doc_content: null,
       man_doc_adviser: '',
       agreed: false,
-      group_name: ''
   });
   const [errors, setErrors] = useState({ users: '', tags: '' });
   const [message, setMessage] = useState('');
@@ -35,12 +35,12 @@ const TaskInstructions = ({ folders, onBack, task, taskID }) => {
 
   const resetForm = () => {
       setFormValues({
+          group_name: '',
           man_doc_title: '',
           man_doc_description: '',
           man_doc_content: null,
           man_doc_adviser: '',
           agreed: false,
-          group_name: '',
       });
       setTags([]);
       setAuthors([]);
@@ -159,20 +159,20 @@ const TaskInstructions = ({ folders, onBack, task, taskID }) => {
           setFormValues({ ...formValues, man_doc_content });
       } else {
           setFormValues({ ...formValues, man_doc_content: null });
-          alert('Only DOCX files are allowed.');
+          alert('Only PDF and DOCX files are allowed.');
       }
   };
 
   const isFormValid = () => {
       return (
+          formValues.group_name &&
           formValues.man_doc_title &&
           formValues.man_doc_description &&
           formValues.man_doc_adviser &&
           users.length > 0 &&
           tags.length > 0 &&
           formValues.man_doc_content &&
-          formValues.agreed &&
-          formValues.group_name 
+          formValues.agreed
       );
   };
 
@@ -190,6 +190,7 @@ const TaskInstructions = ({ folders, onBack, task, taskID }) => {
       e.preventDefault();
       const newErrors = {};
 
+      if (!formValues.group_name) newErrors.group_name = 'Group name is required.';
       if (!formValues.man_doc_title) newErrors.man_doc_title = 'Title is required.';
       if (!formValues.man_doc_description) newErrors.man_doc_description = 'Description is required.';
       if (users.length === 0) newErrors.users = 'At least one user is required.';
@@ -197,12 +198,12 @@ const TaskInstructions = ({ folders, onBack, task, taskID }) => {
       if (tags.length === 0) newErrors.tags = 'At least one tag is required.';
       if (!formValues.man_doc_content) newErrors.man_doc_content = 'A file is required.';
       if (!formValues.agreed) newErrors.agreed = 'You must agree to the terms and conditions.';
-      if (!formValues.group_name) newErrors.group_name = 'Group name is required';
 
       setErrors(newErrors);
 
       if (Object.keys(newErrors).length === 0) {
-          const titleExists = await checkIfTitleExists(formValues.man_doc_title);
+        const titleExists = await checkIfTitleExists(formValues.man_doc_title);
+
 
           if (titleExists) {
               setErrors({
@@ -214,6 +215,7 @@ const TaskInstructions = ({ folders, onBack, task, taskID }) => {
           try {
               // Prepare form data
               const formData = new FormData();
+              formData.append('group_name', formValues.group_name);
               formData.append('man_doc_title', formValues.man_doc_title);
 
               formData.append('man_doc_description', formValues.man_doc_description);
@@ -223,11 +225,13 @@ const TaskInstructions = ({ folders, onBack, task, taskID }) => {
               tags.forEach(tag => formData.append('tags_name[]', tag));
               formData.append('man_doc_content', formValues.man_doc_content);
               formData.append('agreed', formValues.agreed);
-              formData.append('group_name', formValues.group_name);
-
 
               //Add the class_code
               formData.append('section_id', folders.id);
+              formData.append('section_classcode', folders.section_classcode);
+              formData.append('task_id', taskID);
+
+              console.log('In here...')
 
               // Submit the form data
               const response = await axios.post('/api/capstone/upload', formData, {
@@ -259,12 +263,12 @@ const TaskInstructions = ({ folders, onBack, task, taskID }) => {
 
   // Fetch tasks based on scroll (this is the only place we get new data)
   const fetchAssignedTasks = useCallback(async () => {
-    if (!folders || !folders[0]) return;  // Ensure we have folder data
+    if (!folders || !folders) return;  // Ensure we have folder data
     try {
       setLoading(true);
 
-      console.log('Fetching tasks for folder:', folders[0]?.section_id);
-      const response = await fetch(`/fetch-specificAssignedTask/${folders[0]?.section_id}?taskID=${taskID}`);
+      console.log('Fetching tasks for folder:', folders.id);
+      const response = await fetch(`/fetch-specificAssignedTask/${folders.id}?taskID=${taskID}`);
       if (!response.ok) throw new Error('Failed to fetch tasks');
       const data = await response.json();
       console.log('Fetched tasks:', data);
@@ -419,6 +423,17 @@ const TaskInstructions = ({ folders, onBack, task, taskID }) => {
                 <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4">
                     <div className="left-column">
                         <div className="mb-4">
+                        <input
+                                type="text"
+                                name="group_name"
+                                placeholder="Group name"
+                                className="w-full p-2 border rounded mb-2"
+                                value={formValues.group_name}
+                                onChange={handleFormFieldChange}
+                            />
+                            {errors.group_name && <div className="text-red-600 text-sm mb-2">{errors.group_name}</div>}
+
+
                             <input
                                 type="text"
                                 name="man_doc_title"
@@ -429,7 +444,7 @@ const TaskInstructions = ({ folders, onBack, task, taskID }) => {
                             />
                             {errors.man_doc_title && <div className="text-red-600 text-sm mb-2">{errors.man_doc_title}</div>}
 
-                            {/* Description */}
+
                             <textarea
                                 name="man_doc_description"
                                 placeholder="Enter the description or research abstract"
@@ -450,9 +465,6 @@ const TaskInstructions = ({ folders, onBack, task, taskID }) => {
                                 onChange={handleFormFieldChange}
                             />
                             {errors.man_doc_adviser && <div className="text-red-600 text-sm mb-2">{errors.man_doc_adviser}</div>}
-
-                           
-
                         </div>
 
 
@@ -483,18 +495,7 @@ const TaskInstructions = ({ folders, onBack, task, taskID }) => {
                                 </ul>
                             )}
 
-                             {/* Group Name */}
-                             <input
-                                type="text"
-                                name="group_name"
-                                placeholder="Enter your group name"
-                                className="w-full p-2 border rounded mb-2"
-                                value={formValues.group_name}
-                                onChange={handleFormFieldChange}
-                            />
-                            {errors.group_name && <div className="text-red-600 text-sm mb-2">{errors.group_name}</div>}
 
-                            {/* Tags */}
                             <div className="tags-container flex flex-wrap mt-2">
                                 {users.map((author, index) => (
                                     <div key={index} className="tag bg-gray-200 p-1 rounded mr-2 mb-2 flex items-center">
@@ -511,7 +512,7 @@ const TaskInstructions = ({ folders, onBack, task, taskID }) => {
                             </div>
 
                         </div>
-                        
+
 
 
                         <div className="relative">
@@ -564,7 +565,7 @@ const TaskInstructions = ({ folders, onBack, task, taskID }) => {
                                     type="file"
                                     className="w-full mt-2 cursor-pointer file:py-2 file:px-4 file:border file:border-gray-300 file:rounded-lg file:bg-gray-200 file:text-gray-700 hover:file:bg-gray-300"
                                     onChange={handleFileChange}
-                                    accept=".pdf,.docx"
+                                    accept=".docx"
                                 />
                             </div>
                             {errors.man_doc_content && (

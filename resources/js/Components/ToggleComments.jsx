@@ -21,6 +21,8 @@ const ToggleComments = ({ manuscripts, man_id, man_doc_title,  isOpen, toggleSid
 
     console.log("Second: This is the chosen one:", man_id)
     console.log("Second Title: This is the chosen one:", man_doc_title)
+
+    
     // Fetch comments from the API
     useEffect(() => {
         const fetchComments = async () => {

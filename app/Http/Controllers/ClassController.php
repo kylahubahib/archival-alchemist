@@ -17,6 +17,8 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
+use App\Notifications\UserNotification;
+
 class ClassController extends Controller
 {
    
@@ -134,7 +136,7 @@ class ClassController extends Controller
     public function fetchClasses(Request $request)
     {
         try {
-            
+
             $classes = Section::with(['course'])->where('ins_id', Auth::id())->get();
 
             // $classes = Section::join('courses', 'sections.course_id', '=', 'courses.id')
@@ -174,7 +176,7 @@ class ClassController extends Controller
             // Find the section by instructor ID and section_classcode
             //Remove the where('ins_id', $instructorId) since id of section is already unique
             $section = Section::where('id', $section_id)->first();
-                                
+
             Log::info('Section Found: ', (array)$section);
 
             if ($section) {
@@ -273,7 +275,7 @@ class ClassController extends Controller
         $user = Auth::user();
         Log::info('Authenticated user found: ' . $user->id);
 
-        
+
         return response()->json($user);
     }
 
@@ -334,11 +336,30 @@ class ClassController extends Controller
     }
 
 
+    // public function fetchAssignedTask($section_id)
+    // {
+    //     Log::info('STudent tas ID:', ['id' => 1]);
+
+    //     Log::info('Task accessed with GET method');
+
+    //     // Retrieve all tasks assigned to the given section_id
+    //     $tasks = AssignedTask::where('section_id', $section_id) // Filter tasks by section_id
+    //         ->select('id','task_title', 'task_instructions', 'task_startdate', 'task_duedate', 'section_id') // Only select required columns
+    //         ->get(); // Retrieve all tasks for the given section_id
+
+    //     // Log the retrieved tasks
+    //     Log::info('Tasks Retrieved', ['tasks' => $tasks->toArray()]);
+
+    //     return response()->json($tasks); // Return the tasks as a JSON response
+    // }
+
+
     public function fetchAssignedTask($section_id)
     {
         Log::info('STudent tas ID:', ['id' => 1]);
 
-        Log::info('Task accessed with GET method');
+    // Log the section_id with proper context as an array
+    Log::info('Task accessed with GET method', ['section_id' => $section_id]);
 
         // Retrieve all tasks assigned to the given section_id
         $tasks = AssignedTask::where('section_id', $section_id) // Filter tasks by section_id
@@ -447,9 +468,6 @@ class ClassController extends Controller
 
 
 
-
-
-
     //STUDENT
 
     public function enrollInClass(Request $request)
@@ -520,12 +538,15 @@ class ClassController extends Controller
             DB::enableQueryLog();
 
             // Fetch classes with proper joins
-            $classes = Section::join('group_members', 'sections.id', '=', 'group_members.section_id')
-            ->join('courses', 'courses.id', '=', 'sections.course_id')
-            ->where('group_members.stud_id', Auth::id())
-            ->select('sections.*', 'courses.*', 'group_members.*')
-            ->get();
+            // $classes = Section::join('group_members', 'sections.id', '=', 'group_members.section_id')
+            // ->join('courses', 'courses.id', '=', 'sections.course_id')
+            // ->where('group_members.stud_id', Auth::id())
+            // ->select('sections.*', 'courses.*', 'group_members.*')
+            // ->get();
 
+            $section_id = GroupMember::where('stud_id', Auth::id())->pluck('section_id');
+
+            $classes = Section::with(['course', 'group'])->where('id', $section_id)->get();
 
             // Log the SQL query for debugging
             Log::info('SQL Query: ' . DB::getQueryLog()[0]['query']);
@@ -543,8 +564,5 @@ class ClassController extends Controller
             return response()->json(['error' => 'An error occurred while fetching classes.'], 500);
         }
     }
-
-
-
 
 }

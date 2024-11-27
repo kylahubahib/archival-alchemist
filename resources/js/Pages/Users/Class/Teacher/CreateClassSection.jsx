@@ -61,9 +61,18 @@ const CreateClassSection = ({ userId }) => {
                 'X-CSRF-TOKEN': csrfToken,  // CSRF token applied here
             }
         })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok: ' + response.status);
+                }
+                return response.json(); // Proceed to parse JSON if the response is OK
+            })
             .then(data => setCourses(data))
-            .catch(error => console.error("Error fetching courses:", error));
+            .catch(error => {
+                console.error("Error fetching courses:", error);
+                setFetchError(true);
+            });
+
 
     }, [userId]);
 
@@ -125,7 +134,7 @@ const CreateClassSection = ({ userId }) => {
 
 
     return (
-        <div className="flex flex-col items-start justify-start w-h-screen bg-gray-100 mt-0 relative w-relative mx-8 px-10">
+        <div className="flex flex-col items-start justify-start min-h-screen my-5 bg-gray-100 mt-0 relative w-relative mx-8 px-10">
             {isViewClassOpen ? (
                 // Pass the selected section or class
                 <ViewClass folders={selectedFolder} onBack={handleBack} /> // Pass handleBack as a prop to ViewClass
@@ -142,7 +151,7 @@ const CreateClassSection = ({ userId }) => {
                                 onClick={() => setIsModalOpen(true)}
                                 className="bg-[#dfe1e5] flex justify-center items-center h-44 rounded-lg border-2 border-[#c1c8d0] cursor-pointer transform hover:scale-105 transition-all duration-200 shadow-md hover:shadow-lg"
                             >
-                                <div className="flex flex-col items-center text-center">
+                                <div className="flex flex-col items-center text-center  mx-16">
                                     <div className="text-5xl text-[#4285f4]">+</div>
                                     <span className="mt-4 text-lg text-[#4285f4] font-semibold">Create Class</span>
                                 </div>

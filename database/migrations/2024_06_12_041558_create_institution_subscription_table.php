@@ -23,7 +23,7 @@ return new class extends Migration
             $table->date('end_date');
             $table->timestamps();
 
-            //$table->foreign('ins_admin_id')->references('id')->on('institution_admins')->onDelete('cascade');
+            $table->foreign('ins_admin_id')->references('id')->on('institution_admins')->onDelete('cascade');
             $table->foreign('uni_branch_id')->references('id')->on('university_branches')->onDelete('cascade');
             $table->foreign('plan_id')->references('id')->on('subscription_plans')->onDelete('cascade');
         });

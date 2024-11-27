@@ -10,11 +10,11 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::table('sections', function (Blueprint $table) {
-            $table->dropColumn('added_by');
-            $table->unsignedBigInteger('ins_id')->nullable()->after('section_name');
-            $table->foreign('ins_id')->references('id')->on('users')->onDelete('cascade');
-        });
+        // Schema::table('sections', function (Blueprint $table) {
+        //     $table->dropColumn('added_by');
+        //     $table->unsignedBigInteger('ins_id')->nullable()->after('section_name');
+        //     $table->foreign('ins_id')->references('id')->on('users')->onDelete('cascade');
+        // });
     }
 
     /**
@@ -22,11 +22,11 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        Schema::table('sections', function (Blueprint $table) {
-            $table->dropForeign(['ins_id']);
-            $table->dropColumn('ins_id');
-            $table->string('added_by')->after('section_name');
-        });
+        // Schema::table('sections', function (Blueprint $table) {
+        //     $table->dropForeign(['ins_id']);
+        //     $table->dropColumn('ins_id');
+        //     $table->string('added_by')->after('section_name');
+        // });
     }
 };
 

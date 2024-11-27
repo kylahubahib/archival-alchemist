@@ -11,10 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('comments', function (Blueprint $table) {
-            $table->id();
-            $table->timestamps();
-        });
+        // Schema::table('faculties', function (Blueprint $table) {
+
+        //     $table->unsignedBigInteger('dept_id');
+        //     $table->foreignId('dept_id')->references('id')->on('departments')->onDelete('cascade');
+        // });
     }
 
     /**
@@ -22,6 +23,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('comments');
+        // Schema::table('faculties', function (Blueprint $table) {
+        //     //
+        // });
     }
 };

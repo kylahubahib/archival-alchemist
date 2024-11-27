@@ -25,6 +25,7 @@ class ManuscriptProject extends Model
         'man_doc_view_count',
         'is_publish',
         'man_doc_rating',
+        'class_code',
         'group_id',
         'section_id',
         'class_id',
@@ -72,6 +73,16 @@ class ManuscriptProject extends Model
     public function ratings()
     {
         return $this->hasMany(Rating::class, 'manuscript_id', 'id');
+    }
+
+    public function section()
+    {
+        return $this->belongsTo(Section::class, 'section_id');
+    }
+
+    public function group()
+    {
+        return $this->belongsTo(Group::class, 'group_id');
     }
 
 }

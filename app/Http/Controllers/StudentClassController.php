@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+
 use Illuminate\Support\Facades\Storage;
 use App\Models\Author;
 use Illuminate\Support\Facades\File;
@@ -17,6 +18,7 @@ use Illuminate\Support\Facades\DB;
 use App\Models\Favorite;
 use App\Models\Tags;
 use App\Models\User;
+
 use App\Models\ClassStudent;
 use App\Models\RevisionHistory;
 use App\Models\Section;
@@ -26,7 +28,8 @@ use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 
 use Google\Client as GoogleClient;
-use Google\Service\Drive as GoogleDrive;
+use Google\Service\Drive as GoogleDrive; 
+use Google\Service\Drive\DriveFile as GoogleDriveFile;
 use Google\Service\Drive\Permission;
 use App\Notifications\UserNotification;
 
@@ -51,6 +54,7 @@ class StudentClassController extends Controller
         Log::info('Request Data:', $request->all());
         try {
             $validatedData = $request->validate([
+                'group_name' => 'required|string|max:255',
                 'man_doc_title' => 'required|string|max:255',
                 'man_doc_description' => 'required|string',
                 'man_doc_adviser' => 'required|string|max:255',
@@ -63,7 +67,9 @@ class StudentClassController extends Controller
             ]);
 
             //Get the class code using request
-            $classCode = $request->get('section_id');
+            $section_id = $request->get('section_id');
+            $section_classcode = $request->get('section_classcode');
+            $task_id = $request->get('task_id');
 
             // Use the correct key to get tags from the request
             $tags = $request->get('tags_name', []); // Change from 'tags' to 'tags_name'
@@ -78,12 +84,21 @@ class StudentClassController extends Controller
             // Generate a unique filename
             $fileName = time() . '_' . $file->getClientOriginalName();
 
+            //Move the file at the last part of this process
             // Move the file to the public/storage/capstone_files directory
-            $file->move(public_path('storage/capstone_files'), $fileName);
+            // $file->move(public_path('storage/capstone_files'), $fileName);
 
             // Store the relative path to the file (without the 'public' part)
             $filePath = 'storage/capstone_files/' . $fileName;
-          
+
+            // Create the gorup
+            $group =  Group::firstOrCreate([
+                'group_name' => $validatedData['group_name'],
+                'section_id' => $section_id,
+                'task_id' => $task_id,
+            ]);
+
+            Log::info('Group ID Created:', ['id' => $group->id]);
 
             // Create the manuscript project
             $manuscriptProject = ManuscriptProject::create([
@@ -91,7 +106,9 @@ class StudentClassController extends Controller
                 'man_doc_description' => $validatedData['man_doc_description'],
                 'man_doc_adviser' => $validatedData['man_doc_adviser'],
                 'man_doc_content' => $filePath, // Save the relative path to the database
-                'class_code' => $validatedData['class_id'] ?? null,
+                // 'class_code' => $section_classcode,
+                'group_id' => $group->id, // The group ID from the saved manuscript
+                'section_id' => $section_id,
                 'man_doc_status' => 'P',
             ]);
 
@@ -161,6 +178,7 @@ class StudentClassController extends Controller
             } else {
                 Log::info('No users provided or users is not an array.');
             }
+            $authorIds = [];
 
             // Insert the users into the author table
             foreach ($userIds as $userId) {
@@ -172,22 +190,61 @@ class StudentClassController extends Controller
                     'man_doc_id' => $manuscriptProject->id,
                     'user_id' => $userId,
                 ]);
+
+                $authorIds[] = $userId;
             }
 
-            // if($manuscriptProject)
-            // {
-            //     $class = ClassModel::where('class_code', $classCode)->first();
-            //     $faculty = $class->ins_id;
 
-            //     RevisionHistory::create([
-            //         'ins_comment' => null,
-            //         'man_doc_id' => $manuscriptProject->id,
-            //         'ins_id' => $faculty,
-            //         'uploaded_at' => $manuscriptProject->created_at,
-            //         'revision_content' => $manuscriptProject->man_doc_content,
-            //         'status' => 'Started'
-            //     ]);
-            // }
+            // Update users' group_id and section_id into the group members table
+            foreach ($userIds as $userId) {
+                // Update the group_id and section_id for each user where the section_id matches
+                GroupMember::where('stud_id', $userId) // Filter by user_id
+                    ->where('section_id', $section_id) // Add the filter for section_id
+                    ->update([
+                        'group_id' => $group->id,    // Set the new group_id
+                    ]);
+
+                Log::info("Updated Group Member Table:", [
+                    'stud_id' => $userId,
+                    'group_id' => $group->id,  // Log the updated group ID
+                    'section_id' => $section_id, // Log the section ID
+                ]);
+            }
+
+
+
+            if($manuscriptProject)
+             {
+                
+                $section = Section::where('id', $section_id)->first();
+                $teacherId = $section->ins_id; 
+
+                Log::info('Fetched Author Emails:', ['Autho Ids' => $authorIds]);
+        
+                // Upload the file to Google Drive and get the Google Docs URL
+                $googleDocsUrl = $this->uploadToDrive($request->file('man_doc_content'), $authorIds, $teacherId);
+
+                if($googleDocsUrl) {
+                    $manuscriptProject->update([
+                        'man_doc_content' => $googleDocsUrl,
+                    ]);
+                }
+
+                
+                $file->move(public_path('storage/capstone_files'), $fileName);
+
+
+                 $faculty = $section->ins_id;
+                 
+                 RevisionHistory::create([
+                     'ins_comment' => null,
+                     'man_doc_id' => $manuscriptProject->id,
+                     'ins_id' => $faculty,
+                     'man_doc_status' => 'P',
+                     'group_id' => $group->id,
+                     'section_id' =>$section_id,
+                 ]);
+             }
 
             return response()->json(['message' => 'Manuscript project uploaded successfully.'], 200);
 
@@ -198,9 +255,9 @@ class StudentClassController extends Controller
     }
 
 
-    public function uploadToDrive($file, $manuscriptId, $teacherId)
+    public function uploadToDrive($file, $authorIds, $teacherId)
     {
-        $user = Auth::user();
+        $user = User::find($teacherId);
 
         // Initialize Google Client
         $client = new GoogleClient();
@@ -208,7 +265,7 @@ class StudentClassController extends Controller
         $client->setClientSecret(config('services.google.client_secret'));
         $client->setRedirectUri(config('services.google.redirect'));
         $client->setAccessType('offline');
-        $client->addScope(GoogleDrive::DRIVE);
+        $client->addScope(GoogleDrive::DRIVE_FILE);
 
         // Set the access token
         $accessToken = $user->google_access_token;
@@ -234,7 +291,7 @@ class StudentClassController extends Controller
         $driveService = new GoogleDrive($client);
 
         // Upload the file to Google Drive
-        $driveFile = new GoogleDrive\DriveFile();
+        $driveFile = new GoogleDriveFile();
         $driveFile->setName($file->getClientOriginalName());
         $driveFile->setMimeType($file->getMimeType());
 
@@ -250,23 +307,20 @@ class StudentClassController extends Controller
         $uploadedFile = $driveService->files->create($driveFile, $uploadOptions);
 
         //Set permissions for users
-        $this->setPermissions($driveService, $uploadedFile->id, $manuscriptId, $teacherId);
+        $this->setPermissions($driveService, $uploadedFile->id, $authorIds, $teacherId);
 
         return 'https://docs.google.com/document/d/' . $uploadedFile->id;
     }
 
 
-    private function setPermissions($driveService, $fileId, $manuscriptId, $teacherId)
+    private function setPermissions($driveService, $fileId, $authorIds, $teacherId)
     {
         Log::info('Drive Service Instance:', ['driveService' => $driveService]);
         Log::info('File ID:', ['fileId' => $fileId]);
-        Log::info('Manuscript ID:', ['manuscriptId' => $manuscriptId]);
         Log::info('Teacher ID:', ['teacherId' => $teacherId]);
 
         // Get author emails from the Author table
-        $authorEmails = Author::with('user')
-            ->where('man_doc_id', $manuscriptId)->get()
-            ->pluck('user.email')->toArray();
+        $authorEmails = User::whereIn('id', $authorIds)->pluck('email')->toArray();
 
         //$authorEmails = User::whereIn('user_id', $authorIds)->pluck('email')->toArray();
         Log::info('Fetched Author Emails:', ['authorEmails' => $authorEmails]);
@@ -348,25 +402,30 @@ class StudentClassController extends Controller
 
     public function storeStudentClass(Request $request)
     {
+        // $request->validate([
+        //     'class_code' => 'required|string',
+        //     'class_name' => 'required|string',
+        //     'ins_id' => 'required|integer',
+        // ]);
+
         $request->validate([
             'class_code' => 'required|string',
-            'class_name' => 'required|string',
-            'ins_id' => 'required|integer',
         ]);
+
 
         $userId = Auth::id();
 
         try {
             // Check if the class exists
-            $class = ClassModel::where('class_code', $request->class_code)->first();
+            $section = Section::where('section_classcode', $request->class_code)->first();
 
-            if (!$class) {
+            if (!$section) {
                 return response()->json(['success' => false, 'message' => 'Class code not found']);
             }
 
             // Check if the user is already enrolled in the class
-            $existingEnrollment = ClassStudent::where([
-                ['class_id', $class->id],
+            $existingEnrollment = GroupMember::where([
+                ['section_id', $section->id],
                 ['stud_id', $userId],
             ])->first();
 
@@ -375,19 +434,19 @@ class StudentClassController extends Controller
                 return response()->json(['success' => true, 'message' => 'Already enrolled']);
             } else {
                 // Insert the new enrollment
-                ClassStudent::create([
-                    'class_id' => $class->id, // Use the class ID from ClassModel
+                GroupMember::create([
+                    'section_id' => $section->id, // Use the class ID from Section
                     'stud_id' => $userId, // Store the user ID
                 ]);
 
 
                  // Notifies the teacher that a new student joins
-                 $teacher = User::find($class->ins_id);
+                 $teacher = User::find($section->ins_id);
                  $newStudent = Auth::user()->name;
 
                  if ($teacher) {
                          $teacher->notify(new UserNotification([
-                             'message' => $newStudent . ' joins ' . $class->class_name,
+                             'message' => $newStudent . ' joins ' . $section->section_name,
                              'user_id' => $teacher->id
                          ]));
                  }
@@ -395,7 +454,7 @@ class StudentClassController extends Controller
                 return response()->json([
                     'success' => true,
                     'message' => 'Joined class successfully',
-                    'classId' => $class->id
+                    'classId' => $section->id
                 ]);
             }
         } catch (\Exception $e) {
@@ -1097,5 +1156,138 @@ public function isPremium()
 //         'message' => 'User is a premium member.',
 //     ]);
 // }
+
+
+    public function sendForRevision(Request $request)
+    {
+        $manuscriptId = $request->get('manuscript_id');
+        Log::info("Starting 'sendForRevision' process for manuscript ID: $manuscriptId");
+
+        // Find the manuscript
+        $manuscript = ManuscriptProject::find($manuscriptId);
+
+        if (!$manuscript || empty($manuscript->man_doc_adviser)) {
+            Log::warning("Manuscript not found or invalid data. Manuscript ID: $manuscriptId");
+            return response()->json(['error' => 'Manuscript not found or invalid data.'], 404);
+        }
+
+        Log::info("Manuscript found, updating status for manuscript ID: $manuscriptId");
+
+        // Update manuscript status to 'To Review'
+        $manuscript->update([
+            'man_doc_status' => 'To Review'
+        ]);
+
+        Log::info("Manuscript status updated to 'To Review' for manuscript ID: $manuscriptId");
+
+        // Get the Google Doc URL 
+        $googleDocUrl = $manuscript->man_doc_content;  
+        Log::info("Google Doc URL retrieved: $googleDocUrl");
+
+        if (!$googleDocUrl) {
+            Log::warning("Google Doc URL is missing for manuscript ID: $manuscriptId");
+            return response()->json(['error' => 'Google Doc URL is missing.'], 400);
+        }
+
+        // Extract Google Doc ID from the URL
+        $googleDocId = $this->extractGoogleDocId($googleDocUrl);
+        Log::info("Extracted Google Doc ID: $googleDocId");
+
+        if (!$googleDocId) {
+            Log::warning("Invalid Google Doc URL for manuscript ID: $manuscriptId");
+            return response()->json(['error' => 'Invalid Google Doc URL.'], 400);
+        }
+
+        // Initialize Google Client
+        $client = new GoogleClient();
+        $client->setClientId(config('services.google.client_id'));
+        $client->setClientSecret(config('services.google.client_secret'));
+        $client->setRedirectUri(config('services.google.redirect'));
+        $client->setAccessType('offline');
+        $client->addScope(GoogleDrive::DRIVE_FILE);
+
+        $teacher = Section::with('user')
+            ->where('id', $manuscript->section_id)->first();
+
+        Log::info('Teacher Email:', ['email' => $teacher]);
+
+        // Get the current authenticated user
+        $user = User::find($teacher->ins_id);
+        $accessToken = $user->google_access_token;
+        Log::info("Access token retrieved for user: " . $user->email);
+
+        // Check if the access token is expired and refresh it if needed
+        if (Carbon::now()->greaterThanOrEqualTo(Carbon::parse($user->google_token_expiry))) {
+            $client->refreshToken($user->google_refresh_token);
+            $newAccessToken = $client->getAccessToken();
+
+            // Update the user's token and expiry in the database
+            $user->update([
+                'google_access_token' => $newAccessToken['access_token'],
+                'google_token_expiry' => Carbon::now()->addSeconds($newAccessToken['expires_in']),
+            ]);
+
+            $accessToken = $newAccessToken['access_token'];
+        }
+
+        // Set the new access token
+        $client->setAccessToken($accessToken);
+
+        // Initialize Google Drive Service
+        $driveService = new GoogleDrive($client);
+        Log::info("Google Drive service initialized.");
+
+     
+        $emails = Author::with('user')
+            ->where('man_doc_id', $manuscriptId)->get()
+            ->pluck('user.email')->toArray();
+
+        // Set permissions for students and others (readers)
+        foreach ($emails as $email) {
+            Log::info('Processing Email:', ['email' => $email]);
+
+            // Check if the email is valid
+            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                Log::warning('Invalid Email Address:', ['email' => $email]);
+                continue;
+            }
+
+            // Create permission for the user
+            $permission = new Permission();
+            $permission->setType('user');
+            $permission->setRole('reader');  
+            $permission->setEmailAddress($email);
+
+            try {
+                // Set the permission on the Google Doc
+                $driveService->permissions->create($googleDocId, $permission);
+                Log::info("Document permission updated successfully to viewer for document ID: $googleDocId");
+            } catch (Exception $e) {
+                // Log and handle any errors
+                Log::error("Error setting permission for document ID: $googleDocId", ['error' => $e->getMessage()]);
+                return response()->json(['error' => 'Error setting permission: ' . $e->getMessage()], 500);
+            }
+        }
+
+        return response()->json(['success' => 'Document permissions updated successfully.']);
+    }
+
+
+    // Method to extract Google Doc ID from the URL
+    private function extractGoogleDocId($url)
+    {
+        // Remove the base URL portion
+        $baseUrl = "https://docs.google.com/document/d/";
+
+        // Check if the URL starts with the expected base URL
+        if (strpos($url, $baseUrl) === 0) {
+            // Remove the base URL and return the remaining part of the URL as the document ID
+            return substr($url, strlen($baseUrl));
+        }
+
+        // If the URL doesn't match the expected format, return null
+        return null;
+    }
+
 
 }

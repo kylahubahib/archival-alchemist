@@ -10,14 +10,15 @@ const TaskInstructions = ({ folders, onBack, task, taskID }) => {
   const [isPreviewMode, setIsPreviewMode] = useState(false);  // For preview mode
   const [selectedTask, setSelectedTask] = useState(null);  // Store the selected task for preview
 
+  console.log("These are inside the props:", folders);
+  console.log("First Folder ID:", folders.id);  // Safe access using optional chaining
   // Fetch tasks based on scroll (this is the only place we get new data)
   const fetchAssignedTasks = useCallback(async () => {
-    if (!folders || !folders[0]) return;  // Ensure we have folder data
     try {
       setLoading(true);
 
-      console.log('Fetching tasks for folder:', folders[0].id);
-      const response = await fetch(`/fetch-specificAssignedTask/${folders[0].id}?taskID=${taskID}`);
+      console.log('Fetching tasks for folder:', folders.id);
+      const response = await fetch(`/fetch-specificAssignedTask/${folders.id}?taskID=${taskID}`);
       if (!response.ok) throw new Error('Failed to fetch tasks');
       const data = await response.json();
       console.log('Fetched tasks:', data);
@@ -99,6 +100,7 @@ const TaskInstructions = ({ folders, onBack, task, taskID }) => {
     </Card>
   ));
 
+
   // If in preview mode, render PreviewTask component
   if (isPreviewMode && selectedTask) {
     return <PreviewTask task={selectedTask} onBack={handleBackToStream} />;
@@ -106,7 +108,9 @@ const TaskInstructions = ({ folders, onBack, task, taskID }) => {
 
   // Return JSX for task list and loading/error states
   return (
-<div className="pl-10 mt-0 bg-gray-100 rounded-lg shadow-lg w-full h-screen fixed left-0 overflow-hidden">
+
+<div className="mt-0 bg-gray-100 w-full p-4 left-0 overflow-hidden">
+{/* <div className="pl-10 mt-0 bg-gray-100 rounded-lg shadow-lg w-full h-screen fixed left-0 overflow-hidden"> */}
 
       {/* Loading & Error States */}
       {loading && tasks.length === 0 && (
@@ -114,7 +118,9 @@ const TaskInstructions = ({ folders, onBack, task, taskID }) => {
           {[...Array(5)].map((_, index) => (
             <div
               key={index}
-              className="w-[95%] max-w-4xl p-6 bg-gray-200 shadow-md rounded-lg animate-pulse border border-gray-100"
+            //   className="w-[95%] max-w-4xl p-6 bg-gray-200 shadow-md rounded-lg animate-pulse border border-gray-100"
+            className="w-[90%] relative p-6 ml-20 bg-gray-200 shadow-md rounded-tl-lg rounded-tr-lg animate-pulse border border-gray-100"
+
             >
               <div className="h-6 bg-gray-300 rounded mb-4"></div>
               <div className="h-4 bg-gray-300 rounded mb-4"></div>

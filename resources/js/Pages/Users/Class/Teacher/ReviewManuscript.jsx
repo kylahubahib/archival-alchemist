@@ -26,16 +26,16 @@ const ReviewManuscript = ({folders, onBack, task, taskID, closeModal, classes, m
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(`/fetch-history?manuscript_id=${manuscript.manuscript_id}`);
+        // const response = await fetch(`/fetch-history?manuscript_id=${manuscript.id}`);
 
-        if (!response.ok) {
-          throw new Error('Failed to fetch data');
-        }
+        // if (!response.ok) {
+        //   throw new Error('Failed to fetch data');
+        // }
 
-        const data = await response.json();
+        const data = manuscript.revision_history;
 
         // Sort the data by revision_updated_at in descending order (latest first)
-        const sortedData = data.sort((a, b) => new Date(b.revision_updated_at) - new Date(a.revision_updated_at));
+        const sortedData = data?.sort((a, b) => new Date(b?.updated_at) - new Date(a?.updated_at));
 
         // Set the latest revision as the first element
         setHistoryData(sortedData[0]);
@@ -47,7 +47,8 @@ const ReviewManuscript = ({folders, onBack, task, taskID, closeModal, classes, m
     };
 
     fetchData();
-  }, [manuscript.manuscript_id]);
+  }, [manuscript.id]);
+
   // Loading and error handling
   if (loading) {
     return <div>Loading...</div>;
@@ -76,7 +77,7 @@ const ReviewManuscript = ({folders, onBack, task, taskID, closeModal, classes, m
         setDropdownError(true);  // Set error if no dropdown option is selected
         return;  // Prevent form submission if no status is selected
       }
-    const folder = folders[1];  // Or use a condition to select a specific folder
+    const folder = folders;  // Or use a condition to select a specific folder
     console.log('Folder ID:', folder.id);  // Check if folder.id is valid
 
     console.log("These are the classes:", classes);
@@ -84,22 +85,21 @@ const ReviewManuscript = ({folders, onBack, task, taskID, closeModal, classes, m
     console.log("This is the Feedback!");
 
     console.log("This is the manuscript:", manuscript);
-    console.log("Manuscript ID: ", manuscript.manuscript_id);
+    console.log("Manuscript ID: ", manuscript.id);
     const feedbackData = {
         comment,
         status,
-        manuscript_id: manuscript.manuscript_id,
-        ins_id: manuscript.ins_id,
+        manuscript_id: manuscript.id,
+        ins_id: folders.ins_id,
         group_id: manuscript.group_id,
         section_id: manuscript.section_id,
-        manuscriptCreated: manuscript.manuscript_created_at,
+        manuscriptCreated: manuscript.created_at,
     };
 
 
     try {
         // Correct the URL template literal
-
-        const response = await axios.post(`/store-feedback`, feedbackData);
+        const response = await axios.post(`/store-feedback/${manuscript.id}`, feedbackData)
         // Handle successful save
         console.log(response.data);
 
@@ -168,7 +168,6 @@ const ReviewManuscript = ({folders, onBack, task, taskID, closeModal, classes, m
               src={fileUrl}
               title="File Preview"
               className="w-full h-full"
-              frameBorder="0"
             ></iframe>
           ) : (
             <div className="flex center items-center justify-center h-full text-gray-500">
@@ -222,12 +221,12 @@ const ReviewManuscript = ({folders, onBack, task, taskID, closeModal, classes, m
                 <div className="relative">
                   {/* Dropdown Toggle Button */}
                   <button
-  className={`bg-gray-200 text-gray-700 px-3 py-1 rounded-lg focus:outline-none hover:bg-gray-300
-    ${dropdownError ? 'shadow-lg shadow-red-500' : ''}`}  // Adds a red shadow if error
-  onClick={toggleDropdown}
->
-  {status ? (status === 'A' ? "Approved ▼" : "Declined ▼") : "Options ▼"}
-</button>
+                    className={`bg-gray-200 text-gray-700 px-3 py-1 rounded-lg focus:outline-none hover:bg-gray-300
+                      ${dropdownError ? 'shadow-lg shadow-red-500' : ''}`}  // Adds a red shadow if error
+                    onClick={toggleDropdown}
+                  >
+                    {status ? (status === 'A' ? "Approved ▼" : "Declined ▼") : "Options ▼"}
+                  </button>
 
 
                   {/* Dropdown Menu */}
@@ -252,47 +251,47 @@ const ReviewManuscript = ({folders, onBack, task, taskID, closeModal, classes, m
 
               </div>
               <div className="flex items-center">
-  <p className="mr-2 text-sm py-2">Status:</p>
-  <h1
-    className={`text-base font-bold ${
-      manuscript.man_doc_status === 'Declined'
-        ? 'text-red-500'
-        : manuscript.man_doc_status === 'Approved'
-        ? 'text-green-500'
-        : manuscript.man_doc_status === 'To-Review'
-        ? 'text-blue-500'
-        : manuscript.man_doc_status === 'Pending'
-        ? 'text-yellow-500'
-        : manuscript.man_doc_status === 'Missing'
-        ? 'text-red-500'
-        : 'text-blue-500'
-    }`}
-  >
-    {manuscript.man_doc_status || "No manuscript submission from the group."}
-  </h1>
+                <p className="mr-2 text-sm py-2">Status:</p>
+                <h1
+                  className={`text-base font-bold ${
+                    manuscript.man_doc_status === 'Declined'
+                      ? 'text-red-500'
+                      : manuscript.man_doc_status === 'Approved'
+                      ? 'text-green-500'
+                      : manuscript.man_doc_status === 'To-Review'
+                      ? 'text-blue-500'
+                      : manuscript.man_doc_status === 'Pending'
+                      ? 'text-yellow-500'
+                      : manuscript.man_doc_status === 'Missing'
+                      ? 'text-red-500'
+                      : 'text-blue-500'
+                  }`}
+                >
+                  {manuscript.man_doc_status || "No manuscript submission from the group."}
+                </h1>
 
-</div>
+              </div>
 
-<div>
-  {loading ? (
-    <p>Loading...</p>
-  ) : error ? (
-    <p className="text-red-500 text-xs">Error: {error}</p>
-  ) : historyData ? (
-    <div className="history-item border p-2 mb-2 text-xs">
-      {/* <p>
-        <strong >Status:</strong> {historyData.manuscript_status}
-      </p> */}
-      <p>
-      <strong >Last Updated:</strong>
-        <p ClassName="text-base"></p>{' '}
-        {new Date(historyData.revision_updated_at).toLocaleString()}
-      </p>
-    </div>
-  ) : (
-    <p>No revision history found for this manuscript.</p>
-  )}
-</div>
+              <div>
+                {loading ? (
+                  <p>Loading...</p>
+                ) : error ? (
+                  <p className="text-red-500 text-xs">Error: {error}</p>
+                ) : historyData ? (
+                  <div className="history-item border p-2 mb-2 text-xs">
+                    {/* <p>
+                      <strong >Status:</strong> {historyData.manuscript_status}
+                    </p> */}
+                    <p>
+                    <strong >Last Updated:</strong>
+                      <p ClassName="text-base"></p>{' '}
+                      {new Date(historyData.revision_updated_at).toLocaleString()}
+                    </p>
+                  </div>
+                ) : (
+                  <p>No revision history found for this manuscript.</p>
+                )}
+              </div>
 
               <textarea
                 className="w-full h-48 border border-gray-300 rounded-lg p-3 mb-4 resize-none shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -319,18 +318,18 @@ const ReviewManuscript = ({folders, onBack, task, taskID, closeModal, classes, m
         </div>
       </div>
       <ToastContainer
-  position="bottom-right"
-  autoClose={2000}
-  hideProgressBar={false}
-  newestOnTop={false}
-  closeOnClick
-  rtl={false}
-  pauseOnFocusLoss
-  draggable
-  pauseOnHover
-  theme="colored"
-  style={{ zIndex: 9999 }} // Ensure this is on top
-/>
+        position="bottom-right"
+        autoClose={2000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="colored"
+        style={{ zIndex: 9999 }} // Ensure this is on top
+      />
 
     </div>
 

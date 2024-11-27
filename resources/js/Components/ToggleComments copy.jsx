@@ -21,6 +21,21 @@ const ToggleComments = ({ manuscripts, man_id, man_doc_title,  isOpen, toggleSid
 
     console.log("Second: This is the chosen one:", man_id)
     console.log("Second Title: This is the chosen one:", man_doc_title)
+
+    useEffect(() => {
+        if (!isOpen) {
+            // Reset all states when the sidebar is closed
+            setComments([]);
+            setNewComment('');
+            setRepliesText({});
+            setActiveCommentId(null);
+            setIsExpanded(false);
+            setExpandedReplies([]);
+        }
+    }, [isOpen]);
+
+
+    
     // Fetch comments from the API
     useEffect(() => {
         const fetchComments = async () => {
@@ -148,8 +163,13 @@ const ToggleComments = ({ manuscripts, man_id, man_doc_title,  isOpen, toggleSid
                             onClick={handleToggleExpanded}
                             className="mt-4 text-blue-500"
                         >
-                            {isExpanded ? 'See Less' : 'View All Comments'}
-                        </button></div>
+                            {comments.length === 0
+                                ? `Comments 0`
+                                : isExpanded
+                                ? 'See Less'
+                                : 'View All Comments'}
+                        </button>
+                        </div>
                         <div className="mt-6">
                             {displayedComments.map((comment) => (
                                 <div key={comment.id} className="bg-gray-100 p-4 rounded-lg mb-4">

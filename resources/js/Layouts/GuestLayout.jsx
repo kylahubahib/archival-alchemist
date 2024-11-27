@@ -86,7 +86,7 @@ export default function GuestLayout({ user, children }) {
                 {children}
             </div>
 
-            
+
         </div>
     );
 }

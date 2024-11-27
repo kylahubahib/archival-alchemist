@@ -3,7 +3,7 @@ import NavLink from '@/Components/NavLink';
 import GuestLayout from '@/Layouts/GuestLayout';
 
 export default function SubscriptionInquiry({auth}) {
-    
+
 
     return (
         <div>

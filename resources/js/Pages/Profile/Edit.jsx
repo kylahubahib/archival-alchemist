@@ -25,7 +25,7 @@ export default function Edit({ auth, mustVerifyEmail, status }) {
     const [showErrorModal, setShowErrorModal] = useState(false);
     const [showConfirmModal, setShowConfirmModal] = useState(false);
 
-    
+
 
     const { data, setData, post, processing, recentlySuccessful, errors, reset } = useForm({
         user_pic: null,

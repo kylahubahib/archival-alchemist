@@ -3,7 +3,6 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 return new class extends Migration
 {
@@ -13,13 +12,17 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('courses', function (Blueprint $table) {
-            $table->bigIncrements("course_id");
-            $table->unsignedBigInteger('dept_id');
+            $table->id(); // Creates `id` as BIGINT UNSIGNED PRIMARY KEY
+            //$table->unsignedBigInteger('dept_id'); // Foreign key column
             $table->string('course_name');
             $table->string('added_by');
             $table->timestamps();
 
-            $table->foreign('dept_id')->references('dept_id')->on('departments')->onDelete('cascade');
+             //Foreign key constraint
+            $table->foreign('dept_id')
+                ->references('id') // Matches the primary key in `departments`
+                ->on('departments')
+                ->onDelete('cascade');
         });
     }
 

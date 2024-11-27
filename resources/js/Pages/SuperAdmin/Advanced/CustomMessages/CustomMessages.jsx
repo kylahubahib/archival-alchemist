@@ -26,11 +26,11 @@ export default function CustomMessages({ auth, billingAgreement, hero, services,
 
 
     return (
-        
+
         <AdminLayout
              user={auth.user}
             header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Advanced</h2>}
-        > 
+        >
             <Head title="Advanced" />
 
             <div className="py-8 select-none">
@@ -60,7 +60,7 @@ export default function CustomMessages({ auth, billingAgreement, hero, services,
                             <CardFooter>
                                 <Button onClick={() => {openModal('hero')}} size='sm' variant='bordered' className=" border-customBlue text-customBlue">Edit Hero Section</Button>
                             </CardFooter>
-                            </Card> 
+                            </Card>
 
                             <Card className=" shadow-md">
                             <CardHeader className="flex gap-3">
@@ -77,7 +77,7 @@ export default function CustomMessages({ auth, billingAgreement, hero, services,
                             <CardFooter>
                                 <Button onClick={() => {openModal('services')}} size='sm' variant='bordered' className=" border-customBlue text-customBlue">Edit Services Section</Button>
                             </CardFooter>
-                            </Card> 
+                            </Card>
 
                             <Card className=" shadow-md">
                             <CardHeader className="flex gap-3">
@@ -94,7 +94,7 @@ export default function CustomMessages({ auth, billingAgreement, hero, services,
                             <CardFooter>
                                 <Button onClick={() => {openModal('team')}} size='sm' variant='bordered' className=" border-customBlue text-customBlue">Edit Team Section</Button>
                             </CardFooter>
-                            </Card> 
+                            </Card>
 
                         </div>
 
