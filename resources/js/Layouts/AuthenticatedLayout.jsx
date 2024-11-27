@@ -57,7 +57,7 @@ export default function Authenticated({ user, children, newProfile = null, searc
                 ))
                 }
                 <SidebarItem icon={<MdChatBubbleOutline size={20} />} text="Inbox" to="/chatify" />
-                <SidebarSeparator marginTop={'mt-70'}/>
+                <SidebarSeparator marginTop={'mt-72'}/>
 
                 {/* <SidebarItem icon={<FaCrown size={20} color="#FFD700" />} text="Subscription" to="/subscription" /> */}
                 <SidebarItem icon={<RiMessengerLine size={20} color="#006AFF" />} text="Chat with us" to="https://m.me/432748959923780" externalLink/>

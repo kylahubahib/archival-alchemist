@@ -134,7 +134,7 @@ const handleEndYearChange = (e) => {
             <Head title="Library" />
 
             <div className="bg-white m-4 min-h-screen rounded-xl">
-                <div className="mx-auto sm:px-6 lg:px-8 bg-gray-100 h-screen pt-6">
+                <div className="mx-auto sm:px-6 lg:px-8 bg-gray-100 min-h-screen pt-6">
                     <div className="flex flex-col">
                         <div className="flex justify-between items-center mb-4">
                             <div className="flex">
