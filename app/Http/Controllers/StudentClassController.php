@@ -28,7 +28,7 @@ use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 
 use Google\Client as GoogleClient;
-use Google\Service\Drive as GoogleDrive; 
+use Google\Service\Drive as GoogleDrive;
 use Google\Service\Drive\DriveFile as GoogleDriveFile;
 use Google\Service\Drive\Permission;
 use App\Notifications\UserNotification;
@@ -215,12 +215,12 @@ class StudentClassController extends Controller
 
             if($manuscriptProject)
              {
-                
+
                 $section = Section::where('id', $section_id)->first();
-                $teacherId = $section->ins_id; 
+                $teacherId = $section->ins_id;
 
                 Log::info('Fetched Author Emails:', ['Autho Ids' => $authorIds]);
-        
+
                 // Upload the file to Google Drive and get the Google Docs URL
                 $googleDocsUrl = $this->uploadToDrive($request->file('man_doc_content'), $authorIds, $teacherId);
 
@@ -230,12 +230,12 @@ class StudentClassController extends Controller
                     ]);
                 }
 
-                
+
                 $file->move(public_path('storage/capstone_files'), $fileName);
 
 
                  $faculty = $section->ins_id;
-                 
+
                  RevisionHistory::create([
                      'ins_comment' => null,
                      'man_doc_id' => $manuscriptProject->id,
@@ -891,38 +891,50 @@ public function myfavoriteManuscripts()
      */
 
 
-     public function downloadPdf($id)
-     {
-         $manuscript = ManuscriptProject::findOrFail($id);
-         $filename = $manuscript->man_doc_content; // Get the filename from the database
+    //  public function downloadPdf($id)
+    //  {
+    //      $manuscript = ManuscriptProject::findOrFail($id);
+    //      $filename = $manuscript->man_doc_content; // e.g., storage/capstone_files/{filename}
 
-         // Log the filename for debugging
-         Log::info('Filename for download: ' . $filename);
+    //      // Resolve the correct file path
+    //      $filePath = public_path(str_replace('storage/', '', $filename));
 
-         // Ensure the filename has the correct extension
-         $filePath = storage_path('app/public/' . str_replace('storage/', '', $filename));
+    //      // Debugging: Log the file paths
+    //      Log::info('Filename from DB: ' . $filename);
+    //      Log::info('Resolved file path: ' . $filePath);
 
-         // Check if the file exists before attempting to download
-         if (!file_exists($filePath)) {
-             abort(404, 'File not found.');
-         }
+    //      // Check if the file exists
+    //      if (!file_exists($filePath)) {
+    //          Log::error('File not found at: ' . $filePath);
+    //          abort(404, 'File not found.');
+    //      }
 
-         // Get the actual filename to be downloaded
-         $originalName = basename($filename); // Extract original name from the path
-         $extension = pathinfo($originalName, PATHINFO_EXTENSION);
+    //      $originalName = basename($filename);
 
-         // Append .pdf if it's not already in the filename
-         if (strtolower($extension) !== 'pdf') {
-             $originalName .= '.pdf';
-         }
+    //      return response()->download($filePath, $originalName, [
+    //          'Content-Type' => 'application/pdf',
+    //      ]);
+    //  }
 
-         // Return the download response with the correct Content-Type
-         return response()->download($filePath, $originalName, [
-            'Content-Type' => 'application/pdf',
-            'Content-Disposition' => 'attachment; filename="' . $originalName . '"'
-        ]);
 
-     }
+
+    public function downloadPdf($manuscriptId)
+{
+    // Fetch the manuscript record from the database
+    $manuscript = ManuscriptProject::findOrFail($manuscriptId);
+
+    // Construct the full path to the file
+    $filePath = public_path($manuscript->man_doc_content); // Assuming `file_path` is the DB column
+
+    // Check if the file exists
+    if (!file_exists($filePath)) {
+        abort(404, 'File not found.');
+    }
+
+    // Return the file as a download
+    return response()->download($filePath, basename($filePath));
+}
+
 
 
 
@@ -1180,8 +1192,8 @@ public function isPremium()
 
         Log::info("Manuscript status updated to 'To Review' for manuscript ID: $manuscriptId");
 
-        // Get the Google Doc URL 
-        $googleDocUrl = $manuscript->man_doc_content;  
+        // Get the Google Doc URL
+        $googleDocUrl = $manuscript->man_doc_content;
         Log::info("Google Doc URL retrieved: $googleDocUrl");
 
         if (!$googleDocUrl) {
@@ -1237,7 +1249,7 @@ public function isPremium()
         $driveService = new GoogleDrive($client);
         Log::info("Google Drive service initialized.");
 
-     
+
         $emails = Author::with('user')
             ->where('man_doc_id', $manuscriptId)->get()
             ->pluck('user.email')->toArray();
@@ -1255,7 +1267,7 @@ public function isPremium()
             // Create permission for the user
             $permission = new Permission();
             $permission->setType('user');
-            $permission->setRole('reader');  
+            $permission->setRole('reader');
             $permission->setEmailAddress($email);
 
             try {
