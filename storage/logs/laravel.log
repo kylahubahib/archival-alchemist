@@ -899,3 +899,338 @@
 [2024-11-28 02:35:10] local.INFO: []  
 [2024-11-28 02:35:47] local.INFO: []  
 [2024-11-28 02:36:11] local.INFO: []  
+[2024-11-28 02:37:52] local.INFO: STudent tas ID: {"id":1} 
+[2024-11-28 02:37:52] local.INFO: Task accessed with GET method {"section_id":"17"} 
+[2024-11-28 02:37:52] local.INFO: Tasks Retrieved {"tasks":[]} 
+[2024-11-28 02:38:11] local.INFO: []  
+[2024-11-28 02:41:56] local.INFO: []  
+[2024-11-28 02:43:43] local.INFO: []  
+[2024-11-28 02:45:24] local.INFO: []  
+[2024-11-28 02:45:42] local.INFO: []  
+[2024-11-28 02:46:58] local.INFO: []  
+[2024-11-28 02:54:27] local.INFO: []  
+[2024-11-28 02:56:53] local.INFO: STudent tas ID: {"id":1} 
+[2024-11-28 02:56:53] local.INFO: Task accessed with GET method {"section_id":"1"} 
+[2024-11-28 02:56:53] local.INFO: Tasks Retrieved {"tasks":[{"id":1,"task_title":"Cpastone 2","task_instructions":"Class Assignment Upload Instructions:
+
+Prepare Your Document: Ensure your document is complete, clear, and follows any specified formatting guidelines.
+
+Upload Process:
+
+Log in to the class portal.
+Navigate to the Assignments section.
+Select the assignment you want to submit.
+Click on Upload Document and attach your file.
+Submission Deadline: Upload the document before the deadline to avoid penalties. Early submissions are encouraged to allow time for any unexpected issues.
+
+Confirmation: After uploading, confirm the submission status to ensure your document was uploaded successfully.
+
+Make sure to double-check your work before submission.","task_startdate":"2024-11-14 13:48:57","task_duedate":"2024-11-14 13:48:57","section_id":1},{"id":2,"task_title":"Capstone 2","task_instructions":"Class Assignment Upload Instructions:
+
+Prepare Your Document: Ensure your document is complete, clear, and follows any specified formatting guidelines.
+
+Upload Process:
+
+Log in to the class portal.
+Navigate to the Assignments section.
+Select the assignment you want to submit.
+Click on Upload Document and attach your file.
+Submission Deadline: Upload the document before the deadline to avoid penalties. Early submissions are encouraged to allow time for any unexpected issues.
+
+Confirmation: After uploading, confirm the submission status to ensure your document was uploaded successfully.
+
+Make sure to double-check your work before submission.","task_startdate":"2024-11-14 16:23:01","task_duedate":"2024-11-14 16:23:01","section_id":1},{"id":3,"task_title":"Capstone 2","task_instructions":"Class Assignment Upload Instructions:
+
+Prepare Your Document: Ensure your document is complete, clear, and follows any specified formatting guidelines.
+
+Upload Process:
+
+Log in to the class portal.
+Navigate to the Assignments section.
+Select the assignment you want to submit.
+Click on Upload Document and attach your file.
+Submission Deadline: Upload the document before the deadline to avoid penalties. Early submissions are encouraged to allow time for any unexpected issues.
+
+Confirmation: After uploading, confirm the submission status to ensure your document was uploaded successfully.
+
+Make sure to double-check your work before submission.","task_startdate":"2024-11-14 16:25:37","task_duedate":"2024-11-14 16:25:37","section_id":1},{"id":4,"task_title":"ety","task_instructions":"yu","task_startdate":"2024-11-15 22:59:06","task_duedate":"2024-11-15 22:59:06","section_id":1}]} 
+[2024-11-28 02:56:59] local.INFO: []  
+[2024-11-28 02:57:02] local.INFO: STudent tas ID: {"id":1} 
+[2024-11-28 02:57:02] local.INFO: Task accessed with GET method {"section_id":"1"} 
+[2024-11-28 02:57:02] local.INFO: Tasks Retrieved {"tasks":[{"id":1,"task_title":"Cpastone 2","task_instructions":"Class Assignment Upload Instructions:
+
+Prepare Your Document: Ensure your document is complete, clear, and follows any specified formatting guidelines.
+
+Upload Process:
+
+Log in to the class portal.
+Navigate to the Assignments section.
+Select the assignment you want to submit.
+Click on Upload Document and attach your file.
+Submission Deadline: Upload the document before the deadline to avoid penalties. Early submissions are encouraged to allow time for any unexpected issues.
+
+Confirmation: After uploading, confirm the submission status to ensure your document was uploaded successfully.
+
+Make sure to double-check your work before submission.","task_startdate":"2024-11-14 13:48:57","task_duedate":"2024-11-14 13:48:57","section_id":1},{"id":2,"task_title":"Capstone 2","task_instructions":"Class Assignment Upload Instructions:
+
+Prepare Your Document: Ensure your document is complete, clear, and follows any specified formatting guidelines.
+
+Upload Process:
+
+Log in to the class portal.
+Navigate to the Assignments section.
+Select the assignment you want to submit.
+Click on Upload Document and attach your file.
+Submission Deadline: Upload the document before the deadline to avoid penalties. Early submissions are encouraged to allow time for any unexpected issues.
+
+Confirmation: After uploading, confirm the submission status to ensure your document was uploaded successfully.
+
+Make sure to double-check your work before submission.","task_startdate":"2024-11-14 16:23:01","task_duedate":"2024-11-14 16:23:01","section_id":1},{"id":3,"task_title":"Capstone 2","task_instructions":"Class Assignment Upload Instructions:
+
+Prepare Your Document: Ensure your document is complete, clear, and follows any specified formatting guidelines.
+
+Upload Process:
+
+Log in to the class portal.
+Navigate to the Assignments section.
+Select the assignment you want to submit.
+Click on Upload Document and attach your file.
+Submission Deadline: Upload the document before the deadline to avoid penalties. Early submissions are encouraged to allow time for any unexpected issues.
+
+Confirmation: After uploading, confirm the submission status to ensure your document was uploaded successfully.
+
+Make sure to double-check your work before submission.","task_startdate":"2024-11-14 16:25:37","task_duedate":"2024-11-14 16:25:37","section_id":1},{"id":4,"task_title":"ety","task_instructions":"yu","task_startdate":"2024-11-15 22:59:06","task_duedate":"2024-11-15 22:59:06","section_id":1}]} 
+[2024-11-28 02:57:12] local.INFO: []  
+[2024-11-28 02:59:13] local.INFO: []  
+[2024-11-28 02:59:14] local.INFO: STudent tas ID: {"id":1} 
+[2024-11-28 02:59:14] local.INFO: Task accessed with GET method {"section_id":"1"} 
+[2024-11-28 02:59:14] local.INFO: Tasks Retrieved {"tasks":[{"id":1,"task_title":"Cpastone 2","task_instructions":"Class Assignment Upload Instructions:
+
+Prepare Your Document: Ensure your document is complete, clear, and follows any specified formatting guidelines.
+
+Upload Process:
+
+Log in to the class portal.
+Navigate to the Assignments section.
+Select the assignment you want to submit.
+Click on Upload Document and attach your file.
+Submission Deadline: Upload the document before the deadline to avoid penalties. Early submissions are encouraged to allow time for any unexpected issues.
+
+Confirmation: After uploading, confirm the submission status to ensure your document was uploaded successfully.
+
+Make sure to double-check your work before submission.","task_startdate":"2024-11-14 13:48:57","task_duedate":"2024-11-14 13:48:57","section_id":1},{"id":2,"task_title":"Capstone 2","task_instructions":"Class Assignment Upload Instructions:
+
+Prepare Your Document: Ensure your document is complete, clear, and follows any specified formatting guidelines.
+
+Upload Process:
+
+Log in to the class portal.
+Navigate to the Assignments section.
+Select the assignment you want to submit.
+Click on Upload Document and attach your file.
+Submission Deadline: Upload the document before the deadline to avoid penalties. Early submissions are encouraged to allow time for any unexpected issues.
+
+Confirmation: After uploading, confirm the submission status to ensure your document was uploaded successfully.
+
+Make sure to double-check your work before submission.","task_startdate":"2024-11-14 16:23:01","task_duedate":"2024-11-14 16:23:01","section_id":1},{"id":3,"task_title":"Capstone 2","task_instructions":"Class Assignment Upload Instructions:
+
+Prepare Your Document: Ensure your document is complete, clear, and follows any specified formatting guidelines.
+
+Upload Process:
+
+Log in to the class portal.
+Navigate to the Assignments section.
+Select the assignment you want to submit.
+Click on Upload Document and attach your file.
+Submission Deadline: Upload the document before the deadline to avoid penalties. Early submissions are encouraged to allow time for any unexpected issues.
+
+Confirmation: After uploading, confirm the submission status to ensure your document was uploaded successfully.
+
+Make sure to double-check your work before submission.","task_startdate":"2024-11-14 16:25:37","task_duedate":"2024-11-14 16:25:37","section_id":1},{"id":4,"task_title":"ety","task_instructions":"yu","task_startdate":"2024-11-15 22:59:06","task_duedate":"2024-11-15 22:59:06","section_id":1}]} 
+[2024-11-28 02:59:51] local.INFO: []  
+[2024-11-28 03:00:13] local.INFO: []  
+[2024-11-28 03:00:21] local.INFO: STudent tas ID: {"id":1} 
+[2024-11-28 03:00:21] local.INFO: Task accessed with GET method {"section_id":"1"} 
+[2024-11-28 03:00:21] local.INFO: Tasks Retrieved {"tasks":[{"id":1,"task_title":"Cpastone 2","task_instructions":"Class Assignment Upload Instructions:
+
+Prepare Your Document: Ensure your document is complete, clear, and follows any specified formatting guidelines.
+
+Upload Process:
+
+Log in to the class portal.
+Navigate to the Assignments section.
+Select the assignment you want to submit.
+Click on Upload Document and attach your file.
+Submission Deadline: Upload the document before the deadline to avoid penalties. Early submissions are encouraged to allow time for any unexpected issues.
+
+Confirmation: After uploading, confirm the submission status to ensure your document was uploaded successfully.
+
+Make sure to double-check your work before submission.","task_startdate":"2024-11-14 13:48:57","task_duedate":"2024-11-14 13:48:57","section_id":1},{"id":2,"task_title":"Capstone 2","task_instructions":"Class Assignment Upload Instructions:
+
+Prepare Your Document: Ensure your document is complete, clear, and follows any specified formatting guidelines.
+
+Upload Process:
+
+Log in to the class portal.
+Navigate to the Assignments section.
+Select the assignment you want to submit.
+Click on Upload Document and attach your file.
+Submission Deadline: Upload the document before the deadline to avoid penalties. Early submissions are encouraged to allow time for any unexpected issues.
+
+Confirmation: After uploading, confirm the submission status to ensure your document was uploaded successfully.
+
+Make sure to double-check your work before submission.","task_startdate":"2024-11-14 16:23:01","task_duedate":"2024-11-14 16:23:01","section_id":1},{"id":3,"task_title":"Capstone 2","task_instructions":"Class Assignment Upload Instructions:
+
+Prepare Your Document: Ensure your document is complete, clear, and follows any specified formatting guidelines.
+
+Upload Process:
+
+Log in to the class portal.
+Navigate to the Assignments section.
+Select the assignment you want to submit.
+Click on Upload Document and attach your file.
+Submission Deadline: Upload the document before the deadline to avoid penalties. Early submissions are encouraged to allow time for any unexpected issues.
+
+Confirmation: After uploading, confirm the submission status to ensure your document was uploaded successfully.
+
+Make sure to double-check your work before submission.","task_startdate":"2024-11-14 16:25:37","task_duedate":"2024-11-14 16:25:37","section_id":1},{"id":4,"task_title":"ety","task_instructions":"yu","task_startdate":"2024-11-15 22:59:06","task_duedate":"2024-11-15 22:59:06","section_id":1}]} 
+[2024-11-28 03:00:24] local.INFO: STudent tas ID: {"id":1} 
+[2024-11-28 03:00:24] local.INFO: Task accessed with GET method {"section_id":"1"} 
+[2024-11-28 03:00:24] local.INFO: Tasks Retrieved {"tasks":[{"id":1,"task_title":"Cpastone 2","task_instructions":"Class Assignment Upload Instructions:
+
+Prepare Your Document: Ensure your document is complete, clear, and follows any specified formatting guidelines.
+
+Upload Process:
+
+Log in to the class portal.
+Navigate to the Assignments section.
+Select the assignment you want to submit.
+Click on Upload Document and attach your file.
+Submission Deadline: Upload the document before the deadline to avoid penalties. Early submissions are encouraged to allow time for any unexpected issues.
+
+Confirmation: After uploading, confirm the submission status to ensure your document was uploaded successfully.
+
+Make sure to double-check your work before submission.","task_startdate":"2024-11-14 13:48:57","task_duedate":"2024-11-14 13:48:57","section_id":1},{"id":2,"task_title":"Capstone 2","task_instructions":"Class Assignment Upload Instructions:
+
+Prepare Your Document: Ensure your document is complete, clear, and follows any specified formatting guidelines.
+
+Upload Process:
+
+Log in to the class portal.
+Navigate to the Assignments section.
+Select the assignment you want to submit.
+Click on Upload Document and attach your file.
+Submission Deadline: Upload the document before the deadline to avoid penalties. Early submissions are encouraged to allow time for any unexpected issues.
+
+Confirmation: After uploading, confirm the submission status to ensure your document was uploaded successfully.
+
+Make sure to double-check your work before submission.","task_startdate":"2024-11-14 16:23:01","task_duedate":"2024-11-14 16:23:01","section_id":1},{"id":3,"task_title":"Capstone 2","task_instructions":"Class Assignment Upload Instructions:
+
+Prepare Your Document: Ensure your document is complete, clear, and follows any specified formatting guidelines.
+
+Upload Process:
+
+Log in to the class portal.
+Navigate to the Assignments section.
+Select the assignment you want to submit.
+Click on Upload Document and attach your file.
+Submission Deadline: Upload the document before the deadline to avoid penalties. Early submissions are encouraged to allow time for any unexpected issues.
+
+Confirmation: After uploading, confirm the submission status to ensure your document was uploaded successfully.
+
+Make sure to double-check your work before submission.","task_startdate":"2024-11-14 16:25:37","task_duedate":"2024-11-14 16:25:37","section_id":1},{"id":4,"task_title":"ety","task_instructions":"yu","task_startdate":"2024-11-15 22:59:06","task_duedate":"2024-11-15 22:59:06","section_id":1}]} 
+[2024-11-28 03:00:30] local.INFO: []  
+[2024-11-28 03:00:32] local.INFO: STudent tas ID: {"id":1} 
+[2024-11-28 03:00:32] local.INFO: Task accessed with GET method {"section_id":"1"} 
+[2024-11-28 03:00:32] local.INFO: Tasks Retrieved {"tasks":[{"id":1,"task_title":"Cpastone 2","task_instructions":"Class Assignment Upload Instructions:
+
+Prepare Your Document: Ensure your document is complete, clear, and follows any specified formatting guidelines.
+
+Upload Process:
+
+Log in to the class portal.
+Navigate to the Assignments section.
+Select the assignment you want to submit.
+Click on Upload Document and attach your file.
+Submission Deadline: Upload the document before the deadline to avoid penalties. Early submissions are encouraged to allow time for any unexpected issues.
+
+Confirmation: After uploading, confirm the submission status to ensure your document was uploaded successfully.
+
+Make sure to double-check your work before submission.","task_startdate":"2024-11-14 13:48:57","task_duedate":"2024-11-14 13:48:57","section_id":1},{"id":2,"task_title":"Capstone 2","task_instructions":"Class Assignment Upload Instructions:
+
+Prepare Your Document: Ensure your document is complete, clear, and follows any specified formatting guidelines.
+
+Upload Process:
+
+Log in to the class portal.
+Navigate to the Assignments section.
+Select the assignment you want to submit.
+Click on Upload Document and attach your file.
+Submission Deadline: Upload the document before the deadline to avoid penalties. Early submissions are encouraged to allow time for any unexpected issues.
+
+Confirmation: After uploading, confirm the submission status to ensure your document was uploaded successfully.
+
+Make sure to double-check your work before submission.","task_startdate":"2024-11-14 16:23:01","task_duedate":"2024-11-14 16:23:01","section_id":1},{"id":3,"task_title":"Capstone 2","task_instructions":"Class Assignment Upload Instructions:
+
+Prepare Your Document: Ensure your document is complete, clear, and follows any specified formatting guidelines.
+
+Upload Process:
+
+Log in to the class portal.
+Navigate to the Assignments section.
+Select the assignment you want to submit.
+Click on Upload Document and attach your file.
+Submission Deadline: Upload the document before the deadline to avoid penalties. Early submissions are encouraged to allow time for any unexpected issues.
+
+Confirmation: After uploading, confirm the submission status to ensure your document was uploaded successfully.
+
+Make sure to double-check your work before submission.","task_startdate":"2024-11-14 16:25:37","task_duedate":"2024-11-14 16:25:37","section_id":1},{"id":4,"task_title":"ety","task_instructions":"yu","task_startdate":"2024-11-15 22:59:06","task_duedate":"2024-11-15 22:59:06","section_id":1}]} 
+[2024-11-28 03:00:36] local.INFO: Route accessed with GET method  
+[2024-11-28 03:00:36] local.INFO: Retrieved group members {"groupMembers":[{"id":17,"group_id":2,"stud_id":31,"section_id":1,"created_at":"2024-11-13T16:36:07.000000Z","updated_at":"2024-11-27T05:07:00.000000Z","user":{"id":31,"name":"Kyla H. Hubahib","email":"student@gmail.com","email_verified_at":null,"uni_id_num":"1234561","user_pnum":"09750695756","user_aboutme":null,"user_type":"student","user_status":"active","is_premium":true,"user_pic":"storage/profile_pics/Student A_1728955644.jpg","created_at":"2024-06-13T06:02:29.000000Z","updated_at":"2024-10-29T09:28:46.000000Z","user_dob":null,"is_affiliated":0,"active_status":0,"avatar":"avatar.png","dark_mode":0,"messenger_color":null,"google_user_id":null,"google_access_token":null,"google_refresh_token":null,"google_token_expiry":null}},{"id":22,"group_id":2,"stud_id":41,"section_id":1,"created_at":"2024-11-13T16:41:02.000000Z","updated_at":"2024-11-13T16:41:02.000000Z","user":{"id":41,"name":"Xander Ford","email":"xander@gmail.com","email_verified_at":null,"uni_id_num":"111111111111","user_pnum":null,"user_aboutme":null,"user_type":"student","user_status":"active","is_premium":false,"user_pic":"storage/profile_pics/Xander Ford_1727167106.jpg","created_at":"2024-09-24T08:37:23.000000Z","updated_at":"2024-09-24T08:38:26.000000Z","user_dob":null,"is_affiliated":0,"active_status":0,"avatar":"avatar.png","dark_mode":0,"messenger_color":null,"google_user_id":null,"google_access_token":null,"google_refresh_token":null,"google_token_expiry":null}},{"id":23,"group_id":2,"stud_id":46,"section_id":1,"created_at":"2024-11-13T16:41:02.000000Z","updated_at":"2024-11-13T16:41:02.000000Z","user":{"id":46,"name":"Sarang Hae","email":"sarang@gmail.com","email_verified_at":null,"uni_id_num":"1111113","user_pnum":null,"user_aboutme":null,"user_type":"student","user_status":"active","is_premium":false,"user_pic":"storage/profile_pics/default_pic.png","created_at":"2024-10-04T16:02:59.000000Z","updated_at":"2024-10-04T16:02:59.000000Z","user_dob":null,"is_affiliated":1,"active_status":0,"avatar":"avatar.png","dark_mode":0,"messenger_color":null,"google_user_id":null,"google_access_token":null,"google_refresh_token":null,"google_token_expiry":null}}]} 
+[2024-11-28 03:00:36] local.INFO: Route accessed with GET method  
+[2024-11-28 03:00:36] local.INFO: Authenticated user found: 32  
+[2024-11-28 03:00:40] local.INFO: STudent tas ID: {"id":1} 
+[2024-11-28 03:00:40] local.INFO: Task accessed with GET method {"section_id":"1"} 
+[2024-11-28 03:00:40] local.INFO: Tasks Retrieved {"tasks":[{"id":1,"task_title":"Cpastone 2","task_instructions":"Class Assignment Upload Instructions:
+
+Prepare Your Document: Ensure your document is complete, clear, and follows any specified formatting guidelines.
+
+Upload Process:
+
+Log in to the class portal.
+Navigate to the Assignments section.
+Select the assignment you want to submit.
+Click on Upload Document and attach your file.
+Submission Deadline: Upload the document before the deadline to avoid penalties. Early submissions are encouraged to allow time for any unexpected issues.
+
+Confirmation: After uploading, confirm the submission status to ensure your document was uploaded successfully.
+
+Make sure to double-check your work before submission.","task_startdate":"2024-11-14 13:48:57","task_duedate":"2024-11-14 13:48:57","section_id":1},{"id":2,"task_title":"Capstone 2","task_instructions":"Class Assignment Upload Instructions:
+
+Prepare Your Document: Ensure your document is complete, clear, and follows any specified formatting guidelines.
+
+Upload Process:
+
+Log in to the class portal.
+Navigate to the Assignments section.
+Select the assignment you want to submit.
+Click on Upload Document and attach your file.
+Submission Deadline: Upload the document before the deadline to avoid penalties. Early submissions are encouraged to allow time for any unexpected issues.
+
+Confirmation: After uploading, confirm the submission status to ensure your document was uploaded successfully.
+
+Make sure to double-check your work before submission.","task_startdate":"2024-11-14 16:23:01","task_duedate":"2024-11-14 16:23:01","section_id":1},{"id":3,"task_title":"Capstone 2","task_instructions":"Class Assignment Upload Instructions:
+
+Prepare Your Document: Ensure your document is complete, clear, and follows any specified formatting guidelines.
+
+Upload Process:
+
+Log in to the class portal.
+Navigate to the Assignments section.
+Select the assignment you want to submit.
+Click on Upload Document and attach your file.
+Submission Deadline: Upload the document before the deadline to avoid penalties. Early submissions are encouraged to allow time for any unexpected issues.
+
+Confirmation: After uploading, confirm the submission status to ensure your document was uploaded successfully.
+
+Make sure to double-check your work before submission.","task_startdate":"2024-11-14 16:25:37","task_duedate":"2024-11-14 16:25:37","section_id":1},{"id":4,"task_title":"ety","task_instructions":"yu","task_startdate":"2024-11-15 22:59:06","task_duedate":"2024-11-15 22:59:06","section_id":1}]} 

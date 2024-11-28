@@ -45,6 +45,7 @@ const [error, setError] = useState('');
 const [isMembersLoading, setIsMembersLoading] = useState(false);
 const [semesters, setSemesters] = useState([]);
 const [selectedSemester, setSelectedSemester] = useState('');
+const [dropdownVisible, setDropdownVisible] = useState(true); // Controls dropdown visibility
 
 useEffect(() => {
     const fetchSemesters = async () => {
@@ -74,7 +75,7 @@ useEffect(() => {
     fetchSemesters();
   }, []);
 
- 
+
 // Handle the selection change
 const handleChange = (event) => {
     const selectedId = event.target.value;
@@ -261,24 +262,25 @@ useEffect(() => {
                 Alchemist Room
             </div></Link>
             <div className="m-4">
-            <select
-  id="courses"
-  name="courses"
-  value={selectedSemester} // Automatically sets the default value
-  onChange={handleChange}
-  className="w-[300px] px-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all duration-300 ease-in-out"
->
-  <option value="" disabled>
-    Select a Semester
-  </option>
-  {/* Dynamically populate the dropdown with fetched semesters */}
-  {semesters.map((semester) => (
-    <option key={semester.id} value={semester.id}>
-      {semester.name} {semester.school_year}
-    </option>
-  ))}
-</select>
-
+            {dropdownVisible && (
+        <div>
+          {/* Dropdown Component */}
+          <select
+            className="w-[300px] px-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all duration-300 ease-in-out"
+            value={selectedSemester}
+            onChange={(e) => setSelectedSemester(e.target.value)}
+          >
+            <option value="" disabled>
+              Select a Semester
+            </option>
+            {semesters.map((semester) => (
+              <option key={semester.id} value={semester.id}>
+                {semester.name} {semester.school_year}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
 </div>
 
 
@@ -286,6 +288,8 @@ useEffect(() => {
         </div>
             {isCreating ? (
                 <CreateClassSection
+                setDropdownVisible={setDropdownVisible}
+        visible={dropdownVisible} // Control visibility
                 selectedSemester={selectedSemester}
                 semesters={semesters} // Passing fetched semesters here as a prop
                     onCreate={handleCreate}
