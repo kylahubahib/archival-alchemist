@@ -47,34 +47,21 @@ const [semesters, setSemesters] = useState([]);
 const [selectedSemester, setSelectedSemester] = useState('');
 
 useEffect(() => {
-    const fetchSemesters = async () => {
-      try {
-        // Fetch semesters from the backend
-        const response = await axios.get('/api/semesters'); // Adjust API route if necessary
-        const fetchedSemesters = response.data;
+  const fetchSemesters = async () => {
+    try {
+      // Make the GET request to fetch the semesters
+      const response = await axios.get('/api/semesters');  // Adjust the API URL
+      setSemesters(response.data);  // Set fetched semesters in state
+    } catch (err) {
+      setError('Failed to fetch semesters.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-        // Sort the semesters by `created_at` (assuming created_at is a valid timestamp)
-        const sortedSemesters = [...fetchedSemesters].sort(
-          (a, b) => new Date(b.created_at) - new Date(a.created_at)
-        );
+  fetchSemesters();
+}, []);  // Empty dependency array means it runs once when the component mounts
 
-        setSemesters(sortedSemesters); // Update state with sorted semesters
-
-        // Automatically select the latest semester
-        if (sortedSemesters.length > 0) {
-          setSelectedSemester(sortedSemesters[0].id); // Set the default semester
-        }
-      } catch (err) {
-        setError('Failed to fetch semesters.');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchSemesters();
-  }, []);
-
- 
 // Handle the selection change
 const handleChange = (event) => {
     const selectedId = event.target.value;
@@ -262,23 +249,22 @@ useEffect(() => {
             </div></Link>
             <div className="m-4">
             <select
-  id="courses"
-  name="courses"
-  value={selectedSemester} // Automatically sets the default value
-  onChange={handleChange}
-  className="w-[300px] px-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all duration-300 ease-in-out"
->
-  <option value="" disabled>
-    Select a Semester
-  </option>
-  {/* Dynamically populate the dropdown with fetched semesters */}
-  {semesters.map((semester) => (
-    <option key={semester.id} value={semester.id}>
-      {semester.name} {semester.school_year}
-    </option>
-  ))}
-</select>
-
+        id="courses"
+        name="courses"
+        value={selectedSemester}
+        onChange={handleChange}
+        className="w-[300px] px-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all duration-300 ease-in-out"
+      >
+        <option value="" disabled>
+          Select a Semester
+        </option>
+        {/* Dynamically populate the dropdown with fetched semesters */}
+        {semesters.map((semester) => (
+          <option key={semester.id} value={semester.id}>
+            {semester.name} {semester.school_year}
+          </option>
+        ))}
+      </select>
 </div>
 
 

@@ -22,7 +22,7 @@ export default function Track({folders, onBack, task, taskID }) {
 
     useEffect(() => {
 
-        console.log('SETION: ', folders?.id)
+        console.log('SECTION: ', folders?.id)
 
         axios.get('/get-manuscripts', {
             params: {

@@ -458,6 +458,8 @@ Route::post('/check-user-premium-status', [CheckSubscriptionController::class, '
 Route::get('/check-student-in-class', [StudentClassController::class, 'checkStudentInClass']);
 
 
+
+Route::get('/api/publishedRec-manuscripts', [StudentClassController::class, 'getPublishedRecManuscripts']);
 //Route::get('/api/published-manuscripts/{choice}', [StudentClassController::class, 'getPublishedManuscripts']);
 Route::get('/api/my-approved-manuscripts', [StudentClassController::class, 'myApprovedManuscripts']);
 Route::get('/api/my-favorite-manuscripts', [StudentClassController::class, 'myfavoriteManuscripts']);
@@ -496,6 +498,13 @@ Route::get('/searchlib', [SearchController::class, 'searchlib']);
 
 
 Route::get('/api/published-manuscripts', [StudentClassController::class, 'getPublishedManuscripts']);
+
+Route::get('/api/published-manuscripts', [StudentClassController::class, 'getPublishedManuscripts']);
+
+Route::get('/api/published-manuscripts', [StudentClassController::class, 'getPublishedManuscripts']);
+
+Route::get('/api/published-manuscripts', [StudentClassController::class, 'getPublishedManuscripts']);
+
 Route::get('/api/publishedRec-manuscripts', [StudentClassController::class, 'getPublishedRecManuscripts']);
 
 
@@ -503,6 +512,9 @@ Route::get('/api/publishedRec-manuscripts', [StudentClassController::class, 'get
 
 //TEACHER ROUTES
 Route::middleware('auth')->group(function () {
+ //   Route::get('/student/class', [StudentClassController::class, 'index'])->name('student.class');
+
+ Route::get('/get-groupID', [ClassController::class, 'getgroupID'])->name('group.id');
    Route::get('/teacher/class', [TeacherClassController::class, 'index'])->name('teacher.class');
    //Teacher Activity API routes
     Route::post('/store-newGroupClass', [TeacherClassController::class, 'newGroupClass']);
@@ -592,7 +604,7 @@ Route::get('/test-redis', function () {
 Route::post('/send-for-revision', [StudentClassController::class, 'sendForRevision'])->name('send-for-revision');
 Route::get('/manuscripts/group/{groupId}', [ClassController::class, 'getManuscriptsByGroup']);
 
-
+Route::get('/api/semesters', [ClassController::class, 'getRecords']);
 
 //Commments
 Route::get('/fetch-comments/{id}', [DocCommentsController::class, 'fetchComments'])->name('fetch-comments');

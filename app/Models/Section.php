@@ -17,6 +17,7 @@ class Section extends Model
         'subject_name',
         'section_name',
         'added_by',
+        'sem_id',
     ];
 
     public function course(): BelongsTo

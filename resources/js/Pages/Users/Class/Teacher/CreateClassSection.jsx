@@ -3,7 +3,7 @@ import axios from 'axios';
 import { Card, CardFooter, Image, Button } from '@nextui-org/react';
 import ViewClass from '@/Pages/Users/Class/Teacher/ViewClass';
 
-const CreateClassSection = ({ userId }) => {
+const CreateClassSection = ({selectedSemester, semesters,  userId }) => {
     const [folders, setFolders] = useState([]);
     const [classCourse, setCourse] = useState('');
     const [classSubjectName, setSubjectName] = useState('');
@@ -14,6 +14,8 @@ const CreateClassSection = ({ userId }) => {
     const [fetchError, setFetchError] = useState(false);
     const [isViewClassOpen, setIsViewClassOpen] = useState(false);
 
+    console.log("This is the selectedSemester in CreateClass.js:", selectedSemester)
+    console.log("This is the Semesters in CreateClass.js:", semesters)
     // Add this to store the selected section data
     const [selectedFolder, setSelectedFolder] = useState(null);
 
@@ -21,67 +23,79 @@ const CreateClassSection = ({ userId }) => {
     const DEFAULT_PROFILE_IMAGE = '/path/to/default/profile.jpg';
 
     useEffect(() => {
+        // Fetch classes only if a semester is selected
+        if (selectedSemester) {
+          fetchClasses();
+        }
+      }, [selectedSemester]);
+
+      useEffect(() => {
         // Retrieve CSRF token from the meta tag
-        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-        console.log("CSRF Token Retrieved: ", csrfToken); // Log the CSRF token
+        const csrfToken = document
+          .querySelector('meta[name="csrf-token"]')
+          .getAttribute('content');
+        console.log("CSRF Token Retrieved:", csrfToken);
 
         // Set default CSRF token for axios requests
         axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken;
 
-        // Fetch classes
-        fetch('/fetch-classes', {
-            method: 'GET',
-            headers: {
-                'X-CSRF-TOKEN': csrfToken,  // CSRF token applied here
-                'Authorization': `Bearer ${userToken}`,
-            }
-        })
-            .then(response => {
-                if (!response.ok) {
-                    setFetchError(true);
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            })
-            .then(data => {
-                setFolders(data);
-                setFetchError(false);
-
-                console.log('FETCH CLASSES ',data);
-            })
-            .catch(error => {
-                console.error("Error fetching folders:", error);
-                setFetchError(true);
-            });
-
         // Fetch courses
         fetch('/fetch-courses', {
-            method: 'GET',
-            headers: {
-                'X-CSRF-TOKEN': csrfToken,  // CSRF token applied here
-            }
+          method: 'GET',
+          headers: {
+            'X-CSRF-TOKEN': csrfToken, // CSRF token applied here
+          },
         })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok: ' + response.status);
-                }
-                return response.json(); // Proceed to parse JSON if the response is OK
-            })
-            .then(data => setCourses(data))
-            .catch(error => {
-                console.error("Error fetching courses:", error);
-                setFetchError(true);
-            });
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error('Network response was not ok: ' + response.status);
+            }
+            return response.json(); // Parse JSON if response is OK
+          })
+          .then((data) => setCourses(data)) // Set fetched courses in state
+          .catch((error) => {
+            console.error("Error fetching courses:", error);
+            setFetchError(true);
+          });
+      }, [userId]);
 
+      // Function to fetch classes
+      const fetchClasses = () => {
+        const csrfToken = document
+          .querySelector('meta[name="csrf-token"]')
+          .getAttribute('content'); // Retrieve CSRF token again (optional)
 
-    }, [userId]);
+        fetch(`/fetch-classes?sem_id=${selectedSemester}`, {
+          method: 'GET',
+          headers: {
+            'X-CSRF-TOKEN': csrfToken, // CSRF token applied here
+            'Authorization': `Bearer ${userToken}`, // Include user token for authentication
+          },
+        })
+          .then((response) => {
+            if (!response.ok) {
+              setFetchError(true);
+              throw new Error('Network response was not ok');
+            }
+            return response.json(); // Parse JSON response
+          })
+          .then((data) => {
+            setFolders(data); // Set fetched classes in state
+            setFetchError(false);
+            console.log('Fetched Classes:', data);
+          })
+          .catch((error) => {
+            console.error("Error fetching classes:", error);
+            setFetchError(true);
+          });
+      };
+
 
     const handleCreateFolder = async () => {
         if (!classCourse || !classSubjectName || !classSection) {
             alert("Please fill out all fields.");
             return;
         }
-
         setIsCreating(true);
 
         // Retrieve CSRF token for POST request
@@ -95,6 +109,8 @@ const CreateClassSection = ({ userId }) => {
                 subject_name: classSubjectName,
                 section_name: classSection,
                 user_id: userId,
+                sem_id: selectedSemester,
+
             }, {
                 headers: {
                     'X-CSRF-TOKEN': csrfToken,  // CSRF token applied here

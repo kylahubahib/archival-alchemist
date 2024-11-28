@@ -323,7 +323,7 @@ const handleShowStudentWork = () => {
             <div className="relative w-relative m-10 ">
                 <Table>
                     <TableHeader>
-                        <TableColumn className="w-[10%] text-left">Class Name</TableColumn>
+                        <TableColumn className="w-[10%] text-left">Group Name</TableColumn>
                         <TableColumn className="w-[60%] text-center">Title</TableColumn>
                         <TableColumn className="text-center">Created</TableColumn>
                         <TableColumn className="text-center">Updated</TableColumn>

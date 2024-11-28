@@ -23,6 +23,7 @@ export default function Authenticated({ user, children, newProfile = null, searc
     const [isModalOpen, setIsModalOpen] = useState(false);
 
 
+
     const openModal = () => {
         setIsModalOpen(true);
     }

@@ -19,9 +19,6 @@ axios.defaults.headers['X-CSRF-TOKEN'] = document.querySelector('meta[name="csrf
 
 
 const StudentWork = ({folders, onBack, task, taskID,  fileUrl,  }) => {
-    const [isCreating, setIsCreating] = useState(true);
-    const [courses, setCourses] = useState([]);
-    const [selectedCourse, setSelectedCourse] = useState(null);
     const [selectedClass, setSelectedClass] = useState(null);
     const [isGroupModalOpen, setIsGroupModalOpen] = useState(false);
     const { isOpen, onOpen, onOpenChange } = useDisclosure();
@@ -47,7 +44,8 @@ const [error, setError] = useState('');
 const [isMembersLoading, setIsMembersLoading] = useState(false);
 const [isViewModalOpen, setIsViewModalOpen] = useState(false);
 const [reviewManuscriptProps, setReviewManuscriptProps] = useState(null);
-const [groupNames, setgroupNames] = useState(null);
+const [mygroupID, setmygroupID] = useState([]);
+const [groupID, setgroupID] = useState([]);
 
 
 console.log("These are the props in folder:", reviewManuscriptProps)
@@ -61,7 +59,7 @@ useEffect(() => {
             const response = await axios.get(`/groupmembers/${hoveredClass.id}`);
             setMembers(response.data);
 
-    console.log(hoveredClass);
+    console.log("These are the hovered class:", hoveredClass);
             // setError(''); // Clear any previous error
         } catch (err) {
             // setError('Failed to load members.'); // Handle error
@@ -77,7 +75,7 @@ useEffect(() => {
 
 const handleMouseEnter = (classItem) => {
     setHoveredClass(classItem);
-    console.log(setHoveredClass);
+    console.log("These are the setHoveredClass:", setHoveredClass);
     setIsShowMembersModalOpen(true);
 };
 
@@ -111,6 +109,8 @@ useEffect(() => {
             });
             console.log(response.data); // Check that the new data is correct
             setClasses(response.data); // Update the classes state
+
+            console.log("Students Classes Response:", classes);
         } catch (error) {
             console.error("Error fetching updated manuscripts:", error);
             setMessage("Failed to fetch updated manuscripts.");
@@ -157,6 +157,34 @@ useEffect(() => {
     }, []);
 
 
+
+    useEffect(() => {
+        setIsLoading(true); // Set loading to true when the component mounts
+        axios.get('/get-groupID')
+            .then(response => {
+               // setCourses(response.data.courses);
+               console.log("API Response for my group ID:", response.data); // Log the response to inspect the structure
+                // Map the response to extract group IDs and store in state
+                const groupIDs = response.data.map(item => item.group_id);
+                setmygroupID(groupIDs); // Store the group IDs
+                if (groupIDs.length > 0) {
+                    setgroupID(groupIDs[0]); // Use the first group ID as default or modify as needed
+                }
+            })
+            .catch(error => {
+                console.error("Error fetching courses:", error);
+            })
+            .finally(() => {
+                setIsLoading(false); // Set loading to false after data is fetched
+            });
+    }, []);
+
+    // Filter the classes where group_id matches groupID
+    const myproject = classes.filter(classItem => classItem.group_id === groupID);
+
+    console.log("This is the student's project: ", myproject);
+
+
 useEffect(() => {
     console.log('Selected Class:', selectedClass); // Debugging line
 
@@ -166,7 +194,8 @@ useEffect(() => {
         }
     })
     .then(response => {
-        console.log(response.data); // Log the response to check its structure
+        console.log(
+            "These are the manuscripts:", response.data); // Log the response to check its structure
        setClasses(response.data); // Store the manuscripts data
     })
     .catch(error => {
@@ -275,16 +304,11 @@ const handleShowStudentWork = () => {
                 paddingTop: "0",
             }}
         >
-            <header className="w-full bg-white text-gray-800 py-2 shadow-md border-t border-b border-gray-300">
-                <div className="flex justify-end space-x-4 mr-8">
-                    <ClassDropdown className="flex" />
-                </div>
-            </header>
 
             <div className="relative w-relative m-10 ">
                 <Table>
                     <TableHeader>
-                        <TableColumn className="w-[10%] text-left">Class Name</TableColumn>
+                        <TableColumn className="w-[10%] text-left">Group Name</TableColumn>
                         <TableColumn className="w-[60%] text-center">Title</TableColumn>
                         <TableColumn className="text-center">Created</TableColumn>
                         <TableColumn className="text-center">Updated</TableColumn>
@@ -292,8 +316,9 @@ const handleShowStudentWork = () => {
                         <TableColumn className="text-center">Review Work</TableColumn>
                     </TableHeader>
 
+                    {/* const myproject = classes.filter(classItem => classItem.group_id === groupID); */}
                     <TableBody>
-                        {classes.map((classItem) => (
+                        {myproject.map((classItem) => (
                             <TableRow key={classItem.id}>
                                 <TableCell className="w-[10%] text-left">
                                     <span
@@ -344,35 +369,8 @@ const handleShowStudentWork = () => {
 
                                     {/* Filter Options */}
                                     <div className="flex space-x-6">
-                                        <div className="flex items-center space-x-2">
-                                            <label htmlFor="filter" className="text-sm">
-                                                Filter:
-                                            </label>
-                                            <select
-                                                id="filter"
-                                                defaultValue="all"
-                                                className="p-2 rounded border border-gray-300 text-sm w-56"
-                                            >
-                                                <option value="all" disabled>Group names</option>
-                                                {/* Dynamically render group names */}
-                                                {classes.map((item) => (
-                                                    <option key={item.group?.id} value={item.group?.group_name}>
-                                                        {item.group?.group_name}
-                                                    </option>
-                                                ))}
-                                            </select>
-                                        </div>
 
                                         <div className="flex items-center space-x-2">
-                                            {/* <label htmlFor="search" className="text-sm">
-                                                Search:
-                                            </label>
-                                            <input
-                                                id="search"
-                                                type="text"
-                                                className="p-2 rounded border border-gray-300 text-sm"
-                                                placeholder="Search work..."
-                                            /> */}
                                             <div className="pl-5 flex items-center">
                                                 <Button
                                                     auto
@@ -403,9 +401,11 @@ const handleShowStudentWork = () => {
                                 </div>
                             </header>
 
+                            {console.log("Mao ni ang naapas nga ID:", reviewManuscriptProps.group_id)}
                             {/* Content of the Modal */}
                             <div className="w-full">
                                 <ModifyManuscript
+                                    groupId={groupID}
                                     folders={folders}
                                     onBack={onBack}
                                     task={task}
