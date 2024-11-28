@@ -15,9 +15,6 @@ return new class extends Migration
             $table->text('body')->nullable(); // or use $table->string('body') for smaller text
             $table->timestamps();
 
-            // Foreign key constraints
-            $table->foreign('forum_post_id')->references('id')->on('forum_posts')->onDelete('cascade');
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
         });
     }
 

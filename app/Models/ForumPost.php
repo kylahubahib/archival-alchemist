@@ -72,7 +72,7 @@ class ForumPost extends Model
 
         public function forumComments()
     {
-        return $this->hasMany(ForumComment::class);
+        return $this->hasMany(ForumComment::class, 'forum_post_id');
     }
 
 

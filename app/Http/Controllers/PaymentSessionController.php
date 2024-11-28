@@ -45,6 +45,7 @@ class PaymentSessionController extends Controller
             'plan_id' => 'required|exists:subscription_plans,id',
         ]);
 
+        // $price = $request->get('total_amount');
         $plan = SubscriptionPlan::findOrFail($request->plan_id);
         $user = Auth::user();
 

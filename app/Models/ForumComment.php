@@ -18,6 +18,6 @@ class ForumComment extends Model
 
     public function forumPost()
     {
-        return $this->belongsTo(ForumPost::class);
+        return $this->belongsTo(ForumPost::class, 'forum_post_id');
     }
 }

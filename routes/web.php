@@ -458,9 +458,6 @@ Route::post('/check-user-premium-status', [CheckSubscriptionController::class, '
 Route::get('/check-student-in-class', [StudentClassController::class, 'checkStudentInClass']);
 
 
-
-Route::get('/api/published-manuscripts', [StudentClassController::class, 'getPublishedManuscripts']);
-Route::get('/api/publishedRec-manuscripts', [StudentClassController::class, 'getPublishedRecManuscripts']);
 //Route::get('/api/published-manuscripts/{choice}', [StudentClassController::class, 'getPublishedManuscripts']);
 Route::get('/api/my-approved-manuscripts', [StudentClassController::class, 'myApprovedManuscripts']);
 Route::get('/api/my-favorite-manuscripts', [StudentClassController::class, 'myfavoriteManuscripts']);
@@ -498,6 +495,8 @@ Route::get('/searchlib', [SearchController::class, 'searchlib']);
 });
 
 
+Route::get('/api/published-manuscripts', [StudentClassController::class, 'getPublishedManuscripts']);
+Route::get('/api/publishedRec-manuscripts', [StudentClassController::class, 'getPublishedRecManuscripts']);
 
 
 
