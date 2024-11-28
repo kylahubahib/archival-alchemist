@@ -6,7 +6,7 @@ import axios from 'axios';
 import { format } from 'date-fns';
 import Modal from '@/Components/Modal';
 import { MdMessage } from 'react-icons/md';
-import Repository from './Partials/Repository';
+import StudentRepository from '@/Pages/Users/Class/Student/Approved';
 import Posts from './Partials/Posts';
 import SubscriptionForm from './Partials/SubscriptionForm';
 import { Accordion, AccordionItem } from '@nextui-org/react';
@@ -223,7 +223,7 @@ export default function Edit({ auth, mustVerifyEmail, status }) {
 
 
                             <div className="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
-                                <Repository className="max-w-xl" />
+                                <StudentRepository auth={auth} user={auth.user} className="max-w-xl" />
                             </div>
 
                         </div>

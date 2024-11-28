@@ -6,7 +6,7 @@ import axios from 'axios';
 import { format } from 'date-fns';
 import Modal from '@/Components/Modal';
 import { MdMessage } from 'react-icons/md';
-import Repository from './Partials/Repository';
+import Repository from '../../Components/Manuscripts/Repository';
 import Posts from './Partials/Posts';
 import SubscriptionForm from './Partials/SubscriptionForm';
 import { Accordion, AccordionItem } from '@nextui-org/react';

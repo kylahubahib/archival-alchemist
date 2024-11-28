@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import NavLink from '@/Components/NavLink';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { FaEye, FaComment, FaBookmark, FaFileDownload, FaFilter, FaStar, FaQuoteLeft } from 'react-icons/fa';

@@ -756,18 +756,32 @@ public function getPublishedRecManuscripts(Request $request)
 // AND a.user_id = 31
 // LIMIT 0, 25;
 
-public function myApprovedManuscripts() {
+public function myApprovedManuscripts()
+{
     $userId = Auth::id(); // Get the ID of the currently signed-in user
 
-    // Fetch approved manuscripts for the currently authenticated user, including tags and authors
-    $manuscripts = ManuscriptProject::with(['tags', 'authors']) // Eager load tags and authors relationships
-        ->join('author', 'manuscripts.id', '=', 'author.man_doc_id')
-        ->where('manuscripts.man_doc_status', 'Y') // Ensure only approved manuscripts are retrieved
-        ->where('author.user_id', $userId) // Filter by the current user
-        ->select('manuscripts.*') // Select fields from manuscripts table
-        ->get();
+    // Log the user ID to track which user is making the request
+    Log::info("User {$userId} is fetching approved manuscripts.");
 
-    return response()->json($manuscripts, 200);
+    try {
+        // Fetch approved manuscripts for the currently authenticated user, including tags and authors
+        $manuscripts = ManuscriptProject::with(['tags', 'authors']) // Eager load tags and authors relationships
+            ->join('author', 'manuscripts.id', '=', 'author.man_doc_id')
+            ->where('manuscripts.man_doc_status', 'A') // Ensure only approved manuscripts are retrieved
+            ->where('author.user_id', $userId) // Filter by the current user
+            ->select('manuscripts.*') // Select fields from manuscripts table
+            ->get();
+
+        // Log the manuscripts data (you can log only the specific data you need for debugging, like IDs or titles)
+        Log::info('Fetched approved manuscripts for user ' . $userId, ['manuscripts' => $manuscripts]);
+
+        return response()->json($manuscripts, 200);
+    } catch (\Exception $e) {
+        // Log any errors that occur during the process
+        Log::error("Error fetching approved manuscripts for user {$userId}: " . $e->getMessage());
+
+        return response()->json(['error' => 'An error occurred while fetching the manuscripts.'], 500);
+    }
 }
 
 public function myfavoriteManuscripts()
