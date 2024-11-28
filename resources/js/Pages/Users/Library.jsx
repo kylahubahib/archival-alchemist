@@ -81,26 +81,27 @@ const renderActiveTabContent = () => {
             const choice = 'R';
             return (
                 <RecManuscript
-                    title="Recommended Manuscripts"
-                    description="A selection of manuscripts recommended for you."
-                    manuscripts={manuscripts} // Update this with actual data as needed
-                    user={auth.user} // Pass the user to Manuscript
-                    //choice={choice} // Pass choice to Manuscript
+                auth={auth}
+                title="All Capstone Manuscripts"
+                description="A list of all available capstone manuscripts."
+                manuscripts={manuscripts} // Pass manuscripts to Manuscript
+                user={auth.user} // Pass the user to Manuscript
+                //choice={choice} // Pass choice to Manuscript
                 />
             );
-        }
-        case 'ByUniversity': {
-            const choice = 'U';
-            return (
-                <Manuscript
-                    title="Manuscripts by University"
-                    description="Manuscripts categorized by university."
-                    manuscripts={manuscripts} // Update this with actual data as needed
-                    user={auth.user} // Pass the user to Manuscript
-                    //choice={choice} // Pass choice to Manuscript
-                />
-            );
-        }
+         }
+        // case 'ByUniversity': {
+        //     const choice = 'U';
+        //     return (
+        //         <Manuscript
+        //             title="Manuscripts by University"
+        //             description="Manuscripts categorized by university."
+        //             manuscripts={manuscripts} // Update this with actual data as needed
+        //             user={auth.user} // Pass the user to Manuscript
+        //             //choice={choice} // Pass choice to Manuscript
+        //         />
+        //     );
+        // }
         default: {
             const choice = 'Default';
             return (

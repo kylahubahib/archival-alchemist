@@ -1,6 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Card, Button } from '@nextui-org/react';
+import { Card, Button, Tooltip } from '@nextui-org/react';
 import PreviewTask from '@/Pages/Users/Class/Teacher/PreviewTask';
+
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const Stream = ({ folders, onBack }) => {
   const [tasks, setTasks] = useState([]);
@@ -11,11 +14,24 @@ const Stream = ({ folders, onBack }) => {
   const [selectedTask, setSelectedTask] = useState(null); // Selected task for preview
   const [isPreviewMode, setIsPreviewMode] = useState(false); // Track if preview mode is active
 
+
   console.log("These are inside the props:", folders);
-  console.log("First Folder ID:", folders[0]?.id);  // Safe access using optional chaining
+  console.log("First Folder ID:", folders.id);  // Safe access using optional chaining
 
   console.log("This is the section ID :", folders.id);
   // Fetch tasks with pagination
+  const [copied, setCopied] = useState(false);
+  const handleCopy = () => {
+    // Copy the actual class code to the clipboard
+    navigator.clipboard.writeText(folders.section_classcode).then(() => {
+      // Show a toast notification
+      toast.success('Copied successfully!');
+    });
+  };
+
+  console.log('Copied:', copied); // Log to check if state is updating
+
+
   const fetchAssignedTasks = useCallback(async () => {
 
     try {
@@ -105,10 +121,10 @@ const Stream = ({ folders, onBack }) => {
     </Card>
   ));
 
-  // Access first folder from the folders array
-  const folder = folders[0]; // Assuming you want the first folder's details
-  const courseAcronym = folder?.course_acronym || 'Unknown Course';
-  const sectionName = folder?.section_name || 'Unknown Section';
+// Assuming folders is an array, and you are using the first folder object
+const folder = folders.id; // Use optional chaining to safely access the first item
+const courseAcronym = folder?.course?.course_acronym || 'Unknown Course'; // Safe access to course_acronym
+const sectionName = folder?.section_name || 'Unknown Section'; // Safe access to section_name
 
   if (isPreviewMode) {
     return <PreviewTask folders={folders} onBack={handleBackToStream} task={selectedTask} taskID={selectedTask?.id}/>;
@@ -116,7 +132,7 @@ const Stream = ({ folders, onBack }) => {
 
   return (
     <div className="mt-0 bg-gray-100 rounded-lg shadow-lg w-full">
-      {/* Static Cover Photo Above All Cards with text overlays */}
+      {/* Static Cover Photo */}
       <div className="relative w-full h-48 mb-5">
         <img
           src="images/coverphoto.jpg"
@@ -128,18 +144,56 @@ const Stream = ({ folders, onBack }) => {
           <h2 className="text-white text-1xl font-bold">even when the odds are against you."</h2>
           <h2 className="text-white text-xl font-bold">- Alan Palmer -</h2>
         </div>
-
-        {/* Dynamically loaded message: Course Acronym and Section Name */}
-        {folder && (
-          <div className="absolute bottom-0 left-0 p-3 bg-black bg-opacity-50">
-            <h3 className="text-white text-xl font-semibold">
-              {courseAcronym} {sectionName}
-            </h3>
-          </div>
-        )}
       </div>
 
-      {/* Loading & Error States */}
+      {/* Class Code and Course Info */}
+      <div className="relative flex items-center justify-between w-full p-4 bg-white rounded-lg shadow-md">
+        {/* Left: Class Code */}
+        <div className="relative flex items-center">
+      <div
+        className="p-2 bg-gray-200 text-gray-800 border border-gray-800 text-sm rounded-md shadow-md cursor-pointer"
+        onClick={handleCopy}
+      >
+        <span className="text-sm">ClassCode:</span>
+        <span className="p-2 text-lg font-bold text-blue-600">{folders.section_classcode}</span>
+
+        <Tooltip
+          content={copied ? 'Copied!' : 'Click to Copy'}
+          visible={copied}
+          color={copied ? 'success' : 'default'}
+        >
+          <button className="ml-2 text-blue-400 text-xs bg-white rounded-full px-2 py-1 hover:bg-blue-500 hover:text-white cursor-pointer">
+            Copy
+          </button>
+        </Tooltip>
+      </div>
+
+      {/* Toast Container for notifications */}<ToastContainer
+position="top-center"
+autoClose={5000}
+hideProgressBar={false}
+newestOnTop={false}
+closeOnClick
+rtl={false}
+pauseOnFocusLoss
+draggable
+pauseOnHover
+theme="light"
+/>
+    </div>
+
+
+    {/* Right: Course Acronym and Section Name */}
+    {folder && (
+      <div className="text-right">
+        <h3 className="text-white text-xl font-semibold">
+          {courseAcronym} {sectionName}
+        </h3>
+      </div>
+    )}
+      </div>
+
+      {/* Other Content */}
       {loading && !tasks.length && (
         <div className="flex flex-col items-center gap-5 py-3">
           {[...Array(5)].map((_, index) => (
@@ -154,6 +208,7 @@ const Stream = ({ folders, onBack }) => {
           ))}
         </div>
       )}
+
       {error && (
         <div>
           <p className="text-center text-red-600">{error}</p>
@@ -163,12 +218,10 @@ const Stream = ({ folders, onBack }) => {
         </div>
       )}
 
-      {/* Empty State */}
       {tasks.length === 0 && !loading && !error && (
         <p className="text-center text-gray-500 italic">No projects assigned yet.</p>
       )}
 
-      {/* Task Cards */}
       {!loading && !error && tasks.length > 0 && (
         <div className="flex flex-col items-center gap-5 py-3">
           {tasks.map((task) => (
@@ -177,10 +230,10 @@ const Stream = ({ folders, onBack }) => {
         </div>
       )}
 
-      {/* Loading more message */}
       {loading && hasMore && <p className="text-center text-gray-600">Loading more tasks...</p>}
     </div>
   );
+
 };
 
 export default Stream;

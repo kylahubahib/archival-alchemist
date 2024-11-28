@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-
 import NavLink from '@/Components/NavLink';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -8,8 +7,7 @@ import RatingComponent from '@/Components/Ratings'
 import Modal from '@/Components/Modal'
 import axios from 'axios';
 import SearchBar from '@/Components/SearchBars/LibrarySearchBar'; // Import the LibrarySearchBar component
-import { Tooltip, Button } from '@nextui-org/react';
-import {Dropdown, DropdownTrigger, DropdownMenu, DropdownItem} from "@nextui-org/react";
+import {Tooltip, Button, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem} from "@nextui-org/react";
 import { Skeleton } from '@nextui-org/skeleton'; // Import //Skeleton
 import CommentSections from '@/Components/CommentSection'; // Import the LibrarySearchBar component
 import ManuscriptComment from '@/Components/Manuscripts/ManuscriptComment'; // Import the LibrarySearchBar component
@@ -52,19 +50,16 @@ const Manuscript = ({auth, user, choice}) => {
       setMaximizedId((prevId) => (prevId === id ? null : id)); // Toggle maximization
     };
 
-
-
     const toggleSidebar = () => {
         setIsSidebarOpen((prevState) => !prevState); // Toggle sidebar visibility
     };
 
-// Handle manuscript selection and opening the sidebar
-const handleComments = (id, title) => {
-    // Store the selected manuscript's id and title in an object
-    setSelectedManuscript({ id, title });
-    setIsSidebarOpen(true);  // Open the sidebar
-};
-
+    // Handle manuscript selection and opening the sidebar
+    const handleComments = (id, title) => {
+        // Store the selected manuscript's id and title in an object
+        setSelectedManuscript({ id, title });
+        setIsSidebarOpen(true);  // Open the sidebar
+    };
 
     // Function to toggle maximized state
     const toggleMaximize = () => {
@@ -78,26 +73,24 @@ const handleComments = (id, title) => {
 
 
 
+    // Fetch premium status and authentication info from the backend
+    useEffect(() => {
+        const fetchPremiumStatus = async () => {
+        try {
+            const response = await axios.get('/ispremium'); // No need to pass token, backend handles it
+            console.log('Backend response:', response.data);
 
+            setIsPremium(response.data.is_premium); // Set premium status
+            setIsAuthenticated(response.data.is_authenticated); // Set authentication status
+        } catch (err) {
+            console.error('Error fetching premium status:', err.response || err);
+        } finally {
+            setIsLoading(false);
+        }
+        };
 
-  // Fetch premium status and authentication info from the backend
-  useEffect(() => {
-    const fetchPremiumStatus = async () => {
-      try {
-        const response = await axios.get('/ispremium'); // No need to pass token, backend handles it
-        console.log('Backend response:', response.data);
-
-        setIsPremium(response.data.is_premium); // Set premium status
-        setIsAuthenticated(response.data.is_authenticated); // Set authentication status
-      } catch (err) {
-        console.error('Error fetching premium status:', err.response || err);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchPremiumStatus();
-  }, []);
+        fetchPremiumStatus();
+    }, []);
 
 
       const openLoginModal = () => {
@@ -199,13 +192,6 @@ const handleComments = (id, title) => {
             console.error("Manuscript or PDF URL is missing.");
         }
     };
-
-
-         // Handle opening the modal and setting the title
-         const handleCommentClick = () => {
-            setSelectedManuscript(); // Store the manuscript for later use
-            setisCommentOpen(true);
-        };
 
 
 
@@ -316,7 +302,6 @@ const handleComments = (id, title) => {
     //         alert('Error downloading the file. Please try again.');
     //     }
     // };
-
 
 
     const handleDownload = async (manuscriptId, title) => {
@@ -871,7 +856,7 @@ const handleDropdownChange = (selectedKey) => {
                     </div>
 
 
-                    <Tooltip content="Bookmark">
+                    {/* <Tooltip content="Bookmark">
                     <button
                         className="text-gray-600 hover:text-blue-500"
                         onClick={() => {
@@ -889,7 +874,7 @@ const handleDropdownChange = (selectedKey) => {
                     >
                         <FaBookmark size={20} />
                     </button>
-                </Tooltip>
+                </Tooltip> */}
 
 
                 {/* Render ToggleComments only if a manuscript is selected and the sidebar is open */}
@@ -1020,7 +1005,7 @@ const handleDropdownChange = (selectedKey) => {
 
 
 
-<Tooltip content="Cite">
+                <Tooltip content="Cite">
                     <button
                         className="text-gray-600 hover:text-blue-500"
                         onClick={() => {
@@ -1207,8 +1192,6 @@ const handleDropdownChange = (selectedKey) => {
                         </div>
                     </Modal>
                 )}
-
-
 
             </div>
 
