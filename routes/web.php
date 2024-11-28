@@ -499,12 +499,6 @@ Route::get('/searchlib', [SearchController::class, 'searchlib']);
 
 Route::get('/api/published-manuscripts', [StudentClassController::class, 'getPublishedManuscripts']);
 
-Route::get('/api/published-manuscripts', [StudentClassController::class, 'getPublishedManuscripts']);
-
-Route::get('/api/published-manuscripts', [StudentClassController::class, 'getPublishedManuscripts']);
-
-Route::get('/api/published-manuscripts', [StudentClassController::class, 'getPublishedManuscripts']);
-
 Route::get('/api/publishedRec-manuscripts', [StudentClassController::class, 'getPublishedRecManuscripts']);
 
 

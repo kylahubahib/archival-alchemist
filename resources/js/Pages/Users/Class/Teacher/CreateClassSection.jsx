@@ -3,7 +3,7 @@ import axios from 'axios';
 import { Card, CardFooter, Image, Button } from '@nextui-org/react';
 import ViewClass from '@/Pages/Users/Class/Teacher/ViewClass';
 
-const CreateClassSection = ({selectedSemester, semesters,  userId }) => {
+const CreateClassSection = ({setDropdownVisible, visible, selectedSemester, semesters,  userId }) => {
     const [folders, setFolders] = useState([]);
     const [classCourse, setCourse] = useState('');
     const [classSubjectName, setSubjectName] = useState('');
@@ -142,10 +142,18 @@ const CreateClassSection = ({selectedSemester, semesters,  userId }) => {
     const handleViewClass = (data) => {
         setSelectedFolder(data);
         setIsViewClassOpen(true); // Show the ViewClass component
+            // Hide the dropdown in the parent
+    if (setDropdownVisible) {
+        setDropdownVisible(false);
+      }
     };
 
     const handleBack = () => {
         setIsViewClassOpen(false); // Function to go back to previous view
+            // Show the dropdown in the parent when navigating back
+    if (setDropdownVisible) {
+        setDropdownVisible(true);
+      }
     };
 
 
