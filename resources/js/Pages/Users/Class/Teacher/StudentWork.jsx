@@ -48,9 +48,37 @@ const [isMembersLoading, setIsMembersLoading] = useState(false);
 const [isViewModalOpen, setIsViewModalOpen] = useState(false);
 const [reviewManuscriptProps, setReviewManuscriptProps] = useState(null);
 const [groupNames, setgroupNames] = useState(null);
+const [selectedGroupId, setSelectedGroupId] = useState(null); // Track selected group_id
+const [filteredClasses, setFilteredClasses] = useState([]);
+
+// Handler for dropdown change
+  // Handler for dropdown change
+  const handleGroupChange = (selectedGroupId) => {
+    // Convert selectedGroupId to an integer since it's passed as a string
+    const groupId = parseInt(selectedGroupId, 10);
+
+    // Find the manuscript whose group_id matches the selected group_id
+    const selectedManuscript = classes.find(item => item.group.id === groupId);
+
+    if (selectedManuscript) {
+      // If a manuscript is found, set it in reviewManuscriptProps
+      setReviewManuscriptProps(selectedManuscript);
+    } else {
+      // Optionally handle cases where no matching manuscript is found
+      setReviewManuscriptProps(null);
+    }
+  };
+
+  // Log reviewManuscriptProps when it changes
+  useEffect(() => {
+    if (reviewManuscriptProps) {
+      console.log("Updated reviewManuscriptProps:", reviewManuscriptProps);
+    }
+  }, [reviewManuscriptProps]); // This will run whenever reviewManuscriptProps changes
 
 
-console.log("These are the props:", reviewManuscriptProps)
+console.log("These are the props setFilteredClasses:", setFilteredClasses)
+console.log("These are the props reviewManuscriptProps:", reviewManuscriptProps)
 // Fetch members whenever hoveredClass changes
 useEffect(() => {
 
@@ -263,7 +291,7 @@ const handleShowStudentWork = () => {
 
     const handleViewClick = (classItem) => {
         setReviewManuscriptProps(classItem); // Set manuscript data
-        console.log("These are the props:", setReviewManuscriptProps);
+        console.log("These are the props setReviewManuscriptProps:", setReviewManuscriptProps);
         setIsViewModalOpen(true); // Open modal
     };
 
@@ -341,6 +369,8 @@ const handleShowStudentWork = () => {
                 </Table>
 
                 <ViewModal show={isViewModalOpen} onClose={closeViewModal}>
+
+{console.log("These are the props reviewManuscriptProps:", reviewManuscriptProps)}
                     {reviewManuscriptProps && (
                         <div className="relative bg-white w-full items-center flex flex-col">
                             {/* Header */}
@@ -360,18 +390,16 @@ const handleShowStudentWork = () => {
                                                 Filter:
                                             </label>
                                             <select
-                                                id="filter"
-                                                defaultValue="all"
-                                                className="p-2 rounded border border-gray-300 text-sm w-56"
-                                            >
-                                                <option value="all" disabled>Group names</option>
-                                                {/* Dynamically render group names */}
-                                                {classes.map((item) => (
-                                                    <option key={item.group?.id} value={item.group?.group_name}>
-                                                        {item.group?.group_name}
-                                                    </option>
-                                                ))}
-                                            </select>
+  onChange={(event) => handleGroupChange(event.target.value)}
+  className="rounded border border-gray-300 text-sm w-full"
+>
+  <option value="" disabled selected>Select a Group</option>
+  {classes.map((item) => (
+    <option key={item.group?.id} value={item.group?.id}>
+      {item.group?.group_name}
+    </option>
+  ))}
+</select>
                                         </div>
 
                                         <div className="flex items-center space-x-2">
@@ -417,6 +445,7 @@ const handleShowStudentWork = () => {
                             {/* Content of the Modal */}
                             <div className="w-full">
                                 <ReviewManuscript
+                                groupId={reviewManuscriptProps.group_id}
                                     folders={folders}
                                     onBack={onBack}
                                     task={task}

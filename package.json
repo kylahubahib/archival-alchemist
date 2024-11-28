@@ -42,6 +42,7 @@
                 "@pdftron/webviewer": "^11.0.0",
                 "@react-aria/i18n": "^3.12.3",
                 "@react-pdf-viewer/core": "^3.12.0",
+                "@react-stately/data": "^3.12.0",
                 "ably": "^2.5.0",
                 "browser-image-compression": "^2.0.2",
                 "chart.js": "^4.4.6",

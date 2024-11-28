@@ -8,7 +8,9 @@ import { Skeleton } from '@nextui-org/skeleton'; // Import Skeleton
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-const ReviewManuscript = ({folders, onBack, task, taskID, closeModal, classes, manuscript, fileUrl  }) => {
+import RevisionHistoryTable from '@/Pages/Users/Class/Teacher/RevisionHistoryTable';
+
+const ReviewManuscript = ({groupId, folders, onBack, task, taskID, closeModal, classes, manuscript, fileUrl  }) => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [sidebarWidth, setSidebarWidth] = useState(300); // Initial sidebar width
   const [isResizing, setIsResizing] = useState(false);
@@ -22,6 +24,14 @@ const ReviewManuscript = ({folders, onBack, task, taskID, closeModal, classes, m
   const [historyData, setHistoryData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+
+  console.log("These are the props manuscriptssss:", manuscript)
+  console.log("These are the props classes:", classes)
+  const [showHistory, setShowHistory] = useState(false); // State to toggle the table visibility
+  const seeHistory = () => {
+    setShowHistory((prevState) => !prevState); // Toggle the table visibility
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -80,7 +90,7 @@ const ReviewManuscript = ({folders, onBack, task, taskID, closeModal, classes, m
     const folder = folders;  // Or use a condition to select a specific folder
     console.log('Folder ID:', folder.id);  // Check if folder.id is valid
 
-    console.log("These are the classes:", classes);
+
     // Log to check if startDate and dueDate are set correctly
     console.log("This is the Feedback!");
 
@@ -115,10 +125,10 @@ const ReviewManuscript = ({folders, onBack, task, taskID, closeModal, classes, m
 
 
   // Toggle Modal state
-  const seeHistory = () => {
-    setIsModalOpen(true); // Open modal
-    console.log('Modal is now Open: ',true);
-  };
+//   const seeHistory = () => {
+//     setIsModalOpen(true); // Open modal
+//     console.log('Modal is now Open: ',true);
+//   };
 
   const handleModalClose = () => {
     setIsModalOpen(false); // Close modal
@@ -202,15 +212,20 @@ const ReviewManuscript = ({folders, onBack, task, taskID, closeModal, classes, m
             </button>
 
             {/* Additional icons */}
-            <button className="mb-4 text-blue-600 hover:text-blue-800 focus:outline-none" onClick={seeHistory}>
-              📄 {/* History Icon */}
+       <button
+        className="mb-4 text-blue-600 hover:text-blue-800 focus:outline-none text-2xl"
+        onClick={seeHistory}
+      >
+        📰 {/* History Icon */}
+      </button>
+
+
+            {/* <button className="mb-4 text-blue-600 hover:text-blue-800 focus:outline-none">
+              🖊️ //*Edit Icon
             </button>
             <button className="mb-4 text-blue-600 hover:text-blue-800 focus:outline-none">
-              🖊️ {/* Edit Icon */}
-            </button>
-            <button className="mb-4 text-blue-600 hover:text-blue-800 focus:outline-none">
-              📤 {/* Upload Icon */}
-            </button>
+              📤 //*Upload Icon
+            </button> */}
           </div>
 
           {/* Main sidebar content */}
@@ -285,7 +300,8 @@ const ReviewManuscript = ({folders, onBack, task, taskID, closeModal, classes, m
                     <p>
                     <strong >Last Updated:</strong>
                       <p ClassName="text-base"></p>{' '}
-                      {new Date(historyData.revision_updated_at).toLocaleString()}
+                      {new Date(historyData.updated_at).toLocaleString()}
+                      {console.log("Check Date:", historyData)}
                     </p>
                   </div>
                 ) : (
@@ -312,6 +328,11 @@ const ReviewManuscript = ({folders, onBack, task, taskID, closeModal, classes, m
     <Modal isOpen={isModalOpen} onClose={handleModalClose}>
                 <h5 className="mb-4 text-center font-bold text-gray-500">
                     This is the History Model
+                    This is the History Model
+                    This is the History Model
+                    This is the History Model
+                    This is the History Model
+                     This is the History Model
                 </h5>
     </Modal>
 )}
@@ -330,7 +351,12 @@ const ReviewManuscript = ({folders, onBack, task, taskID, closeModal, classes, m
         theme="colored"
         style={{ zIndex: 9999 }} // Ensure this is on top
       />
-
+      {/* Conditional rendering: Show the table only when showHistory is true */}
+      {showHistory && (
+        <div style={{ width: "80%", maxWidth: "1200px", margin: "0 auto" }}>
+          <RevisionHistoryTable groupId={groupId} classes={classes} /> {/* The table component */}
+        </div>
+      )}
     </div>
 
   );
