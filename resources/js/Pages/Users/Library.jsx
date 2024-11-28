@@ -68,6 +68,7 @@ const renderActiveTabContent = () => {
             const choice = 'A';
             return (
                 <AllManuscript
+                    auth={auth}
                     title="All Capstone Manuscripts"
                     description="A list of all available capstone manuscripts."
                     manuscripts={manuscripts} // Pass manuscripts to Manuscript

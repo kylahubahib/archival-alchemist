@@ -1,16 +1,12 @@
 import React, { useState } from 'react';
 import { Button } from '@nextui-org/react';
 import People from '@/Pages/Users/Class/Student/People';
-import Grades from '@/Pages/Users/Class/Teacher/Grades';
 import Stream from '@/Pages/Users/Class/Student/Stream';
 
 const StudentViewClass = ({ onBack, folders }) => {
     const [showForm, setShowForm] = useState(false);
     const [activeSection, setActiveSection] = useState('assignedProject');
 
-    const handleShowGrades = () => {
-        setActiveSection('grades');
-    };
 
     const handleShowPeople = () => {
         setActiveSection('people');
@@ -42,12 +38,6 @@ const StudentViewClass = ({ onBack, folders }) => {
                     >
                         People
                     </button>
-                    <button
-                        onClick={handleShowGrades}
-                        className={`text-gray-600 font-semibold ${activeSection === 'grades' ? 'text-blue-500' : 'hover:text-blue-500'}`}
-                    >
-                        Grades
-                    </button>
                 </div>
 
 
@@ -56,7 +46,6 @@ const StudentViewClass = ({ onBack, folders }) => {
             {/* Content Section */}
             <div className="w-full bg-white">
                 {activeSection === 'people' && <People folders={folders} onBack={() => setActiveSection('')} />}
-                {activeSection === 'grades' && <Grades  folders={folders}  onBack={() => setActiveSection('')} />}
                 {activeSection === 'assignedProject' && <Stream folders={folders} onBack={() => setActiveSection('')} />}
             </div>
 

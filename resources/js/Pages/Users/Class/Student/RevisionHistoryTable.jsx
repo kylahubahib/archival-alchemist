@@ -3,6 +3,7 @@ import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Button
 
 const RevisionHistoryTable = ({ groupId, classes }) => {
   console.log("This is the group ID:", groupId);
+  console.log("These are the classes :", classes);
 
   const [isVisible, setIsVisible] = useState(true); // State to manage visibility of the table
 
@@ -108,6 +109,5 @@ const RevisionHistoryTable = ({ groupId, classes }) => {
     </div>
   );
 };
-
 
 export default RevisionHistoryTable;

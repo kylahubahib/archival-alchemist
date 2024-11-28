@@ -7,7 +7,9 @@ const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute
 // Set the CSRF token as a default header for axios
 axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken;
 
-const ToggleComments = ({ manuscripts, man_id, man_doc_title,  isOpen, toggleSidebar }) => {
+const ToggleComments = ({ auth, manuscripts, man_id, man_doc_title,  isOpen, toggleSidebar }) => {
+
+    const [profilePic, setProfilePic] = useState(auth.user.user_pic);
     const [comments, setComments] = useState([]);
     const [newComment, setNewComment] = useState('');
     const [repliesText, setRepliesText] = useState({});  // New state for individual replies
@@ -15,27 +17,21 @@ const ToggleComments = ({ manuscripts, man_id, man_doc_title,  isOpen, toggleSid
     const [isExpanded, setIsExpanded] = useState(false);
     const [expandedReplies, setExpandedReplies] = useState([]);
     const [fetchError, setFetchError] = useState(false);
+    const [fetchedUsersID, setfetchedUsersID] = useState([]);
+    // useEffect(() => {
+    //     if(newProfile != null){
+    //         setProfilePic(newProfile)
+    //     }
+    // });
 
+    console.log("This is the User's ID", auth.user.id);
     console.log("This are the props passed in Togglecomments:", manuscripts);
     console.log("This is the chosen one:", manuscripts.man_doc_title)
 
     console.log("Second: This is the chosen one:", man_id)
     console.log("Second Title: This is the chosen one:", man_doc_title)
 
-    useEffect(() => {
-        if (!isOpen) {
-            // Reset all states when the sidebar is closed
-            setComments([]);
-            setNewComment('');
-            setRepliesText({});
-            setActiveCommentId(null);
-            setIsExpanded(false);
-            setExpandedReplies([]);
-        }
-    }, [isOpen]);
 
-
-    
     // Fetch comments from the API
     useEffect(() => {
         const fetchComments = async () => {
@@ -43,8 +39,14 @@ const ToggleComments = ({ manuscripts, man_id, man_doc_title,  isOpen, toggleSid
                 const response = await axios.get(`/fetch-comments/${man_id}`);
                 console.log("Retrieved comments from API:", response.data);
 
-                // Set the comments if valid data is received
-                setComments(Array.isArray(response.data.comments) ? response.data.comments : []);
+                const commentsData = Array.isArray(response.data.comments) ? response.data.comments : [];
+                setComments(commentsData);
+
+                // Extract user IDs from the comments
+                const userIds = commentsData.map(comment => comment.user?.id).filter(id => id !== undefined);
+                setetchedUsersID(userIds);
+
+                console.log("User IDs extracted: ", userIds);
             } catch (error) {
                 console.error("Error fetching comments:", error);
                 setFetchError(true);
@@ -74,6 +76,8 @@ const ToggleComments = ({ manuscripts, man_id, man_doc_title,  isOpen, toggleSid
                 console.log('Comment added successfully:', response.data);
                 setComments([...comments, response.data]); // Update the comments list
                 setNewComment('');
+
+
             } catch (error) {
                 console.error('Error submitting comment:', error.response);
             }
@@ -90,7 +94,7 @@ const ToggleComments = ({ manuscripts, man_id, man_doc_title,  isOpen, toggleSid
             };
 
             try {
-                const response = await axios.post('/comments', replyData);
+                const response = await axios.post('w', replyData);
                 console.log('Reply added successfully:', response.data);
                 setComments(
                     comments.map((comment) =>
@@ -173,6 +177,18 @@ const ToggleComments = ({ manuscripts, man_id, man_doc_title,  isOpen, toggleSid
                         <div className="mt-6">
                             {displayedComments.map((comment) => (
                                 <div key={comment.id} className="bg-gray-100 p-4 rounded-lg mb-4">
+
+
+<div className="flex items-center gap-2">
+
+    <img
+        className="h-8 w-8 rounded-full object-cover"
+        src={profilePic}
+        alt="PDF Thumbnail"
+    />
+    <span>Kyla Hubahib</span>
+</div>
+
                                     <p className="text-gray-800">{comment.content}</p>
 
                                     <button
@@ -194,6 +210,15 @@ const ToggleComments = ({ manuscripts, man_id, man_doc_title,  isOpen, toggleSid
                                             {comment.replies && comment.replies.length > 0 ? (
                                                 comment.replies.map((reply) => (
                                                     <div key={reply.id} className="bg-gray-200 p-3 rounded-md mb-2">
+                                                        <div className="flex items-center gap-2">
+    <img
+        className="h-8 w-8 rounded-full object-cover"
+        src="/images/img1.png"
+        alt="PDF Thumbnail"
+    />
+    <span>Kyla Hubahib</span>
+</div>
+
                                                         <p className="text-gray-700">{reply.content}</p>
                                                     </div>
                                                 ))

@@ -6,7 +6,9 @@ namespace App\Http\Controllers;
 
 use App\Models\AssignedTask;
 use App\Models\Course;
+use App\Models\Faculty;
 use App\Models\Section;
+use App\Models\Semester;
 use App\Models\User;
 use App\Models\GroupMember;
 use App\Models\RevisionHistory;
@@ -58,10 +60,13 @@ class ClassController extends Controller
         // Log the request data
         Log::info('Store Section Request Data:', $request->all());
 
+       // Log::info('Semester ID:', $request->query('sem_id'));
         $validatedData = $request->validate([
             'course_id' => 'required|integer|exists:courses,id', // Validate that course_id exists in courses table
             'subject_name' => 'required|string',
             'section_name' => 'required|string',
+            'sem_id' => 'required|integer|exists:semesters,id', // Validate sem_id exists in the semesters table
+
         ]);
 
         // Log the validated data
@@ -69,6 +74,7 @@ class ClassController extends Controller
         Log::info('Checking for duplicate section', [
             'course_id' => $validatedData['course_id'],
             'subject_name' => $validatedData['subject_name'],
+            'sem_id' =>  $validatedData['sem_id'],
             'ins_id' => Auth::id() // Log the logged-in user's ID as well
         ]);
 
@@ -92,6 +98,7 @@ class ClassController extends Controller
             $section->subject_name = $validatedData['subject_name'];
             $section->section_name = $validatedData['section_name'];
             $section->section_classcode = $classcode;
+            $section->sem_id = $validatedData['sem_id'];
             $section->ins_id = Auth::id();
             $section->save();
 
@@ -136,13 +143,17 @@ class ClassController extends Controller
     {
         try {
 
-            $classes = Section::with(['course'])->where('ins_id', Auth::id())->get();
+           // $classes = Section::with(['course'])->where('ins_id', Auth::id())->get();
 
-            // $classes = Section::join('courses', 'sections.course_id', '=', 'courses.id')
-            // ->where('sections.ins_id', Auth::id())
-            // ->select('sections.*', 'courses.*')
-            // ->get();
+        // Capture the semID from the request (either query or request body)
+        
+        $semID = $request->query('sem_id'); // sem_id sent from the frontend
 
+        //Fetch classes for the authenticated user and filter by sem_id (semester ID)
+        $classes = Section::with(['course'])   // Eager load the related course model
+            ->where('ins_id', Auth::id())      // Filter by the authenticated instructor's ID
+            ->where('sem_id', $semID)          // Filter by the semID passed from the frontend
+            ->get();
 
             return response()->json($classes);
         } catch (\Exception $e) {
@@ -566,6 +577,53 @@ class ClassController extends Controller
 
 
 
+    public function getRecords(Request $request)
+    {
+        try {
+            // Fetch the uni_branch_id for the authenticated user directly
+            $facultyRecord = Faculty::where('user_id', Auth::id())->first(); // Fetch the first record for the authenticated user
+
+            // If the faculty record is not found, return an error
+            if (!$facultyRecord) {
+                return response()->json(['message' => 'Faculty record not found'], 404);
+            }
+
+            $uni_ID = $facultyRecord->uni_branch_id; // Get the uni_branch_id
+
+            // Fetch the semesters where the uni_branch_id matches
+            $semester = Semester::where('uni_branch_id', $uni_ID)->get();
+
+            // Return the semesters as a JSON response
+            return response()->json($semester, 200);
+
+        } catch (\Exception $e) {
+            // Handle error and return a response
+            return response()->json(['message' => 'Error fetching semester records', 'error' => $e->getMessage()], 500);
+        }
+    }
+
+
+
+    // public function getUniID(Request $request)
+    // {
+    //     try {
+    //         // Fetch the uni_branch_id where the user_id matches the authenticated user's ID
+    //         $facultyRecord = Faculty::where('user_id', Auth::id())->first(); // Fetch the first record for the authenticated user
+
+    //         // Check if the record is found
+    //         if ($facultyRecord) {
+    //             return response()->json(['uni_branch_id' => $facultyRecord->uni_branch_id], 200);
+    //         } else {
+    //             return response()->json(['message' => 'Faculty record not found'], 404);
+    //         }
+
+    //     } catch (\Exception $e) {
+    //         // Handle error and return a response
+    //         return response()->json(['message' => 'Error fetching uni_branch_id from faculty table', 'error' => $e->getMessage()], 500);
+    //     }
+    // }
+
+
 
         /**
      * Fetch manuscripts by group ID.
@@ -584,6 +642,16 @@ class ClassController extends Controller
 
         // Return the manuscripts as JSON
         return response()->json($manuscripts);
+    }
+
+
+    public function getgroupID()
+    {
+        // Fetch Group associated with the users ID
+        $grouprecord = GroupMember::where('stud_id', Auth::id())->get();
+
+        // Return the students record in group table as JSON
+        return response()->json($grouprecord);
     }
 
 }

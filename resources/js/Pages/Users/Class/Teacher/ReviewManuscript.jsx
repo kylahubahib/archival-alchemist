@@ -7,7 +7,6 @@ import { Skeleton } from '@nextui-org/skeleton'; // Import Skeleton
 
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-
 import RevisionHistoryTable from '@/Pages/Users/Class/Teacher/RevisionHistoryTable';
 
 const ReviewManuscript = ({groupId, folders, onBack, task, taskID, closeModal, classes, manuscript, fileUrl  }) => {

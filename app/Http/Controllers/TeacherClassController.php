@@ -27,8 +27,6 @@ class TeacherClassController extends Controller
     public function create(){
 
     }
-
-
         // // Fetch the courses and sections for the logged-in faculty
         // public function getCourses(Request $request)
         // {
@@ -57,16 +55,16 @@ class TeacherClassController extends Controller
         //     ]);
         // }
 
-        public function DisplayGroupClass()
-        {
-            // Get the current authenticated user's ID
-            $userId = Auth::id();
+    public function DisplayGroupClass()
+    {
+        // Get the current authenticated user's ID
+        $userId = Auth::id();
 
-            // Fetch classes where ins_id matches the user's ID
-            $classes = ClassModel::where('ins_id', $userId)->get();
+        // Fetch classes where ins_id matches the user's ID
+        $classes = ClassModel::where('ins_id', $userId)->get();
 
-            return response()->json(['classes' => $classes]);
-        }
+        return response()->json(['classes' => $classes]);
+    }
 
 
         public function index()
@@ -87,6 +85,10 @@ class TeacherClassController extends Controller
             $courses = Course::where('dept_id', $department->id)->with('sections')->get();
 
             // Retrieve classes where ins_id matches the current user's ID
+            $section = Section::where('ins_id', Auth::id())->get();
+
+
+            //Retrieve classes where stud_id matches the current user's ID
             $section = Section::where('ins_id', Auth::id())->get();
 
             return response()->json([

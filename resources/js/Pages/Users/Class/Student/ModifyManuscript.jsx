@@ -5,10 +5,11 @@ import Modal from "@/Components/Modal"
 // import { Avatar, Button, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, ModalContent, ModalHeader, ModalBody, ModalFooter, useDisclosure } from "@nextui-org/react";
 import { Skeleton } from '@nextui-org/skeleton'; // Import Skeleton
 
+import RevisionHistoryTable from '@/Pages/Users/Class/Teacher/RevisionHistoryTable';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-const ReviewManuscript = ({folders, onBack, task, taskID, closeModal, classes, manuscript, fileUrl  }) => {
+const ReviewManuscript = ({groupId, folders, onBack, task, taskID, closeModal, classes, manuscript, fileUrl  }) => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [sidebarWidth, setSidebarWidth] = useState(300); // Initial sidebar width
   const [isResizing, setIsResizing] = useState(false);
@@ -18,11 +19,15 @@ const ReviewManuscript = ({folders, onBack, task, taskID, closeModal, classes, m
   const [isDisabled, setIsDisabled] = useState(false); // To disable the dropdown after selection
   const [isOpen, setIsOpen] = useState(false);
   const [dropdownError, setDropdownError] = useState(false);  // Track if dropdown selection is made
+  const [showHistory, setShowHistory] = useState(false); // State to toggle the table visibility
+  const seeHistory = () => {
+    setShowHistory((prevState) => !prevState); // Toggle the table visibility
+  };
 
   const [historyData, setHistoryData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
+console.log("This is the group ID: ", groupId)
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -80,12 +85,6 @@ const ReviewManuscript = ({folders, onBack, task, taskID, closeModal, classes, m
       });
   };
 
-
-  // Toggle Modal state
-  const seeHistory = () => {
-    setIsModalOpen(true); // Open modal
-    console.log('Modal is now Open: ',true);
-  };
 
   const handleModalClose = () => {
     setIsModalOpen(false); // Close modal
@@ -169,15 +168,13 @@ const ReviewManuscript = ({folders, onBack, task, taskID, closeModal, classes, m
             </button>
 
             {/* Additional icons */}
-            <button className="mb-4 text-blue-600 hover:text-blue-800 focus:outline-none" onClick={seeHistory}>
-              📄 {/* History Icon */}
-            </button>
-            <button className="mb-4 text-blue-600 hover:text-blue-800 focus:outline-none">
-              🖊️ {/* Edit Icon */}
-            </button>
-            <button className="mb-4 text-blue-600 hover:text-blue-800 focus:outline-none">
-              📤 {/* Upload Icon */}
-            </button>
+            <button
+        className="mb-4 text-blue-600 hover:text-blue-800 focus:outline-none text-2xl"
+        onClick={seeHistory}
+      >
+        📰 {/* History Icon */}
+      </button>
+
           </div>
 
           {/* Main sidebar content */}
@@ -258,7 +255,12 @@ const ReviewManuscript = ({folders, onBack, task, taskID, closeModal, classes, m
         theme="colored"
         style={{ zIndex: 9999 }} // Ensure this is on top
       />
-
+      {/* Conditional rendering: Show the table only when showHistory is true */}
+      {showHistory && (
+        <div style={{ width: "80%", maxWidth: "1200px", margin: "0 auto" }}>
+          <RevisionHistoryTable groupId={groupId} classes={classes} /> {/* The table component */}
+        </div>
+      )}
     </div>
 
   );

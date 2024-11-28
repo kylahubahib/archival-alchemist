@@ -13,14 +13,15 @@ return new class extends Migration
     {
         Schema::create('semesters', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('uni_branch_id')->nullable(); 
+            $table->unsignedBigInteger('uni_branch_id')->nullable();
             $table->string('name', 30)->nullable();
+            $table->string('school_year')->nullable();
             $table->date('start_date')->nullable();
             $table->date('end_date')->nullable();
             $table->string('status', 10)->default('Upcoming');
             $table->timestamps();
 
-            $table->foreign('uni_branch_id')->references('id')->on('university_branches')->onDelete('cascade'); 
+            $table->foreign('uni_branch_id')->references('id')->on('university_branches')->onDelete('cascade');
         });
     }
 

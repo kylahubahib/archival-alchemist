@@ -374,6 +374,9 @@ class StudentClassController extends Controller
 
 
 
+
+
+
     public function checkClassCode(Request $request)
     {
         // Validate the incoming request to ensure 'class_code' is provided and is a string
@@ -657,6 +660,16 @@ public function getPublishedManuscripts(Request $request)
         $searchField = $request->query('searchField', 'Title'); // Default to Title if not specified
         Log::info('My keyword: ' . $keyword);
         Log::info('Search field: ' . $searchField);
+
+        // Optionally, you can check if the user is authenticated
+        if (auth()->check()) {
+            // If the user is authenticated, you can perform specific actions
+            $user = auth()->user();
+            Log::info('Authenticated user:', ['user' => $user]);
+        } else {
+            // If the user is not authenticated, you can handle the behavior accordingly
+            Log::info('Unauthenticated user accessed the manuscripts.');
+        }
 
         // Initialize manuscripts query
         $manuscripts = ManuscriptProject::with(['tags', 'authors'])
