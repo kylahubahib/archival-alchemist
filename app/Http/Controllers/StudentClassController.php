@@ -654,16 +654,26 @@ public function myApprovedManuscripts() {
 public function myfavoriteManuscripts()
 {
     $userId = Auth::id(); // Get the ID of the currently signed-in user
+    Log::info("User {$userId} is fetching favorite manuscripts.");
 
     // Fetch approved manuscripts for the currently authenticated user, including tags and authors
-    $manuscripts = ManuscriptProject::with(['tags', 'authors']) // Eager load tags and authors relationships
-        ->join('favorites', 'manuscripts.id', '=', 'favorites.man_doc_id')
-        ->where('manuscripts.man_doc_status', 'Y') // Ensure only approved manuscripts are retrieved
-        ->where('favorites.user_id', $userId) // Filter by the current user
-        ->select('manuscripts.*') // Select fields from manuscripts table
-        ->get();
+    try {
+        $manuscripts = ManuscriptProject::with(['tags', 'authors']) // Eager load tags and authors relationships
+            ->join('favorites', 'manuscripts.id', '=', 'favorites.man_doc_id')
+            ->where('favorites.user_id', $userId) // Filter by the current user
+            ->select('manuscripts.*') // Select fields from manuscripts table
+            ->get();
 
-    return response()->json($manuscripts, 200);
+        Log::info("Successfully retrieved favorite manuscripts for user {$userId}.");
+
+        return response()->json($manuscripts, 200);
+
+        Log::info("Successfully retrieved favorite manuscripts for user {$manuscripts}.");
+    } catch (\Exception $e) {
+        Log::error("Error fetching favorite manuscripts for user {$userId}: " . $e->getMessage());
+
+        return response()->json(['error' => 'An error occurred while fetching the manuscripts.'], 500);
+    }
 }
 
 
