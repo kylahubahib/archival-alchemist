@@ -16,7 +16,7 @@ class Author extends Model
     protected $table = 'author';
 
     // The attributes that are mass assignable.
-    protected $fillable = ['man_doc_id', 'user_id'];
+    protected $fillable = ['man_doc_id', 'user_id', 'permission_id'];
 
 
     //Foreign key

@@ -909,7 +909,7 @@ const handleDropdownChange = (selectedKey) => {
 
 
 
-
+{/* 
                 <Tooltip content="Bookmark">
                     <button
                         className="text-gray-600 hover:text-blue-500"
@@ -928,7 +928,7 @@ const handleDropdownChange = (selectedKey) => {
                     >
                         <FaBookmark size={20} />
                     </button>
-                </Tooltip>
+                </Tooltip> */}
 
 
                 <Tooltip content="Download">

@@ -221,18 +221,21 @@ class StudentClassController extends Controller
 
                 Log::info('Fetched Author Emails:', ['Autho Ids' => $authorIds]);
 
+
                 // Upload the file to Google Drive and get the Google Docs URL
-                $googleDocsUrl = $this->uploadToDrive($request->file('man_doc_content'), $authorIds, $teacherId);
+                $googleDocsUrl = $this->uploadToDrive($request->file('man_doc_content'), $authorIds, $teacherId, $manuscriptProject->id);
+                
+                Log::info('Google Docs Url:', ['URL: ' => $googleDocsUrl]);
 
                 if($googleDocsUrl) {
                     $manuscriptProject->update([
                         'man_doc_content' => $googleDocsUrl,
                     ]);
                 }
-
-
+                
+                
+                
                 $file->move(public_path('storage/capstone_files'), $fileName);
-
 
                  $faculty = $section->ins_id;
 
@@ -253,128 +256,6 @@ class StudentClassController extends Controller
             return response()->json(['message' => 'Error uploading manuscript project.', 'errors' => $e->getMessage()], 422);
         }
     }
-
-
-    public function uploadToDrive($file, $authorIds, $teacherId)
-    {
-        $user = User::find($teacherId);
-
-        // Initialize Google Client
-        $client = new GoogleClient();
-        $client->setClientId(config('services.google.client_id'));
-        $client->setClientSecret(config('services.google.client_secret'));
-        $client->setRedirectUri(config('services.google.redirect'));
-        $client->setAccessType('offline');
-        $client->addScope(GoogleDrive::DRIVE_FILE);
-
-        // Set the access token
-        $accessToken = $user->google_access_token;
-
-        // Check if the access token is expired since access token expired in one hour so we need the refresh token to get a new access token
-        if (Carbon::now()->greaterThanOrEqualTo(Carbon::parse($user->google_token_expiry))) {
-            $client->refreshToken($user->google_refresh_token);
-            $newAccessToken = $client->getAccessToken();
-
-            // Update the user's token and expiry in the database
-            $user->update([
-                'google_access_token' => $newAccessToken['access_token'],
-                'google_token_expiry' => Carbon::now()->addSeconds($newAccessToken['expires_in']),
-            ]);
-
-            $accessToken = $newAccessToken['access_token'];
-        }
-
-        // Set the access the new access token
-        $client->setAccessToken($accessToken);
-
-        // Initialize Google Drive Service
-        $driveService = new GoogleDrive($client);
-
-        // Upload the file to Google Drive
-        $driveFile = new GoogleDriveFile();
-        $driveFile->setName($file->getClientOriginalName());
-        $driveFile->setMimeType($file->getMimeType());
-
-        // Convert the file to google docs format
-        $uploadOptions = [
-            'data' => file_get_contents($file->getRealPath()),
-            'mimeType' => $file->getMimeType(),
-            'uploadType' => 'multipart',
-            'fields' => 'id',
-        ];
-
-        //Create the document in the google drive file
-        $uploadedFile = $driveService->files->create($driveFile, $uploadOptions);
-
-        //Set permissions for users
-        $this->setPermissions($driveService, $uploadedFile->id, $authorIds, $teacherId);
-
-        return 'https://docs.google.com/document/d/' . $uploadedFile->id;
-    }
-
-
-    private function setPermissions($driveService, $fileId, $authorIds, $teacherId)
-    {
-        Log::info('Drive Service Instance:', ['driveService' => $driveService]);
-        Log::info('File ID:', ['fileId' => $fileId]);
-        Log::info('Teacher ID:', ['teacherId' => $teacherId]);
-
-        // Get author emails from the Author table
-        $authorEmails = User::whereIn('id', $authorIds)->pluck('email')->toArray();
-
-        //$authorEmails = User::whereIn('user_id', $authorIds)->pluck('email')->toArray();
-        Log::info('Fetched Author Emails:', ['authorEmails' => $authorEmails]);
-
-        // Retrieve the teacher's email
-        $teacherEmail = User::find($teacherId)->email;
-        Log::info('Teacher Email:', ['teacherEmail' => $teacherEmail]);
-
-        // Combine author emails and teacher email
-        $emails = array_merge($authorEmails, [$teacherEmail]);
-        Log::info('Combined Emails:', ['emails' => $emails]);
-
-        // Set permissions for each user
-        foreach ($emails as $email) {
-            Log::info('Processing Email:', ['email' => $email]);
-            // Check if the email is valid
-            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-                Log::warning('Invalid Email Address:', ['email' => $email]);
-                continue;
-            }
-
-            // Create permission for the user
-            $permission = new Permission();
-            $permission->setType('user');
-            $permission->setRole('writer');
-            $permission->setEmailAddress($email);
-
-            Log::info('Permission Object Created:', [
-                'type' => $permission->getType(),
-                'role' => $permission->getRole(),
-                'emailAddress' => $permission->getEmailAddress(),
-            ]);
-
-            try {
-
-                // Set the permission
-                $driveService->permissions->create($fileId, $permission);
-                Log::info('Permission Set Successfully:', ['email' => $email]);
-
-            } catch (Exception $e) {
-                Log::error('Error Setting Permissions:', [
-                    'email' => $email,
-                    'error' => $e->getMessage(),
-                ]);
-            }
-        }
-    }
-
-
-
-
-
-
-
 
 
     public function checkClassCode(Request $request)
@@ -1182,95 +1063,82 @@ public function isPremium()
 //     ]);
 // }
 
-
-    public function sendForRevision(Request $request)
+        
+    public function uploadToDrive($file, $authorIds, $teacherId, $manuscriptId)
     {
-        $manuscriptId = $request->get('manuscript_id');
-        Log::info("Starting 'sendForRevision' process for manuscript ID: $manuscriptId");
-
-        // Find the manuscript
-        $manuscript = ManuscriptProject::find($manuscriptId);
-
-        if (!$manuscript || empty($manuscript->man_doc_adviser)) {
-            Log::warning("Manuscript not found or invalid data. Manuscript ID: $manuscriptId");
-            return response()->json(['error' => 'Manuscript not found or invalid data.'], 404);
-        }
-
-        Log::info("Manuscript found, updating status for manuscript ID: $manuscriptId");
-
-        // Update manuscript status to 'To Review'
-        $manuscript->update([
-            'man_doc_status' => 'To Review'
-        ]);
-
-        Log::info("Manuscript status updated to 'To Review' for manuscript ID: $manuscriptId");
-
-        // Get the Google Doc URL
-        $googleDocUrl = $manuscript->man_doc_content;
-        Log::info("Google Doc URL retrieved: $googleDocUrl");
-
-        if (!$googleDocUrl) {
-            Log::warning("Google Doc URL is missing for manuscript ID: $manuscriptId");
-            return response()->json(['error' => 'Google Doc URL is missing.'], 400);
-        }
-
-        // Extract Google Doc ID from the URL
-        $googleDocId = $this->extractGoogleDocId($googleDocUrl);
-        Log::info("Extracted Google Doc ID: $googleDocId");
-
-        if (!$googleDocId) {
-            Log::warning("Invalid Google Doc URL for manuscript ID: $manuscriptId");
-            return response()->json(['error' => 'Invalid Google Doc URL.'], 400);
-        }
 
         // Initialize Google Client
         $client = new GoogleClient();
-        $client->setClientId(config('services.google.client_id'));
-        $client->setClientSecret(config('services.google.client_secret'));
-        $client->setRedirectUri(config('services.google.redirect'));
-        $client->setAccessType('offline');
+        $client->setAuthConfig([
+            'type' => env('GOOGLE_SERVICE_TYPE'),
+            'project_id' => env('GOOGLE_SERVICE_PROJECT_ID'),
+            'private_key_id' => env('GOOGLE_SERVICE_PRIVATE_KEY_ID'),
+            'private_key' => env('GOOGLE_SERVICE_PRIVATE_KEY'),
+            'client_email' => env('GOOGLE_SERVICE_CLIENT_EMAIL'),
+            'client_id' => env('GOOGLE_SERVICE_CLIENT_ID'),
+            'auth_uri' => env('GOOGLE_SERVICE_AUTH_URI'),
+            'token_uri' => env('GOOGLE_SERVICE_TOKEN_URI'),
+            'auth_provider_x509_cert_url' => env('GOOGLE_SERVICE_AUTH_PROVIDER_CERT_URL'),
+            'client_x509_cert_url' => env('GOOGLE_SERVICE_CLIENT_CERT_URL'),
+        ]);        
         $client->addScope(GoogleDrive::DRIVE_FILE);
-
-        $teacher = Section::with('user')
-            ->where('id', $manuscript->section_id)->first();
-
-        Log::info('Teacher Email:', ['email' => $teacher]);
-
-        // Get the current authenticated user
-        $user = User::find($teacher->ins_id);
-        $accessToken = $user->google_access_token;
-        Log::info("Access token retrieved for user: " . $user->email);
-
-        // Check if the access token is expired and refresh it if needed
-        if (Carbon::now()->greaterThanOrEqualTo(Carbon::parse($user->google_token_expiry))) {
-            $client->refreshToken($user->google_refresh_token);
-            $newAccessToken = $client->getAccessToken();
-
-            // Update the user's token and expiry in the database
-            $user->update([
-                'google_access_token' => $newAccessToken['access_token'],
-                'google_token_expiry' => Carbon::now()->addSeconds($newAccessToken['expires_in']),
-            ]);
-
-            $accessToken = $newAccessToken['access_token'];
-        }
-
-        // Set the new access token
-        $client->setAccessToken($accessToken);
+       
 
         // Initialize Google Drive Service
         $driveService = new GoogleDrive($client);
-        Log::info("Google Drive service initialized.");
+
+        // Upload the file to Google Drive
+        $driveFile = new GoogleDriveFile();
+        $driveFile->setName($file->getClientOriginalName());
+        $driveFile->setMimeType($file->getMimeType());
+
+        // Convert the file to google docs format
+        $uploadOptions = [
+            'data' => file_get_contents($file->getRealPath()),
+            'mimeType' => $file->getMimeType(),
+            'uploadType' => 'multipart',
+            'fields' => 'id',
+        ];
+
+        try {
+             //Create the document in the google drive file
+            $uploadedFile = $driveService->files->create($driveFile, $uploadOptions);
+
+            //Set permissions for users
+            $this->setPermissions($driveService, $uploadedFile->id, $authorIds, $teacherId, $manuscriptId);
+
+            return 'https://docs.google.com/document/d/' . $uploadedFile->id;
+
+        } catch (Exception $e) {
+            Log::error('Error uploading file to Google Drive: ' . $e->getMessage());
+            return response()->json(['error' => 'Error uploading file: ' . $e->getMessage()], 500);
+        }
+    }
 
 
-        $emails = Author::with('user')
-            ->where('man_doc_id', $manuscriptId)->get()
-            ->pluck('user.email')->toArray();
+    private function setPermissions($driveService, $fileId, $authorIds, $teacherId, $manuscriptId)
+    {
+        Log::info('Drive Service Instance:', ['driveService' => $driveService]);
+        Log::info('File ID:', ['fileId' => $fileId]);
+        Log::info('Teacher ID:', ['teacherId' => $teacherId]);
 
-        // Set permissions for students and others (readers)
+        // Get author emails from the Author table
+        $authorEmails = User::whereIn('id', $authorIds)->pluck('email')->toArray();
+
+        //$authorEmails = User::whereIn('user_id', $authorIds)->pluck('email')->toArray();
+        Log::info('Fetched Author Emails:', ['authorEmails' => $authorEmails]);
+
+        // Retrieve the teacher's email
+        $teacherEmail = User::find($teacherId)->email;
+        Log::info('Teacher Email:', ['teacherEmail' => $teacherEmail]);
+
+        // Combine author emails and teacher email
+        $emails = array_merge($authorEmails, [$teacherEmail]);
+        Log::info('Combined Emails:', ['emails' => $emails]);
+
+        // Set permissions for each user
         foreach ($emails as $email) {
             Log::info('Processing Email:', ['email' => $email]);
-
             // Check if the email is valid
             if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
                 Log::warning('Invalid Email Address:', ['email' => $email]);
@@ -1280,23 +1148,158 @@ public function isPremium()
             // Create permission for the user
             $permission = new Permission();
             $permission->setType('user');
-            $permission->setRole('reader');
+            $permission->setRole('writer');
             $permission->setEmailAddress($email);
 
+            Log::info('Permission Object Created:', [
+                'type' => $permission->getType(),
+                'role' => $permission->getRole(),
+                'emailAddress' => $permission->getEmailAddress(),
+            ]);
+
             try {
-                // Set the permission on the Google Doc
-                $driveService->permissions->create($googleDocId, $permission);
-                Log::info("Document permission updated successfully to viewer for document ID: $googleDocId");
+                $authorId = User::where('email', $email)->pluck('id')->first();
+                Log::info('Fetched This User:', ['User Id' => $authorId]);
+                
+                // Log::info('Fetched This Author:', ['Author Id' => $fetchAuthor]);
+
+                // Set the permission
+                $createdPermission = $driveService->permissions->create(
+                    $fileId, 
+                    $permission, 
+                    ['sendNotificationEmail' => false]
+                );
+
+                // Log the response after creating the permission
+                Log::info('Created Permission Response:', [
+                    'id' => $createdPermission->getId(),
+                    'email' => $createdPermission->getEmailAddress(),
+                    'role' => $createdPermission->getRole(),
+                ]);
+
+                Log::info('Fetched This Perm Id:', ['Perm Id' => $createdPermission->getId()]);
+
+                
+                $fetchAuthor = Author::where('user_id', $authorId)
+                        ->where('man_doc_id', $manuscriptId); 
+                
+                if ($fetchAuthor) {
+                    $fetchAuthor->update([
+                        'permission_id' => $createdPermission->getId()
+                    ]);
+                }
+
+
             } catch (Exception $e) {
-                // Log and handle any errors
-                Log::error("Error setting permission for document ID: $googleDocId", ['error' => $e->getMessage()]);
+                Log::error('Error Setting Permissions:', [
+                    'email' => $email,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+
+        }
+
+        return;
+    }
+
+    public function sendForRevision(Request $request)
+    {
+        $manuscriptId = $request->get('manuscript_id');
+        Log::info("Starting 'sendForRevision' process for manuscript ID: $manuscriptId");
+    
+        // Find the manuscript
+        $manuscript = ManuscriptProject::find($manuscriptId);
+    
+        if (!$manuscript || empty($manuscript->man_doc_adviser)) {
+            Log::warning("Manuscript not found or invalid data. Manuscript ID: $manuscriptId");
+            return response()->json(['error' => 'Manuscript not found or invalid data.'], 404);
+        }
+    
+        $manuscript->update(['man_doc_status' => 'To Review']);
+        $googleDocUrl = $manuscript->man_doc_content;
+        $googleDocId = $this->extractGoogleDocId($googleDocUrl);
+    
+        if (!$googleDocId) {
+            Log::warning("Invalid Google Doc URL for manuscript ID: $manuscriptId");
+            return response()->json(['error' => 'Invalid Google Doc URL.'], 400);
+        }
+    
+        // Initialize Google Client
+        $client = new GoogleClient();
+        $client->setAuthConfig([
+            'type' => env('GOOGLE_SERVICE_TYPE'),
+            'project_id' => env('GOOGLE_SERVICE_PROJECT_ID'),
+            'private_key_id' => env('GOOGLE_SERVICE_PRIVATE_KEY_ID'),
+            'private_key' => env('GOOGLE_SERVICE_PRIVATE_KEY'),
+            'client_email' => env('GOOGLE_SERVICE_CLIENT_EMAIL'),
+            'client_id' => env('GOOGLE_SERVICE_CLIENT_ID'),
+            'auth_uri' => env('GOOGLE_SERVICE_AUTH_URI'),
+            'token_uri' => env('GOOGLE_SERVICE_TOKEN_URI'),
+            'auth_provider_x509_cert_url' => env('GOOGLE_SERVICE_AUTH_PROVIDER_CERT_URL'),
+            'client_x509_cert_url' => env('GOOGLE_SERVICE_CLIENT_CERT_URL'),
+        ]);        
+        $client->addScope(GoogleDrive::DRIVE_FILE);
+        $client->setSubject('file-manager@document-management-438910.iam.gserviceaccount.com');
+
+        $driveService = new GoogleDrive($client);
+        
+    
+        $authors = Author::with('user')->where('man_doc_id', $manuscriptId)->get();
+        // $emails = $authors->pluck('user.email')->toArray();
+
+
+        foreach ($authors as $author) {
+            $email = $author->user->email;
+            $permId = $author->permission_id;
+
+            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                Log::warning('Invalid Email Address:', ['email' => $email]);
+                continue;
+            }
+    
+           
+            try {
+                // Fetch existing permissions
+                $permissions = $driveService->permissions->listPermissions($googleDocId);
+                Log::info("Existing Permissions: ", ['permissions' => $permissions]);
+    
+                $permissionFound = false;
+    
+                // Delete the existing permission if found
+                foreach ($permissions as $permission) {
+                    if ($permission->getId() === $permId) {
+                        $driveService->permissions->delete($googleDocId, $permission->getId());
+                        Log::info("Deleted existing permission for: $email");
+                        Log::info("Permission Id:", ['permissions' => $permission->getId()]);
+                        Log::info("Permission Id in Author Table:", ['permissions' => $permId]);
+                        
+                        $permissionFound = true;
+                        break;
+                    }
+                }
+
+                // Create a new permission for the user
+                $newPermission = new Permission();
+                $newPermission->setType('user');
+                $newPermission->setRole('reader');
+                $newPermission->setEmailAddress($email);
+                $driveService->permissions->create($googleDocId, $newPermission, ['sendNotificationEmail' => false]);
+                Log::info("Created new 'reader' permission for: $email");
+    
+                // If no permission found, log the error
+                if (!$permissionFound) {
+                    Log::warning("Permission not found for: $email. Skipping permission creation.");
+                }
+    
+            } catch (Exception $e) {
+                Log::error("Error deleting/creating permission for: $email", ['error' => $e->getMessage()]);
                 return response()->json(['error' => 'Error setting permission: ' . $e->getMessage()], 500);
             }
         }
-
+    
         return response()->json(['success' => 'Document permissions updated successfully.']);
     }
-
+    
 
     // Method to extract Google Doc ID from the URL
     private function extractGoogleDocId($url)
@@ -1310,7 +1313,6 @@ public function isPremium()
             return substr($url, strlen($baseUrl));
         }
 
-        // If the URL doesn't match the expected format, return null
         return null;
     }
 
