@@ -464,9 +464,7 @@ Route::get('/api/publishedRec-manuscripts', [StudentClassController::class, 'get
 Route::get('/api/my-approved-manuscripts', [StudentClassController::class, 'myApprovedManuscripts']);
 Route::get('/api/my-favorite-manuscripts', [StudentClassController::class, 'myfavoriteManuscripts']);
 
-Route::post('/api/addfavorites', [StudentClassController::class, 'storefavorites'])
-    ->middleware(['auth', 'verified', 'user-type:student, teacher'])
-    ->name('storefavorites');
+Route::post('/api/addfavorites', [StudentClassController::class, 'storefavorites'])->name('storefavorites');
     Route::get('/manuscript/{id}/download', [StudentClassController::class, 'downloadPdf'])->name('manuscript.download');
 
    // Route::get('/manuscript/{id}/download', [StudentClassController::class, 'downloadPdf']);
@@ -474,16 +472,17 @@ Route::post('/api/addfavorites', [StudentClassController::class, 'storefavorites
 // Route::get('/user/{id}/favorites', [StudentClassController::class, 'getUserFavorites']);
 
 // Add the correct middleware if needed
-Route::get('/user/{id}/favorites', [StudentClassController::class, 'getUserFavorites'])
-->middleware(['auth', 'verified', 'user-type:student, teacher'])
-->name('getUserFavorites');
 
 
-// Route for removing a favorite
-Route::delete('/api/removefavorites', [StudentClassController::class, 'removeFavorite'])
-    ->middleware(['auth', 'verified', 'user-type:student,teacher'])
-    ->name('removeFavorite');
+Route::middleware(['auth', 'verified', 'user-type:student,teacher'])->group(function () {
+    // Route for getting user favorites
+    Route::get('/user/{id}/favorites', [StudentClassController::class, 'getUserFavorites'])
+        ->name('getUserFavorites');
 
+    // Route for removing a favorite
+    Route::delete('/api/removefavorites', [StudentClassController::class, 'removeFavorite'])
+        ->name('removeFavorite');
+});
 
 
 //check user in csv file

@@ -859,7 +859,7 @@ const handleDropdownChange = (selectedKey) => {
                     </div>
 
 
-                    {/* <Tooltip content="Bookmark">
+                    <Tooltip content="Bookmark">
                     <button
                         className="text-gray-600 hover:text-blue-500"
                         onClick={() => {
@@ -877,7 +877,7 @@ const handleDropdownChange = (selectedKey) => {
                     >
                         <FaBookmark size={20} />
                     </button>
-                </Tooltip> */}
+                </Tooltip>
 
 
                 {/* Render ToggleComments only if a manuscript is selected and the sidebar is open */}

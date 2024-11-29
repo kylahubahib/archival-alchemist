@@ -724,39 +724,37 @@ public function myfavoriteManuscripts()
 
 
     public function storefavorites(Request $request)
-{
-    // Check if the user is authenticated
-    if (!Auth::check()) {
-        return response()->json(['message' => 'You need to be logged in to bookmark'], 401);
+    {
+        // Check if the user is authenticated
+        if (!Auth::check()) {
+            return response()->json(['message' => 'You need to be logged in to bookmark'], 401);
+        }
+
+        // Validate input data
+        $request->validate([
+            'man_doc_id' => 'required|integer|exists:manuscripts,id',  // Assuming 'manuscripts' is your table
+        ]);
+
+        $user = Auth::user();
+        $manuscriptId = $request->input('man_doc_id');
+
+        // Check if the manuscript is already bookmarked
+        $alreadyBookmarked = Favorite::where('man_doc_id', $manuscriptId)
+            ->where('user_id', $user->id)
+            ->exists();
+
+        if ($alreadyBookmarked) {
+            return response()->json(['message' => 'Already bookmarked'], 200);
+        }
+
+        // Create the new bookmark
+        $favorite = new Favorite();
+        $favorite->man_doc_id = $manuscriptId;
+        $favorite->user_id = $user->id;
+        $favorite->save();
+
+        return response()->json(['message' => 'Manuscript bookmarked successfully!'], 201);
     }
-
-    // Validate input data
-    $request->validate([
-        'man_doc_id' => 'required|integer|exists:manuscripts,id',  // Assuming 'manuscripts' is your table
-    ]);
-
-    $user = Auth::user();
-    $manuscriptId = $request->input('man_doc_id');
-
-    // Check if the manuscript is already bookmarked
-    $alreadyBookmarked = Favorite::where('man_doc_id', $manuscriptId)
-        ->where('user_id', $user->id)
-        ->exists();
-
-    if ($alreadyBookmarked) {
-        return response()->json(['message' => 'Already bookmarked'], 200);
-    }
-
-    // Create the new bookmark
-    $favorite = new Favorite();
-    $favorite->man_doc_id = $manuscriptId;
-    $favorite->user_id = $user->id;
-    $favorite->save();
-
-    return response()->json(['message' => 'Manuscript bookmarked successfully!'], 201);
-}
-
-
 
 
     public function removeFavorite(Request $request)
