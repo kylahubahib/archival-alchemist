@@ -187,6 +187,7 @@ console.log("This is the Task ID:", taskID);
   };
 
   const handleSubmit = async (e) => {
+    
       e.preventDefault();
       const newErrors = {};
 
@@ -203,8 +204,6 @@ console.log("This is the Task ID:", taskID);
 
       if (Object.keys(newErrors).length === 0) {
         const titleExists = await checkIfTitleExists(formValues.man_doc_title);
-
-
           if (titleExists) {
               setErrors({
                   man_doc_title: 'Oops, this project already exists. You may track your project and update it if necessary.'

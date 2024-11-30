@@ -17,6 +17,16 @@ class Faculty extends Model
         'dept_id'
     ];
 
+    protected static function booted()
+    {
+        static::creating(function ($faculty) {
+            $faculty->id = mt_rand(1000000000, 9999999999);  
+            while (self::where('id', $faculty->id)->exists()) {
+                $faculty->id = mt_rand(1000000000, 9999999999);
+            }
+        });
+    }
+
     public function user()
     {
         return $this->belongsTo(User::class, 'user_id');

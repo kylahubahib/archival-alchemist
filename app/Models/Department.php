@@ -22,6 +22,16 @@ class Department extends Model
         'dept_acronym'
     ];
 
+    protected static function booted()
+    {
+        static::creating(function ($dept) {
+            $dept->id = mt_rand(1000000000, 9999999999);  
+            while (self::where('id', $dept->id)->exists()) {
+                $dept->id = mt_rand(1000000000, 9999999999);
+            }
+        });
+    }
+
     public function course(): HasMany
     {
         return $this->hasMany(Course::class, 'dept_id');

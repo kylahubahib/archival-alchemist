@@ -18,4 +18,4 @@ yarn-error.log
 /.fleet
 /.idea
 /.vscode
-storage/logs
+/storage/logs/laravel.log

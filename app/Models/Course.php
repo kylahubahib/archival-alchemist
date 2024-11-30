@@ -22,6 +22,16 @@ class Course extends Model
         'course_acronym'
     ];
 
+    protected static function booted()
+    {
+        static::creating(function ($course) {
+            $course->id = mt_rand(1000000000, 9999999999);  
+            while (self::where('id', $course->id)->exists()) {
+                $course->id = mt_rand(1000000000, 9999999999);
+            }
+        });
+    }
+
     public function sections(): HasMany  // Renamed to sections
     {
         return $this->hasMany(Section::class, 'course_id'); // Ensure 'course_id' is correct here

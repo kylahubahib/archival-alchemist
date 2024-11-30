@@ -105,7 +105,7 @@ export default function AdminLayout({ user, header, children, university = '' })
                         <div className="flex items-center mx-3">
                             {/* <FiBell size={24} className="ml-3 text-gray-500" /> */}
 
-                            {user.user_type == 'superadmin' ? (
+                            {user.user_type === 'superadmin' ? (
                                     <SuperAdminNotification />
                                 ) : (
                                     <InsAdminNotification user={user} />

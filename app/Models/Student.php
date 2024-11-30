@@ -23,13 +23,15 @@ class Student extends Model
         'section_id'
     ];
 
-    // protected $fillable = [
-    //     'user_id',
-    //     'stud_id',
-    //     'uni_branch_id',
-    //     'dept_id',
-    //     'course_id',
-    // ];
+    protected static function booted()
+    {
+        static::creating(function ($student) {
+            $student->id = mt_rand(1000000000, 9999999999);  
+            while (self::where('id', $student->id)->exists()) {
+                $student->id = mt_rand(1000000000, 9999999999);
+            }
+        });
+    }
 
     public function user(): BelongsTo
     {

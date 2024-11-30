@@ -80,34 +80,50 @@ class InstitutionSubscriptionController extends Controller
         $file = $request->file('file'); 
         $insubId = $request->get('insubId');
         $university = $request->get('university');
-
-        // Generate a unique filename
-        $fileName = $university . '_' . time() . '.' . $file->getClientOriginalExtension(); 
-        $file->move(public_path('storage/csv_files'), $fileName);
-
+        
         $ins_sub = InstitutionSubscription::find($insubId);
+        $limit = $ins_sub->insub_num_user;
+
+        // Read CSV data and count rows (excluding header)
+        $csvData = Excel::toArray([], $file);
+        $rowCount = count($csvData[0]) - 1;
+
+        if ($rowCount > $limit) {
+            return response()->json([
+                'success' => false,
+                'message' => "The file contains more than {$limit} rows. Please reduce the number of users and try again."
+            ], 422);
+        }
+
+        // Generate a unique filename and move the file
+        $fileName = $university . '_' . time() . '.' . $file->getClientOriginalExtension(); 
+        $filePath = 'storage/csv_files/' . $fileName;
+        $file->move(public_path('storage/csv_files'), $fileName);
 
         // Update the subscription record with the new file path
         $ins_sub->update([
-            'insub_content' => 'storage/csv_files/' . $fileName,
+            'insub_content' => $filePath,
         ]);
 
         try {
-            $createAccounts = Excel::import(new UsersImport, public_path($ins_sub->insub_content));
-            \Log::info('Import user successfully!');
-        } catch (Exception $e) {
+            Excel::import(new UsersImport, public_path($filePath));
+            \Log::info('User import successful!');
+        } catch (\Exception $e) {
             \Log::error('Error during user import: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Error during import: ' . $e->getMessage()
+            ], 500);
         }
-
-       
 
         return response()->json([
             'success' => true,
             'redirect_url' => route('institution-subscription-billing.index'),
             'message' => 'Successfully uploaded.',
-            'file' => $ins_sub->insub_content
+            'file' => $filePath
         ]);
     }
+
 
 
     public function readCSV(Request $request)

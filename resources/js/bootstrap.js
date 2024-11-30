@@ -1,8 +1,10 @@
 import axios from 'axios';
 window.axios = axios;
 
+// Ensure credentials (cookies) are included in requests
 window.axios.defaults.withCredentials = true;
-window.axios.defaults.headers.common['X-CSRF-TOKEN'] = document.querySelector('meta[name="csrf-token"]').content;
+
+// Set X-Requested-With header for Laravel
 window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 
 

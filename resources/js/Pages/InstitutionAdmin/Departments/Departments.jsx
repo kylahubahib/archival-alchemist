@@ -289,12 +289,7 @@ export default function Departments({ auth, departments, uniBranch_id, branch}) 
                         <div className="flex flex-row space-x-2">
                             <button onClick={() => displayDepts()} className="flex items-center hover:text-customBlue"> <span>Departments</span></button>
                         </div>
-                         {/* Adding a new department */}
-                         <div>
-                            <AddButton onClick={openCreateModal} className="text-customBlue hover:text-white space-x-1">
-                                <FaPlus /><span>Add Department</span>
-                            </AddButton> 
-                        </div> 
+                        
                     </div>
 
                     <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg flex flex-col min-h-custom">
@@ -311,7 +306,13 @@ export default function Departments({ auth, departments, uniBranch_id, branch}) 
                                         className=" min-w-sm flex-1"
                                     />
                                 </div>
-                              
+
+                                 {/* Adding a new department */}
+                                <div>
+                                    <AddButton onClick={openCreateModal} className="text-customBlue hover:text-white space-x-1">
+                                        <FaPlus /><span>Add Department</span>
+                                    </AddButton> 
+                                </div> 
                                
                             </div>
                             

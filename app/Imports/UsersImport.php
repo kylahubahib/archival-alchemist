@@ -30,8 +30,13 @@ class UsersImport implements ToCollection, WithHeadingRow
      */
     public function collection(Collection $collection)
     {
-        $authUser = Auth::user(); // Get the authenticated user
-        $institution = InstitutionAdmin::where('user_id', $authUser->id)->first();
+        $authUser = Auth::user(); 
+        $institution = InstitutionAdmin::with('institution_subscription')
+            ->where('user_id', $authUser->id)->first();
+        $uniBranchId = $institution->institution_subscription->uni_branch_id;
+
+        Log::info('Uni Branch Id: ', ['uni_branch_id' => $uniBranchId]);
+        
 
         if (!$institution) {
             Log::error("Institution not found for the logged-in user.");
@@ -42,18 +47,17 @@ class UsersImport implements ToCollection, WithHeadingRow
             try {
                 Log::info("Processing row {$index} for user with email: {$row['email']}");
 
-                // Check if the user already exists
+                // Check if user already exists
                 $userExist = User::where('email', $row['email'])->first();
                 if ($userExist) {
                     Log::info("User already exists: {$row['email']}");
                     continue;
                 }
 
+
                 // Generate a secure random password
                 $pwd = Str::random(8);
-                Log::info("Generated password for {$row['email']} is {$pwd}");
 
-                // Create the new user
                 $userType = Str::lower($row['type']);
                 $newUser = User::create([
                     'name' => $row['name'],
@@ -67,82 +71,111 @@ class UsersImport implements ToCollection, WithHeadingRow
                     'is_premium' => true,
                     'is_affiliated' => true,
                 ]);
-                Log::info("User created: {$newUser->id}");
 
+                Log::info("New user created with ID: {$newUser->id}, Email: {$newUser->email}");
+
+                // Send account creation email
                 try {
                     Mail::to($row['email'])->send(new AccountCredentialsMail([
                         'name' => $newUser->name,
                         'email' => $newUser->email,
                         'password' => $pwd,
-                        'message' => 'We are excited to inform you that your account has been successfully created on Archival Alchemist! You can now upload and store your capstone projects securely.'
+                        'message' => 'Welcome to Archival Alchemist!',
                     ]));
                     Log::info("Welcome email sent to: {$row['email']}");
-                } catch (\Exception $e) {
-                    Log::error("Error sending email to {$row['email']}: " . $e->getMessage());
+                } catch (Exception $e) {
+                    Log::error("Failed to send email to {$row['email']}: " . $e->getMessage());
                 }
 
-                // Check if course exist. If not, it will create a new one
-                $course = Course::with('department:id,uni_branch_id')
-                    ->where(function ($query) use ($row) {
-                        $query->where('course_name', $row['course'])
-                              ->orWhere('course_acronym', $row['course']);
-                    })
-                    ->first();
+                // Handle department
+                $departmentName = $row['department'];
+                $courseName = $row['course'];
 
-                if (!$course) {
-                    Log::info("Course not found. Creating new course for: {$row['course']}");
+                Log::info('Department Name: ', ['dept name' => $row['department']]);
 
-                    $departmentName = $row['department'] ?? 'General Department';
-                    
-                    // Check if department exist. If not, it will create a new one
-                    $department = Department::where(function ($query) use ($departmentName) {
-                        $query->where('dept_name', $departmentName)
-                              ->orWhere('dept_acronym', $departmentName);
-                    })->first();
+                if($departmentName)
+                {
+                    $foundDept = Department::where('uni_branch_id', $uniBranchId)
+                        ->where(function($query) use ($departmentName) {
+                            $query->where('dept_name', $departmentName)
+                                ->orWhere('dept_acronym', $departmentName);
+                        })->first();
 
-                    if (!$department) {
+                    Log::info('Department Found: ', ['dept' => $foundDept]);
+
+                    if($foundDept != null) {
+                        Log::info('Existing Department Found');
+
+                        $department = $foundDept;
+
+                        $foundCourse = Course::where('dept_id', $foundDept->id)
+                        ->where(function($query) use ($courseName) {
+                            $query->where('course_name', $courseName)
+                                ->orWhere('course_acronym', $courseName);
+                        })->first();
+
+                        if(!$foundCourse) {
+                            $course = Course::create([
+                                'course_name' => $courseName,
+                                'course_acronym' => $courseName,
+                                'dept_id' => $foundDept->id,
+                                'added_by' => $authUser->name
+                            ]);
+
+                            Log::info('Course: ', ['course' => $course]);
+                        } else {$course = $foundCourse;}
+
+                    } else {
+                        Log::info('New Department is created');
+
                         $department = Department::create([
                             'dept_name' => $departmentName,
-                            'dept_acronym' => Str::upper(substr($departmentName, 0, 3)),
-                            'uni_branch_id' => $institution->uni_branch_id,
+                            'dept_acronym' => $departmentName,
+                            'uni_branch_id' => $uniBranchId,
+                            'added_by' => $authUser->name
                         ]);
-                        Log::info("New department created: {$department->dept_name}");
+
+                        Log::info('Department Created: ', ['dept' => $department]);
+
+                        $course = Course::create([
+                            'course_name' => $courseName,
+                            'course_acronym' => $courseName,
+                            'dept_id' => $department->id,
+                            'added_by' => $authUser->name
+                        ]);
+
+                        Log::info('Course Created: ', ['course' => $course]);
                     }
-
-                    // Create new course
-                    $course = Course::create([
-                        'course_name' => $row['course'],
-                        'course_acronym' => Str::upper(substr($row['course'], 0, 3)),
-                        'department_id' => $department->id,
-                    ]);
-
-                    Log::info("New course created: {$course->course_name} under department: {$department->dept_name}");
                 }
+            
 
-                // Get the university branch ID
-                $uniBranchId = $course->department->uni_branch_id;
 
-                // Create Student or Teacher profile
+                // Profile creation
                 if ($userType === 'student') {
                     Student::create([
                         'user_id' => $newUser->id,
                         'uni_branch_id' => $uniBranchId,
                         'course' => $course->course_name,
                     ]);
-                    Log::info("Student profile created for user: {$newUser->id}");
+                    Log::info("Student profile created for user ID: {$newUser->id}, Course: {$course->course_name}");
                 } elseif ($userType === 'teacher') {
                     Faculty::create([
                         'user_id' => $newUser->id,
                         'uni_branch_id' => $uniBranchId,
-                        'course_id' => $course->id,
+                        // 'course_id' => $course->id,
+                        'dept_id' => $department->id
                     ]);
-                    Log::info("Teacher profile created for user: {$newUser->id}");
+                    Log::info("Teacher profile created for user ID: {$newUser->id}, Course: {$course->course_name}");
                 } else {
                     Log::warning("Unrecognized user type '{$userType}' for row {$index}");
                 }
+
             } catch (Exception $e) {
                 Log::error("Error processing row {$index} with email {$row['email']}: " . $e->getMessage());
             }
         }
     }
+
+
+
 }

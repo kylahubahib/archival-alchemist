@@ -47,11 +47,12 @@ class PaymentSessionController extends Controller
 
         // $price = $request->get('total_amount');
         $plan = SubscriptionPlan::findOrFail($request->plan_id);
+        $num_user = $request->num_user;
         $user = Auth::user();
 
         // \Log::info('User Info:', $user->toArray());
 
-        $price = $plan->plan_price;
+        $price = $plan->plan_price * $request->num_user;
         $discount = $plan->plan_discount;
 
         //Check if there's a discount
@@ -79,7 +80,7 @@ class PaymentSessionController extends Controller
                             'line_items' => [
                                 [
                                     'name' => $plan->plan_name,
-                                    'amount' => $plan->plan_price * 100,
+                                    'amount' => $price * 100,
                                     'currency' => 'PHP',
                                     'description' =>$plan->plan_text,
                                     'quantity' => 1,
@@ -91,7 +92,7 @@ class PaymentSessionController extends Controller
                                 'paymaya',
                                 'grab_pay',
                             ],
-                            //'send_email_receipt' => false,
+                            'send_email_receipt' => true,
                             'success_url' => url('/payment/success'),
                             'cancel_url' => url('/payment/cancel'),
 
@@ -115,6 +116,7 @@ class PaymentSessionController extends Controller
 
                 $request->session()->put('plan', $plan);
                 $request->session()->put('finalAmount', $finalAmount);
+                $request->session()->put('num_user', $num_user);
 
 
                 $checkoutUrl = $response->json('data.attributes.checkout_url');
@@ -135,12 +137,13 @@ class PaymentSessionController extends Controller
         $finalAmount = $request->session()->get('finalAmount');
         $userInfo = $request->session()->get('userInfo');
         $insub_id = $request->session()->get('ins_sub_id');
+        $num_user =  $request->session()->get('num_user');
         
         $user = Auth::user();
 
         \Log::info('Checkout session id:'. $checkoutId);
 
-        dd($request->session()->all());
+        // dd($request->session()->all());
 
         if($user) 
         {
@@ -190,7 +193,7 @@ class PaymentSessionController extends Controller
                             'payment_method' => $checkoutDetails['payment_method_used'],
                         ]);
 
-                        if($user->user_type === 'admin') {
+                        if($user->user_type === 'institution_admin') {
 
                             $institutionSubscription = InstitutionSubscription::find($insub_id);
 
@@ -200,7 +203,7 @@ class PaymentSessionController extends Controller
                                 'insub_status' => 'Active',
                                 'total_amount' => $finalAmount,
                                 'insub_content' => $institutionSubscription->insub_content,
-                                'insub_num_user' => $plan->plan_user_num,
+                                'insub_num_user' => $num_user,
                                 'start_date' => $currentDate->toDateString(),
                                 'end_date' => $endDate,
                                 'notify_renewal' => 1

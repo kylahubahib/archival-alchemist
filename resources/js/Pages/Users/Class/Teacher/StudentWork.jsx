@@ -343,17 +343,17 @@ const handleShowStudentWork = () => {
                                     </span>
                                 </TableCell>
                                 <TableCell className="text-left">
-                                    {classItem.man_doc_title || "No manuscript submission from the group."}
+                                    {classItem.man_doc_title || ""}
                                 </TableCell>
                                 <TableCell className="text-center">
-                                    {new Date(classItem.created_at).toLocaleDateString() || "N/A"}
+                                    {new Date(classItem.created_at).toLocaleDateString() || ""}
                                 </TableCell>
                                 <TableCell className="text-center">
-                                    {new Date(classItem.updated_at).toLocaleDateString() || "N/A"}
+                                    {new Date(classItem.updated_at).toLocaleDateString() || ""}
                                 </TableCell>
                                 <TableCell className="text-center">
                                     {console.log(classItem.man_doc_status)} {/* Log to check status value */}
-                                    {getStatusButton(classItem.man_doc_status || "norecords")}
+                                    {getStatusButton(classItem.man_doc_status || "")}
                                 </TableCell>
                                 <TableCell className="text-center">
                                 <button
