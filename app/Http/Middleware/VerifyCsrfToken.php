@@ -15,8 +15,8 @@ class VerifyCsrfToken
      * @var array<int, string>
      */
     protected $except = [
-        '/login',
-        '/logout'
+        // '/login',
+        // '/logout'
     ];
 
     /**

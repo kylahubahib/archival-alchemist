@@ -42,7 +42,7 @@ export default function Modal({ children, show = false, maxWidth = '2xl', closea
                     leave="ease-in duration-200"
                     leaveFrom="opacity-100"
                     leaveTo="opacity-0"
-                ><div className="fixed inset-0 bg-gray-800/20" />
+                ><div className="fixed inset-0 bg-gray-800/30" />
 
                 </TransitionChild>
 

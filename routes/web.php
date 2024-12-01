@@ -275,28 +275,23 @@ Route::middleware(['auth', 'verified', 'user-type:superadmin'])->group(function 
 
        });
 
-        Route::middleware('access:advanced_access')->group(function () {
-           //Route::inertia('/advanced', 'SuperAdmin/Advanced')->name('advanced');
-           //ADVANCED ROUTES
-        //Decided to create routes for the buttons in advanced page to simplify or easily create the crud functionality
+        Route::middleware('access:advanced_access')->group(function () {    
 
-    //    Route::get('/advanced/forum', function () {
-    //        return Inertia::render('SuperAdmin/Advanced/Forum/Forum');})->name('advanced-forum');
-        Route::resource('advanced/forum', AdvancedForumController::class)->names('manage-forum-posts');
-       Route::resource('advanced/custom-messages', CustomMessagesController::class)->names('manage-custom-messages');
+            
+            Route::get('advanced/forum/filter-post', [AdvancedForumController::class, 'filterPost'])->name('filter-post');
+            Route::resource('advanced/forum', AdvancedForumController::class)->names('manage-forum-posts');
 
-       Route::resource('advanced/universities', UniversityController::class)->names('manage-universities');
+            Route::resource('advanced/custom-messages', CustomMessagesController::class)->names('manage-custom-messages');
 
-       Route::resource('advanced/tags', AdvancedTagsController::class)->names('manage-tags');
+            Route::resource('advanced/universities', UniversityController::class)->names('manage-universities');
 
-       Route::resource('advanced/report-reason', ReportReasonController::class)->names('manage-report-reason');
+            Route::resource('advanced/tags', AdvancedTagsController::class)->names('manage-tags');
 
-       Route::post('store-service', [CustomMessagesController::class, 'storeService'])->name('store-service');
-       Route::post('store-team', [CustomMessagesController::class, 'storeTeam'])->name('store-team');
-       Route::post('update-icon', [CustomMessagesController::class, 'updateIcon'])->name('update-icon');
+            Route::resource('advanced/report-reason', ReportReasonController::class)->names('manage-report-reason');
 
-       ///END ADVANCED ROUTES
-
+            Route::post('store-service', [CustomMessagesController::class, 'storeService'])->name('store-service');
+            Route::post('store-team', [CustomMessagesController::class, 'storeTeam'])->name('store-team');
+            Route::post('update-icon', [CustomMessagesController::class, 'updateIcon'])->name('update-icon');
 
        });
 
@@ -366,15 +361,13 @@ Route::middleware(['auth', 'verified', 'user-type:institution_admin'])->prefix('
     //Sections and Group Page
     Route::resource('/sections', SectionsController::class)->names('manage-sections');
     Route::get('/get-sections', [SectionsController::class, 'getSections'])->name('get-sections');
-    Route::get('/sections/filter-by-course', [SectionsController::class, 'filterSectionByCourse']);
-    Route::get('/filter-by-faculty', [SectionsController::class, 'filterSectionByFaculty']);
-    Route::get('/filter-by-semester', [SectionsController::class, 'filterSectionBySemester']);
     Route::resource('/semester', SemesterController::class)->names('manage-semester');
 
     // Subscription and Billing Page
     Route::resource('/subscription-billing', InstitutionSubscriptionController::class)->names('institution-subscription-billing');
     Route::post('/upload-csv', [InstitutionSubscriptionController::class, 'uploadCSV'])->name('upload-csv');
     Route::get('/read-csv', [InstitutionSubscriptionController::class, 'readCSV'])->name('read-csv');
+    Route::post('/update-university', [InstitutionSubscriptionController::class, 'updateUniBranch'])->name('update-university');
 
 });
 

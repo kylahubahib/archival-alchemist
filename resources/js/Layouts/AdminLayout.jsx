@@ -123,7 +123,7 @@ export default function AdminLayout({ user, header, children, university = '' })
                                         as="button"
                                         avatarProps={{
                                             className: "shadow shadow-white outline-[2.5px] outline-customBlue",
-                                            src: user.user_pic
+                                            src: `http://127.0.0.1:8000/${user?.user_pic}`
                                         }}
                                         className="transition-transform"
                                         description={user.email}

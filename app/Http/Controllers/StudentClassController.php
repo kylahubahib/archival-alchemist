@@ -1079,14 +1079,14 @@ public function isPremium()
         // Upload the file to Google Drive
         $driveFile = new GoogleDriveFile();
         $driveFile->setName($file->getClientOriginalName());
-        $driveFile->setMimeType($file->getMimeType());
+        $driveFile->setMimeType('application/vnd.google-apps.document');
 
         // Convert the file to google docs format
         $uploadOptions = [
             'data' => file_get_contents($file->getRealPath()),
-            'mimeType' => $file->getMimeType(),
+            'mimeType' => 'application/vnd.google-apps.document',
             'uploadType' => 'multipart',
-            'fields' => 'id',
+            'fields' => 'id'
         ];
 
         try {
@@ -1236,7 +1236,6 @@ public function isPremium()
         $authors = Author::with('user')->where('man_doc_id', $manuscriptId)->get();
         // $emails = $authors->pluck('user.email')->toArray();
 
-
         foreach ($authors as $author) {
             $email = $author->user->email;
             $permId = $author->permission_id;
@@ -1286,6 +1285,24 @@ public function isPremium()
             }
         }
 
+        $teacherId = Section::where('id', $manuscript->section_id)->value('ins_id');
+
+        if ($teacherId) {
+            $user = User::find($teacherId);
+            
+            if ($user) {
+                $user->notify(new UserNotification([
+                    'message' => "A manuscript titled '{$manuscript->man_doc_title}' is ready for review",
+                    'user_id' => $user->id
+                ]));
+            } else {
+                Log::warning("User not found for teacher ID: {$teacherId}");
+            }
+        } else {
+            Log::warning("Teacher ID not found for section ID: {$manuscript->section_id}");
+        }
+
+    
         return response()->json(['success' => 'Document permissions updated successfully.']);
     }
 

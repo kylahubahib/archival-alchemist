@@ -333,9 +333,9 @@ export default function Users({ auth, users, userType }) {
                                             {usersToRender.data.map((user, index) => {
                                                 const { user_id, name, email, is_premium, user_pic, created_at, user_status, student, faculty, institution_admin, access_control } = user;
 
-                                                const university = getAcronymAndOrigText(student?.university_branch?.university?.uni_name
+                                                const university = student?.university_branch?.university?.uni_name
                                                     ?? faculty?.university_branch?.university.uni_name
-                                                    ?? institution_admin?.institution_subscription?.university_branch?.university?.uni_name);
+                                                    ?? institution_admin?.institution_subscription?.university_branch?.university?.uni_name;
 
                                                 const studentId = student?.stud_id ?? <Skeleton className="h-4 w-full rounded-full" />;
 
@@ -349,11 +349,11 @@ export default function Users({ auth, users, userType }) {
                                                     ? < Skeleton className="h-4 w-full rounded-full" />
                                                     : university.acronym + " - " + branch;
 
-                                                const department = getAcronymAndOrigText(student?.university_branch?.department[0]?.dept_name
-                                                    ?? faculty?.university_branch?.department[0]?.dept_name)
+                                                const department = student?.university_branch?.department[0]?.dept_name
+                                                    ?? faculty?.university_branch?.department[0]?.dept_name
                                                     ?? < Skeleton className="h-4 w-full rounded-full" />;
 
-                                                const course = getAcronymAndOrigText(student?.university_branch?.department[0]?.course[0]?.course_name)
+                                                const course = student?.university_branch?.department[0]?.course[0]?.course_name
                                                     ?? < Skeleton className="h-4 w-full rounded-full" />;
 
                                                 department.acronym = department.acronym === ''

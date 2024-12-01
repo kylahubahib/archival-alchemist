@@ -103,7 +103,7 @@ export default function Edit({ auth, mustVerifyEmail, status }) {
                                 <AccordionItem key="3" aria-label="Password Information" title="Password Information">
                                     <UpdatePasswordForm className="max-w-xl" />
                                 </AccordionItem> 
-                                <AccordionItem key="4" aria-label="Account Deletio" title="Account Deletion">
+                                <AccordionItem key="4" aria-label="Account Deletion" title="Account Deletion">
                                     <DeleteUserForm className="max-w-xl" />
                                 </AccordionItem>  
                             </Accordion>

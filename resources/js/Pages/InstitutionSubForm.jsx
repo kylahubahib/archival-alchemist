@@ -204,11 +204,11 @@ export default function InstitutionSubscriptionForm({ plan }) {
                                 name="num_users"
                                 value={data.number_of_users}
                                 className="mt-1 block w-1/2"
-                                placeholder="0"
+                                placeholder="100"
                                 onChange={(e) => setData('number_of_users', e.target.value)}
                                 required
                             />
-                            <InputError message={errors.name} className="mt-2" />
+                            <InputError message={errors.number_of_users} className="mt-2" />
                         </div>
 
 
