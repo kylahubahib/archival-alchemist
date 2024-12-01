@@ -14,4 +14,4 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote')->hourly();
 
 
-Schedule::command(NotifySubscriptionExpiry::class)->daily();;
+Schedule::command('notify:subscription-expiry')->everyMinute();

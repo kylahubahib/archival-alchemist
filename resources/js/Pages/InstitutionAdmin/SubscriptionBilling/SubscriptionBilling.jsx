@@ -16,6 +16,7 @@ import InputLabel from '@/Components/InputLabel';
 import InputError from '@/Components/InputError';
 import PageHeader from '@/Components/Admins/PageHeader';
 import { Bounce, Slide, toast, ToastContainer } from 'react-toastify';
+import EditUniversityCourse from "./EditUniversityName";
 
 export default function InsAdminSubscriptionBilling({ auth, ins_sub, transactionHistory, agreement }) {
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -29,9 +30,8 @@ export default function InsAdminSubscriptionBilling({ auth, ins_sub, transaction
     const [numberOfUser, setNumberOfUser] = useState(ins_sub.insub_num_user);
     const [processing, setProcessing] = useState(false);
 
-    const handleRenewal = async (id) => {
-        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-    
+
+    const checkSubscriptionStatus = () => {
         const currentDate = new Date();
         const subscriptionEndDate = new Date(ins_sub.end_date);
         console.log(currentDate, ' and ', subscriptionEndDate);
@@ -45,6 +45,12 @@ export default function InsAdminSubscriptionBilling({ auth, ins_sub, transaction
             // console.log('You still have an active subscription');
             toast.info('You still have an active subscription!', { position: "top-center"})
         } else {
+            openModal('renewal');
+        }
+    }
+
+    const handleRenewal = async (id) => {
+        // const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
             setProcessing(true);
             try {
                 const response = await axios.post('/payment', 
@@ -52,11 +58,6 @@ export default function InsAdminSubscriptionBilling({ auth, ins_sub, transaction
                         plan_id: id, 
                         num_user: numberOfUser, 
 
-                    },
-                    {
-                        headers: {
-                            'X-CSRF-TOKEN': csrfToken,
-                        },
                     }
                 );
     
@@ -68,13 +69,14 @@ export default function InsAdminSubscriptionBilling({ auth, ins_sub, transaction
                 console.error("Checkout session failed:", err);
                 setError("Failed to create checkout session. Please try again.");
             }
-        }
-    };
+        };
     
 
     const openModal = (content) => {
         setModalContent(content);
         setIsModalOpen(true);
+
+        console.log(ins_sub.university_branch);
     }
 
     const closeModal = () => {
@@ -93,11 +95,9 @@ export default function InsAdminSubscriptionBilling({ auth, ins_sub, transaction
     }
 
     const cancelSubscription = () => {
-        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+        // const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
-        axios.post('/cancel-subscription', {id: ins_sub.id},
-            {headers: {'X-CSRF-TOKEN': csrfToken}}
-        )
+        axios.post('/cancel-subscription', {id: ins_sub.id})
         .then(response => {
             setMessage(response.data.message);
             setTimeout(() => {
@@ -108,12 +108,9 @@ export default function InsAdminSubscriptionBilling({ auth, ins_sub, transaction
     }
 
     const viewPlanList = async () => {
-        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
         try {
-            const response = await axios.get('/get-plans',
-                {headers: {'X-CSRF-TOKEN': csrfToken}}
-            );
+            const response = await axios.get('/get-plans');
 
             if (response.data) {
                 setInstitutionalPlans(response.data.institutionalPlans);
@@ -164,7 +161,7 @@ export default function InsAdminSubscriptionBilling({ auth, ins_sub, transaction
 
                                     <span>{ins_sub.plan.plan_name}</span>
                                 </div>
-                                <div className="text-gray-600 text-base mt-3"><span className="font-bold">Your next bill is on</span> {formatDate(ins_sub.end_date)}</div>
+                                {ins_sub.insub_status === "Active" && <div className="text-gray-600 text-base mt-3"><span className="font-bold">Your next bill is on</span> {formatDate(ins_sub.end_date)}</div>}
                             </div>
                             <div className="flex flex-col">
                                 <div className="text-gray-800 text-4xl font-bold">{formatPrice(ins_sub.total_amount)}</div>
@@ -175,7 +172,7 @@ export default function InsAdminSubscriptionBilling({ auth, ins_sub, transaction
                         <div className="flex flex-col">
                             <div className="flex flex-row justify-between">
                                 <div className="text-gray-700 text-xl font-bold">Institution Information</div>
-                                <button onClick={handleEditUniversity} className="text-blue-600 text-base hover:underline font-bold">Edit</button>
+                                <button onClick={() => openModal('editUniversity')} className="text-blue-600 text-base hover:underline font-bold">Edit</button>
                             </div>
                             <div className="flex flex-col px-2">
                                 <div className="text-gray-600 text-base">{ins_sub.university_branch.university.uni_name} {ins_sub.university_branch.uni_branch_name}</div>
@@ -199,8 +196,8 @@ export default function InsAdminSubscriptionBilling({ auth, ins_sub, transaction
                                 { ins_sub.plan_id != 6 ? (
                                     <>
                                     {/* <PrimaryButton onClick={() => handleRenewal(ins_sub.plan_id)}>Renew Subscription</PrimaryButton> */}
-                                    <PrimaryButton onClick={() => {openModal('renewal')}}>Renew Subscription</PrimaryButton>
-                                    <PrimaryButton onClick={viewPlanList}>Change Plan</PrimaryButton>
+                                    <PrimaryButton onClick={checkSubscriptionStatus}>Renew Subscription</PrimaryButton>
+                                    {ins_sub.insub_status === 'Inactive' && <PrimaryButton onClick={viewPlanList}>Change Plan</PrimaryButton>}
                                     {/* <DangerButton onClick={() => {openModal('popup')}}>Cancel Subscription</DangerButton> */}
                                     </>
                                     ) : (
@@ -221,6 +218,8 @@ export default function InsAdminSubscriptionBilling({ auth, ins_sub, transaction
             }
 
             {modalContent == 'csv' && <ViewCSV isOpen={isModalOpen} onClose={closeModal} file={ins_sub.insub_content} ins_sub={ins_sub} />}
+
+            {modalContent == 'editUniversity' && <EditUniversityCourse isOpen={isModalOpen} onClose={closeModal} uniBranch={ins_sub.university_branch}/>}
 
             {/* Billing Agreement Modal */}
             {modalContent == 'agreement' &&

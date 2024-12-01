@@ -1,3 +1,4 @@
+import { FaArrowLeft } from "react-icons/fa"; 
 import { RiFolderUnknowFill } from "react-icons/ri";
 import { FcFolder } from "react-icons/fc";
 import AddButton from "@/Components/AddButton";
@@ -7,36 +8,52 @@ import { useEffect, useState } from "react";
 import { Button, Select, SelectItem } from "@nextui-org/react";
 import Semester from "./SemesterModal";
 import { getYearFromDate } from "@/utils";
+import StudentList from "./StudentList";
 
-export default function Sections({ auth, sections, departments, semester }) {
+export default function Sections({ auth, sections, departments, semester, university }) {
     const [filteredSections, setFilteredSections] = useState(sections); 
     const [filteredByDept, setFilteredByDept] = useState(sections); 
     const [selectedDept, setSelectedDept] = useState(null);
     const [selectedCourse, setSelectedCourse] = useState(null);
+    const [selectedSem, setSelectedSem] = useState(null);
     const [availableCourses, setAvailableCourses] = useState([]);
     const [semesterModal, setSemesterModal] = useState(false);
     const [semesters, setSemesters] = useState([]);
+    const [viewMembers, setViewMembers] = useState(false);
+    const [selectedSectionId, setSelectedSectionId] = useState(null);
 
     useEffect(() => {
 
-        console.log('SemesterModal: ', semester );
+        let filtered = sections;
+    
+        console.log("Selected Semester ID: ", selectedSem);
+    
+        if (selectedSem) {
+            filtered = sections.filter((section) => section.sem_id === selectedSem);
+            console.log("Filtered Sections by Semester: ", filtered);
+        }
+    
         if (selectedDept) {
-            const sectionsInDept = sections.filter(
+            const sectionsInDept = filtered.filter(
                 (section) => section.course.dept_id === selectedDept
             );
             setFilteredByDept(sectionsInDept);
-
+    
             const uniqueCourses = [
                 ...new Map(sectionsInDept.map((section) => [section.course.id, section.course])).values(),
             ];
+    
             setAvailableCourses(uniqueCourses);
             setSelectedCourse(null);
         } else {
-            setFilteredByDept(sections); 
+            setFilteredByDept(filtered); // Pass the semester-filtered list
             setAvailableCourses([]);
-            
         }
-    }, [selectedDept, sections]);
+    
+        setFilteredSections(filtered); // Update final list
+    }, [selectedSem, selectedDept, sections]);
+    
+
 
     useEffect(() => {
         let filtered = filteredByDept;
@@ -63,35 +80,51 @@ export default function Sections({ auth, sections, departments, semester }) {
         setSemesterModal(false);
     }
 
+    const handleViewMembers = (data) => {
+        setSelectedSectionId(data.id);
+        setViewMembers(true);
+    }
+
+
+
     return (
         <AdminLayout
             user={auth.user}
             header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Sections</h2>}
+            university={university || ''}
         >
             <Head title="Sections" />
 
             <div className="mt-5">
                 <div className="max-w-full mx-auto sm:px-6 lg:px-8">
                     <div className="flex justify-between mb-3 mt-5">
+                        <div className="flex items-center space-x-1">
+                        {viewMembers && <Button isIconOnly variant="light" onClick={() => setViewMembers(false)}>
+                            <FaArrowLeft size={20} color="#898282" /> 
+                        </Button>}
                         <h3 className="text-customGray text-lg font-bold">SECTIONS</h3>
+                        </div>
                         <AddButton className="text-customBlue hover:text-white space-x-1" onClick={handleSemesterModal}>
                             <span>SEMESTERS</span>
                         </AddButton>
                     </div>
 
                     <div className="bg-white shadow-sm sm:rounded-lg p-5">
+
+                    { !viewMembers ?  (
+                        <>
                         {/* Filters */}
                         <div className="flex space-x-3 mb-4">
 
                             {/* Semester Filter */}
                             <Select
-                                aria-label="Course"
+                                aria-label="Semester"
                                 placeholder="Select Semester"
-                                onChange={(e) => setSelectedCourse(e.target.value ? parseInt(e.target.value) : null)}
+                                onChange={(e) => setSelectedSem(e.target.value ? parseInt(e.target.value) : null)}
                             >
                                 {semester.map((sem) => (
-                                    <SelectItem key={sem.id} value={sem.id} textValue={getYearFromDate(sem.start_date) - getYearFromDate(sem.end_date)}>
-                                        {sem.name} S.Y {getYearFromDate(sem.start_date)} - {getYearFromDate(sem.end_date)}
+                                    <SelectItem key={sem.id} value={sem.id} textValue={`${sem.name} S.Y ${sem.school_year}`}>
+                                        {sem.name} S.Y {sem.school_year}
                                     </SelectItem>
                                 ))}
                             </Select>
@@ -128,7 +161,7 @@ export default function Sections({ auth, sections, departments, semester }) {
                                 ))}
                             </Select>
 
-                            <Button>Reset</Button>
+                            {/* <Button>Reset</Button> */}
                         </div>
 
                         {/* Filtered Sections */}
@@ -137,6 +170,7 @@ export default function Sections({ auth, sections, departments, semester }) {
                                 filteredSections.map((section) => (
                                     <div
                                         key={section.id}
+                                        onClick={() => handleViewMembers(section)}
                                         className="border rounded-lg p-6 cursor-pointer shadow hover:bg-gray-100 transition-colors"
                                     >
                                         <div className="flex justify-center">
@@ -168,7 +202,13 @@ export default function Sections({ auth, sections, departments, semester }) {
                                 </div>
                             )}
                         </div>
+                        </>
+                    ) : (
+                        <StudentList sectionId={selectedSectionId}/>
+                    )}
+
                     </div>
+
                 </div>
             </div>
 

@@ -10,7 +10,7 @@ import { toast, ToastContainer } from 'react-toastify';
 
 export default function Edit({ isOpen, onClose, universityBranch }) {
     const { data, setData, put, processing, errors, reset } = useForm({
-        uni_name: universityBranch.uni_name
+        uni_name: universityBranch.uni_name,
     });
 
     const submit = (e) => {

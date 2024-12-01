@@ -296,12 +296,12 @@ const ReviewManuscript = ({groupId, folders, onBack, task, taskID, closeModal, c
                     {/* <p>
                       <strong >Status:</strong> {historyData.manuscript_status}
                     </p> */}
-                    <p>
+                    <span>
                     <strong >Last Updated:</strong>
-                      <p ClassName="text-base"></p>{' '}
+                      <p className="text-base"></p>{' '}
                       {new Date(historyData.updated_at).toLocaleString()}
                       {console.log("Check Date:", historyData)}
-                    </p>
+                    </span>
                   </div>
                 ) : (
                   <p>No revision history found for this manuscript.</p>
