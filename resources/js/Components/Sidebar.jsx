@@ -126,19 +126,12 @@ export function SidebarItem({ icon, text, color, marginTop, marginBottom, alert,
 
 
 
-export function SidebarSeparator({ marginTop=56 }) {
+export function SidebarSeparator({ marginTop }) {
   const { expanded } = useContext(SidebarContext);
-
-  const marginTopClass = {
-    56: 'mt-56',
-    60: 'mt-60',
-    72: 'mt-72',
-    80: 'mt-80',
-  }[marginTop] || '';
 
   return (
     <div
-      className={`${marginTopClass} transition-all duration-300 ease-in-out ${
+      className={`${marginTop} transition-all duration-300 ease-in-out ${
         expanded ? 'w-full' : 'w-10 mx-auto'
       }`}
     />

@@ -1,16 +1,12 @@
 import axios from 'axios';
 window.axios = axios;
 
-// Set default headers
-//window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
+// Ensure credentials (cookies) are included in requests
+window.axios.defaults.withCredentials = true;
 
-// Add the CSRF token from the meta tag
-const csrfToken = document.querySelector('meta[name="csrf-token"]');
-if (csrfToken) {
-    window.axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken.getAttribute('content');
-} else {
-    console.warn('CSRF token not found in the document meta tags.');
-}
+// Set X-Requested-With header for Laravel
+window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
+
 
 /**
  * Echo exposes an expressive API for subscribing to channels and listening

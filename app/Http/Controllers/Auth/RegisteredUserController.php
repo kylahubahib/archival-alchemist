@@ -169,16 +169,16 @@ class RegisteredUserController extends Controller
 
             event(new Registered($user));
 
-            Auth::login($user);
+            // Auth::login($user);
 
             // Step 4: Redirect to the Connect Google route
             //return Redirect::to(route('google.auth'));
 
-            return back()->with([
-                'success' => 'Registration successful! Redirecting to Google Auth...',
-            ]);
+            // return back()->with([
+            //     'success' => 'Registration successful! Redirecting to Google Auth...',
+            // ]);
 
-            // return redirect()->route('login')->with('success', 'Registration successful. Please log in.');
+            return redirect()->route('login')->with('success', 'Registration successful. Please log in.');
 
         } catch (\Exception $e) {
             \Log::error('Error during registration:', ['error' => $e->getMessage()]);

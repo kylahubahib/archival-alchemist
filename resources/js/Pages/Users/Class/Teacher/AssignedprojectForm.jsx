@@ -134,6 +134,12 @@ const AssignedprojectForm = ({ onBack, folders }) => {
                                 className="w-full px-8 mb-4"
                                 placeholder="Enter project title"
                                 value={title}
+                                classNames={{
+                                    base: "max-w-full h-10",
+                                    mainWrapper: "h-full",
+                                    input: "text-small focus:outline-none border-transparent focus:border-transparent focus:ring-0",
+                                    inputWrapper: "h-full font-normal text-default-500",
+                                }}
                                 onChange={(e) => setTitle(e.target.value)}
                             />
 
@@ -142,6 +148,12 @@ const AssignedprojectForm = ({ onBack, folders }) => {
                                 className="w-full px-8 mb-4"
                                 placeholder="Instructions"
                                 value={instructions}
+                                classNames={{
+                                    base: "max-w-full",
+                                    mainWrapper: "h-full",
+                                    input: "text-small focus:outline-none border-transparent focus:border-transparent focus:ring-0",
+                                    inputWrapper: "h-full font-normal text-default-500",
+                                }}
                                 onChange={(e) => setInstructions(e.target.value)}
                                 rows={6}
                             />

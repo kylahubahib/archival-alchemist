@@ -9,6 +9,7 @@ const PostDetailModal = ({ isOpen, onClose, post }) => {
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
+    console.log('POst: ', post);
     if (isOpen && post?.id) {
       fetchComments(post.id); // Pass post.id here
     }
@@ -27,12 +28,23 @@ const PostDetailModal = ({ isOpen, onClose, post }) => {
   };
 
   const handleCommentSubmit = async (newComment) => {
+
+    console.log('Post ID: ', post.id)
+
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    
     try {
       const response = await axios.post('/forum-comments', {
-        forum_post_id: post.id, // Use post.id
-        user_id: '01a', // Replace with dynamic logged-in user ID
+        
+        post_id: post.id, // Use post.id
         comment: newComment.text,
-      });
+      },
+      {
+        headers: {
+            'X-CSRF-TOKEN': csrfToken,
+          },
+      }
+    );
       const savedComment = response.data;
       setComments((prevComments) => [...prevComments, savedComment]);
     } catch (error) {

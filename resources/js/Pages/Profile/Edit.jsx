@@ -174,10 +174,10 @@ export default function Edit({ auth, mustVerifyEmail, status }) {
 
                         <div className="mx-auto sm:px-6 lg:px-10 space-y-4">
 
-                            {auth.user.user_type === 'general_user' && <div className=" p-4 bg-white shadow sm:rounded-lg m-2">
+                            {/* {auth.user.user_type === 'general_user' && <div className=" p-4 bg-white shadow sm:rounded-lg m-2">
                                 <ChooseARole className="max-w-xl" user={auth.user}/>
                             </div>
-                            }
+                            } */}
 
                             <div className=" p-4 bg-white shadow sm:rounded-lg m-2">
                                 <SubscriptionForm className="max-w-xl" user={auth.user}/>

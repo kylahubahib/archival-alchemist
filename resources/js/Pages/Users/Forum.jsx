@@ -446,6 +446,12 @@ const handleTitleClick = async (postId) => {
                 label="Title"
                 placeholder="Enter post title"
                 className="mb-4"
+                classNames={{
+                    base: "max-w-full",
+                    mainWrapper: "h-full",
+                    input: "text-small focus:outline-none border-transparent focus:border-transparent focus:ring-0",
+                    inputWrapper: "h-full font-normal text-default-500",
+                }}
               />
               <Textarea
                 value={body}
@@ -453,6 +459,12 @@ const handleTitleClick = async (postId) => {
                 label="Body"
                 placeholder="Enter post content"
                 className="mb-4"
+                classNames={{
+                    base: "max-w-full",
+                    mainWrapper: "h-full",
+                    input: "text-small focus:outline-none border-transparent focus:border-transparent focus:ring-0",
+                    inputWrapper: "h-full font-normal text-default-500",
+                }}
               />
               <Input
                 value={tagInput}
@@ -461,6 +473,12 @@ const handleTitleClick = async (postId) => {
                 label="Tags"
                 placeholder="Add a tag and press Enter"
                 className="mb-4"
+                classNames={{
+                    base: "max-w-full",
+                    mainWrapper: "h-full",
+                    input: "text-small focus:outline-none border-transparent focus:border-transparent focus:ring-0",
+                    inputWrapper: "h-full font-normal text-default-500",
+                }}
               />
               <div className="flex flex-wrap mt-2">
                 {tags.map((tag) => (

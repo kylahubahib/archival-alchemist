@@ -24,6 +24,7 @@ use App\Notifications\UserNotification;
 
 class ClassController extends Controller
 {
+   
     public function fetchCourses(Request $request)
     {
         $user = Auth::user()->load('faculty');
@@ -51,6 +52,7 @@ class ClassController extends Controller
 
         return response()->json($courses);
     }
+
 
 
 
@@ -545,7 +547,6 @@ class ClassController extends Controller
 
         try {
             // Enable query log to capture the actual SQL query
-            DB::enableQueryLog();
 
             // Fetch classes with proper joins
             // $classes = Section::join('group_members', 'sections.id', '=', 'group_members.section_id')
@@ -554,12 +555,12 @@ class ClassController extends Controller
             // ->select('sections.*', 'courses.*', 'group_members.*')
             // ->get();
 
-            $section_id = GroupMember::where('stud_id', Auth::id())->pluck('section_id');
+            $section_ids = GroupMember::where('stud_id', Auth::id())->pluck('section_id');
 
-            $classes = Section::with(['course', 'group'])->where('id', $section_id)->get();
+            $classes = Section::with(['course', 'group'])->whereIn('id', $section_ids)->get();
 
-            // Log the SQL query for debugging
-            Log::info('SQL Query: ' . DB::getQueryLog()[0]['query']);
+            Log::info(Section::with(['course', 'group'])->whereIn('id', $section_ids)->get());
+
 
             // Log the fetched data for debugging
             Log::info('Fetched student classes:', $classes->toArray());

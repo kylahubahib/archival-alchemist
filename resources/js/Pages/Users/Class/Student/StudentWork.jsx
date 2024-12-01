@@ -179,8 +179,9 @@ useEffect(() => {
             });
     }, []);
 
+    console.log('group id:', groupID);
     // Filter the classes where group_id matches groupID
-    const myproject = classes.filter(classItem => classItem.group_id === groupID);
+    const myproject = classes.filter((classItem) => classItem.group_id === groupID);
 
     console.log("This is the student's project: ", myproject);
 

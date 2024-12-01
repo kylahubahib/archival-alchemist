@@ -24,7 +24,7 @@ export default function Register({}) {
         e.preventDefault();
         post(route('register'), {
             onSuccess: (page) => {
-                    window.location.href = route('google.auth')
+                    // window.location.href = route('google.auth') 
             },
         });
     };

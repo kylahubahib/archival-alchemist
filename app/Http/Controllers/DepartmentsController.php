@@ -6,6 +6,7 @@ use App\Models\Department;
 use App\Models\UniversityBranch;
 use App\Models\Course;
 use App\Models\Section;
+use App\Models\Faculty;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Validation\Rules;
@@ -14,15 +15,18 @@ use Inertia\Response;
 use Illuminate\Support\Facades\Auth; 
 use Illuminate\Validation\Rule;
 
+use App\Notifications\InstitutionAdminNotification;
 
 
-class DepartmentsController extends Controller
+class DepartmentsController extends Controller 
 {
     /**
      * Display a listing of the resource.
      */
     public function index() 
     {
+        // dd();
+
         // Initialize the departments variable as an empty collection
         $departments = collect();
 

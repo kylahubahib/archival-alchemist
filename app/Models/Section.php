@@ -17,7 +17,6 @@ class Section extends Model
         'subject_name',
         'section_name',
         'added_by',
-        'sem_id',
     ];
 
     public function course(): BelongsTo
@@ -29,6 +28,8 @@ class Section extends Model
     {
         return $this->hasMany(Group::class, 'section_id');
     }
+
+
 
     public function user()
     {

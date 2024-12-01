@@ -14,7 +14,9 @@ class ForumCommentController extends Controller
     {
         $postId = $request->input('post_id');
 
-        $comments = ForumComment::where('post_id', $postId)->get();
+        Log::info('Post: ', (array)$postId);
+
+        $comments = ForumComment::where('forum_post_id', $postId)->get();
 
         return response()->json($comments);
     }
@@ -24,15 +26,15 @@ class ForumCommentController extends Controller
     try {
         // Your logic to save the comment
         $comment = new ForumComment();
-        $comment->post_id = $request->post_id;
+        $comment->forum_post_id = $request->post_id;
         $comment->user_id = auth()->id();
-        $comment->body = $request->body;
+        $comment->body = $request->comment;
         $comment->save();
         
         return response()->json($comment, 201);
     } catch (\Exception $e) {
         Log::error('Error saving comment: ' . $e->getMessage());
-        return response()->json(['error' => 'Something went wrong.'], 500);
+        return response()->json(['error' => $e->getMessage()], 500);
     }
 
 }

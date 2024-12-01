@@ -19,9 +19,14 @@ export default function Pricing({ auth, personalPlans=[], institutionalPlans=[],
     // const navigateToInSubForm = (planId) => {
     //     router.post(route('institution-subscriptions.get-started'), { plan_id: planId });
     // };
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
     const navigateToInSubForm = (planId) => {
-        axios.post('/encrypt', { id: planId })
+        axios.post('/encrypt', { id: planId }, {
+            headers: {
+            'X-CSRF-TOKEN': csrfToken,
+          },
+        })
             .then(response => {
                 const encryptedPlanId = response.data.encryptedPlanId;
                 router.get(route('institution-subscriptions.get-started', { plan_id: encryptedPlanId }));

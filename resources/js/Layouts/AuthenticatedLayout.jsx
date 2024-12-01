@@ -58,7 +58,7 @@ export default function Authenticated({ user, children, newProfile = null, searc
                 ))
                 }
                 <SidebarItem icon={<MdChatBubbleOutline size={20} />} text="Inbox" to="/chatify" />
-                <SidebarSeparator marginTop={80}/>
+                <SidebarSeparator marginTop={'mt-72'}/>
 
                 {/* <SidebarItem icon={<FaCrown size={20} color="#FFD700" />} text="Subscription" to="/subscription" /> */}
                 <SidebarItem icon={<RiMessengerLine size={20} color="#006AFF" />} text="Chat with us" to="https://m.me/432748959923780" externalLink/>
@@ -72,9 +72,9 @@ export default function Authenticated({ user, children, newProfile = null, searc
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                         <div className="flex justify-between h-16 ">
                             <div className="flex">
-                                {searchProfile && <div className="pt-3">
+                                {/* {searchProfile && <div className="pt-3">
                                     <UserProfileSearchBar placeholder="Search user profile..." />
-                                </div>}
+                                </div>} */}
                             </div>
 
                             <div className="hidden sm:flex sm:items-center sm:ml-6">

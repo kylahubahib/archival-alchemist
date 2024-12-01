@@ -245,14 +245,17 @@ const Manuscript = ({auth, user, choice}) => {
         console.log("MOdal is open");
     };
 
-    const openModal = (pdfUrl) => {
+    const openModal = (manuscript) => {
+        setSelectedManuscript(manuscript.man_doc_content)
         setIsmodalOpen(true);
+
         // Pass the pdfUrl to the PDFViewer
     };
 
     const closeModal = () => {
         setIsmodalOpen(false);  // Assuming you're using useState to manage modal state
         setIsSubsModal(false);
+        setSelectedManuscript(null);
       };
 
 
@@ -738,9 +741,9 @@ const handleDropdownChange = (selectedKey) => {
                                  </button>
 
                                  {/* PDF Viewer Container */}
-                                 <div className="relative h-[80vh] w-full bg-gray-200 shadow-2xl rounded-lg overflow-hidden">
+                                 <div className="relative h-[90vh] w-full bg-gray-200 shadow-2xl rounded-lg">
                                      <div
-                                         className={`relative w-full h-full overflow-hidden rounded-lg ${pageCount > 10 ? 'blur-sm' : ''}`}
+                                         className={`relative w-full h-full  rounded-lg ${pageCount > 10 ? 'blur-sm' : ''}`}
                                     >
                                          {isLoading && (
                                              <div className="absolute inset-0 flex justify-center items-center">
@@ -748,7 +751,7 @@ const handleDropdownChange = (selectedKey) => {
                                              </div>
                                          )}
                                          <iframe
-                                             src={`http://127.0.0.1:8000/pdfViewer.html?pdfUrl=http://127.0.0.1:8000/${manuscript.man_doc_content}`}
+                                             src={`http://127.0.0.1:8000/pdfViewer.html?pdfUrl=http://127.0.0.1:8000/${selectedManuscript}`}
                                              className="w-full h-full border-0 rounded-lg shadow-md"
                                              title="PDF Viewer"
                                              onLoad={handlePdfLoad}
@@ -796,7 +799,7 @@ const handleDropdownChange = (selectedKey) => {
                 // If the user is not premium, open modal on click (only for non-premium users)
                 <h2 className="text-base font-bold text-gray-900">
                     <span
-                        onClick={openModal} // Open modal when clicked
+                        onClick={() => openModal(manuscript)} // Open modal when clicked
                         className="text-gray-700 hover:text-blue-600 hover:underline cursor-pointer transition-all duration-300 ease-in-out"
                     >
                         {manuscript.man_doc_title}
@@ -841,7 +844,7 @@ const handleDropdownChange = (selectedKey) => {
                                  </div>
                              )}
                              <iframe
-                                 src={`http://127.0.0.1:8000/pdfViewer.html?pdfUrl=http://127.0.0.1:8000/${manuscript.man_doc_content}`}
+                                 src={`http://127.0.0.1:8000/pdfViewer.html?pdfUrl=http://127.0.0.1:8000/${selectedManuscript}`}
                                  className="w-full h-full border-0 rounded-lg shadow-md"
                                  title="PDF Viewer"
                                  onLoad={handlePdfLoad}
@@ -941,43 +944,7 @@ const handleDropdownChange = (selectedKey) => {
                     </div>
 
 
-                    {/* <Tooltip content="Bookmark">
-                    <button
-                        className="text-gray-600 hover:text-blue-500"
-                        onClick={() => {
-                            if (!isAuthenticated) {
-                                // Show the login modal if the user is not authenticated
-                                openLogInModal();
-                            } else if (!isPremium) {
-                                // Show the subscription modal if the user is not premium
-                                openSubsModal();
-                            } else {
-                                // Proceed with the bookmark action if the user is premium and authenticated
-                                handleBookmark(manuscript.id);
-                            }
-                        }}
-                    >
-                        <FaBookmark size={20} />
-                    </button>
-                </Tooltip> */}
-
-
-                {/* Render ToggleComments only if a manuscript is selected and the sidebar is open */}
-                {selectedManuscript && (
-                    <ToggleComments
-                    auth={auth}
-                        manuscripts={selectedManuscript}  // Pass the selected manuscript to ToggleComments
-                        man_id={selectedManuscript.id}  // Pass additional properties if needed
-                        man_doc_title={selectedManuscript.title}
-                        isOpen={isSidebarOpen}
-                        toggleSidebar={() => setIsSidebarOpen((prevState) => !prevState)} // Toggle the sidebar
-                    />
-                )}
-
-
-
-
-                <Tooltip content="Bookmark">
+                    <Tooltip content="Bookmark">
                     <button
                         className="text-gray-600 hover:text-blue-500"
                         onClick={() => {
@@ -996,6 +963,42 @@ const handleDropdownChange = (selectedKey) => {
                         <FaBookmark size={20} />
                     </button>
                 </Tooltip>
+
+
+                {/* Render ToggleComments only if a manuscript is selected and the sidebar is open */}
+                {selectedManuscript && (
+                    <ToggleComments
+                    auth={auth}
+                        manuscripts={selectedManuscript}  // Pass the selected manuscript to ToggleComments
+                        man_id={selectedManuscript.id}  // Pass additional properties if needed
+                        man_doc_title={selectedManuscript.title}
+                        isOpen={isSidebarOpen}
+                        toggleSidebar={() => setIsSidebarOpen((prevState) => !prevState)} // Toggle the sidebar
+                    />
+                )}
+
+
+
+{/* 
+                <Tooltip content="Bookmark">
+                    <button
+                        className="text-gray-600 hover:text-blue-500"
+                        onClick={() => {
+                            if (!isAuthenticated) {
+                                // Show the login modal if the user is not authenticated
+                                openLogInModal();
+                            } else if (!isPremium) {
+                                // Show the subscription modal if the user is not premium
+                                openSubsModal();
+                            } else {
+                                // Proceed with the bookmark action if the user is premium and authenticated
+                                handleBookmark(manuscript.id);
+                            }
+                        }}
+                    >
+                        <FaBookmark size={20} />
+                    </button>
+                </Tooltip> */}
 
 
                 <Tooltip content="Download">

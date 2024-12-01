@@ -27,6 +27,11 @@ const ReviewManuscript = ({groupId, folders, onBack, task, taskID, closeModal, c
   const [historyData, setHistoryData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  // This will be the indicator that the manuscript is submitted for reviewing. 
+  // They cannot click submit if its still ongoing
+  const [ongoingReview, setOngoingReview] = useState(manuscript.man_doc_status === 'T' ? true : false);
+
+
 console.log("This is the group ID: ", groupId)
   useEffect(() => {
     const fetchData = async () => {
@@ -72,10 +77,19 @@ console.log("This is the group ID: ", groupId)
 
 
   const handleSendForReview = () => {
-    axios.post('/send-for-revision', { manuscript_id: manuscript.id })
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+    axios.post('/send-for-revision', { manuscript_id: manuscript.id },
+      {
+        headers: {
+            'X-CSRF-TOKEN': csrfToken,
+          },
+      }
+    )
       .then(response => {
         if (response.data.success) {
           console.log(response.data.success);
+          setOngoingReview(true);
         } else {
           console.error('Something went wrong:', response.data.error);
         }
@@ -224,7 +238,9 @@ console.log("This is the group ID: ", groupId)
               </div>
 
               <button onClick={handleSendForReview}
-              className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white py-2 rounded-lg hover:from-blue-600 hover:to-blue-700 shadow-md">
+              className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white py-2 rounded-lg hover:from-blue-600 hover:to-blue-700 shadow-md"
+              disabled={ongoingReview}
+              >
                 Send For Review
               </button>
 
