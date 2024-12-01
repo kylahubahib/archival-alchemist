@@ -810,34 +810,33 @@ class ClassController extends Controller
 
     // Converts docs into pdf file
    private function convertGoogleDocToPdf($driveService, $googleDocId, $title, $manuscriptId)
-{
-    try {
-        // Get file metadata to check mimeType
-        $file = $driveService->files->get($googleDocId, ['fields' => 'mimeType']);
+    {
+        try {
+            $file = $driveService->files->get($googleDocId, ['fields' => 'mimeType']);
 
-        if ($file->mimeType !== 'application/vnd.google-apps.document') {
-            Log::warning("File is not a Google Docs file. MimeType: {$file->mimeType}");
-            throw new \Exception("Only Google Docs files can be exported to PDF.");
+            if ($file->mimeType !== 'application/vnd.google-apps.document') {
+                Log::warning("File is not a Google Docs file. MimeType: {$file->mimeType}");
+                throw new \Exception("Only Google Docs files can be exported to PDF.");
+            }
+
+            // Export as PDF
+            $response = $driveService->files->export($googleDocId, 'application/pdf', ['alt' => 'media']);
+            $pdfFilePath = public_path("storage/capstone_files/{$title}.pdf");
+            file_put_contents($pdfFilePath, $response->getBody()->getContents());
+
+            $manuscript = ManuscriptProject::find($manuscriptId);
+            $manuscript->update([
+                'man_doc_content' => $pdfFilePath,
+                'is_publish' => 1,
+                'man_doc_visibility' => 1
+            ]);
+
+            Log::info("Google Doc converted to PDF: {$pdfFilePath}");
+        } catch (\Exception $e) {
+            Log::error("Error converting Google Doc to PDF: " . $e->getMessage());
+            throw $e;
         }
-
-        // Export as PDF
-        $response = $driveService->files->export($googleDocId, 'application/pdf', ['alt' => 'media']);
-        $pdfFilePath = public_path("storage/capstone_files/{$title}.pdf");
-        file_put_contents($pdfFilePath, $response->getBody()->getContents());
-
-        $manuscript = ManuscriptProject::find($manuscriptId);
-        $manuscript->update([
-            'man_doc_content' => $pdfFilePath,
-            'is_publish' => 1,
-            'man_doc_visibility' => 1
-        ]);
-
-        Log::info("Google Doc converted to PDF: {$pdfFilePath}");
-    } catch (\Exception $e) {
-        Log::error("Error converting Google Doc to PDF: " . $e->getMessage());
-        throw $e;
     }
-}
 
 
 

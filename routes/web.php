@@ -271,28 +271,23 @@ Route::middleware(['auth', 'verified', 'user-type:superadmin'])->group(function 
 
        });
 
-        Route::middleware('access:advanced_access')->group(function () {
-           //Route::inertia('/advanced', 'SuperAdmin/Advanced')->name('advanced');
-           //ADVANCED ROUTES
-        //Decided to create routes for the buttons in advanced page to simplify or easily create the crud functionality
+        Route::middleware('access:advanced_access')->group(function () {    
 
-    //    Route::get('/advanced/forum', function () {
-    //        return Inertia::render('SuperAdmin/Advanced/Forum/Forum');})->name('advanced-forum');
-        Route::resource('advanced/forum', AdvancedForumController::class)->names('manage-forum-posts');
-       Route::resource('advanced/custom-messages', CustomMessagesController::class)->names('manage-custom-messages');
+            
+            Route::get('advanced/forum/filter-post', [AdvancedForumController::class, 'filterPost'])->name('filter-post');
+            Route::resource('advanced/forum', AdvancedForumController::class)->names('manage-forum-posts');
 
-       Route::resource('advanced/universities', UniversityController::class)->names('manage-universities');
+            Route::resource('advanced/custom-messages', CustomMessagesController::class)->names('manage-custom-messages');
 
-       Route::resource('advanced/tags', AdvancedTagsController::class)->names('manage-tags');
+            Route::resource('advanced/universities', UniversityController::class)->names('manage-universities');
 
-       Route::resource('advanced/report-reason', ReportReasonController::class)->names('manage-report-reason');
+            Route::resource('advanced/tags', AdvancedTagsController::class)->names('manage-tags');
 
-       Route::post('store-service', [CustomMessagesController::class, 'storeService'])->name('store-service');
-       Route::post('store-team', [CustomMessagesController::class, 'storeTeam'])->name('store-team');
-       Route::post('update-icon', [CustomMessagesController::class, 'updateIcon'])->name('update-icon');
+            Route::resource('advanced/report-reason', ReportReasonController::class)->names('manage-report-reason');
 
-       ///END ADVANCED ROUTES
-
+            Route::post('store-service', [CustomMessagesController::class, 'storeService'])->name('store-service');
+            Route::post('store-team', [CustomMessagesController::class, 'storeTeam'])->name('store-team');
+            Route::post('update-icon', [CustomMessagesController::class, 'updateIcon'])->name('update-icon');
 
        });
 
