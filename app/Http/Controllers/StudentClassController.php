@@ -1,8 +1,9 @@
 <?php
 
 namespace App\Http\Controllers;
-
+use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
+use App\Models\Student;
 use App\Models\Author;
 use Illuminate\Support\Facades\File;
 use Illuminate\Http\JsonResponse;
@@ -371,12 +372,6 @@ class StudentClassController extends Controller
 
 
 
-
-
-
-
-
-
     public function checkClassCode(Request $request)
     {
         // Validate the incoming request to ensure 'class_code' is provided and is a string
@@ -501,41 +496,6 @@ class StudentClassController extends Controller
 
 
 
-//check the class code if it exist in the class database
-// public function checkClassCode(Request $request)
-// {
-//     $classCode = $request->input('class_code');
-//     $class = ClassModel::where('class_code', $classCode)->first();
-
-//     if ($class) {
-//         return response()->json(['exists' => true]);
-//     } else {
-//         return response()->json(['exists' => false], 404);
-//     }
-// }
-
-
-
-
-
-// public function getPublishedManuscripts()
-// {
-//     try {
-//         // Fetch manuscripts with 'Y' status, associated tags, and authors
-//         $manuscripts = ManuscriptProject::with(['tags', 'authors']) // Eager load both tags and authors relationships
-//             ->where('is_publish', '1')
-//             ->get();
-
-//         // Log the fetched manuscripts for debugging
-//         logger()->info('Fetched Manuscripts with Tags and Authors:', $manuscripts->toArray());
-
-//         return response()->json($manuscripts, 200);
-//     } catch (\Exception $e) {
-//         return response()->json(['message' => 'Error fetching manuscripts.', 'errors' => $e->getMessage()], 500);
-//     }
-// }
-
-
 //get ratings
 // SELECT
 //     manuscript_id,
@@ -622,36 +582,6 @@ class StudentClassController extends Controller
 // }
 
 
-// public function getPublishedManuscripts(Request $request)
-// {
-//     try {
-//         // Retrieve the 'keyword' query parameter
-//         $keyword = $request->query('keyword');
-//         Log::info('My keyword: ' . $keyword);
-
-//         // Determine relationships to load based on choice
-//         $manuscripts = ManuscriptProject::with(['tags', 'authors'])
-//             ->where('is_publish', '1');
-
-//         // If a keyword is provided, filter manuscripts by title
-//         if ($keyword) {
-//             $manuscripts = $manuscripts->where('man_doc_title', 'like', '%' . $keyword . '%');
-//         }
-
-//         $manuscripts = $manuscripts->get(); // Execute the query to get the results
-
-//         // Log the fetched manuscripts for debugging
-//         logger()->info('Fetched Manuscripts with Tags and Authors:', $manuscripts->toArray());
-
-//         return response()->json($manuscripts, 200);
-//     } catch (\Exception $e) {
-//         return response()->json(['message' => 'Error fetching manuscripts.', 'errors' => $e->getMessage()], 500);
-//     }
-// }
-
-
-
-
 public function getPublishedManuscripts(Request $request)
 {
     try {
@@ -673,12 +603,17 @@ public function getPublishedManuscripts(Request $request)
 
         // Initialize manuscripts query
         $manuscripts = ManuscriptProject::with(['tags', 'authors'])
-            ->where('is_publish', '1');
+            ->where('is_publish', '1')
+            ->where('man_doc_visibility', 'Y');
 
         // Filter manuscripts based on the selected search field
         if ($keyword) {
             if ($searchField === 'Title') {
-                $manuscripts = $manuscripts->where('man_doc_title', 'like', '%' . $keyword . '%');
+
+                $manuscripts = $manuscripts
+                ->where('man_doc_visibility', '=', 'Y')
+                ->where('man_doc_title', 'like', '%' . $keyword . '%');
+
             } elseif ($searchField === 'Tags') {
                 $manuscripts = $manuscripts->whereHas('tags', function ($query) use ($keyword) {
                     $query->where('tags_name', 'like', '%' . $keyword . '%');
@@ -733,6 +668,8 @@ public function getPublishedRecManuscripts(Request $request)
             ->leftJoin('author', 'manuscripts.id', '=', 'author.man_doc_id')
             ->leftJoin('manuscript_tag', 'manuscripts.id', '=', 'manuscript_tag.manuscript_id')
             ->leftJoin('tags', 'manuscript_tag.tag_id', '=', 'tags.id')
+            ->where('manuscripts.is_publish', '1') // Inserted here
+            ->where('manuscripts.man_doc_visibility', 'Y') // Inserted here
             ->groupBy('manuscripts.id', 'manuscripts.man_doc_title', 'manuscripts.man_doc_description', 'manuscripts.man_doc_content',
                       'manuscripts.man_doc_adviser', 'manuscripts.man_doc_view_count',
                       'manuscripts.is_publish')
@@ -748,6 +685,90 @@ public function getPublishedRecManuscripts(Request $request)
     }
 }
 
+
+
+public function getMyUniBooks(Request $request)
+{
+
+    try {
+
+        $uniBranchId = $this->fetchUniBranchId();
+        // Retrieve the 'keyword' and 'searchField' query parameters
+        $keyword = $request->query('keyword');
+        $searchField = $request->query('searchField', 'Title'); // Default to Title if not specified
+        Log::info('My keyword: ' . $keyword);
+        Log::info('Search field: ' . $searchField);
+
+        // Optionally, you can check if the user is authenticated
+        if (auth()->check()) {
+            // If the user is authenticated, you can perform specific actions
+            $user = auth()->user();
+            Log::info('Authenticated user:', ['user' => $user]);
+        } else {
+            // If the user is not authenticated, you can handle the behavior accordingly
+            Log::info('Unauthenticated user accessed the manuscripts.');
+        }
+
+        // Initialize manuscripts query
+        $manuscripts = ManuscriptProject::with(['tags', 'authors'])
+            ->where('is_publish', '1')
+            ->where('uni_branch_id', $uniBranchId);
+
+        // Filter manuscripts based on the selected search field
+        if ($keyword) {
+            if ($searchField === 'Title') {
+                $manuscripts = $manuscripts->where('man_doc_title', 'like', '%' . $keyword . '%');
+            } elseif ($searchField === 'Tags') {
+                $manuscripts = $manuscripts->whereHas('tags', function ($query) use ($keyword) {
+                    $query->where('tags_name', 'like', '%' . $keyword . '%');
+                });
+            } elseif ($searchField === 'Authors') {
+                $manuscripts = $manuscripts->whereHas('authors', function ($query) use ($keyword) {
+                    $query->where('name', 'like', '%' . $keyword . '%');
+                });
+            }
+        }
+
+        // Execute the query to get the results
+        $fetchedManuscripts = $manuscripts->get();
+
+        Log::info('Published Manuscripts:', ['manuscripts' => $fetchedManuscripts]);
+
+        // Log the number of manuscripts found
+        if ($fetchedManuscripts->isNotEmpty()) {
+            Log::info('Found manuscripts:', $fetchedManuscripts->toArray());
+        } else {
+            Log::info('No manuscripts found for the given keyword and search field.');
+        }
+
+        return response()->json($fetchedManuscripts, 200);
+    } catch (\Exception $e) {
+        // Log the error details for debugging
+        Log::error('Error fetching manuscripts: ' . $e->getMessage(), [
+            'stack' => $e->getTraceAsString()
+        ]);
+
+        return response()->json(['message' => 'Error fetching manuscripts.', 'errors' => $e->getMessage()], 500);
+    }
+}
+
+
+    /**
+     * Retrieve the uni_branch_id for the logged-in user.
+     *
+     * @return int|null
+     */
+    public function fetchUniBranchId()
+    {
+        // Get the authenticated user's ID
+        $userId = Auth::id();
+
+        // Find the student record where user_id matches Auth::id()
+        $student = Student::where('user_id', $userId)->first();
+
+        // Return the uni_branch_id if a student record exists
+        return $student ? $student->uni_branch_id : null;
+    }
 
 // SELECT *
 // FROM manuscripts mp
@@ -1078,65 +1099,6 @@ public function storeRatings(Request $request)
 
 
 
-// public function storeRatings(Request $request)
-// {
-//     Log::info('Incoming request: ', $request->all());
-
-//     try {
-//         // Check if the user is authenticated
-//         if (!Auth::check()) {
-//             return response()->json(['error' => 'You need to log in first.'], 401);
-//         }
-
-//         // Log request data before validation
-//         Log::info('Request data: ', $request->all());
-
-//         // Validate the request
-//         $request->validate([
-//             'manuscript_id' => 'required|exists:manuscripts,id',
-//             'rating' => 'required|integer|between:1,5',
-//         ]);
-
-//         // Log user ID for debugging
-//         $userId = Auth::id();
-//         Log::info('User ID: ' . $userId);
-
-//         // Check if the user has already rated this manuscript
-//         $existingRating = Rating::where([
-//             'user_id' => $userId,
-//             'manuscript_id' => $request->manuscript_id,
-//         ])->first();
-
-//         if ($existingRating) {
-//             return response()->json(['message' => 'You have already rated this manuscript.'], 409);
-//         }
-
-//         // Log data to be used in the updateOrCreate
-//         Log::info('Creating rating with data:', [
-//             'user_id' => $userId,
-//             'manuscript_id' => $request->manuscript_id,
-//             'rating' => $request->rating,
-//         ]);
-
-//         // Create the new rating
-//         $rating = Rating::create([
-//             'user_id' => $userId,
-//             'manuscript_id' => $request->manuscript_id,
-//             'rating' => $request->rating,
-//         ]);
-
-//         return response()->json(['message' => 'Rating submitted successfully!', 'rating' => $rating], 201);
-//     } catch (\Exception $e) {
-//         Log::error('Error submitting rating', [
-//             'exception' => $e->getMessage(),
-//             'stack' => $e->getTraceAsString(),
-//             'request' => $request->all(),
-//         ]);
-//         return response()->json(['error' => 'Failed to submit rating.'], 500);
-//     }
-// }
-
-
 public function view($filename)
 {
     Log::info('View method called for filename: ' . $filename);
@@ -1184,27 +1146,6 @@ public function isPremium()
     }
 }
 
-
-
-// public function isPremium()
-// {
-//     // Ensure the user is authenticated
-//     $user = Auth::user();
-
-//     // If user is not authenticated or not premium, return false with a message
-//     if (!$user || $user->is_premium != 1) {
-//         return response()->json([
-//             'is_premium' => false,
-//             'message' => 'User is either not authenticated or not a premium member.',
-//         ]);
-//     }
-
-//     // If user is authenticated and premium, return true with a message
-//     return response()->json([
-//         'is_premium' => true,
-//         'message' => 'User is a premium member.',
-//     ]);
-// }
 
 
     public function sendForRevision(Request $request)
@@ -1337,6 +1278,110 @@ public function isPremium()
         // If the URL doesn't match the expected format, return null
         return null;
     }
+
+
+    //     /**
+    //  * Increment manuscript view count if not already viewed in the session.
+    //  *
+    //  * @param int $id
+    //  * @param Request $request
+    //  * @return \Illuminate\Http\JsonResponse
+    //  */
+    // public function incrementViewCount($id, Request $request)
+    // {
+    //     // Retrieve the session key for viewed manuscripts
+    //     $viewedManuscripts = $request->session()->get('viewed_manuscripts', []);
+
+    //     // Check if the manuscript ID is already in the session
+    //     if (!in_array($id, $viewedManuscripts)) {
+    //         // Add the manuscript ID to the session
+    //         $viewedManuscripts[] = $id;
+    //         $request->session()->put('viewed_manuscripts', $viewedManuscripts);
+
+    //         // Increment the view count in the database
+    //         $manuscript = ManuscriptProject::findOrFail($id);
+    //         $manuscript->increment('man_doc_view_count');
+    //     }
+
+    //     return response()->json(['success' => true, 'message' => 'View count updated.']);
+    // }
+
+
+
+
+    // public function incrementViewCount(Request $request, $manuscriptId)
+    // {
+    //     // Retrieve the current session ID (this is automatically available via Laravel's session handling)
+    //     $sessionId = Session::getId();
+
+    //     // Retrieve the session payload for this session
+    //     $session = DB::table('sessions')->where('id', $sessionId)->first();
+
+    //     if (!$session) {
+    //         return response()->json(['message' => 'Session not found.'], 404);
+    //     }
+
+    //     try {
+    //         // Attempt to unserialize the session payload
+    //         $payload = @unserialize($session->payload);
+
+    //         // Check for errors during unserialization
+    //         if ($payload === false && $session->payload !== 'b:0;') {
+    //             // If unserialization fails, initialize an empty payload
+    //             $payload = ['viewed_manuscripts' => []];
+    //         }
+
+    //         // Initialize the viewed_manuscripts array if it doesn't exist
+    //         if (!isset($payload['viewed_manuscripts'])) {
+    //             $payload['viewed_manuscripts'] = [];
+    //         }
+
+    //         // Check if the manuscript has already been viewed in this session
+    //         if (!in_array($manuscriptId, $payload['viewed_manuscripts'])) {
+    //             // Increment the manuscript's view count in the database
+    //             $manuscript = ManuscriptProject::find($manuscriptId);
+    //             if ($manuscript) {
+    //                 $manuscript->increment('man_doc_view_count');
+    //             } else {
+    //                 return response()->json(['message' => 'Manuscript not found.'], 404);
+    //             }
+
+    //             // Add the manuscript ID to the viewed list
+    //             $payload['viewed_manuscripts'][] = $manuscriptId;
+
+    //             // Update the session payload with the new data
+    //             DB::table('sessions')->where('id', $sessionId)->update([
+    //                 'payload' => serialize($payload),
+    //             ]);
+
+    //             return response()->json(['message' => 'View count incremented.']);
+    //         } else {
+    //             return response()->json(['message' => 'You have already viewed this manuscript.']);
+    //         }
+    //     } catch (\Exception $e) {
+    //         // Handle any errors during unserialization or database interaction
+    //         return response()->json(['message' => 'Error processing request.', 'error' => $e->getMessage()], 500);
+    //     }
+    // }
+
+    public function incrementViewCount($manuscriptId)
+{
+    // Check if the manuscript has already been viewed in this session
+    if (session()->has('viewed_manuscripts') && in_array($manuscriptId, session('viewed_manuscripts'))) {
+        return response()->json(['message' => 'You have already viewed this manuscript during this session.'], 200);
+    }
+
+    // Increment the view count
+    $manuscript = ManuscriptProject::find($manuscriptId);
+    if ($manuscript) {
+        $manuscript->increment('man_doc_view_count');
+    }
+
+    // Add the manuscript to the session as viewed
+    session()->push('viewed_manuscripts', $manuscriptId);
+
+    return response()->json(['message' => 'View count incremented successfully.'], 200);
+}
 
 
 }

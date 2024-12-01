@@ -3,7 +3,7 @@ import { Button } from '@nextui-org/react';
 import People from '@/Pages/Users/Class/Student/People';
 import Stream from '@/Pages/Users/Class/Student/Stream';
 
-const StudentViewClass = ({ onBack, folders }) => {
+const StudentViewClass = ({ auth, user, onBack, folders }) => {
     const [showForm, setShowForm] = useState(false);
     const [activeSection, setActiveSection] = useState('assignedProject');
 
@@ -46,7 +46,7 @@ const StudentViewClass = ({ onBack, folders }) => {
             {/* Content Section */}
             <div className="w-full bg-white">
                 {activeSection === 'people' && <People folders={folders} onBack={() => setActiveSection('')} />}
-                {activeSection === 'assignedProject' && <Stream folders={folders} onBack={() => setActiveSection('')} />}
+                {activeSection === 'assignedProject' && <Stream auth={auth} user={user} folders={folders} onBack={() => setActiveSection('')} />}
             </div>
 
 

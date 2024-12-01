@@ -211,4 +211,23 @@ class User extends Authenticatable
     {
         return $this->hasMany(GroupMember::class, 'section_id');
     }
+
+
+        // Other model properties and methods
+
+    /**
+     * Get all the books the user has viewed.
+     */
+    public function bookViews()
+    {
+        return $this->hasMany(BookView::class);
+    }
+
+    /**
+     * Get all the manuscripts the user has viewed.
+     */
+    public function viewedManuscripts()
+    {
+        return $this->belongsToMany(ManuscriptProject::class, 'book_views', 'user_id', 'man_doc_id');
+    }
 }

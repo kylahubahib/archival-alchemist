@@ -9,6 +9,7 @@ import RecManuscript from '@/Components/Manuscripts/RecommendedManuscript';
 import SearchBar from '@/Components/SearchBars/LibrarySearchBar';
 import React from 'react';
 import Manuscript from '@/Components/Manuscript';
+import MyUniBooks from '@/Components/Manuscripts/MyUniBooks';
 
 const currentYear = new Date().getFullYear(); // Get the current year
 const yearOptions = Array.from(
@@ -90,18 +91,20 @@ const renderActiveTabContent = () => {
                 />
             );
          }
-        // case 'ByUniversity': {
-        //     const choice = 'U';
-        //     return (
-        //         <Manuscript
-        //             title="Manuscripts by University"
-        //             description="Manuscripts categorized by university."
-        //             manuscripts={manuscripts} // Update this with actual data as needed
-        //             user={auth.user} // Pass the user to Manuscript
-        //             //choice={choice} // Pass choice to Manuscript
-        //         />
-        //     );
-        // }
+        case 'ByUniversity': {
+            const choice = 'U';
+            return (
+                <MyUniBooks
+                auth={auth}
+                title="My Uni-Books"
+                description="A list of all available capstone manuscripts of their universrity."
+                manuscripts={manuscripts} // Pass manuscripts to Manuscript
+                user={auth.user} // Pass the user to Manuscript
+                //choice={choice} // Pass choice to Manuscript
+                />
+            );
+        }
+
         default: {
             const choice = 'Default';
             return (
@@ -152,12 +155,12 @@ const handleEndYearChange = (e) => {
                                 >
                                     Recommended
                                 </button>
-                                {/* <button
+                                <button
                                     onClick={() => handleTabClick('ByUniversity')}
                                     className={buttonStyle('ByUniversity')}
                                 >
-                                    University
-                                </button> */}
+                                    My Uni-Books
+                                </button>
                             </div>
 
                             <div className="flex items-center space-x-2">

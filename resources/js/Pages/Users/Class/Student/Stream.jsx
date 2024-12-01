@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Card, Button } from '@nextui-org/react';
 import PreviewTask from '@/Pages/Users/Class/Student/PreviewTask';
 
-const Stream = ({ folders, onBack }) => {
+const Stream = ({ auth, user, folders, onBack }) => {
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -111,7 +111,7 @@ const Stream = ({ folders, onBack }) => {
   const sectionName = folder.section_name || 'Unknown Section';
 
   if (isPreviewMode) {
-    return <PreviewTask folders={folders} onBack={handleBackToStream} task={selectedTask} taskID={selectedTask?.id}/>;
+    return <PreviewTask auth={auth} user={user} folders={folders} onBack={handleBackToStream} task={selectedTask} taskID={selectedTask?.id}/>;
   }
 
   return (

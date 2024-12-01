@@ -70,7 +70,7 @@ class SearchController extends Controller
             ->where('name', 'LIKE', '%' . $searchQuery . '%')
             ->select('name', 'user_pic', 'id', 'created_at', DB::raw("'users' as source"))
             ->orderBy('created_at', 'desc')
-            ->limit(7)  
+            ->limit(7)
             ->get();
 
         return response()->json($users);
@@ -92,6 +92,7 @@ class SearchController extends Controller
 
         // Search in the manuscript table for book titles
         $manuscripts = ManuscriptProject::where('title', 'LIKE', '%' . $searchQuery . '%')
+         ->where('man_doc_visibility', '=', 'Y')
         ->select('title', 'id', 'created_at', DB::raw("'manuscripts' as source"))
         ->orderBy('created_at', 'desc')
         ->get();

@@ -133,7 +133,11 @@ Route::get('/forum', function () {
 
 Route::get('/studentclass', function () {
     return Inertia::render('Users/Class/Student/StudentClass');
-});
+})->middleware(['auth', 'verified', 'user-type:student,teacher'])->name('studentclass');
+
+// Route::get('/savedlist', function () {
+//     return Inertia::render('Users/SavedList');
+// })->middleware(['auth', 'verified', 'user-type:student,teacher,general_user'])->name('savedlist');
 
 Route::get('/teacherclass', function () {
     return Inertia::render('Users/Class/Teacher/TeacherClass');
@@ -455,25 +459,15 @@ Route::post('/check-class-code', [StudentClassController::class, 'checkClassCode
 Route::post('/store-student-class', [StudentClassController::class, 'storeStudentClass']);
 // routes for checking the user premium subscription
 Route::post('/check-user-premium-status', [CheckSubscriptionController::class, 'is_premium']);
-
 Route::get('/check-student-in-class', [StudentClassController::class, 'checkStudentInClass']);
-
-
-
 Route::get('/api/publishedRec-manuscripts', [StudentClassController::class, 'getPublishedRecManuscripts']);
-//Route::get('/api/published-manuscripts/{choice}', [StudentClassController::class, 'getPublishedManuscripts']);
+Route::get('/api/publishedMyUniBooks-manuscripts', [StudentClassController::class, 'getMyUniBooks']);
 Route::get('/api/my-approved-manuscripts', [StudentClassController::class, 'myApprovedManuscripts']);
 Route::get('/api/my-favorite-manuscripts', [StudentClassController::class, 'myfavoriteManuscripts']);
-
 Route::post('/api/addfavorites', [StudentClassController::class, 'storefavorites'])
     ->middleware(['auth', 'verified', 'user-type:student, teacher'])
     ->name('storefavorites');
     Route::get('/manuscript/{id}/download', [StudentClassController::class, 'downloadPdf'])->name('manuscript.download');
-
-   // Route::get('/manuscript/{id}/download', [StudentClassController::class, 'downloadPdf']);
-// Correct
-// Route::get('/user/{id}/favorites', [StudentClassController::class, 'getUserFavorites']);
-
 // Add the correct middleware if needed
 Route::get('/user/{id}/favorites', [StudentClassController::class, 'getUserFavorites'])
 ->middleware(['auth', 'verified', 'user-type:student, teacher'])
@@ -485,6 +479,8 @@ Route::delete('/api/removefavorites', [StudentClassController::class, 'removeFav
     ->middleware(['auth', 'verified', 'user-type:student,teacher'])
     ->name('removeFavorite');
 
+    // Route to handle tracking of book views
+Route::post('/view-book/{bookId}', [TeacherClassController::class, 'viewBook'])->name('book.view');
 
 
 //check user in csv file
@@ -604,5 +600,6 @@ Route::get('/api/semesters', [ClassController::class, 'getRecords']);
 Route::get('/fetch-comments/{id}', [DocCommentsController::class, 'fetchComments'])->name('fetch-comments');
 //Route::get('/fetch-replies', [DocCommentsController::class, 'fetchReplies'])->name('fetchrepllies');
 
+Route::post('/manuscripts/{id}/increment-view', [StudentClassController::class, 'incrementViewCount']);
 
 require __DIR__.'/auth.php';

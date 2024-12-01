@@ -1,14 +1,13 @@
 import React, { useState, useEffect } from 'react';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import { FaEye, FaComment, FaBookmark, FaFileDownload, FaFilter, FaStar, FaQuoteLeft } from 'react-icons/fa';
 import RatingComponent from '@/Components/Ratings'
 import Modal from '@/Components/Modal'
 import axios from 'axios';
 import SearchBar from '@/Components/SearchBars/LibrarySearchBar'; // Import the LibrarySearchBar component
-import { Tooltip, Button } from '@nextui-org/react';
-import {Dropdown, DropdownTrigger, DropdownMenu, DropdownItem} from "@nextui-org/react";
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import { Skeleton } from '@nextui-org/skeleton'; // Import Skeleton
+import {Tooltip, Button, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem} from "@nextui-org/react";
+import { Skeleton } from '@nextui-org/skeleton'; // Import //Skeleton
 import CommentSections from '@/Components/CommentSection'; // Import the LibrarySearchBar component
 import ManuscriptComment from '@/Components/Manuscripts/ManuscriptComment'; // Import the LibrarySearchBar component
 import SubscriptionCard from '@/Components/SubscriptionCard';
@@ -16,15 +15,18 @@ import AskUserToLogin from '@/Components/AskUserToLogin';
 import PdfViewer from '@/Components/PdfViewer';
 import ToggleComments from '@/Components/ToggleComments';
 
-const Manuscript = ({auth, user, choice}) => {
+const MyUniBooks = ({auth, user, choice}) => {
+    const [isPdfOpen, setPdfOpen] = useState(false);
     const [favorites, setFavorites] = useState(new Set());
-     const [userId, setUserId] = useState(null); // Store the current logged-in user ID
+    const [userId, setUserId] = useState(null); // Store the current logged-in user ID
     const [manuscripts, setManuscripts] = useState([]);
+    const [Manuscripts, setmanuscripts] = useState([]);
     const [searchResults, setSearchResults] = useState([]); // State to hold search results
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [showComments, setShowComments] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isCommentOpen, setisCommentOpen] = useState(false);
     const [isCiteModalOpen, setIsCiteModalOpen] = useState(false);
     const [selectedRating, setSelectedRating] = useState(0); // Store the rating value
     const [selectedManuscript, setSelectedManuscript] = useState(null); // Track selected manuscript
@@ -42,6 +44,88 @@ const Manuscript = ({auth, user, choice}) => {
     const [isMaximized, setIsMaximized] = useState(false); // State to track if maximized or not
     const [isSidebarOpen, setIsSidebarOpen] = useState(false); // State to track sidebar visibility
     const [maximizedId, setMaximizedId] = useState(null); // Tracks which manuscript is maximized
+
+
+  // State to store the message or any relevant data from the backend
+  const [viewMessage, setViewMessage] = useState("");
+  const [viewCount, setViewCount] = useState(0);
+
+  // Function to trigger the book view request
+  const handleBookView = async () => {
+    console.log(`Attempting to track view for book with ID: ${bookId}`);
+
+    try {
+      // Make the request to the backend to track the view
+      const response = await axios.post(`/api/view-book/${bookId}`);
+
+      // Log the successful response from the backend
+      console.log('Response from backend:', response.data);
+
+      // Assuming the backend sends a message upon successful view tracking
+      setViewMessage(response.data.message);
+
+      // Optionally, you can update the view count here if returned by the backend
+      // setViewCount(response.data.view_count);  // If view count is returned by backend
+    } catch (error) {
+      console.error("Error tracking the book view", error);
+      setViewMessage("An error occurred while tracking the view.");
+    }
+  };
+
+
+
+
+    // const handleMaximize = (id) => {
+    //   setMaximizedId((prevId) => (prevId === id ? null : id)); // Toggle maximization
+    // };
+    const handleMaximize = (id) => {
+        console.log("This is the mannuscripts ID: ", id)
+        setMaximizedId((prevId) => (prevId === id ? null : id)); // Toggle maximization
+        axios
+        .post(`/manuscripts/${id}/increment-view`)
+        .then((response) => {
+            console.log('View count incremented:', response.data);
+        })
+        .catch((error) => {
+            console.error('Error incrementing view count:', error);
+        });
+
+      };
+
+      const handleClick = (id) => {
+        // When the PDF is loaded, increment the view count
+        axios
+        .post(`/manuscripts/${id}/increment-view`)
+        .then((response) => {
+            console.log('View count incremented:', response.data);
+        })
+        .catch((error) => {
+            console.error('Error incrementing view count:', error);
+        });
+    };
+
+    const toggleSidebar = () => {
+        setIsSidebarOpen((prevState) => !prevState); // Toggle sidebar visibility
+    };
+
+    // Handle manuscript selection and opening the sidebar
+    const handleComments = (id, title) => {
+        // Store the selected manuscript's id and title in an object
+        setSelectedManuscript({ id, title });
+        setIsSidebarOpen(true);  // Open the sidebar
+    };
+
+    // Function to toggle maximized state
+    const toggleMaximize = () => {
+        setIsMaximized((prevState) => !prevState);
+    };
+
+    // Dynamic class for maximizing and minimizing
+    const manuscriptClass = isMaximized
+        ? "w-full h-screen"  // Maximize: Full width and height (or full screen)
+        : "w-full h-[400px]"; // Minimize: Set to a smaller size
+
+
 
     // Fetch premium status and authentication info from the backend
     useEffect(() => {
@@ -63,14 +147,43 @@ const Manuscript = ({auth, user, choice}) => {
     }, []);
 
 
-          // Reset loading state when the modal is opened again
-    useEffect(() => {
-        if (ismodalOpen) {
-        setIsLoading(true); // Reset loading state when modal is opened
-        }
-    }, [ismodalOpen]); // Depend on modal open state
+      const openLoginModal = () => {
+        setIsLoginModalOpen(true);
+      };
+
+      const closeLoginModal = () => {
+        setIsLoginModalOpen(false);
+      };
+
+      const goToLoginPage = () => {
+        // Implement your login redirection logic here
+        window.location.href = '/login'; // or use react-router if it's a single-page app
+      };
 
 
+
+    const handlePdfLoad = () => {
+      setIsLoading(false); // Set loading to false once PDF is loaded
+    };
+
+      // Reset loading state when the modal is opened again
+  useEffect(() => {
+    if (ismodalOpen) {
+      setIsLoading(true); // Reset loading state when modal is opened
+    }
+  }, [ismodalOpen]); // Depend on modal open state
+
+
+    // const openModal = (url) => {
+    //     console.log("It is now open");
+    //     setPdfUrl(url);
+    //     setIsmodalOpen(true);
+    // };
+
+    // const closeModal = () => {
+    //     setPdfUrl("");
+    //     setIsmodalOpen(false);
+    // };
 
     const [pageCount, setPageCount] = useState(0);
 
@@ -85,104 +198,56 @@ const Manuscript = ({auth, user, choice}) => {
       }
     };
 
+    // Set up the event listener for receiving messages
+    useEffect(() => {
+      window.addEventListener('message', handleIframeMessage);
 
-       // Set up the event listener for receiving messages
-       useEffect(() => {
-        window.addEventListener('message', handleIframeMessage);
-
-        return () => {
-          window.removeEventListener('message', handleIframeMessage);
-        };
-      }, []);
-
-      const openLogInModal = () => {
-          setIsLoginModalOpen(true);
-          console.log("Log in MOdal is open");
+      return () => {
+        window.removeEventListener('message', handleIframeMessage);
       };
+    }, []);
 
-      const openSubsModal = () => {
-          setIsSubsModal(true);
-          console.log("MOdal is open");
-      };
-
-      const openModal = (pdfUrl) => {
-          setIsmodalOpen(true);
-          // Pass the pdfUrl to the PDFViewer
-      };
-
-      const closeModal = () => {
-          setIsmodalOpen(false);  // Assuming you're using useState to manage modal state
-          setIsSubsModal(false);
-        };
-
-
-    const openLoginModal = () => {
+    const openLogInModal = () => {
         setIsLoginModalOpen(true);
-      };
-
-      const closeLoginModal = () => {
-        setIsLoginModalOpen(false);
-      };
-
-      const goToLoginPage = () => {
-        // Implement your login redirection logic here
-        window.location.href = '/login'; // or use react-router if it's a single-page app
-      };
-
-  // Function to handle the view increment
-  const handlePdfLoad = (id) => {
-    // When the PDF is loaded, increment the view count
-    axios
-    .post(`/manuscripts/${id}/increment-view`)
-    .then((response) => {
-        console.log('View count incremented:', response.data);
-    })
-    .catch((error) => {
-        console.error('Error incrementing view count:', error);
-    });
-
-  };
-
-  const handleClick = (id) => {
-    // When the PDF is loaded, increment the view count
-    axios
-    .post(`/manuscripts/${id}/increment-view`)
-    .then((response) => {
-        console.log('View count incremented:', response.data);
-    })
-    .catch((error) => {
-        console.error('Error incrementing view count:', error);
-    });
-};
-
-    // const handleMaximize = (id) => {
-    //     setMaximizedId((prevId) => (prevId === id ? null : id)); // Toggle maximization
-    //   };
-      const handleMaximize = (id) => {
-        console.log("This is the mannuscripts ID: ", id)
-      setMaximizedId((prevId) => (prevId === id ? null : id)); // Toggle maximization
-      axios
-      .post(`/manuscripts/${id}/increment-view`)
-      .then((response) => {
-          console.log('View count incremented:', response.data);
-      })
-      .catch((error) => {
-          console.error('Error incrementing view count:', error);
-      });
-
+        console.log("Log in MOdal is open");
     };
 
-    
-      const toggleSidebar = () => {
-          setIsSidebarOpen((prevState) => !prevState); // Toggle sidebar visibility
+    const openSubsModal = () => {
+        setIsSubsModal(true);
+        console.log("MOdal is open");
+    };
+
+    const openModal = (pdfUrl) => {
+        setIsmodalOpen(true);
+        // Pass the pdfUrl to the PDFViewer
+    };
+
+    const closeModal = () => {
+        setIsmodalOpen(false);  // Assuming you're using useState to manage modal state
+        setIsSubsModal(false);
       };
 
-      // Handle manuscript selection and opening the sidebar
-      const handleComments = (id, title) => {
-          // Store the selected manuscript's id and title in an object
-          setSelectedManuscript({ id, title });
-          setIsSidebarOpen(true);  // Open the sidebar
-      };
+
+    // const handleCommentClick = (id) => {
+    //     setCommentStates(prevState => ({
+    //         ...prevState,
+    //         [id]: !prevState[id], // Toggle the comment visibility for the specific manuscript
+    //     }));
+    // };
+
+
+    // Handle opening the modal and setting the title
+    const handleViewPdf = (manuscript) => {
+        if (manuscript && manuscript.man_doc_content) {
+            console.log("Viewing PDF for manuscript:", manuscript);
+            setSelectedManuscript(manuscript); // Set the selected manuscript
+            setPdfOpen(true); // Open the modal
+        } else {
+            console.error("Manuscript or PDF URL is missing.");
+        }
+    };
+
+
 
     // Function to update search results
     // Handler to receive the search input value
@@ -190,6 +255,7 @@ const Manuscript = ({auth, user, choice}) => {
         setTitleInputValue(inputValue); // Update the input value for display
         fetchManuscripts(inputValue, selectedSearchField); // Perform the search
     };
+
 
     const resetRating = () => {
         setSelectedRating(0); // Reset the rating to 0 (or whatever your default is)
@@ -201,7 +267,6 @@ const Manuscript = ({auth, user, choice}) => {
         setSelectedManuscript(manuscript); // Store the manuscript for later use
         setIsModalOpen(true);
     };
-
 
 
      // Handle opening the modal and setting the title
@@ -269,6 +334,30 @@ const Manuscript = ({auth, user, choice}) => {
     };
 
 
+
+    // const handleDownload = async (manuscriptId, title) => {
+    //     console.log("Attempting to download manuscript ID:", manuscriptId);
+    //     try {
+    //         const response = await axios.get(`/manuscript/${manuscriptId}/download`, {
+    //             responseType: 'blob',
+    //         });
+    //         const url = window.URL.createObjectURL(new Blob([response.data]));
+    //         const link = document.createElement('a');
+    //         const fileName = title ? `${title}.pdf` : 'file.pdf';
+
+    //         link.href = url;
+    //         link.setAttribute('download', fileName);
+    //         document.body.appendChild(link);
+    //         link.click();
+    //         document.body.removeChild(link);
+    //         window.URL.revokeObjectURL(url);
+    //     } catch (error) {
+    //         console.error('Error downloading the PDF:', error);
+    //         alert('Error downloading the file. Please try again.');
+    //     }
+    // };
+
+
     const handleDownload = async (manuscriptId, title) => {
         console.log("Attempting to download manuscript ID:", manuscriptId); // Log manuscript ID
         try {
@@ -293,9 +382,6 @@ const Manuscript = ({auth, user, choice}) => {
     };
 
 
-
-
-
     // Log the updated favorites whenever it changes
     useEffect(() => {
         console.log('Updated Favorites:', favorites);
@@ -317,11 +403,15 @@ const Manuscript = ({auth, user, choice}) => {
                 return;
             }
 
-            console.log(`Fetching favorites for user: ${user.id}`);
+            //console.log(`Fetching favorites for user: ${user.id}`);
 
             try {
                 const response = await axios.get(`/user/${user.id}/favorites`);
-                const favoritesData = response.data.map((favorite) => `${user.id}-${favorite.man_doc_id}`);
+                //console.log('Response: ', response.data.favorites);
+                const favoritesData = [];
+                if(response.data.favorites) {
+                    const favoritesData = response.data.favorites.map((favorite) => `${user.id}-${favorite.man_doc_id}`);
+                }
                 setFavorites(new Set(favoritesData));
                 console.log(`Fetched favorites for user ${user.id}:`, favoritesData);
             } catch (error) {
@@ -357,7 +447,6 @@ const Manuscript = ({auth, user, choice}) => {
         }
     };
 
-
     const handleRemoveFavorite = async (manuscriptId) => {
         try {
             await axios.delete('/api/removefavorites', {
@@ -391,39 +480,41 @@ const Manuscript = ({auth, user, choice}) => {
     };
 
 
+    // useEffect to fetch manuscripts based on titleInputValue
+    // useEffect to fetch all manuscripts on mount
+    // Effect to fetch all manuscripts on component mount
     useEffect(() => {
-        console.log('Fetching manuscripts...');
-         axios.get(`/api/publishedRec-manuscripts?choice=${choice}`)
-        //axios.get('/api/published-manuscripts')
-        .then(response => {
-            console.log('Fetched manuscripts with tags:', response.data);
-            const data = response.data;
+        let isMounted = true; // flag to track if the component is mounted
 
-            response.data.forEach(manuscript => {
-                console.log('Manuscript Tags:', manuscript.tags); // Log tags for each manuscript
-            });
+        const fetchAllManuscripts = async () => {
+            setLoading(true);
+            try {
+                const response = await axios.get('/api/publishedMyUniBooks-manuscripts');
+
+                if (isMounted) {
+                    // Only set state if the component is still mounted
+                    setManuscripts(response.data);
 
 
-            response.data.forEach(manuscript => {
-                console.log('Manuscript Author:', manuscript.authors); // Log users for each manuscript
-            });
+                }
+            } catch (error) {
+                if (isMounted) {
+                    toast.error('Error fetching manuscripts.'); // Show toast on error
+                    setError('An error occurred while fetching the data.');
+                }
+            } finally {
+                if (isMounted) {
+                    setLoading(false);
+                }
+            }
+        };
 
-            // Remove duplicates
-            const uniqueManuscripts = Array.from(new Set(data.map(item => item.id)))
-                .map(id => data.find(item => item.id === id));
+        fetchAllManuscripts();
 
-            console.log('Unique Manuscripts:', uniqueManuscripts);
-            setManuscripts(uniqueManuscripts);
-            setLoading(false);
-        })
-        .catch(error => {
-            console.error('Error fetching manuscripts:', error);
-            setError('An error occurred while fetching the data.');
-            setLoading(false);
-        });
-
-    }, []); // Empty dependency array ensures this runs only once
-
+        return () => {
+            isMounted = false; // Cleanup flag when component unmounts
+        };
+    }, []);
 
 
     const fetchManuscripts = async (keyword, searchField) => {
@@ -443,18 +534,11 @@ const Manuscript = ({auth, user, choice}) => {
         }
     };
 
-
-    // Update the dropdown selection handler
+// Update the dropdown selection handler
 const handleDropdownChange = (selectedKey) => {
     setSelectedSearchField(selectedKey); // Set the selected key directly as a string
 };
 
-
-
-    // Function to update search results
-    const handleSearchResults = (results) => {
-        setSearchResults(results);
-    };
 
     const toggleComments = () => {
         setShowComments(!showComments);
@@ -465,7 +549,8 @@ const handleDropdownChange = (selectedKey) => {
 
     if (loading) {
         return (
-            <section className="w-full mx-auto my-4">
+<section className="w-full mx-auto my-4 mt-8 ml-50">
+
                 {[...Array(3)].map((_, index) => (
                     <div key={index} className="w-full bg-white shadow-lg flex mb-4">
                         <div className="rounded w-40 h-full bg-gray-200 flex items-center justify-center">
@@ -495,14 +580,14 @@ const handleDropdownChange = (selectedKey) => {
     }
 
     return (
-        <section className="w-full mx-auto my-4">
+        <section className="w-full mx-auto my-4 mt-8 ml-50">
             <div className="mb-6 w-full flex items-center gap-4"> {/* Adjusted to use flex and gap */}
-            <div className="flex-grow">
+            <div className="flex-grow  h-full">
             <SearchBar onSearch={handleSearch} selectedSearchField={selectedSearchField} titleInputValue={titleInputValue} // Maintain the value here
     setTitleInputValue={setTitleInputValue} // Optionally, for managing the input state
 />
 
-                {loading && <div>Loading...</div>}
+{loading && <div>Loading...</div>}
                     {error && <div>{error}</div>}
                     <div>
                         {manuscriptsToDisplay.length === 0 ? (
@@ -517,7 +602,7 @@ const handleDropdownChange = (selectedKey) => {
                         )}
                     </div>
             </div>
-                <div className="w-[200px]"> {/* Set dropdown button width to 50px */}
+                <div className="w-[200px] relative z-[0]"> {/* Set dropdown button width to 50px */}
                 <Dropdown>
                     <DropdownTrigger className="w-full">
                         <Button variant="bordered" className="capitalize w-full flex justify-between items-center">
@@ -543,7 +628,6 @@ const handleDropdownChange = (selectedKey) => {
                 </Dropdown>
                 </div>
             </div>
-
 
             {manuscriptsToDisplay.map((manuscript) => (
                 <div key={manuscript.id} className="w-full bg-white shadow-lg flex mb-4 text-sm">
@@ -789,18 +873,25 @@ const handleDropdownChange = (selectedKey) => {
 
 
 
-
-
-
                 <div className="mt-4 flex items-center gap-4">
                 <Tooltip content="Views">
-                    <div className={`flex items-center ${manuscript.man_doc_view_count > 0 ? 'text-blue-500' : 'text-gray-600'} hover:text-blue-700 cursor-pointer`}>
-                        <FaEye size={20} />
-                        <span className="ml-1">{manuscript.man_doc_view_count}</span>
-                    </div>
-                    </Tooltip>
+        <button className={`text-gray-600 hover:text-blue-500 ${manuscript.man_doc_content ? 'text-blue-500' : ''} flex items-center`}>
+            <FaEye size={20} />
+            <span className="ml-2">{manuscript.man_doc_view_count}</span> {/* Adjusted margin to 2 for better spacing */}
+        </button>
+    </Tooltip>
 
+{/*
                     <div
+                    key={manuscript.id}
+                    className="flex items-center text-blue-500 hover:text-blue-700 cursor-pointer"
+                    onClick={() => handleComments(manuscript.id, manuscript.man_doc_title)}  // Pass id and title to handleComments
+                    >
+                    <FaComment size={20} />
+                    </div> */}
+
+
+<div
                     key={manuscript.id}
                     className="flex items-center text-blue-500 hover:text-blue-700 cursor-pointer"
                     onClick={() => {
@@ -819,6 +910,28 @@ const handleDropdownChange = (selectedKey) => {
                     <FaComment size={20} />
                     </div>
 
+
+                    {/* <Tooltip content="Bookmark">
+                    <button
+                        className="text-gray-600 hover:text-blue-500"
+                        onClick={() => {
+                            if (!isAuthenticated) {
+                                // Show the login modal if the user is not authenticated
+                                openLogInModal();
+                            } else if (!isPremium) {
+                                // Show the subscription modal if the user is not premium
+                                openSubsModal();
+                            } else {
+                                // Proceed with the bookmark action if the user is premium and authenticated
+                                handleBookmark(manuscript.id);
+                            }
+                        }}
+                    >
+                        <FaBookmark size={20} />
+                    </button>
+                </Tooltip> */}
+
+
                 {/* Render ToggleComments only if a manuscript is selected and the sidebar is open */}
                 {selectedManuscript && (
                     <ToggleComments
@@ -833,7 +946,8 @@ const handleDropdownChange = (selectedKey) => {
 
 
 
-<Tooltip content="Bookmark">
+
+                <Tooltip content="Bookmark">
                     <button
                         className="text-gray-600 hover:text-blue-500"
                         onClick={() => {
@@ -852,6 +966,7 @@ const handleDropdownChange = (selectedKey) => {
                         <FaBookmark size={20} />
                     </button>
                 </Tooltip>
+
 
                 <Tooltip content="Download">
                     <button
@@ -874,9 +989,8 @@ const handleDropdownChange = (selectedKey) => {
                     </button>
                 </Tooltip>
 
-
-                                {/* Modal for Non-Premium Users */}
-                                {isSubsModal && (
+                {/* Modal for Non-Premium Users */}
+                {isSubsModal && (
                     <Modal show={isSubsModal} onClose={closeModal}>
                     <SubscriptionCard />
                     </Modal>
@@ -888,7 +1002,10 @@ const handleDropdownChange = (selectedKey) => {
                     </Modal>
                 )}
 
-<Tooltip content="Ratings">
+
+
+
+                {/* <Tooltip content="Ratings">
                     <button
                         className="text-gray-600 hover:text-blue-500"
                         onClick={() => {
@@ -907,6 +1024,39 @@ const handleDropdownChange = (selectedKey) => {
                         <FaStar size={20} />
                     </button>
                 </Tooltip>
+
+
+                */}
+
+
+
+                <Tooltip content="Ratings">
+                    <button
+                        className="text-gray-600 hover:text-blue-500"
+                        onClick={() => {
+                            if (!isAuthenticated) {
+                                // Show the login modal if the user is not authenticated
+                                openLogInModal();
+                            } else if (!isPremium) {
+                                // Show the subscription modal if the user is not premium
+                                openSubsModal();
+                            } else {
+                                // Proceed with the bookmark action if the user is premium and authenticated
+                                handleRatings(manuscript);
+                            }
+                        }}
+                    >
+                        <FaStar size={20} />
+                    </button>
+                </Tooltip>
+
+
+{/*
+                        onClick={() => handleRatings(manuscript)}
+                    >
+                        <FaStar size={20} />
+                    </button>
+                </Tooltip> */}
 
 
 
@@ -929,6 +1079,41 @@ const handleDropdownChange = (selectedKey) => {
                         <FaQuoteLeft size={20} />
                     </button>
                 </Tooltip>
+
+
+                {/* <Tooltip content="Cite">
+                    <button
+                        className="text-gray-600 hover:text-blue-500"
+                        onClick={() => handleCitation(manuscript)}
+                    >
+                        <FaQuoteLeft size={20} />
+                    </button>
+                </Tooltip> */}
+
+
+
+                {/* Rendering the PDF preview */}
+                {isPdfOpen && selectedManuscript && (
+                    <Modal show={isPdfOpen} onClose={() => setPdfOpen(false)}>
+                        <button disabled className="bg-gray-300 text-gray-500 py-4 px-4 font-bold rounded w-full">
+                            We systematically review all ratings to enhance our services, and we highly value them.
+                        </button>
+                        <div className="flex flex-col items-center justify-center p-6 rounded-lg shadow-md">
+                            <h2 className="text-2xl font-bold mb-4 text-center text-gray-500">
+                                {selectedManuscript.man_doc_title}
+                            </h2>
+
+                            {selectedManuscript.man_doc_content ? (
+                                <PdfViewer pdfUrl={selectedManuscript.man_doc_content} />
+                            ) : (
+                                <div className="flex items-center justify-center h-full w-full text-gray-500">
+                                    <p>No PDF available</p>
+                                </div>
+                            )}
+                        </div>
+                    </Modal>
+                )}
+
 
 
                     {/* Rendering the ratings modal */}
@@ -966,6 +1151,37 @@ const handleDropdownChange = (selectedKey) => {
                         </Modal>
                     )}
 
+
+
+                               {/* Rendering the comment modal */}
+                               {isCommentOpen && (
+                    <Modal show={isCommentOpen} onClose={() => setisCommentOpen(false)}>
+                        <button
+                                Disable='true'
+                                className="bg-gray-300 text-gray-500 py-4 px-4 font-bold rounded w-full"
+                                // onClick={handleSubmit}
+                            >
+                                We systematically review all ratings to enhance our services, and we highly value them.
+                            </button>
+                        <div className="flex flex-col items-center justify-center p-6 rounded-lg shadow-md">
+                            <h2 className="text-2xl font-bold mb-4  text-center text-gray-500">
+                                {selectedManuscript ? selectedManuscript.man_doc_title : ''}
+                            </h2>
+
+                            {/* Ratings component */}
+                            <CommentSections
+                            />
+
+                            {/* Submit button */}
+                            <button
+                                className="mt-4 bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition duration-200"
+                                onClick={handleSubmit}
+                            >
+                                Submit
+                            </button>
+                        </div>
+                    </Modal>
+                )}
 
 
                 {/* Rendering the citation modal */}
@@ -1034,7 +1250,7 @@ const handleDropdownChange = (selectedKey) => {
 
             </div>
 
-            {showComments && (
+                {showComments && (
                     <div className="mt-4 space-y-4">
                         {comments.map((comment, index) => (
                             <div key={index} className="border p-2 rounded">
@@ -1051,24 +1267,22 @@ const handleDropdownChange = (selectedKey) => {
                     </div>
                 )}
 
-
             </div>
-            </div>
-))}
-            <ToastContainer // Include ToastContainer for displaying toasts
-                position="bottom-center"
-                autoClose={2000}
-                hideProgressBar={false}
-                newestOnTop={false}
-                closeOnClick
-                rtl={false}
-                pauseOnFocusLoss
-                draggable
-                pauseOnHover
-                theme="colored"
-            />
+        </div>
+    ))}
+                <ToastContainer // Include ToastContainer for displaying toasts
+                    position="bottom-center"
+                    autoClose={2000}
+                    hideProgressBar={false}
+                    newestOnTop={false}
+                    closeOnClick
+                    rtl={false}
+                    pauseOnFocusLoss
+                    draggable
+                    pauseOnHover
+                    theme="colored"/>
         </section>
     );
 }
 
-export default Manuscript;
+export default MyUniBooks;

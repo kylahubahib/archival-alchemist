@@ -4,7 +4,7 @@ import { Card, CardFooter, Image, Button } from '@nextui-org/react';
 import StudentViewClass from '@/Pages/Users/Class/Student/StudentViewClass';
 import { router } from '@inertiajs/react';
 
-const JoinClassSection = ({ userId }) => {
+const JoinClassSection = ({ auth, user, userId, }) => {
     const [folders, setFolders] = useState([]);
     const [classCourse, setCourse] = useState('');
     const [ClassCode, setClassCode] = useState('');
@@ -117,7 +117,7 @@ const JoinClassSection = ({ userId }) => {
     return (
         <div className="flex flex-col items-start justify-start mx-8 bg-gray-100 mt-0 relative min-h-screen px-10">
             {isViewClassOpen ? (
-                <StudentViewClass folders={folders} onBack={handleBack} /> // Pass handleBack as a prop to ViewClass
+                <StudentViewClass auth={auth} user={user} folders={folders} onBack={handleBack} /> // Pass handleBack as a prop to ViewClass
             ) : (
                 <>
                     {/* Display folders or empty folder with a plus sign */}

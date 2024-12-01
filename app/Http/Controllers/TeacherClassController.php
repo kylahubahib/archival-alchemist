@@ -454,7 +454,61 @@ class TeacherClassController extends Controller
     }
 
 
+    // 1. Unique Views per User (One View per User)
+    public function view_Book($bookId)
+{
+    $userId = Auth::id(); // Get the currently logged-in user ID
+
+    // Check if the user has already viewed the book
+    $existingView = DB::table('book_views')
+                      ->where('user_id', $userId)
+                      ->where('book_id', $bookId)
+                      ->first();
+
+    if (!$existingView) {
+        // Record the user's view
+        DB::table('book_views')->insert([
+            'user_id' => $userId,
+            'book_id' => $bookId,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        // Increment the view count for the book
+        DB::table('books')
+            ->where('id', $bookId)
+            ->increment('view_count');
+    }
+
+    return response()->json(['message' => 'View recorded']);
+}
 
 
+
+    // 3. Views by Session or IP Address (Track Views by Session)
+    public function viewBook($bookId)
+    {
+        $userId = Auth::id(); // Get the currently logged-in user ID
+
+        // Log when a user views a book
+        Log::info('User ' . $userId . ' is viewing book with ID: ' . $bookId);
+
+        // Check if the user has viewed the book during this session
+        if (!session()->has('viewed_books.' . $bookId)) {
+            // Record the view in session to prevent duplicate counting
+            session()->put('viewed_books.' . $bookId, true);
+
+            // Increment the view count for the book in the database
+            DB::table('books')
+                ->where('id', $bookId)
+                ->increment('view_count');
+
+            // Log the view increment
+            Log::info('Book view count incremented for book ID: ' . $bookId);
+        }
+
+        // Return a success message
+        return response()->json(['message' => 'View recorded']);
+    }
 
 }

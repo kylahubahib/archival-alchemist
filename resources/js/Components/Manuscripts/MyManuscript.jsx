@@ -409,7 +409,7 @@ const Manuscript = ({auth, user}) => {
     const manuscriptsToDisplay = searchResults.length > 0 ? searchResults : manuscripts;
 
     if (manuscriptsToDisplay.length === 0) {
-        return <div className="flex justify-center items-center text-center h-screen">No manuscripts available.</div>;
+        return <div className="flex justify-center items-center text-gray-400">No manuscripts available.</div>;
     }
 
     return (

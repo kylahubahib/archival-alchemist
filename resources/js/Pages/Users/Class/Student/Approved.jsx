@@ -3,7 +3,7 @@ import axios from 'axios';
 import MyManuscript from '@/Components/Manuscripts/MyManuscript';
 
 
-const Approved = (auth) => {
+const Approved = (auth, user) => {
     const [manuscripts, setManuscripts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);

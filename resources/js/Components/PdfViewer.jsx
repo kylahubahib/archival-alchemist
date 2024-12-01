@@ -5,6 +5,9 @@ const PdfViewer = ({ pdfUrl }) => {
   const [blur, setBlur] = useState(false); // State to apply blur effect
   const [isScrolling, setIsScrolling] = useState(false); // Flag for scrolling status
 
+
+
+
   // Timeout to start applying the blur effect after 30 seconds
   useEffect(() => {
     if (scrollingTime >= 30) {

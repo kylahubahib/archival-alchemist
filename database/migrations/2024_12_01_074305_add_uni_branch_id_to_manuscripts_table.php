@@ -11,11 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('sections', function (Blueprint $table) {
-            // $table->unsignedBigInteger('sem_id')->nullable();
+        Schema::table('manuscripts', function (Blueprint $table) {
 
-            // $table->foreignId('sem_id')->references('id')->on('semesters')->onDelete('cascade');
+            // $table->unsignedBigInteger('uni_branch_id')->nullable();
 
+            // $table->foreignId('uni_branch_id')->references('id')->on('university_branches')->onDelete('cascade');
         });
     }
 
@@ -24,7 +24,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('sections', function (Blueprint $table) {
+        Schema::table('manuscripts', function (Blueprint $table) {
             //
         });
     }

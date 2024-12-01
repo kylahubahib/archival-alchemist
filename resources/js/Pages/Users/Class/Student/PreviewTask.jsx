@@ -9,7 +9,7 @@ import Approved from '@/Pages/Users/Class/Student/Approved';
 import Track from './Track';
 
 
-const PreviewTask = ({ folders, onBack, task, taskID }) => {
+const PreviewTask = ({ auth, user, folders, onBack, task, taskID }) => {
     const [showForm, setShowForm] = useState(false);
     const [activeSection, setActiveSection] = useState('taskInstructions');
     console.log('TaskInstructions received task:', task);
@@ -86,7 +86,7 @@ const PreviewTask = ({ folders, onBack, task, taskID }) => {
                 {activeSection === 'taskInstructions' && <TaskInstructions folders={folders} onBack={() => setActiveSection('')}  task={task} taskID={taskID}/>}
                 {activeSection === 'studentWork' && <StudentWork folders={folders} onBack={() => setActiveSection('')}  task={task} taskID={taskID}/>}
                 {/* {activeSection === 'studentWork' && <Track folders={folders} onBack={() => setActiveSection('')}  task={task} taskID={taskID}/>} */}
-                {activeSection === 'approved' && <Approved folders={folders} onBack={() => setActiveSection('')}  task={task} taskID={taskID}/>}
+                {activeSection === 'approved' && <Approved auth={auth} user={user} folders={folders} onBack={() => setActiveSection('')}  task={task} taskID={taskID}/>}
                 </div>
 
             {/* Conditionally Render AssignedprojectForm */}

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import GuestLayout from '@/Layouts/GuestLayout';
 import { Head } from '@inertiajs/react';
 import axios from 'axios';
 import { Link } from '@inertiajs/react';
@@ -45,6 +46,8 @@ const [error, setError] = useState('');
 const [isMembersLoading, setIsMembersLoading] = useState(false);
 
 
+const isAuthenticated = !!auth.user; // Check if user is authenticated
+const MainLayout = isAuthenticated ? AuthenticatedLayout : GuestLayout;
 
 // useEffect(() => {
 //     if (isShowMembersModalOpen && hoveredClass?.id) {
@@ -374,8 +377,8 @@ const handleAddStudent = async () => {
 
 
     return (
-        <AuthenticatedLayout
-            user={auth.user}
+        <MainLayout
+        user={auth.user}
             header={
                 <div className="flex justify-between items-center w-h-screen">
                     {selectedCourse && !selectedClass && (
@@ -405,7 +408,11 @@ const handleAddStudent = async () => {
         </Link>
     </div>
             {isCreating ? (
-                <JoinClassSection onCreate={handleCreate} className="flex justify-between items-center"/>
+                <JoinClassSection
+                auth={auth}
+                user={auth.user} // Pass the user to Manuscript
+                onCreate={handleCreate}
+                 className="flex justify-between items-center"/>
             ) : (
                 <div>
                     {/* Render classes or other main content here */}
@@ -632,6 +639,6 @@ const handleAddStudent = async () => {
                     </>
                 </div>
             </div>
-        </AuthenticatedLayout>
+        </MainLayout>
     );
 }

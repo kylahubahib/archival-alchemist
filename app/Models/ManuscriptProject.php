@@ -18,6 +18,7 @@ class ManuscriptProject extends Model
         'man_doc_title',
         'man_doc_description',
         'man_doc_description',
+        'man_doc_visibilty',
         'man_doc_content',
         'man_doc_status',
         'man_doc_adviser',
@@ -29,6 +30,7 @@ class ManuscriptProject extends Model
         'group_id',
         'section_id',
         'class_id',
+        'uni-branch_id'
     ];
 
     /**
@@ -83,6 +85,24 @@ class ManuscriptProject extends Model
     public function group()
     {
         return $this->belongsTo(Group::class, 'group_id');
+    }
+
+      // Other model properties and methods
+
+    /**
+     * Get all the users who have viewed this manuscript.
+     */
+    public function bookViews()
+    {
+        return $this->hasMany(BookView::class, 'man_doc_id');
+    }
+
+    /**
+     * Get all the users who have viewed this manuscript.
+     */
+    public function viewers()
+    {
+        return $this->belongsToMany(User::class, 'book_views', 'man_doc_id', 'user_id');
     }
 
 }

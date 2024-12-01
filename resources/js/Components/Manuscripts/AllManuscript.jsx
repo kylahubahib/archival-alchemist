@@ -44,9 +44,58 @@ const Manuscript = ({auth, user, choice}) => {
     const [isMaximized, setIsMaximized] = useState(false); // State to track if maximized or not
     const [isSidebarOpen, setIsSidebarOpen] = useState(false); // State to track sidebar visibility
     const [maximizedId, setMaximizedId] = useState(null); // Tracks which manuscript is maximized
+    const [manuscriptId, setManuscriptId] = useState(null);
+
+
+  // State to store the message or any relevant data from the backend
+  const [viewMessage, setViewMessage] = useState("");
+  const [viewCount, setViewCount] = useState(0);
+
+
+
+
+  // Function to trigger the book view request
+  const handleBookView = async () => {
+    console.log(`Attempting to track view for book with ID: ${bookId}`);
+
+    try {
+      // Make the request to the backend to track the view
+      const response = await axios.post(`/api/view-book/${bookId}`);
+
+      // Log the successful response from the backend
+      console.log('Response from backend:', response.data);
+
+      // Assuming the backend sends a message upon successful view tracking
+      setViewMessage(response.data.message);
+
+      // Optionally, you can update the view count here if returned by the backend
+      // setViewCount(response.data.view_count);  // If view count is returned by backend
+    } catch (error) {
+      console.error("Error tracking the book view", error);
+      setViewMessage("An error occurred while tracking the view.");
+    }
+  };
+
+
+//   useEffect(() => {
+//     // Set manuscript ID when the component loads
+//     if (manuscript?.id) {
+//       setManuscriptId(manuscript.id);
+//     }
+//   }, [manuscript]);
 
     const handleMaximize = (id) => {
+        console.log("This is the mannuscripts ID: ", id)
       setMaximizedId((prevId) => (prevId === id ? null : id)); // Toggle maximization
+      axios
+      .post(`/manuscripts/${id}/increment-view`)
+      .then((response) => {
+          console.log('View count incremented:', response.data);
+      })
+      .catch((error) => {
+          console.error('Error incrementing view count:', error);
+      });
+
     };
 
     const toggleSidebar = () => {
@@ -106,10 +155,44 @@ const Manuscript = ({auth, user, choice}) => {
       };
 
 
+  // Function to handle the view increment
+  const handlePdfLoad = (id) => {
+    // When the PDF is loaded, increment the view count
+    axios
+    .post(`/manuscripts/${id}/increment-view`)
+    .then((response) => {
+        console.log('View count incremented:', response.data);
+    })
+    .catch((error) => {
+        console.error('Error incrementing view count:', error);
+    });
 
-    const handlePdfLoad = () => {
-      setIsLoading(false); // Set loading to false once PDF is loaded
-    };
+  };
+
+  const handleClick = (id) => {
+    // When the PDF is loaded, increment the view count
+    axios
+    .post(`/manuscripts/${id}/increment-view`)
+    .then((response) => {
+        console.log('View count incremented:', response.data);
+    })
+    .catch((error) => {
+        console.error('Error incrementing view count:', error);
+    });
+};
+    // const handlePdfLoad = () => {
+    //   setIsLoading(false); // Set loading to false once PDF is loaded
+    //     // Call the API to increment view count
+
+    // axios
+    // .post(`/manuscripts/${manuscripts.id}/increment-view`)
+    // .then((response) => {
+    //     console.log('View count incremented:', response.data);
+    // })
+    // .catch((error) => {
+    //     console.error('Error incrementing view count:', error);
+    // });
+    // };
 
       // Reset loading state when the modal is opened again
   useEffect(() => {
@@ -521,7 +604,7 @@ const handleDropdownChange = (selectedKey) => {
     const manuscriptsToDisplay = searchResults.length > 0 ? searchResults : manuscripts; // Use search results if available
 
     if (manuscriptsToDisplay.length === 0) {
-        return <div>No manuscripts available.</div>;
+        return <div className="flex justify-center items-center text-gray-400">No manuscripts available.</div>;
     }
 
     return (
@@ -536,7 +619,7 @@ const handleDropdownChange = (selectedKey) => {
                     {error && <div>{error}</div>}
                     <div>
                         {manuscriptsToDisplay.length === 0 ? (
-                            <div>No manuscripts available.</div>
+                            <div className="flex justify-center items-center text-gray-400">No manuscripts available.</div>
                         ) : (
                             manuscriptsToDisplay.map(manuscript => (
                                 <div key={manuscript.id}>
@@ -576,7 +659,7 @@ const handleDropdownChange = (selectedKey) => {
 
             {manuscriptsToDisplay.map((manuscript) => (
                 <div key={manuscript.id} className="w-full bg-white shadow-lg flex mb-4 text-sm">
-
+{console.log("Mao ni:", manuscriptsToDisplay)}
         <div
             className={`rounded ${maximizedId === manuscript.id ? 'w-full h-full' : 'w-40 h-48'} bg-gray-200 flex items-center justify-center relative transition-all duration-300 ease-in-out y-4 m-5`}
         >
@@ -601,7 +684,7 @@ const handleDropdownChange = (selectedKey) => {
     />
   )}
 
-  {/* Maximize / Minimize Button */}
+  {/* Maximize / Minimize ButthandleMaximizeon */}
   <button
     onClick={() => handleMaximize(manuscript.id)}
     className="absolute top-2 right-2 bg-gray-500 text-white p-2 rounded-full shadow-lg hover:bg-gray-600 transition-colors duration-200 z-40"
@@ -669,6 +752,8 @@ const handleDropdownChange = (selectedKey) => {
                                              className="w-full h-full border-0 rounded-lg shadow-md"
                                              title="PDF Viewer"
                                              onLoad={handlePdfLoad}
+
+
                                          ></iframe>
                                      </div>
 
@@ -698,6 +783,7 @@ const handleDropdownChange = (selectedKey) => {
                 // If the user is premium, show the link directly
                 <h2 className="text-base font-bold text-gray-900">
                 <a
+                  onClick={() => handleClick(manuscript.id)} // Trigger the increment logic before opening the link
                     href={`http://127.0.0.1:8000/${manuscript.man_doc_content}`}
                     target="_blank"
                     rel="noopener noreferrer"
