@@ -29,11 +29,13 @@ const ReviewManuscript = ({groupId, folders, onBack, task, taskID, closeModal, c
   const [error, setError] = useState(null);
   // This will be the indicator that the manuscript is submitted for reviewing. 
   // They cannot click submit if its still ongoing
-  const [ongoingReview, setOngoingReview] = useState(manuscript.man_doc_status === 'T' ? true : false);
+  const [ongoingReview, setOngoingReview] = useState(manuscript.man_doc_status === 'To-Review');
 
 
 console.log("This is the group ID: ", groupId)
   useEffect(() => {
+
+
     const fetchData = async () => {
       try {
         const data = manuscript.revision_history;
@@ -89,6 +91,7 @@ console.log("This is the group ID: ", groupId)
       .then(response => {
         if (response.data.success) {
           console.log(response.data.success);
+          toast.success(response.data.success);
           setOngoingReview(true);
         } else {
           console.error('Something went wrong:', response.data.error);
@@ -237,12 +240,18 @@ console.log("This is the group ID: ", groupId)
                 )}
               </div>
 
-              <button onClick={handleSendForReview}
-              className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white py-2 rounded-lg hover:from-blue-600 hover:to-blue-700 shadow-md"
-              disabled={ongoingReview}
+              <button 
+                onClick={handleSendForReview}
+                className={`w-full py-2 rounded-lg shadow-md ${
+                  ongoingReview 
+                    ? 'bg-gray-400 cursor-not-allowed' 
+                    : 'bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:from-blue-600 hover:to-blue-700' // Enabled state
+                }`}
+                disabled={ongoingReview}
               >
                 Send For Review
               </button>
+
 
             </div>
           )}

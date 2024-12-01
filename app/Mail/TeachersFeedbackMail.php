@@ -16,7 +16,7 @@ class TeachersFeedbackMail extends Mailable
     /**
      * Create a new message instance.
      */
-    public function __construct()
+    public function __construct(public array $data)
     {
         //
     }
@@ -27,7 +27,7 @@ class TeachersFeedbackMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Teachers Feedback Mail',
+            subject: 'Your Manuscript Feedback Is Ready',
         );
     }
 
@@ -37,7 +37,7 @@ class TeachersFeedbackMail extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'view.name',
+            markdown: 'emails.teacher-feedback',
         );
     }
 
