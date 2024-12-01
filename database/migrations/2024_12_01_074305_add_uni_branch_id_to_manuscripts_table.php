@@ -13,6 +13,8 @@ return new class extends Migration
     {
         Schema::table('manuscripts', function (Blueprint $table) {
 
+            $table->foreignId('uni_branch_id')->nullable()->references('id')->on('university_branches')->onDelete('cascade');
+
             // $table->unsignedBigInteger('uni_branch_id')->nullable();
 
             // $table->foreignId('uni_branch_id')->references('id')->on('university_branches')->onDelete('cascade');
