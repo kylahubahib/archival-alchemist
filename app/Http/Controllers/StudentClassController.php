@@ -1056,22 +1056,25 @@ public function isPremium()
     public function uploadToDrive($file, $authorIds, $teacherId, $manuscriptId)
     {
 
-        Log::info('Start Googlr Drive Upload Process');
+        Log::info('Start Google Drive Upload Process'); 
+
+        $keyFilePath = storage_path('app/document-management-438910-d2725c4da7e7.json');
 
         // Initialize Google Client
         $client = new GoogleClient();
-        $client->setAuthConfig([
-            'type' => env('GOOGLE_SERVICE_TYPE'),
-            'project_id' => env('GOOGLE_SERVICE_PROJECT_ID'),
-            'private_key_id' => env('GOOGLE_SERVICE_PRIVATE_KEY_ID'),
-            'private_key' => env('GOOGLE_SERVICE_PRIVATE_KEY'),
-            'client_email' => env('GOOGLE_SERVICE_CLIENT_EMAIL'),
-            'client_id' => env('GOOGLE_SERVICE_CLIENT_ID'),
-            'auth_uri' => env('GOOGLE_SERVICE_AUTH_URI'),
-            'token_uri' => env('GOOGLE_SERVICE_TOKEN_URI'),
-            'auth_provider_x509_cert_url' => env('GOOGLE_SERVICE_AUTH_PROVIDER_CERT_URL'),
-            'client_x509_cert_url' => env('GOOGLE_SERVICE_CLIENT_CERT_URL'),
-        ]);
+        $client->setAuthConfig($keyFilePath);
+        // $client->setAuthConfig([
+        //     'type' => env('GOOGLE_SERVICE_TYPE'),
+        //     'project_id' => env('GOOGLE_SERVICE_PROJECT_ID'),
+        //     'private_key_id' => env('GOOGLE_SERVICE_PRIVATE_KEY_ID'),
+        //     'private_key' => env('GOOGLE_SERVICE_PRIVATE_KEY'),
+        //     'client_email' => env('GOOGLE_SERVICE_CLIENT_EMAIL'),
+        //     'client_id' => env('GOOGLE_SERVICE_CLIENT_ID'),
+        //     'auth_uri' => env('GOOGLE_SERVICE_AUTH_URI'),
+        //     'token_uri' => env('GOOGLE_SERVICE_TOKEN_URI'),
+        //     'auth_provider_x509_cert_url' => env('GOOGLE_SERVICE_AUTH_PROVIDER_CERT_URL'),
+        //     'client_x509_cert_url' => env('GOOGLE_SERVICE_CLIENT_CERT_URL'),
+        // ]);
         $client->addScope(GoogleDrive::DRIVE_FILE);
 
 
@@ -1215,20 +1218,23 @@ public function isPremium()
             return response()->json(['error' => 'Invalid Google Doc URL.'], 400);
         }
 
+        $keyFilePath = storage_path('app/document-management-438910-d2725c4da7e7.json');
+
         // Initialize Google Client
         $client = new GoogleClient();
-        $client->setAuthConfig([
-            'type' => env('GOOGLE_SERVICE_TYPE'),
-            'project_id' => env('GOOGLE_SERVICE_PROJECT_ID'),
-            'private_key_id' => env('GOOGLE_SERVICE_PRIVATE_KEY_ID'),
-            'private_key' => env('GOOGLE_SERVICE_PRIVATE_KEY'),
-            'client_email' => env('GOOGLE_SERVICE_CLIENT_EMAIL'),
-            'client_id' => env('GOOGLE_SERVICE_CLIENT_ID'),
-            'auth_uri' => env('GOOGLE_SERVICE_AUTH_URI'),
-            'token_uri' => env('GOOGLE_SERVICE_TOKEN_URI'),
-            'auth_provider_x509_cert_url' => env('GOOGLE_SERVICE_AUTH_PROVIDER_CERT_URL'),
-            'client_x509_cert_url' => env('GOOGLE_SERVICE_CLIENT_CERT_URL'),
-        ]);
+        $client->setAuthConfig($keyFilePath);
+        // $client->setAuthConfig([
+        //     'type' => env('GOOGLE_SERVICE_TYPE'),
+        //     'project_id' => env('GOOGLE_SERVICE_PROJECT_ID'),
+        //     'private_key_id' => env('GOOGLE_SERVICE_PRIVATE_KEY_ID'),
+        //     'private_key' => env('GOOGLE_SERVICE_PRIVATE_KEY'),
+        //     'client_email' => env('GOOGLE_SERVICE_CLIENT_EMAIL'),
+        //     'client_id' => env('GOOGLE_SERVICE_CLIENT_ID'),
+        //     'auth_uri' => env('GOOGLE_SERVICE_AUTH_URI'),
+        //     'token_uri' => env('GOOGLE_SERVICE_TOKEN_URI'),
+        //     'auth_provider_x509_cert_url' => env('GOOGLE_SERVICE_AUTH_PROVIDER_CERT_URL'),
+        //     'client_x509_cert_url' => env('GOOGLE_SERVICE_CLIENT_CERT_URL'),
+        // ]);
         $client->addScope(GoogleDrive::DRIVE_FILE);
         $client->setSubject('file-manager@document-management-438910.iam.gserviceaccount.com');
 

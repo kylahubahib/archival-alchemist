@@ -232,9 +232,11 @@ console.log("This is the Task ID:", taskID);
 
               console.log('In here...')
 
+              const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
               // Submit the form data
               const response = await axios.post('/api/capstone/upload', formData, {
-                  headers: { 'Content-Type': 'multipart/form-data' },
+                  headers: { 'Content-Type': 'multipart/form-data', 'X-CSRF-TOKEN': csrfToken, },
               });
 
               setMessage(response.data.message);
