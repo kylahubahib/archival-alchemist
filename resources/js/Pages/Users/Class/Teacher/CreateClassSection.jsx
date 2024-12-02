@@ -20,7 +20,7 @@ const CreateClassSection = ({setDropdownVisible, visible, selectedSemester, seme
     const [selectedFolder, setSelectedFolder] = useState(null);
 
     const userToken = localStorage.getItem('userToken');
-    const DEFAULT_PROFILE_IMAGE = '/path/to/default/profile.jpg';
+    const DEFAULT_PROFILE_IMAGE = '/images/class.jpg';
 
     useEffect(() => {
         // Fetch classes only if a semester is selected
@@ -177,7 +177,7 @@ const CreateClassSection = ({setDropdownVisible, visible, selectedSemester, seme
                             >
                                 <div className="flex flex-col items-center text-center  mx-16">
                                     <div className="text-5xl text-[#4285f4]">+</div>
-                                    <span className="mt-4 text-lg text-[#4285f4] font-semibold">Create Class</span>
+                                    <span className="mt-4 text-sm text-[#4285f4] font-semibold">Create Class</span>
                                 </div>
                             </div>
 
@@ -190,7 +190,7 @@ const CreateClassSection = ({setDropdownVisible, visible, selectedSemester, seme
                                             alt="Instructor"
                                             className="object-cover"
                                             height={80}
-                                            src="https://nextui.org/images/hero-card.jpeg"
+                                            src="images/class.png"
                                             width={80}
                                         />
                                         {/* Text (Subject and Section) */}

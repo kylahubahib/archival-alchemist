@@ -419,7 +419,7 @@ Route::get('api/universities-branches', [UniversityController::class, 'getUniver
 
 
 //manuscript project
-Route::middleware(['auth'])->group(function () {
+// Route::middleware(['auth'])->group(function () {
     // Route for storing a new manuscript project
     Route::post('/api/capstone/upload', [StudentClassController::class, 'storeManuscriptProject'])->name('api.capstone.upload');
 
@@ -462,6 +462,7 @@ Route::get('/check-student-in-class', [StudentClassController::class, 'checkStud
 Route::get('/api/publishedRec-manuscripts', [StudentClassController::class, 'getPublishedRecManuscripts']);
 Route::get('/api/publishedMyUniBooks-manuscripts', [StudentClassController::class, 'getMyUniBooks']);
 Route::get('/api/my-approved-manuscripts', [StudentClassController::class, 'myApprovedManuscripts']);
+Route::get('/api/teachers-repository', [StudentClassController::class, 'teachersRepository']);
 Route::get('/api/my-favorite-manuscripts', [StudentClassController::class, 'myfavoriteManuscripts']);
 Route::post('/api/addfavorites', [StudentClassController::class, 'storefavorites'])
     ->middleware(['auth', 'verified', 'user-type:student, teacher'])
@@ -604,5 +605,6 @@ Route::get('/fetch-comments/{id}', [DocCommentsController::class, 'fetchComments
 //Route::get('/fetch-replies', [DocCommentsController::class, 'fetchReplies'])->name('fetchrepllies');
 
 Route::post('/manuscripts/{id}/increment-view', [StudentClassController::class, 'incrementViewCount']);
+Route::get('/fetch-userType', [TeacherClassController::class, 'fetchUserType']);
 
 require __DIR__.'/auth.php';

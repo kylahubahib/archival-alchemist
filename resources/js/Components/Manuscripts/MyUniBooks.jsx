@@ -891,24 +891,29 @@ const handleDropdownChange = (selectedKey) => {
                     </div> */}
 
 
+
 <div
-                    key={manuscript.id}
-                    className="flex items-center text-blue-500 hover:text-blue-700 cursor-pointer"
-                    onClick={() => {
-                        if (!isAuthenticated) {
-                            // Show the login modal if the user is not authenticated
-                            openLogInModal();
-                        } else if (!isPremium) {
-                            // Show the subscription modal if the user is not premium
-                            openSubsModal();
-                        } else {
-                            // Proceed with the bookmark action if the user is premium and authenticated
-                            handleComments(manuscript.id, manuscript.man_doc_title)
-                        }
-                    }}
-                >
-                    <FaComment size={20} />
-                    </div>
+key={manuscript.id}
+className="flex items-center text-blue-500 hover:text-blue-700 cursor-pointer"
+onClick={() => {
+setSelectedManuscript(manuscript); // Set the selected manuscript
+setIsSidebarOpen(true); // Ensure the sidebar opens
+}}
+>
+<FaComment size={20} />
+</div>
+
+{/* Render ToggleComments only if a manuscript is selected and the sidebar is open */}
+{selectedManuscript && isSidebarOpen && (
+<ToggleComments
+auth={auth}
+manuscripts={selectedManuscript} // Pass the selected manuscript to ToggleComments
+man_id={selectedManuscript.id} // Pass additional properties if needed
+man_doc_title={selectedManuscript.man_doc_title}
+isOpen={isSidebarOpen}
+toggleSidebar={() => setIsSidebarOpen((prevState) => !prevState)} // Toggle the sidebar
+/>
+)}
 
 
                     {/* <Tooltip content="Bookmark">
@@ -968,7 +973,7 @@ const handleDropdownChange = (selectedKey) => {
                 </Tooltip>
 
 
-                <Tooltip content="Download">
+                {/* <Tooltip content="Download">
                     <button
                         className="text-gray-600 hover:text-blue-500"
                         onClick={() => {
@@ -987,7 +992,16 @@ const handleDropdownChange = (selectedKey) => {
                     >
                         <FaFileDownload size={20} />
                     </button>
-                </Tooltip>
+                </Tooltip> */}
+
+<Tooltip content="Download">
+                                <button
+                                    className="text-gray-600 hover:text-blue-500"
+                                    onClick={() => handleDownload(manuscript.id, manuscript.man_doc_title)}
+                                >
+                                    <FaFileDownload size={20} />
+                                </button>
+                            </Tooltip>
 
                 {/* Modal for Non-Premium Users */}
                 {isSubsModal && (
@@ -1030,7 +1044,7 @@ const handleDropdownChange = (selectedKey) => {
 
 
 
-                <Tooltip content="Ratings">
+                {/* <Tooltip content="Ratings">
                     <button
                         className="text-gray-600 hover:text-blue-500"
                         onClick={() => {
@@ -1048,8 +1062,16 @@ const handleDropdownChange = (selectedKey) => {
                     >
                         <FaStar size={20} />
                     </button>
-                </Tooltip>
+                </Tooltip> */}
 
+<Tooltip content="Ratings">
+                                <button
+                                    className="text-gray-600 hover:text-blue-500"
+                                    onClick={() => handleRatings(manuscript)}
+                                >
+                                    <FaStar size={20} />
+                                </button>
+                            </Tooltip>
 
 {/*
                         onClick={() => handleRatings(manuscript)}
@@ -1060,25 +1082,14 @@ const handleDropdownChange = (selectedKey) => {
 
 
 
-                <Tooltip content="Cite">
-                    <button
-                        className="text-gray-600 hover:text-blue-500"
-                        onClick={() => {
-                            if (!isAuthenticated) {
-                                // Show the login modal if the user is not authenticated
-                                openLogInModal();
-                            } else if (!isPremium) {
-                                // Show the subscription modal if the user is not premium
-                                openSubsModal();
-                            } else {
-                                // Proceed with the bookmark action if the user is premium and authenticated
-                                handleCitation(manuscript);
-                            }
-                        }}
-                    >
-                        <FaQuoteLeft size={20} />
-                    </button>
-                </Tooltip>
+                           <Tooltip content="Cite">
+                                <button
+                                    className="text-gray-600 hover:text-blue-500"
+                                    onClick={() => handleCitation(manuscript)}
+                                >
+                                    <FaQuoteLeft size={20} />
+                                </button>
+                            </Tooltip>
 
 
                 {/* <Tooltip content="Cite">

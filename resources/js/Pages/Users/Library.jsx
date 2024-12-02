@@ -166,8 +166,8 @@ const handleEndYearChange = (e) => {
                             <div className="flex items-center space-x-2">
       <div className="flex items-center justify-between">
         <div className="flex flex-col">
-          <label className="text-sm">Start Year:</label>
-          <select
+          {/* <label className="text-sm">Start Year:</label> */}
+          {/* <select
             value={startYear}
             onChange={(e) => setStartYear(parseInt(e.target.value, 10))}
             className="px-2 py-1 rounded text-sm" // Reduced padding and font size
@@ -178,11 +178,11 @@ const handleEndYearChange = (e) => {
                 {year}
               </option>
             ))}
-          </select>
+          </select> */}
         </div>
 
-        <div className="flex flex-col ml-4">
-          <label className="text-sm">End Year:</label>
+        {/* <div className="flex flex-col ml-4"> */}
+          {/* <label className="text-sm">End Year:</label>
           <select
             value={endYear}
             onChange={handleEndYearChange} // Use the new handler
@@ -194,12 +194,9 @@ const handleEndYearChange = (e) => {
                 {year}
               </option>
             ))}
-          </select>
-        </div>
+          </select> */}
+        {/* </div> */}
 
-      {/* <p className="text-default-500 text-sm">
-        Selected range: {startYear} - {endYear}
-      </p> */}
     </div>
                             </div>
                         </div>

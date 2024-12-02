@@ -514,7 +514,10 @@ class TeacherClassController extends Controller
 
         // Return a success message
         return response()->json(['message' => 'View recorded']);
-    }    public function returnStudentWork(Request $request)
+    }
+
+
+    public function returnStudentWork(Request $request)
     {
         $manuscriptId = $request->get('manuscript_id');
         Log::info("Starting 'sendForRevision' process for manuscript ID: $manuscriptId");
@@ -611,6 +614,24 @@ class TeacherClassController extends Controller
 
         return response()->json(['success' => 'Document permissions updated successfully.']);
     }
+
+
+
+
+     public function fetchUserType()
+{
+    $userId = Auth::id(); // Get the currently logged-in user ID
+
+    Log::info('Fetching user type', ['userId' => $userId]);
+
+    $userType = User::where('id', $userId)->first();
+
+    if (!$userType) {
+        return response()->json(['error' => 'User not found'], 404);
+    }
+
+    return response()->json(['userType' => $userType->user_type]);
+}
 
 
 }

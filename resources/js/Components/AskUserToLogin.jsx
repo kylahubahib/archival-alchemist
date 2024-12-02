@@ -45,7 +45,7 @@ const AskUserToLogin = () => {
             href="#contact"
             className="relative flex h-9 w-full items-center justify-center px-4 before:absolute before:inset-0 before:rounded-full before:bg-white before:transition before:duration-300 hover:before:scale-105 active:duration-75 active:before:scale-95 sm:w-max"
           >
-            <span className="relative text-sm font-semibold text-black hover:bg:blue-500"><NavLink href={route('login')} active={route().current('login')} >Sign In Now!</NavLink></span>
+            <span className="relative text-sm font-semibold text-black hover:bg:blue-500"><NavLink href={route('login')} className="text-customBlue">Login</NavLink></span>
           </a>
         </div>
       </div>

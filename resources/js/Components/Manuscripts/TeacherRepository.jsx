@@ -14,7 +14,7 @@ import AskUserToLogin from '@/Components/AskUserToLogin';
 import PdfViewer from '@/Components/PdfViewer';
 import ToggleComments from '@/Components/ToggleComments';
 
-const Manuscript = ({auth, user}) => {
+const TeacherRepository = ({auth, user}) => {
     const [manuscripts, setManuscripts] = useState([]);
     const [searchResults, setSearchResults] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -382,7 +382,7 @@ const Manuscript = ({auth, user}) => {
 
     useEffect(() => {
         console.log('Fetching manuscripts...');
-        axios.get('/api/my-approved-manuscripts')
+        axios.get('/api/teachers-repository')
         .then(response => {
             console.log('Fetched manuscripts with tags:', response.data);
             setManuscripts(response.data);
@@ -429,7 +429,7 @@ const Manuscript = ({auth, user}) => {
     const manuscriptsToDisplay = searchResults.length > 0 ? searchResults : manuscripts;
 
     if (manuscriptsToDisplay.length === 0) {
-        return <div className="flex justify-center items-center text-gray-400">No manuscripts available.</div>;
+        return <div className="flex justify-center text-gray-400 h-screen">No manuscripts available.</div>;
     }
 
     return (
@@ -441,7 +441,7 @@ const Manuscript = ({auth, user}) => {
                     {error && <div>{error}</div>}
                     <div>
                         {manuscriptsToDisplay.length === 0 ? (
-                            <div className="flex justify-center items-center text-gray-400">No manuscripts available.</div>
+                            <div className="flex justify-center text-gray-400 h-screen">No manuscripts available.</div>
                         ) : (
                             manuscriptsToDisplay.map(manuscript => (
                                 <div key={manuscript.id}>
@@ -808,4 +808,4 @@ const Manuscript = ({auth, user}) => {
     );
 }
 
-export default Manuscript;
+export default TeacherRepository;

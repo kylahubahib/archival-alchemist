@@ -453,30 +453,83 @@ const Manuscript = ({auth, user, choice}) => {
         fetchFavorites();
     }, [user]);
 
+    const [bookmarkedManuscripts, setBookmarkedManuscripts] = useState(new Set());
 
-    const handleBookmark = async (manuscriptId) => {
-        if (!user) {
-            alert('You need to be logged in to bookmark.');
-            return;
+    // Check if the manuscript is bookmarked
+    const isBookmarked = bookmarkedManuscripts.has(manuscriptId);
+
+
+    useEffect(() => {
+        const fetchBookmarkedManuscripts = async () => {
+            try {
+                const response = await axios.get('/api/my-favorite-manuscripts');
+                const data = response.data;
+
+                // Create a set of bookmarked manuscript IDs
+                const bookmarksSet = new Set(data.map((item) => item.id));
+                setBookmarkedManuscripts(bookmarksSet);
+
+                // Remove duplicates and set manuscripts
+                const uniqueManuscripts = Array.from(bookmarksSet).map((id) =>
+                    data.find((item) => item.id === id)
+                );
+                setManuscripts(uniqueManuscripts);
+            } catch (error) {
+                console.error('Error fetching manuscripts:', error);
+                setError('An error occurred while fetching the data.');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        if (isAuthenticated) {
+            fetchBookmarkedManuscripts();
         }
+    }, [isAuthenticated]);
 
-        // Log user and favorite set for debugging
-        console.log("User:", user);
-        console.log("Favorites:", favorites);
+    // const handleBookmark = async (manuscriptId) => {
+    //     if (!user) {
+    //         alert('You need to be logged in to bookmark.');
+    //         return;
+    //     }
 
-        const favoriteKey = `${user.id}-${manuscriptId}`;
+    //     // Log user and favorite set for debugging
+    //     console.log("User:", user);
+    //     console.log("Favorites:", favorites);
 
-        // Check if the manuscript is already bookmarked
-        if (favorites.has(favoriteKey)) {
-            console.log("Removing favorite:", favoriteKey);
-            // Manuscript is already favorited by the current user, remove it
-            await handleRemoveFavorite(manuscriptId);
-        } else {
-            console.log("Adding favorite:", favoriteKey);
-            // Manuscript is not favorited by the current user, add it
-            await handleAddFavorite(manuscriptId);
-        }
-    };
+    //     const favoriteKey = `${user.id}-${manuscriptId}`;
+
+    //     // Check if the manuscript is already bookmarked
+    //     if (favorites.has(favoriteKey)) {
+    //         console.log("Removing favorite:", favoriteKey);
+    //         // Manuscript is already favorited by the current user, remove it
+    //         await handleRemoveFavorite(manuscriptId);
+    //     } else {
+    //         console.log("Adding favorite:", favoriteKey);
+    //         // Manuscript is not favorited by the current user, add it
+    //         await handleAddFavorite(manuscriptId);
+    //     }
+    // };
+
+
+        // Add or remove a favorite
+        const handleBookmark = async (manuscriptId) => {
+            const favoriteKey = `${user.id}-${manuscriptId}`;
+
+            if (isBookmarked) {
+                // Remove bookmark
+                await handleRemoveFavorite(manuscriptId);
+                setBookmarkedManuscripts((prev) => {
+                    const updated = new Set(prev);
+                    updated.delete(manuscriptId);
+                    return updated;
+                });
+            } else {
+                // Add bookmark
+                await handleAddFavorite(manuscriptId);
+                setBookmarkedManuscripts((prev) => new Set(prev).add(manuscriptId));
+            }
+        };
 
     const handleRemoveFavorite = async (manuscriptId) => {
         try {
@@ -690,7 +743,7 @@ const handleDropdownChange = (selectedKey) => {
   {/* Maximize / Minimize ButthandleMaximizeon */}
   <button
     onClick={() => handleMaximize(manuscript.id)}
-    className="absolute top-2 right-2 bg-gray-500 text-white p-2 rounded-full shadow-lg hover:bg-gray-600 transition-colors duration-200 z-40"
+    className="absolute top-2 right-2 bg-gray-500 text-white p-2 rounded-full shadow-lg hover:bg-gray-600 transition-colors duration-200 z-10"
   >
     {maximizedId === manuscript.id ? 'X' : 'Preview'}
   </button>
@@ -979,7 +1032,7 @@ const handleDropdownChange = (selectedKey) => {
 
 
 
-{/* 
+{/*
                 <Tooltip content="Bookmark">
                     <button
                         className="text-gray-600 hover:text-blue-500"

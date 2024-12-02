@@ -56,12 +56,12 @@ const PreviewTask = ({ folders, onBack, task, taskID }) => {
                         People
                     </button>
 
-                    <button
+                    {/* <button
                         onClick={handleShowGrades}
                         className={`text-gray-600 font-semibold ${activeSection === 'grades' ? 'text-blue-500' : 'hover:text-blue-500'}`}
                     >
                         Grades
-                    </button>
+                    </button> */}
                 </div>
 
                 {/* Right side buttons: "+ Assign Project" and Back */}
