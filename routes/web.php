@@ -605,6 +605,9 @@ Route::get('/fetch-comments/{id}', [DocCommentsController::class, 'fetchComments
 //Route::get('/fetch-replies', [DocCommentsController::class, 'fetchReplies'])->name('fetchrepllies');
 
 Route::post('/manuscripts/{id}/increment-view', [StudentClassController::class, 'incrementViewCount']);
+
+
+Route::get('/api/check-group', [StudentClassController::class, 'checkGroup']);
 Route::get('/fetch-userType', [TeacherClassController::class, 'fetchUserType']);
 
 require __DIR__.'/auth.php';

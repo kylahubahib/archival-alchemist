@@ -920,6 +920,28 @@ public function myfavoriteManuscripts()
 
 
 
+  /**
+     * Check if the authenticated user is part of a group.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function checkGroup()
+    {
+        // Get the authenticated user's ID
+        $userId = Auth::id();
+
+        // Check if the user has a non-null group_id
+        $hasGroup = GroupMember::where('stud_id', $userId)
+            ->whereNotNull('group_id')
+            ->exists();
+
+    // Log information about whether the user has a group
+    Log::info("This user has a group already", ['hasGroup' => $hasGroup]);
+        // Return the result as a JSON response
+        return response()->json([
+            'hasGroup' => $hasGroup,
+        ]);
+    }
 
 
 public function checkStudentInClass()

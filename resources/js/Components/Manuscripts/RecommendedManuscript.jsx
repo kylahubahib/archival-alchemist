@@ -655,8 +655,10 @@ const handleDropdownChange = (selectedKey) => {
                                                  <div className="w-16 h-16 border-t-4 border-blue-600 border-solid rounded-full animate-spin"></div>
                                              </div>
                                          )}
+
+
                                          <iframe
-                                             src={`http://127.0.0.1:8000/pdfViewer.html?pdfUrl=http://127.0.0.1:8000/${manuscript.man_doc_content}`}
+                                             src={`http://127.0.0.1:8000/pdfViewer.html?pdfUrl=http://127.0.0.1:8000/${selectedManuscript}`}
                                              className="w-full h-full border-0 rounded-lg shadow-md"
                                              title="PDF Viewer"
                                              onLoad={handlePdfLoad}
@@ -747,7 +749,7 @@ const handleDropdownChange = (selectedKey) => {
                                  </div>
                              )}
                              <iframe
-                                 src={`http://127.0.0.1:8000/pdfViewer.html?pdfUrl=http://127.0.0.1:8000/${manuscript.man_doc_content}`}
+                                 src={`http://127.0.0.1:8000/pdfViewer.html?pdfUrl=http://127.0.0.1:8000/${selectedManuscript}`}
                                  className="w-full h-full border-0 rounded-lg shadow-md"
                                  title="PDF Viewer"
                                  onLoad={handlePdfLoad}
