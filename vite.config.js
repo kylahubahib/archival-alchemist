@@ -12,10 +12,10 @@ export default defineConfig({
         fs: {
             strict: true, // Strict file serving
         },
-        hmr: {
-            timeout: 3000,
-            overlay: false, // Disable error overlay
-        },
+        // hmr: {
+        //     timeout: 3000,
+        //     overlay: false, // Disable error overlay
+        // },
     },
     build: {
         target: 'esnext', // Target modern browsers

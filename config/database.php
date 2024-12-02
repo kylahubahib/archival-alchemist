@@ -138,33 +138,31 @@ return [
     |
     */
 
-    'redis' => [
+  'redis' => [
+    'client' => env('REDIS_CLIENT', 'predis'),  // Make sure you're using predis as the client
 
-        'client' => env('REDIS_CLIENT', 'phpredis'),
-
-        'options' => [
-            'cluster' => env('REDIS_CLUSTER', 'redis'),
-            'prefix' => env('REDIS_PREFIX', Str::slug(env('APP_NAME', 'laravel'), '_').'_database_'),
-        ],
-
-        'default' => [
-            'url' => env('REDIS_URL'),
-            'host' => env('REDIS_HOST', '127.0.0.1'),
-            'username' => env('REDIS_USERNAME'),
-            'password' => env('REDIS_PASSWORD'),
-            'port' => env('REDIS_PORT', '6379'),
-            'database' => env('REDIS_DB', '0'),
-        ],
-
-        'cache' => [
-            'url' => env('REDIS_URL'),
-            'host' => env('REDIS_HOST', '127.0.0.1'),
-            'username' => env('REDIS_USERNAME'),
-            'password' => env('REDIS_PASSWORD'),
-            'port' => env('REDIS_PORT', '6379'),
-            'database' => env('REDIS_CACHE_DB', '1'),
-        ],
-
+    'options' => [
+        'cluster' => env('REDIS_CLUSTER', 'redis'),  // This is for clustered Redis setup
+        'prefix' => env('REDIS_PREFIX', Str::slug(env('APP_NAME', 'laravel'), '_').'_database_'),
     ],
+
+    'default' => [
+        'url' => env('REDIS_URL'),  // If you're using a full Redis URL (optional)
+        'host' => env('REDIS_HOST', '127.0.0.1'),  // Redis host (default to localhost)
+        'username' => env('REDIS_USERNAME'),  // Only required if using Redis authentication with username
+        'password' => env('REDIS_PASSWORD', null),  // Redis password (if applicable)
+        'port' => env('REDIS_PORT', '6379'),  // Redis port (default to 6379)
+        'database' => env('REDIS_DB', '0'),  // Redis database number (default is 0)
+    ],
+
+    'cache' => [
+        'url' => env('REDIS_URL'),  // Optional if you're using a full Redis URL for caching
+        'host' => env('REDIS_HOST', '127.0.0.1'),  // Redis host for caching
+        'username' => env('REDIS_USERNAME'),  // Redis username (optional)
+        'password' => env('REDIS_PASSWORD', null),  // Redis password for caching
+        'port' => env('REDIS_PORT', '6379'),  // Redis port for caching
+        'database' => env('REDIS_CACHE_DB', '1'),  // Use a different database for caching (default is 1)
+    ],
+],
 
 ];

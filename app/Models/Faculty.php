@@ -13,7 +13,8 @@ class Faculty extends Model
         'user_id',
         'uni_branch_id',
         'faculty_position',
-        'course_id'
+        'course_id',
+        'dept_id'
     ];
 
     public function user()
@@ -26,5 +27,5 @@ class Faculty extends Model
         return $this->belongsTo(UniversityBranch::class, 'uni_branch_id');
     }
 
-  
+
 }

@@ -33,8 +33,9 @@ class UniversityController extends Controller
     public function checkUniversitySubscription(Request $request)
     {
         $universityBranch = $request->get('uni_branch_id');
-        $user = Auth::user();
+        //$user = Auth::user();
 
+        \Log::info($universityBranch);
 
         // Check if the subscription exists for the university branch
         $checkIfExist = InstitutionSubscription::where('uni_branch_id', $universityBranch)->first();
@@ -69,40 +70,8 @@ class UniversityController extends Controller
     public function getUniversitiesWithBranches()
     {
         $universities = University::with('university_branch')->get();
+
         return response()->json($universities);
-    }
-
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-    
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        
     }
 
     /**

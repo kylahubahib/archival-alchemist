@@ -431,4 +431,3 @@ const UploadCapstone = ({class_code}) => {
 };
 
 export default UploadCapstone;
-

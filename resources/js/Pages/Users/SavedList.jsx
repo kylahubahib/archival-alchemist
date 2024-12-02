@@ -43,14 +43,14 @@ export default function SavedList({ auth }) {
         >
             <Head title="Favorites" />
 
-            <section className="bg-white h-full rounded m-4 rounded-xl">
+            <section className="bg-white h-full  m-4 rounded-xl">
                 {manuscripts.length === 0 ? (
-                    <div className="max-w-7xl mx-auto bg-white shadow-lg flex justify-center h-screen items-center shadow-sm sm:rounded-lg sticky">
+                    <div className="max-w-7xl mx-auto bg-white shadow-lg flex justify-center h-screen items-center sm:rounded-lg sticky">
                         <FaBookmark size={50} className="text-gray-500" />
                         <p className="text-gray-500 mt-2">Favorite Manuscript Capstone will be added here.</p>
                     </div>
                 ) : (
-                    <div className="h-screen bg-white rounded m-4 rounded-xl">
+                    <div className="h-screen bg-white  m-4 rounded-xl">
                         <Manuscript manuscripts={manuscripts} // Update this with actual data as needed
                         user={auth.user} // Pass the user to Manuscript
                         /> {/* Pass the fetched manuscripts */}

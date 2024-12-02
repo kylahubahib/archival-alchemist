@@ -1,3 +1,8 @@
+// Polyfill the global object for browser environments
+if (typeof global === 'undefined') {
+    window.global = window;
+}
+
 import './bootstrap';
 import '../css/app.css';
 import 'react-toastify/dist/ReactToastify.css';
@@ -18,11 +23,11 @@ createInertiaApp({
         const root = createRoot(el);
 
         root.render(
-        
+
         <NextUIProvider>
             <App {...props} />
         </NextUIProvider>
-        
+
     );
     },
     progress: {

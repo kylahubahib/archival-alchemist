@@ -29,8 +29,7 @@ Route::get('/fetch-super-admin-roles', [FetchDataController::class, 'fetchSuperA
 // USER VIEW APIS
 Route::post('login', [AuthenticatedSessionController::class, 'store']);
 
-Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])
-->name('logout');
+Route::post('logout', [AuthenticatedSessionController::class, 'destroy']);
 
 Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
     return $request->user();

@@ -7,9 +7,11 @@ import LongTextInput from "./LongTextInput";
 import { useForm } from "@inertiajs/inertia-react";
 import InputError from "./InputError";
 import axios from "axios"; 
+import { showToast } from "./Toast";
 
 export default function ReportModal({ isOpen, onClose, reportLocation, reportedID }) {
     const [ReportTypes, setReportTypes] = useState([]);
+    const [errorMessage, setErrorMessage] = useState(null);
     
     const { data, setData, post, processing, errors, reset } = useForm({
         reported_id: reportedID, 
@@ -31,16 +33,16 @@ export default function ReportModal({ isOpen, onClose, reportLocation, reportedI
         })
         .then(response => {
             if (response.data.success) {
-                alert(response.data.message);  
+                showToast('success', response.data.message)
                 onClose();  
                 reset();    
             } else {
-                alert(response.data.message);  
+                showToast('warning', response.data.message)
             }
         })
         .catch(error => {
             if (error.response) {
-                alert(error.response.data.message);  
+                setErrorMessage(error.response.data.message);  
                 console.log('Error:', error.response.data);  
             }
         });
@@ -54,11 +56,16 @@ export default function ReportModal({ isOpen, onClose, reportLocation, reportedI
         }
     }, [isOpen]);
 
+    const clickClose = () => {
+        setErrorMessage(null);
+        onClose();
+    }
+
     return (
         <Modal show={isOpen} onClose={onClose} closeable={true} maxWidth="md">
             <div className="shadow-sm p-3 justify-between flex flex-row">
                 <h2 className="text-xl text-gray-700 font-bold">Why would you want to report this?</h2>
-                <button onClick={onClose} className="text-gray-600 text-xl hover:bg-gray-100">
+                <button onClick={clickClose} className="text-gray-600 text-xl hover:bg-gray-100 rounded-full p-1">
                     <CgClose />
                 </button>
             </div>
@@ -70,6 +77,7 @@ export default function ReportModal({ isOpen, onClose, reportLocation, reportedI
                         className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 bg-gray-50 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
                         value={data.report_type} 
                         onChange={(e) => setData('report_type', e.target.value)}
+                        required
                     >
                         <option value="" disabled>Select a reason</option>
                         {ReportTypes.map((type) => (
@@ -88,9 +96,12 @@ export default function ReportModal({ isOpen, onClose, reportLocation, reportedI
                         value={data.report_desc}
                         onChange={(e) => setData('report_desc', e.target.value)}
                         className={'max-h-44'}
+                        required
                     />
                     <InputError message={errors.report_desc} className="mt-2" />
                 </div>
+
+                <InputError message={errorMessage} className="mt-2" />
 
                 <div>
                     <PrimaryButton type="submit" disabled={processing}>

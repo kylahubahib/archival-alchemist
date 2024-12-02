@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Redirect;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Route;
@@ -168,11 +169,22 @@ class RegisteredUserController extends Controller
 
             event(new Registered($user));
 
-            return redirect()->route('login')->with('success', 'Registration successful. Please log in.');
+            Auth::login($user);
+
+            // Step 4: Redirect to the Connect Google route
+            //return Redirect::to(route('google.auth'));
+
+            return back()->with([
+                'success' => 'Registration successful! Redirecting to Google Auth...',
+            ]);
+
+            // return redirect()->route('login')->with('success', 'Registration successful. Please log in.');
 
         } catch (\Exception $e) {
             \Log::error('Error during registration:', ['error' => $e->getMessage()]);
             return redirect()->back()->withErrors(['error' => 'An unexpected error occurred. Please try again.']);
         }
     }
+
+   
 }

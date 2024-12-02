@@ -259,7 +259,7 @@ const handleAddStudent = async () => {
     };
 
     useEffect(() => {
-        axios.get('http://127.0.0.1:8000/check-student-in-class') 
+        axios.get('http://127.0.0.1:8000/check-student-in-class')
         .then(response => {
             if (response.data.class) {
                 setClassCode(response.data.class);
@@ -276,7 +276,7 @@ const handleAddStudent = async () => {
 
     const handleModalClose = () => {
         setIsGroupModalOpen(false);
-        setClassName(''); 
+        setClassName('');
     };
 
     useEffect(() => {
@@ -405,7 +405,10 @@ const handleAddStudent = async () => {
         </Link>
     </div>
             {isCreating ? (
-                <CreateClassSection onCreate={handleCreate} className="flex justify-between items-center w-h-full"/>
+                <CreateClassSection
+                    onCreate={handleCreate}
+                    className="flex justify-between items-center w-h-full"
+                />
             ) : (
                 <div>
                     {/* Render classes or other main content here */}
@@ -612,7 +615,7 @@ const handleAddStudent = async () => {
 
                                         )}
 
-                                        
+
                                     </div>
                                 </div>
                             </>

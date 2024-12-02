@@ -8,6 +8,7 @@ import ReportModal from "@/Components/ReportModal";
 import { FaEye, FaPen, FaTrash } from "react-icons/fa";
 import Show from "./Show"; 
 import { formatDate, formatPrice } from '@/utils';
+import PageHeader from "@/Components/Admins/PageHeader";
 
 export default function UserReports({ auth, userReports, pendingCount, solvedCount, allReportCount, reportLocation }) {
     const [filteredData, setFilteredData] = useState(userReports.data);
@@ -83,7 +84,7 @@ export default function UserReports({ auth, userReports, pendingCount, solvedCou
             <div>
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
                     <div className="flex flex-row justify-between m-3">
-                        <div className="text-gray-800 text-3xl font-bold">User Reports</div>
+                        <PageHeader>USER REPORTS</PageHeader> 
                     </div>
                     <div className="flex flex-row space-x-3">
                         <div className="bg-white block max-w-sm p-4 border rounded-lg shadow mb-3">

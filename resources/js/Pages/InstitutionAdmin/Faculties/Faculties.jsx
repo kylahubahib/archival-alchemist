@@ -17,7 +17,7 @@ import axios from "axios";
 import SetPlanStatus from "./SetPlanStatus";
 import ActionButton from "@/Components/Admins/ActionButton";
 import Pagination from "@/Components/Admins/Pagination";
-import { encodeParam, getAcronymAndOrigText, setStatusChip, updateUrl } from "@/Components/Admins/Functions";
+import { encodeParam, setStatusChip, updateUrl } from "@/Components/Admins/Functions";
 import NoDataPrompt from "@/Components/Admins/NoDataPrompt";
 import Filter from "./Filter";
 import { Link, router } from "@inertiajs/react";
@@ -28,7 +28,6 @@ import FileUpload from "@/Components/FileUpload";
 
 export default function Faculties({ auth, insAdminAffiliation, retrievedFaculties, hasFacultyPremiumAccess, retrievedSearchName, retrievedEntriesPerPage }) {
 
-    console.log('retrievedFaculties', retrievedFaculties);
     const [facultiesToRender, setFacultiesToRender] = useState(retrievedFaculties);
     const [userId, setUserId] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
@@ -182,7 +181,7 @@ export default function Faculties({ auth, insAdminAffiliation, retrievedFacultie
         <AdminLayout
             user={auth.user}
         >
-            <div>
+            <div className="p-4">
                 <div className="flex">
                     <PageHeader>FACULTIES</PageHeader>
                     <PageHeader className="ml-auto mr-4 uppercase">{`${university.uni_name} - ${uni_branch_name}`}</PageHeader>
@@ -323,7 +322,7 @@ export default function Faculties({ auth, insAdminAffiliation, retrievedFacultie
                                         {renderTableHeader()}
                                         <tbody>
                                             {facultiesToRender.data.map((faculty, index) => {
-                                                const department = getAcronymAndOrigText(faculty.dept_name);
+                                                const department = faculty.dept_acronym;
                                                 const formattedDateCreated = format(new Date(faculty.created_at), 'MM/dd/yyyy HH:mm aa');
 
                                                 const actionButtons = () => {
@@ -361,7 +360,7 @@ export default function Faculties({ auth, insAdminAffiliation, retrievedFacultie
                                                                 }}
                                                             />
                                                         </td>
-                                                        <td className="p-2">{faculty.fac_id}</td>
+                                                        <td className="p-2">{faculty.id}</td>
                                                         <td className="p-2">{department.acronym}</td>
                                                         <td className="p-2">{faculty.fac_position}</td>
                                                         <td className="p-2">{formattedDateCreated}</td>

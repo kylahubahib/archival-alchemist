@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
+import NavLink from '@/Components/NavLink';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { FaEye, FaComment, FaBookmark, FaFileDownload, FaFilter, FaStar, FaQuoteLeft } from 'react-icons/fa';
@@ -10,30 +11,194 @@ import SearchBar from '@/Components/SearchBars/LibrarySearchBar'; // Import the 
 import { Tooltip, Button } from '@nextui-org/react';
 import {Dropdown, DropdownTrigger, DropdownMenu, DropdownItem} from "@nextui-org/react";
 import { Skeleton } from '@nextui-org/skeleton'; // Import //Skeleton
-import PdfViewer from '@/Components/PdfViewer'
+import CommentSections from '@/Components/CommentSection'; // Import the LibrarySearchBar component
+import ManuscriptComment from '@/Components/Manuscripts/ManuscriptComment'; // Import the LibrarySearchBar component
+import SubscriptionCard from '@/Components/SubscriptionCard';
+import AskUserToLogin from '@/Components/AskUserToLogin';
+import PdfViewer from '@/Components/PdfViewer';
+import ToggleComments from '@/Components/ToggleComments'
 
 const Manuscript = ({user, choice}) => {
+    const [isPdfOpen, setPdfOpen] = useState(false);
     const [favorites, setFavorites] = useState(new Set());
-     const [userId, setUserId] = useState(null); // Store the current logged-in user ID
+    const [userId, setUserId] = useState(null); // Store the current logged-in user ID
     const [manuscripts, setManuscripts] = useState([]);
+    const [Manuscripts, setmanuscripts] = useState([]);
     const [searchResults, setSearchResults] = useState([]); // State to hold search results
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [showComments, setShowComments] = useState(false);
-    const [comments, setComments] = useState([
-        { user: 'Commenter 1', text: 'This is a comment.' },
-        { user: 'Commenter 2', text: 'This is another comment.' },
-        { user: 'Commenter 3', text: 'This is yet another comment.' },
-    ]);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isCommentOpen, setisCommentOpen] = useState(false);
     const [isCiteModalOpen, setIsCiteModalOpen] = useState(false);
     const [selectedRating, setSelectedRating] = useState(0); // Store the rating value
     const [selectedManuscript, setSelectedManuscript] = useState(null); // Track selected manuscript
-
     const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
     const [titleInputValue, setTitleInputValue] = useState(''); // State for the title input
     const [selectedSearchField, setSelectedSearchField] = useState("Title"); // Track selected search field
+    const [commentStates, setCommentStates] = useState({}); // This will store the state for each manuscript
+    const [isAuthenticated, setIsAuthenticated] = useState(null); // null means we haven't checked yet
+    const [ismodalOpen, setIsmodalOpen] = useState(false);
+    const [isSubsModal, setIsSubsModal] = useState(false);
+    const [pdfUrl, setPdfUrl] = useState("");
+    const [isLoading, setIsLoading] = useState(true); // Track loading state
+    const [isPremium, setIsPremium] = useState(null); // State to store premium status
+    const [isLoginModalOpen, setIsLoginModalOpen] = useState(false); // For the login modal
+    const [isMaximized, setIsMaximized] = useState(false); // State to track if maximized or not
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false); // State to track sidebar visibility
 
+
+    const toggleSidebar = () => {
+        setIsSidebarOpen((prevState) => !prevState); // Toggle sidebar visibility
+    };
+
+// Handle manuscript selection and opening the sidebar
+const handleComments = (id, title) => {
+    // Store the selected manuscript's id and title
+    setSelectedManuscript({ id, title });
+    setIsSidebarOpen(true);  // Open the sidebar
+};
+
+    // Function to toggle maximized state
+    const toggleMaximize = () => {
+        setIsMaximized((prevState) => !prevState);
+    };
+
+    // Dynamic class for maximizing and minimizing
+    const manuscriptClass = isMaximized
+        ? "w-full h-screen"  // Maximize: Full width and height (or full screen)
+        : "w-full h-[400px]"; // Minimize: Set to a smaller size
+
+
+
+
+
+  // Fetch premium status and authentication info from the backend
+  useEffect(() => {
+    const fetchPremiumStatus = async () => {
+      try {
+        const response = await axios.get('/ispremium'); // No need to pass token, backend handles it
+        console.log('Backend response:', response.data);
+
+        setIsPremium(response.data.is_premium); // Set premium status
+        setIsAuthenticated(response.data.is_authenticated); // Set authentication status
+      } catch (err) {
+        console.error('Error fetching premium status:', err.response || err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchPremiumStatus();
+  }, []);
+
+
+      const openLoginModal = () => {
+        setIsLoginModalOpen(true);
+      };
+
+      const closeLoginModal = () => {
+        setIsLoginModalOpen(false);
+      };
+
+      const goToLoginPage = () => {
+        // Implement your login redirection logic here
+        window.location.href = '/login'; // or use react-router if it's a single-page app
+      };
+
+
+
+    const handlePdfLoad = () => {
+      setIsLoading(false); // Set loading to false once PDF is loaded
+    };
+
+      // Reset loading state when the modal is opened again
+  useEffect(() => {
+    if (ismodalOpen) {
+      setIsLoading(true); // Reset loading state when modal is opened
+    }
+  }, [ismodalOpen]); // Depend on modal open state
+
+
+    // const openModal = (url) => {
+    //     console.log("It is now open");
+    //     setPdfUrl(url);
+    //     setIsmodalOpen(true);
+    // };
+
+    // const closeModal = () => {
+    //     setPdfUrl("");
+    //     setIsmodalOpen(false);
+    // };
+
+    const [pageCount, setPageCount] = useState(0);
+
+    // Function to handle messages from iframe (i.e., page number changes)
+    const handleIframeMessage = (event) => {
+      // Ensure the message is coming from a trusted source
+      if (event.origin === 'http://127.0.0.1:8000' || event.origin === 'https://mozilla.github.io') {
+        const data = event.data;
+        if (data.pageNumber) {
+          setPageCount(data.pageNumber);
+        }
+      }
+    };
+
+    // Set up the event listener for receiving messages
+    useEffect(() => {
+      window.addEventListener('message', handleIframeMessage);
+
+      return () => {
+        window.removeEventListener('message', handleIframeMessage);
+      };
+    }, []);
+
+    const openLogInModal = () => {
+        setIsLoginModalOpen(true);
+        console.log("Log in MOdal is open");
+    };
+
+    const openSubsModal = () => {
+        setIsSubsModal(true);
+        console.log("MOdal is open");
+    };
+
+    const openModal = (pdfUrl) => {
+        setIsmodalOpen(true);
+        // Pass the pdfUrl to the PDFViewer
+    };
+
+    const closeModal = () => {
+        setIsmodalOpen(false);  // Assuming you're using useState to manage modal state
+        setIsSubsModal(false);
+      };
+
+
+    // const handleCommentClick = (id) => {
+    //     setCommentStates(prevState => ({
+    //         ...prevState,
+    //         [id]: !prevState[id], // Toggle the comment visibility for the specific manuscript
+    //     }));
+    // };
+
+
+    // Handle opening the modal and setting the title
+    const handleViewPdf = (manuscript) => {
+        if (manuscript && manuscript.man_doc_content) {
+            console.log("Viewing PDF for manuscript:", manuscript);
+            setSelectedManuscript(manuscript); // Set the selected manuscript
+            setPdfOpen(true); // Open the modal
+        } else {
+            console.error("Manuscript or PDF URL is missing.");
+        }
+    };
+
+
+         // Handle opening the modal and setting the title
+         const handleCommentClick = () => {
+            setSelectedManuscript(); // Store the manuscript for later use
+            setisCommentOpen(true);
+        };
 
 
 
@@ -174,7 +339,7 @@ const Manuscript = ({user, choice}) => {
                 //console.log('Response: ', response.data.favorites);
                 let favoritesData = [];
                 if(response.data.favorites) {
-                    favoritesData = response.data.favorites.map((favorite) => `${user.id}-${favorite.man_doc_id}`);
+                    const favoritesData = response.data.favorites.map((favorite) => `${user.id}-${favorite.man_doc_id}`);
                 }
                 setFavorites(new Set(favoritesData));
                 console.log(`Fetched favorites for user ${user.id}:`, favoritesData);
@@ -193,11 +358,19 @@ const Manuscript = ({user, choice}) => {
             return;
         }
 
+        // Log user and favorite set for debugging
+        console.log("User:", user);
+        console.log("Favorites:", favorites);
+
         const favoriteKey = `${user.id}-${manuscriptId}`;
+
+        // Check if the manuscript is already bookmarked
         if (favorites.has(favoriteKey)) {
+            console.log("Removing favorite:", favoriteKey);
             // Manuscript is already favorited by the current user, remove it
             await handleRemoveFavorite(manuscriptId);
         } else {
+            console.log("Adding favorite:", favoriteKey);
             // Manuscript is not favorited by the current user, add it
             await handleAddFavorite(manuscriptId);
         }
@@ -246,9 +419,12 @@ const Manuscript = ({user, choice}) => {
             setLoading(true);
             try {
                 const response = await axios.get('/api/published-manuscripts');
+
                 if (isMounted) {
                     // Only set state if the component is still mounted
                     setManuscripts(response.data);
+
+
                 }
             } catch (error) {
                 if (isMounted) {
@@ -335,7 +511,7 @@ const handleDropdownChange = (selectedKey) => {
     return (
         <section className="w-full mx-auto my-4 mt-8 ml-50">
             <div className="mb-6 w-full flex items-center gap-4"> {/* Adjusted to use flex and gap */}
-            <div className="flex-grow h-full">
+            <div className="flex-grow  h-full">
             <SearchBar onSearch={handleSearch} selectedSearchField={selectedSearchField} titleInputValue={titleInputValue} // Maintain the value here
     setTitleInputValue={setTitleInputValue} // Optionally, for managing the input state
 />
@@ -355,7 +531,7 @@ const handleDropdownChange = (selectedKey) => {
                         )}
                     </div>
             </div>
-                <div className="w-[200px]"> {/* Set dropdown button width to 50px */}
+                <div className="w-[200px] relative z-[0]"> {/* Set dropdown button width to 50px */}
                 <Dropdown>
                     <DropdownTrigger className="w-full">
                         <Button variant="bordered" className="capitalize w-full flex justify-between items-center">
@@ -382,34 +558,112 @@ const handleDropdownChange = (selectedKey) => {
                 </div>
             </div>
 
-
+            <div className="grid grid-cols-2 gap-4">
             {manuscriptsToDisplay.map((manuscript) => (
-            <div key={manuscript.id} className="w-full bg-white shadow-lg flex mb-4">
-                <div className="rounded w-40 h-full bg-gray-200 flex items-center justify-center">
-                    {/* <img
-                        className="rounded w-36 h-46"
-                        src="https://via.placeholder.com/150"
-                        alt="Book"
-                    />
-                     */}
+             <div key={manuscript.id} className="w-full bg-white shadow-lg flex mb-4 p-2 items-center justify-center ">
+             <div className="relative flex flex-col items-center justify-center bg-gray-200 rounded w-40">
+               <img
+                 className="rounded w-25 h-30"
+                 src="http://127.0.0.1:8000/storage/images/pdfimg.jpg"
+                 alt="PDF Thumbnail"
+               />
+               <div className="absolute inset-0 bg-gray-500 opacity-30 rounded"></div>
+
+                   {isPremium ? (
+                     // If the user is premium, show the link directly
+                     <a
+                       href={`http://127.0.0.1:8000/${manuscript.man_doc_content}`}
+                       target="_blank"
+                       rel="noopener noreferrer"
+                       className="absolute bottom-6 w-max bg-white opacity-75 border-2 border-gray-600 text-gray-800 px-12 py-2 rounded transition duration-300 ease-in-out hover:bg-blue-500 hover:text-white hover:text-opacity-100 focus:outline-none"
+                     >
+                       Preview
+                     </a>
+                   ) : isAuthenticated ? (
+                     // If the user is not premium but authenticated, open modal on click
+                     <button
+                       onClick={openModal}
+                       className="absolute bottom-6 w-max bg-white opacity-75 border-2 border-gray-600 text-gray-800 px-12 py-2 rounded transition duration-300 ease-in-out hover:bg-blue-500 hover:text-white hover:text-opacity-100 focus:outline-none"
+                     >
+                       Preview
+                     </button>
+                   ) : (
+                     // If the user is not authenticated, show the login/signup modal
+                     <button
+                       onClick={openLoginModal}
+                       className="absolute bottom-6 w-max bg-white opacity-75 border-2 border-gray-600 text-gray-800 px-12 py-2 rounded transition duration-300 ease-in-out hover:bg-blue-500 hover:text-white hover:text-opacity-100 focus:outline-none"
+                     >
+                       Preview
+                     </button>
+                   )}
+
+                    {/* Modal for non-premium authenticated users */}
+                   {isModalOpen &&  (
+                             <Modal
+                             show={ismodalOpen}
+                             onClose={closeModal}
+                             maxWidth="50%" // Percentage-based for responsiveness
+                             maxHeight="100vh" // Set max height relative to viewport
+                             className="relative overflow-hidden rounded-lg shadow-2xl"
+                         >
+                             <div
+                                 className="absolute inset-0 bg-black opacity-60"
+                                 onClick={closeModal}
+                             ></div>
+
+                             {/* Modal Content */}
+                             <div className="relative p-6 bg-white rounded-lg z-10 overflow-hidden shadow-xl">
+                                 <button
+                                     onClick={closeModal}
+                                     className="absolute top-4 right-4 text-white bg-gray-800 hover:bg-gray-700 rounded-full p-2 focus:outline-none z-20"
+                                     style={{ fontSize: '1.5rem' }}
+                                 >
+                                     <span className="font-bold">&times;</span>
+                                 </button>
+
+                                 {/* PDF Viewer Container */}
+                                 <div className="relative h-[80vh] w-full bg-gray-200 shadow-2xl rounded-lg overflow-hidden">
+                                     <div
+                                         className={`relative w-full h-full overflow-hidden rounded-lg ${pageCount > 10 ? 'blur-sm' : ''}`}
+                                    >
+                                         {isLoading && (
+                                             <div className="absolute inset-0 flex justify-center items-center">
+                                                 <div className="w-16 h-16 border-t-4 border-blue-600 border-solid rounded-full animate-spin"></div>
+                                             </div>
+                                         )}
+                                         <iframe
+                                             src={`http://127.0.0.1:8000/pdfViewer.html?pdfUrl=http://127.0.0.1:8000/${manuscript.man_doc_content}`}
+                                             className="w-full h-full border-0 rounded-lg shadow-md"
+                                             title="PDF Viewer"
+                                             onLoad={handlePdfLoad}
+                                         ></iframe>
+                                     </div>
 
 
-{manuscript.man_doc_content ? (
-    <PdfViewer pdfUrl={manuscript.man_doc_content} />
-    // <PdfViewer pdfUrl="http://127.0.0.1:8000/storage/capstone_files/1728959708_Designing%20Student%20Centric%20Solutions%20through%20Collaboration.pdf" />
+                                 </div>
+                             </div>
+                         </Modal>
+                   )}
 
-) : (
-    <div className="flex items-center justify-center h-full w-full text-gray-500">
-        <p>No PDF available</p>
-    </div>
-)}
+                   {/* Modal for non-authenticated users */}
+                   { isLoginModalOpen && !isAuthenticated &&(
+                     <Modal
+                       show={isLoginModalOpen}
+                       onClose={closeLoginModal}
+                     >
+                <AskUserToLogin />
+                     </Modal>
+                   )}
+             </div>
 
 
 
 
-                </div>
-            <div className="flex-1 p-4">
-                <h2 className="text-xl font-bold text-gray-900">
+<div className="flex-1 p-4">
+        <div>
+             {isPremium ? (
+                // If the user is premium, show the link directly
+                <h2 className="text-base font-bold text-gray-900">
                 <a
                     href={`http://127.0.0.1:8000/${manuscript.man_doc_content}`}
                     target="_blank"
@@ -418,16 +672,94 @@ const handleDropdownChange = (selectedKey) => {
                 >
                     {manuscript.man_doc_title}
                 </a>
+            </h2>
+            ) : (
+                // If the user is not premium, open modal on click (only for non-premium users)
+                <h2 className="text-base font-bold text-gray-900">
+                    <span
+                        onClick={openModal} // Open modal when clicked
+                        className="text-gray-700 hover:text-blue-600 hover:underline cursor-pointer transition-all duration-300 ease-in-out"
+                    >
+                        {manuscript.man_doc_title}
+                    </span>
+                </h2>
+            )}
+
+            {/* Show modal for non-premium users */}
+            {ismodalOpen && (
+                 <Modal
+                 show={ismodalOpen}
+                 onClose={closeModal}
+                 maxWidth="50%" // Percentage-based for responsiveness
+                 maxHeight="80vh" // Set max height relative to viewport
+                 className="relative overflow-hidden rounded-lg shadow-2xl"
+             >
+                 {/* Modal Overlay with smooth fade */}
+                 <div
+                     className="absolute inset-0 bg-black opacity-60"
+                     onClick={closeModal}
+                 ></div>
+
+                 {/* Modal Content */}
+                 <div className="relative p-6 bg-white rounded-lg z-10 overflow-hidden shadow-xl">
+                     {/* Close Button */}
+                     <button
+                         onClick={closeModal}
+                         className="absolute top-4 right-4 text-white bg-gray-800 hover:bg-gray-700 rounded-full p-2 focus:outline-none z-20"
+                         style={{ fontSize: '1.5rem' }}
+                     >
+                         <span className="font-bold">&times;</span>
+                     </button>
+
+                     {/* PDF Viewer Container */}
+                     <div className="relative h-[80vh] w-full bg-gray-200 shadow-2xl rounded-lg overflow-hidden">
+                         <div
+                             className={`relative w-full h-full overflow-hidden rounded-lg ${pageCount > 10 ? 'blur-sm' : ''}`}
+                         >
+                             {isLoading && (
+                                 <div className="absolute inset-0 flex justify-center items-center">
+                                     <div className="w-16 h-16 border-t-4 border-blue-600 border-solid rounded-full animate-spin"></div>
+                                 </div>
+                             )}
+                             <iframe
+                                 src={`http://127.0.0.1:8000/pdfViewer.html?pdfUrl=http://127.0.0.1:8000/${manuscript.man_doc_content}`}
+                                 className="w-full h-full border-0 rounded-lg shadow-md"
+                                 title="PDF Viewer"
+                                 onLoad={handlePdfLoad}
+                             ></iframe>
+                         </div>
+
+                         {/* Message when page count exceeds 10 */}
+                         {pageCount > 10 && (
+                             <div className="absolute inset-0 flex justify-center items-center bg-black bg-opacity-50 text-white font-semibold text-xl p-6 rounded-lg shadow-lg max-w-lg mx-auto">
+                                 <div className="text-center">
+                                     <h2 className="text-2xl mb-4 font-extrabold">You've Reached the Page Limit</h2>
+                                     <p className="text-lg mb-6">
+                                         To access the full document, please subscribe to unlock more pages.
+                                     </p>
+                                     <button
+                                         onClick={() => alert('Redirecting to subscription page...')}
+                                         className="bg-blue-600 hover:bg-blue-700 text-white py-3 px-8 rounded-lg shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-100"
+                                     >
+                                         Subscribe Now
+                                     </button>
+                                 </div>
+                             </div>
+                         )}
+                     </div>
+                 </div>
+             </Modal>
+            )}
+        </div>
 
 
-                    </h2>
                 {/* <p className="text-gray-700 mt-1">Author: {user.name}</p> */}
 
                 {/* Display the users here */}
                 <div className="mt-2 flex flex-wrap gap-2">
-                    <p className="text-gray-700 mt-1">Author:</p>
+                    <p className="text-sm text-gray-700 mt-1">Author:</p>
                     {manuscript.authors?.length > 0 ? (
-                        <p className="text-gray-700 mt-1">
+                        <p className="text-sm text-gray-700 mt-1">
                             {manuscript.authors.map(author => author.name).join(', ')}
                         </p>
                     ) : (
@@ -435,13 +767,13 @@ const handleDropdownChange = (selectedKey) => {
                     )}
                 </div>
 
-                <p className="text-gray-700 mt-1">Adviser: {manuscript.man_doc_adviser}</p>
+                <p className="text-sm text-gray-700 mt-1">Adviser: {manuscript.man_doc_adviser}</p>
 
                 {/* Display the tags here */}
-                <div className="mt-2 flex flex-wrap gap-2">
+                <div className="text-sm mt-2 flex flex-wrap gap-2">
                     {manuscript.tags && manuscript.tags.length > 0 ? ( // Check if tags exist and if the length is greater than 0
                         manuscript.tags.map(tag => ( // Map through the tags array
-                            <span key={tag.id} className="bg-gray-200 text-gray-800 px-2 py-1 rounded">
+                            <span key={tag.id} className="bg-gray-200 text-sm text-gray-800 px-2 py-1 rounded">
                                 {tag.tags_name} {/* Display the tag name */}
                             </span>
                         ))
@@ -454,57 +786,196 @@ const handleDropdownChange = (selectedKey) => {
 
                 <div className="mt-4 flex items-center gap-4">
                 <Tooltip content="Views">
-                    <div className={`flex items-center ${manuscript.man_doc_view_count > 0 ? 'text-blue-500' : 'text-gray-600'} hover:text-blue-700 cursor-pointer`}>
+                    <button
+                        className={`text-gray-600 hover:text-blue-500 ${manuscript.man_doc_content ? 'text-blue-500' : ''}`}>
                         <FaEye size={20} />
                         <span className="ml-1">{manuscript.man_doc_view_count}</span>
-                    </div>
-                    </Tooltip>
+                    </button>
+                </Tooltip>
 
-                    <div className={`flex items-center ${comments.length > 0 ? 'text-blue-500' : 'text-gray-600'} hover:text-blue-700 cursor-pointer`} onClick={toggleComments}>
-                        <FaComment size={20} />
-                        <span className="ml-1">
-                            {comments.length > 0 ? `${comments.length} Comment${comments.length > 1 ? 's' : ''}` : 'No comments yet'}
-                        </span>
-                    </div>
 
-                    <Tooltip content="Bookmark">
-                                    <button
-                                        className="text-gray-600 hover:text-blue-500"
-                                        onClick={() => handleBookmark(manuscript.id)}
-                                    >
-                                        <FaBookmark size={20} />
-                                    </button>
-                                </Tooltip>
+                <div
+                key={manuscript.id}
+                className="flex items-center text-blue-500 hover:text-blue-700 cursor-pointer"
+                onClick={() => handleComments(manuscript.id, manuscript.man_doc_title)}  // Pass id and title to handleComments
+            >
+                <FaComment size={20} />
+            </div>
 
-                            <Tooltip content="Download">
-                                <button
-                                    className="text-gray-600 hover:text-blue-500"
-                                    onClick={() => handleDownload(manuscript.id, manuscript.man_doc_title)}
+        {/* Render ToggleComments only if a manuscript is selected and the sidebar is open */}
+        {selectedManuscript && (
+            <ToggleComments
+                manuscripts={selectedManuscript}  // Pass the selected manuscript to ToggleComments
+                man_id={selectedManuscript.id}  // Pass additional properties if needed
+                man_doc_title={selectedManuscript.title}
+                isOpen={isSidebarOpen}
+                toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}  // Toggle the sidebar
+            />
+        )}
+
+<Tooltip content="Bookmark">
+    <button
+        className="text-gray-600 hover:text-blue-500"
+        onClick={() => {
+            if (!isAuthenticated) {
+                // Show the login modal if the user is not authenticated
+                openLogInModal();
+            } else if (!isPremium) {
+                // Show the subscription modal if the user is not premium
+                openSubsModal();
+            } else {
+                // Proceed with the bookmark action if the user is premium and authenticated
+                handleBookmark(manuscript.id);
+            }
+        }}
+    >
+        <FaBookmark size={20} />
+    </button>
+</Tooltip>
+
+
+                <Tooltip content="Download">
+                    <button
+                        className="text-gray-600 hover:text-blue-500"
+                        onClick={() => {
+                        if (!isAuthenticated) {
+                            // Show the login modal if the user is not authenticated
+                            openLogInModal();
+                        } else if (!isPremium) {
+                            // Show the subscription modal if the user is not premium
+                            openSubsModal();
+
+                        } else {
+                            // Proceed with the download if the user is premium and authenticated
+                            handleDownload(manuscript.id, manuscript.man_doc_title);
+                        }
+                        }}
+                    >
+                        <FaFileDownload size={20} />
+                    </button>
+                </Tooltip>
+                {/* Modal for Non-Premium Users */}
+                {isSubsModal && (
+                    <Modal show={isSubsModal} onClose={closeModal}>
+                    <SubscriptionCard />
+                    </Modal>
+                )}
+
+                {/* Modal for Non-Authenticated Users */}
+                {isLoginModalOpen && !isAuthenticated && (
+                    <Modal show={isLoginModalOpen} onClose={closeLoginModal}>
+                    </Modal>
+                )}
+
+
+
+
+                <Tooltip content="Ratings">
+                    <button
+                        className="text-gray-600 hover:text-blue-500"
+                        onClick={() => {
+                            if (!isAuthenticated) {
+                                // Show the login modal if the user is not authenticated
+                                openLogInModal();
+                            } else if (!isPremium) {
+                                // Show the subscription modal if the user is not premium
+                                openSubsModal();
+                            } else {
+                                // Proceed with the bookmark action if the user is premium and authenticated
+                                handleRatings(manuscript);
+                            }
+                        }}
+                    >
+                        <FaStar size={20} />
+                    </button>
+                </Tooltip>
+
+
+
+{/*
+                        onClick={() => handleRatings(manuscript)}
+                    >
+                        <FaStar size={20} />
+                    </button>
+                </Tooltip> */}
+
+
+
+                <Tooltip content="Cite">
+                    <button
+                        className="text-gray-600 hover:text-blue-500"
+                        onClick={() => handleCitation(manuscript)}
+                    >
+                        <FaQuoteLeft size={20} />
+                    </button>
+                </Tooltip>
+
+
+
+                {/* Rendering the PDF preview */}
+                {isPdfOpen && selectedManuscript && (
+                    <Modal show={isPdfOpen} onClose={() => setPdfOpen(false)}>
+                        <button disabled className="bg-gray-300 text-gray-500 py-4 px-4 font-bold rounded w-full">
+                            We systematically review all ratings to enhance our services, and we highly value them.
+                        </button>
+                        <div className="flex flex-col items-center justify-center p-6 rounded-lg shadow-md">
+                            <h2 className="text-2xl font-bold mb-4 text-center text-gray-500">
+                                {selectedManuscript.man_doc_title}
+                            </h2>
+
+                            {selectedManuscript.man_doc_content ? (
+                                <PdfViewer pdfUrl={selectedManuscript.man_doc_content} />
+                            ) : (
+                                <div className="flex items-center justify-center h-full w-full text-gray-500">
+                                    <p>No PDF available</p>
+                                </div>
+                            )}
+                        </div>
+                    </Modal>
+                )}
+
+
+
+                    {/* Rendering the ratings modal */}
+                    {isModalOpen && (
+                        <Modal show={isModalOpen} onClose={() => setIsModalOpen(false)}>
+                            <button
+                                    Disable='true'
+                                    className="bg-gray-300 text-gray-500 py-4 px-4 font-bold rounded w-full"
+                                    // onClick={handleSubmit}
                                 >
-                                    <FaFileDownload size={20} />
+                                    We systematically review all ratings to enhance our services, and we highly value them.
                                 </button>
-                            </Tooltip>
+                            <div className="flex flex-col items-center justify-center p-6 rounded-lg shadow-md">
+                                <h2 className="text-2xl font-bold mb-4  text-center text-gray-500">
+                                    {selectedManuscript ? selectedManuscript.man_doc_title : ''}
+                                </h2>
 
-                            <Tooltip content="Ratings">
-                                <button
-                                    className="text-gray-600 hover:text-blue-500"
-                                    onClick={() => handleRatings(manuscript)}
-                                >
-                                    <FaStar size={20} />
-                                </button>
-                            </Tooltip>
-                            <Tooltip content="Cite">
-                                <button
-                                    className="text-gray-600 hover:text-blue-500"
-                                    onClick={() => handleCitation(manuscript)}
-                                >
-                                    <FaQuoteLeft size={20} />
-                                </button>
-                            </Tooltip>
+                                {/* Ratings component */}
+                                <RatingComponent
+                                    rating={selectedRating}
+                                    onRatingChange={(newRating) => {
+                                        setSelectedRating(newRating);
 
-                {/* Rendering the ratings modal */}
-                {isModalOpen && (
-                    <Modal show={isModalOpen} onClose={() => setIsModalOpen(false)}>
+                                    }} // Capture rating
+                                />
+
+                                {/* Submit button */}
+                                <button
+                                    className="mt-4 bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition duration-200"
+                                    onClick={handleSubmit}
+                                >
+                                    Submit
+                                </button>
+                            </div>
+                        </Modal>
+                    )}
+
+
+
+                               {/* Rendering the comment modal */}
+                               {isCommentOpen && (
+                    <Modal show={isCommentOpen} onClose={() => setisCommentOpen(false)}>
                         <button
                                 Disable='true'
                                 className="bg-gray-300 text-gray-500 py-4 px-4 font-bold rounded w-full"
@@ -518,12 +989,7 @@ const handleDropdownChange = (selectedKey) => {
                             </h2>
 
                             {/* Ratings component */}
-                            <RatingComponent
-                                rating={selectedRating}
-                                onRatingChange={(newRating) => {
-                                    setSelectedRating(newRating);
-
-                                }} // Capture rating
+                            <CommentSections
                             />
 
                             {/* Submit button */}
@@ -602,6 +1068,8 @@ const handleDropdownChange = (selectedKey) => {
                     </Modal>
                 )}
 
+
+
             </div>
 
                 {showComments && (
@@ -614,21 +1082,29 @@ const handleDropdownChange = (selectedKey) => {
                         ))}
                     </div>
                 )}
+                {/* Conditionally Render ManuscriptComment */}
+                {commentStates[manuscript.id] && (
+                    <div>
+                        <ManuscriptComment manuscriptId={manuscript.id} /> {/* You can pass the manuscriptId to the comment component if needed */}
+                    </div>
+                )}
+
             </div>
-            </div>
-))}
-            <ToastContainer // Include ToastContainer for displaying toasts
-                position="bottom-center"
-                autoClose={2000}
-                hideProgressBar={false}
-                newestOnTop={false}
-                closeOnClick
-                rtl={false}
-                pauseOnFocusLoss
-                draggable
-                pauseOnHover
-                theme="colored"
-            />
+        </div>
+    ))}
+</div>
+
+                <ToastContainer // Include ToastContainer for displaying toasts
+                    position="bottom-center"
+                    autoClose={2000}
+                    hideProgressBar={false}
+                    newestOnTop={false}
+                    closeOnClick
+                    rtl={false}
+                    pauseOnFocusLoss
+                    draggable
+                    pauseOnHover
+                    theme="colored"/>
         </section>
     );
 }

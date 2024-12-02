@@ -19,19 +19,19 @@ trait CheckSubscriptionTrait
 
             if (!file_exists($filePath)) {
                 Log::error('CSV file not found: ' . $filePath);
-                return false; 
+                return false;
             }
-    
+
             // Retrieve data from the CSV file
             $csvData = Excel::toArray(new UsersImport, public_path($filePath));
-    
+
             // Log user data
             Log::info('Auth ' . $user->uni_id_num . ' ' . $user->name . ' ' . $user->user_dob);
-    
+
             // If CSV data is not empty and in the expected format
             if (!empty($csvData) && !empty($csvData[0])) {
                 $data = $csvData[0];
-    
+
                 foreach ($data as $row) {
                     if (count($row) >= 5) {
                         Log::info($row['id_number'] . ' ' . $row['name'] . ' ' . $row['dob']);
@@ -53,7 +53,7 @@ trait CheckSubscriptionTrait
                             } else {
                                 if ($user->is_premium) {
                                     $user->update([
-                                        'is_premium' => false, 
+                                        'is_premium' => false,
                                         'is_affiliated' => true
                                     ]);
                                 }
@@ -66,11 +66,11 @@ trait CheckSubscriptionTrait
                         }
                     }
                 }
-    
+
                 return [
                     'status' => false,
                     'message' => 'Your information does not match the records provided by the institution or you are not included in the list of eligible users.'
-                    
+
                 ];
             } else {
                 Log::warning('CSV data is empty or not in the expected format.');
@@ -80,7 +80,7 @@ trait CheckSubscriptionTrait
                 ];
             }
         }
-    
+
         return [
             'status' => false,
             'message' => 'No subscription content available.'

@@ -37,8 +37,6 @@ return Application::configure(basePath: dirname(__DIR__))
             'access' => \App\Http\Middleware\AccessControlMiddleware::class,
             'check-google' => \App\Http\Middleware\CheckGoogleConnection::class
         ]);
-        $middleware->append(\Illuminate\Http\Middleware\HandleCors::class);
-        
 
         // Global middleware for handling CORS (ensure this is applied if needed)
         $middleware->append(\Illuminate\Http\Middleware\HandleCors::class);

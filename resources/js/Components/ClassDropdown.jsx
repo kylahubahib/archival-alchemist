@@ -101,13 +101,13 @@ const ClassDropdown = ({ ins_id, onUpdate }) => {
                         Declined
                     </DropdownItem>
                     <DropdownItem
-                        key="in_progress"
+                        key="to-review"
                         showDivider
                         description="Display in-progress manuscripts"
                         startContent={<PendingIcon className={iconClasses} />}
-                        onClick={() => handleFilterChange('in_progress')}
+                        onClick={() => handleFilterChange('to-review')}
                     >
-                        In Progress
+                        To-Review
                     </DropdownItem>
                     <DropdownItem
                         key="pending"
@@ -117,6 +117,15 @@ const ClassDropdown = ({ ins_id, onUpdate }) => {
                         onClick={() => handleFilterChange('pending')}
                     >
                         Pending
+                    </DropdownItem>
+                    <DropdownItem
+                        key="missing"
+                        showDivider
+                        description="Display missing manuscripts"
+                        startContent={<PendingIcon className={iconClasses} />}
+                        onClick={() => handleFilterChange('missing')}
+                    >
+                        Missing
                     </DropdownItem>
                     {/* <DropdownItem
                         key="copy"

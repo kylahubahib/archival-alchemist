@@ -6,7 +6,7 @@ import { FaChevronDown } from "react-icons/fa";
 import { FaFilter, FaSearch } from "react-icons/fa";
 import { RiShieldUserFill } from "react-icons/ri";
 import { format } from "date-fns";
-import { getAcronymAndOrigText } from "@/Components/Admins/Functions";
+// import { getAcronymAndOrigText } from "@/Components/Admins/Functions";
 import PageHeader from "@/Components/Admins/PageHeader";
 import AdminLayout from "@/Layouts/AdminLayout";
 import MainNav from "@/Components/MainNav";

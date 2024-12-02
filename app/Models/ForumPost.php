@@ -15,6 +15,7 @@ class ForumPost extends Model
         'body',
         'user_id', 
         'viewCount',
+        'status'
     ];
 
     protected static function boot()
@@ -47,9 +48,14 @@ class ForumPost extends Model
 
     // In Laravel, within the Post model
     public function getFormattedCreatedAtAttribute()
-        {
-            return $this->created_at ? $this->created_at->toDateTimeString() : null;
-        }
+    {
+        return $this->created_at ? $this->created_at->toDateTimeString() : null;
+    }
+
+    // public function getCreatedAtAttribute($value)
+    // {
+    //     return Carbon::parse($value)->format('m/d/Y'); 
+    // }
     
 
 

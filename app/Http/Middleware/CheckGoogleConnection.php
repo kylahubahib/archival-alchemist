@@ -17,6 +17,10 @@ class CheckGoogleConnection
      */
     public function handle(Request $request, Closure $next): Response
     {
+        \Log::info('Start checking...');
+
+        \Log::info(Auth::user()->google_user_id);
+
         if(Auth::check() && is_null(Auth::user()->google_user_id)) {
             return redirect()->route('prompt.google.connection');
         }

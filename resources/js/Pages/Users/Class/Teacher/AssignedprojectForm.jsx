@@ -47,7 +47,7 @@ const AssignedprojectForm = ({ onBack, folders }) => {
 
 
     const handleSave = async () => {
-        const folder = folders[1];  // Or use a condition to select a specific folder
+        const folder = folders;  // Or use a condition to select a specific folder
         console.log('Folder ID:', folder.id);  // Check if folder.id is valid
 
         // Log to check if startDate and dueDate are set correctly
@@ -108,7 +108,7 @@ const AssignedprojectForm = ({ onBack, folders }) => {
                             height: '100vh',
                         }}
                     >
-                        <div className="relative h-full flex flex-col justify-center items-center fixed">
+                        <div className="relative h-full flex flex-col justify-center items-center ">
                             <Button
                                 onClick={handleSlideCloseToRight}
                                 className="bg-transparent text-black border-none hover:bg-transparent absolute top-3 left-6 flex items-center "

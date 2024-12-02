@@ -20,6 +20,7 @@ use Inertia\Response;
 
 use App\Models\InstitutionSubscription;
 use App\Models\Student;
+use App\Models\Faculty;
 
 
 
@@ -42,9 +43,9 @@ class ProfileController extends Controller
         $user = Auth::user();
         
 
-        if($user->user_type === 'superadmin' || $user->user_type === 'admin')
+        if($user->user_type === 'superadmin' || $user->user_type === 'institution_admin')
         {
-            return Inertia::render('SuperAdmin\Profile\Edit', [
+            return Inertia::render('Profile/AdminProfile', [
                 'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
                 'status' => session('status'),
                 'auth' => [
@@ -75,16 +76,26 @@ class ProfileController extends Controller
             {
                 $user->load('student.university_branch.university');
 
-                $uniBranchName = $user->student->university_branch->uni_branch_name;
-                $uniName = $user->student->university_branch->university->uni_name;
+                if( !is_null($user->student->university_branch))
+                {
+                    $uniBranchName = $user->student->university_branch->uni_branch_name;
+                    $uniName = $user->student->university_branch->university->uni_name;
+                }
+
+               
             }
             else if($user->user_type === 'teacher')
             {
                 $user->load('faculty.university_branch.university');
 
-                $uniBranchName = $user->faculty->first()->university_branch->uni_branch_name;
-                $uniName = $user->faculty->first()->university_branch->university->uni_name;
-            }
+                if(!is_null($user->faculty->first()->university_branch))
+                {
+                    $uniBranchName = $user->faculty->first()->university_branch->uni_branch_name;
+                    $uniName = $user->faculty->first()->university_branch->university->uni_name;
+                }
+
+                
+            }  
            
 
             return Inertia::render('Profile/Edit', [
@@ -268,6 +279,36 @@ class ProfileController extends Controller
             'is_affiliated' => $user->is_affiliated
         ]);
 
+    }
+
+    public function assignUserRole(Request $request)
+    {
+        $role = $request->get('role');
+        $user = Auth::user();
+
+        $user->update([
+            'user_type' => $role
+        ]);
+
+        if($role === 'student')
+        {
+            $student = Student::firstOrCreate([
+                'user_id' => $user->id,
+                'uni_branch_id' => null,
+            ]);
+        }
+        else if($role === 'teacher')
+        {
+            $faculty = Faculty::firstOrCreate([
+                'user_id' => $user->id,
+                'uni_branch_id' =>null,
+            ]);
+        }
+
+        
+
+
+        return response()->json();
     }
 
 }

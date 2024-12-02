@@ -556,6 +556,31 @@ do the migration
 php artisan migrate
 
 
+
+
+PS C:\xampp\htdocs\archival-alchemist-main> laravel-echo-server init
+>>
+? Do you want to run this server in development mode? Yes
+? Which port would you like to serve from? 6001
+? Which database would you like to use to store presence channel members? redis
+? Enter the host of your Laravel authentication server. http://localhost
+? Will you be serving on http or https? http
+? Do you want to generate a client ID/Key for HTTP API? No
+? Do you want to setup cross domain access to the API? Yes
+? Specify the URI that may access the API: http://localhost:5173
+? Enter the HTTP methods that are allowed for CORS: GET, POST, PUT, DELETE
+? Enter the HTTP headers that are allowed for CORS: Origin, Content-Type, X-Auth-Token, X-Requested-With, Accept, Authorization, X-CSRF-TOKEN, X-Socket-
+Id
+? What do you want this config to be saved as? laravel-echo-server.json
+Configuration file saved. Run laravel-echo-server start to run server.
+PS C:\xampp\htdocs\archival-alchemist-main> laravel-echo-server start
+>>
+
+L A R A V E L  E C H O  S E R V E R
+
+See live logs sa PowerShell:
+Get-Content .\storage\logs\laravel.log -Wait
+
 📌clearing caches and data's
 php artisan optimize:clear
 php artisan event:cache
