@@ -462,7 +462,99 @@ const Manuscript = ({auth, user, choice }) => {
         </div>
 
                     <div className="flex-1 p-4">
-                        <h2 className="text-xl font-bold text-gray-900">{manuscript.man_doc_title}</h2>
+                    <div>
+             {isPremium ? (
+                // If the user is premium, show the link directly
+                <h2 className="text-base font-bold text-gray-900">
+                <a
+                  onClick={() => handleClick(manuscript.id)} // Trigger the increment logic before opening the link
+                    href={`http://127.0.0.1:8000/${manuscript.man_doc_content}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-gray-700 hover:text-blue-600 hover:underline cursor-pointer transition-all duration-300 ease-in-out"
+                >
+                    {manuscript.man_doc_title}
+                </a>
+            </h2>
+            ) : (
+                // If the user is not premium, open modal on click (only for non-premium users)
+                <h2 className="text-base font-bold text-gray-900">
+                    <span
+                        onClick={() => openModal(manuscript)} // Open modal when clicked
+                        className="text-gray-700 hover:text-blue-600 hover:underline cursor-pointer transition-all duration-300 ease-in-out"
+                    >
+                        {manuscript.man_doc_title}
+                    </span>
+                </h2>
+            )}
+
+            {/* Show modal for non-premium users */}
+            {ismodalOpen && (
+                 <Modal
+                 show={ismodalOpen}
+                 onClose={closeModal}
+                 maxWidth="50%" // Percentage-based for responsiveness
+                 maxHeight="80vh" // Set max height relative to viewport
+                 className="relative overflow-hidden rounded-lg shadow-2xl"
+             >
+                 {/* Modal Overlay with smooth fade */}
+                 <div
+                     className="absolute inset-0 bg-black opacity-60"
+                     onClick={closeModal}
+                 ></div>
+
+                 {/* Modal Content */}
+                 <div className="relative p-6 bg-white rounded-lg z-10 overflow-hidden shadow-xl">
+                     {/* Close Button */}
+                     <button
+                         onClick={closeModal}
+                         className="absolute top-4 right-4 text-white bg-gray-800 hover:bg-gray-700 rounded-full p-2 focus:outline-none z-20"
+                         style={{ fontSize: '1.5rem' }}
+                     >
+                         <span className="font-bold">&times;</span>
+                     </button>
+
+                     {/* PDF Viewer Container */}
+                     <div className="relative h-[80vh] w-full bg-gray-200 shadow-2xl rounded-lg overflow-hidden">
+                         <div
+                             className={`relative w-full h-full overflow-hidden rounded-lg ${pageCount > 10 ? 'blur-sm' : ''}`}
+                         >
+                             {isLoading && (
+                                 <div className="absolute inset-0 flex justify-center items-center">
+                                     <div className="w-16 h-16 border-t-4 border-blue-600 border-solid rounded-full animate-spin"></div>
+                                 </div>
+                             )}
+                             <iframe
+                                 src={`http://127.0.0.1:8000/pdfViewer.html?pdfUrl=http://127.0.0.1:8000/${selectedManuscript}`}
+                                 className="w-full h-full border-0 rounded-lg shadow-md"
+                                 title="PDF Viewer"
+                                 onLoad={handlePdfLoad}
+                             ></iframe>
+                         </div>
+
+                         {/* Message when page count exceeds 10 */}
+                         {pageCount > 10 && (
+                             <div className="absolute inset-0 flex justify-center items-center bg-black bg-opacity-50 text-white font-semibold text-xl p-6 rounded-lg shadow-lg max-w-lg mx-auto">
+                                 <div className="text-center">
+                                     <h2 className="text-2xl mb-4 font-extrabold">You've Reached the Page Limit</h2>
+                                     <p className="text-lg mb-6">
+                                         To access the full document, please subscribe to unlock more pages.
+                                     </p>
+                                     <button
+                                         onClick={() => alert('Redirecting to subscription page...')}
+                                         className="bg-blue-600 hover:bg-blue-700 text-white py-3 px-8 rounded-lg shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-100"
+                                     >
+                                         Subscribe Now
+                                     </button>
+                                 </div>
+                             </div>
+                         )}
+                     </div>
+                 </div>
+             </Modal>
+            )}
+        </div>
+
                         <p className="text-gray-700 mt-1">Author: {manuscript.authors?.map(author => author.name).join(', ') || 'No authors available'}</p>
                         <p className="text-gray-700 mt-1">Adviser: {manuscript.man_doc_adviser}</p>
 

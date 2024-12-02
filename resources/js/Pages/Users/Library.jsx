@@ -155,12 +155,15 @@ const handleEndYearChange = (e) => {
                                 >
                                     Recommended
                                 </button>
-                                <button
-                                    onClick={() => handleTabClick('ByUniversity')}
-                                    className={buttonStyle('ByUniversity')}
-                                >
-                                    My Uni-Books
-                                </button>
+                                 {/* Conditionally render the "My Uni-Books" button */}
+                                 {isAuthenticated && (
+                                    <button
+                                        onClick={() => handleTabClick('ByUniversity')}
+                                        className={buttonStyle('ByUniversity')}
+                                    >
+                                        My Uni-Books
+                                    </button>
+                                )}
                             </div>
 
                             <div className="flex items-center space-x-2">
