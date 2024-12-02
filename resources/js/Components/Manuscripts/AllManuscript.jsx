@@ -768,7 +768,7 @@ const handleDropdownChange = (selectedKey) => {
   {/* Maximize / Minimize ButthandleMaximizeon */}
   <button
     onClick={() => handleMaximize(manuscript.id)}
-    className="absolute top-2 right-2 bg-gray-500 text-white p-2 rounded-full shadow-lg hover:bg-gray-600 transition-colors duration-200 z-10"
+    className="text-xxxss absolute top-2 right-2 bg-gray-500 text-white p-2 rounded-full shadow-lg hover:bg-gray-600 transition-colors duration-200 z-10"
   >
     {maximizedId === manuscript.id ? 'X' : 'Preview'}
   </button>

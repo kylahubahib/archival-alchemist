@@ -455,7 +455,7 @@ const Manuscript = ({auth, user, choice }) => {
             {/* Maximize / Minimize Button */}
             <button
                 onClick={() => handleMaximize(manuscript.id)}
-                className="absolute top-2 right-2 bg-gray-500 text-white p-2 rounded-full shadow-lg hover:bg-gray-600 transition-colors duration-200"
+                className="text-xxxss absolute top-2 right-2 bg-gray-500 text-white p-2 rounded-full shadow-lg hover:bg-gray-600 transition-colors duration-200"
             >
                 {maximizedId === manuscript.id ? 'Minimize' : 'Preview'}
             </button>

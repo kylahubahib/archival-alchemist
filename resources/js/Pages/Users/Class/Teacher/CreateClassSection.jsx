@@ -3,7 +3,7 @@ import axios from 'axios';
 import { Card, CardFooter, Image, Button } from '@nextui-org/react';
 import ViewClass from '@/Pages/Users/Class/Teacher/ViewClass';
 
-const CreateClassSection = ({setDropdownVisible, visible, selectedSemester, semesters,  userId }) => {
+const CreateClassSection = ({auth, user, setDropdownVisible, visible, selectedSemester, semesters,  userId }) => {
     const [folders, setFolders] = useState([]);
     const [classCourse, setCourse] = useState('');
     const [classSubjectName, setSubjectName] = useState('');
@@ -161,7 +161,7 @@ const CreateClassSection = ({setDropdownVisible, visible, selectedSemester, seme
         <div className="flex flex-col items-start justify-start min-h-screen my-5 bg-gray-100 mt-0 relative w-relative mx-8 px-10">
             {isViewClassOpen ? (
                 // Pass the selected section or class
-                <ViewClass folders={selectedFolder} onBack={handleBack} /> // Pass handleBack as a prop to ViewClass
+                <ViewClass auth={auth} user={user} folders={selectedFolder} onBack={handleBack} /> // Pass handleBack as a prop to ViewClass
             ) : (
                 <>
                     {/* Display folders or empty folder with a plus sign */}

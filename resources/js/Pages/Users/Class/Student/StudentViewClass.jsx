@@ -45,7 +45,7 @@ const StudentViewClass = ({ auth, user, onBack, folders }) => {
 
             {/* Content Section */}
             <div className="w-full bg-white">
-                {activeSection === 'people' && <People folders={folders} onBack={() => setActiveSection('')} />}
+                {activeSection === 'people' && <People auth={auth} user={user} folders={folders} onBack={() => setActiveSection('')} />}
                 {activeSection === 'assignedProject' && <Stream auth={auth} user={user} folders={folders} onBack={() => setActiveSection('')} />}
             </div>
 

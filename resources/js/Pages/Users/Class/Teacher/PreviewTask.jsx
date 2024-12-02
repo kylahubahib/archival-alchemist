@@ -6,7 +6,7 @@ import AssignedprojectForm from '@/Pages/Users/Class/Teacher/AssignedprojectForm
 import TaskInstructions from '@/Pages/Users/Class/Teacher/TaskInstructions';
 import StudentWork from '@/Pages/Users/Class/Teacher/StudentWork';
 
-const PreviewTask = ({ folders, onBack, task, taskID }) => {
+const PreviewTask = ({auth, user, folders, onBack, task, taskID }) => {
     const [showForm, setShowForm] = useState(false);
     const [activeSection, setActiveSection] = useState('taskInstructions');
     console.log('TaskInstructions received task:', task);
@@ -91,7 +91,7 @@ const PreviewTask = ({ folders, onBack, task, taskID }) => {
 
             {/* Content Section with Margin Top */}
             <div className="w-full bg-gray-100  pt-12"> {/* Add mt-12 to create space below the header */}
-                {activeSection === 'people' && <People folders={folders} onBack={() => setActiveSection('')} />}
+                {activeSection === 'people' && <People auth={auth} user={user} folders={folders} onBack={() => setActiveSection('')} />}
                 {activeSection === 'grades' && <Grades  folders={folders}  onBack={() => setActiveSection('')} />}
                 {activeSection === 'taskInstructions' && <TaskInstructions folders={folders} onBack={() => setActiveSection('')}  task={task} taskID={taskID}/>}
                 {activeSection === 'studentWork' && <StudentWork folders={folders} onBack={() => setActiveSection('')}  task={task} taskID={taskID}/>}
