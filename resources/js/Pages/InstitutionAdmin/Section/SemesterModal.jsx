@@ -28,6 +28,7 @@ export default function Semester({isOpen, onClose, semesters}) {
         end_date: null,
         start_sy: '',
         end_sy: '',
+        status: '',
     });
    
     
@@ -167,6 +168,7 @@ export default function Semester({isOpen, onClose, semesters}) {
         end_date: formattedEndDate,
         start_sy: years[0],
         end_sy: years[1],
+        status: sem.status
     });
 
     setStartDate(parsedStartDate);
@@ -302,6 +304,18 @@ export default function Semester({isOpen, onClose, semesters}) {
                             />
                             <InputError message={errors.end_date} className="mt-2" />
                         </div>
+
+                        {/* Change Status */}
+                        <Select
+                            aria-label="Status"
+                            placeholder={false}
+                            selectedKeys={data.status}
+                            onChange={(e) => setData('status', e.target.value)}
+                        >
+                            <SelectItem key="Active" value="Active">Active</SelectItem>
+                            <SelectItem key="Upcoming" value="Upcoming">Upcoming</SelectItem>
+                            <SelectItem key="Completed" value="Completed">Completed</SelectItem>
+                        </Select>
 
                         {/* Submit Button */}
                         <Button
