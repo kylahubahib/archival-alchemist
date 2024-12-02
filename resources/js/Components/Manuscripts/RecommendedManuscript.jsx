@@ -131,6 +131,7 @@ const Manuscript = ({auth, user, choice}) => {
 
   // Function to handle the view increment
   const handlePdfLoad = (id) => {
+    setIsLoading(false); // Set loading to false once PDF is loaded
     // When the PDF is loaded, increment the view count
     axios
     .post(`/manuscripts/${id}/increment-view`)
