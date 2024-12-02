@@ -715,14 +715,32 @@ const handleDropdownChange = (selectedKey) => {
 
             {manuscriptsToDisplay.map((manuscript) => (
                 <div key={manuscript.id} className="w-full bg-white shadow-lg flex mb-4 text-sm">
-{console.log("Mao ni:", manuscriptsToDisplay)}
+{console.log("manuscriptsToDisplay:", manuscriptsToDisplay)}
         <div
             className={`rounded ${maximizedId === manuscript.id ? 'w-full h-full' : 'w-40 h-48'} bg-gray-200 flex items-center justify-center relative transition-all duration-300 ease-in-out y-4 m-5`}
         >
 
+{!isAuthenticated && (
+  <div className="flex flex-col h-full w-full items-center justify-center text-center text-gray-800 text-xxxs p-2 bg-white border-2 mb-1 leading-tight">
+    <div>{manuscript.man_doc_title}</div>
+    <p className="block pt-12">By:</p>
+    <p className="block">
+      {manuscript.authors?.length > 0 ? (
+        <div>
+          {manuscript.authors.map((author, index) => (
+            <p key={index} className="text-xxxs text-gray-800 mb-1 leading-tight">{author.name}</p>
+          ))}
+        </div>
+      ) : (
+        <p>Unknown Authors</p>
+      )}
+    </p>
+    <p className="block pt-5">{new Date(manuscript.updated_at).getFullYear()}</p>
+  </div>
+)}
+
                    {isPremium ? (
                      // If the user is premium, show the link directly
-                      // If the user is premium, show the link directly
   <div className="flex items-center justify-center h-full w-full text-gray-500">
   {maximizedId === manuscript.id ? (
     manuscript.man_doc_content ? (
@@ -733,17 +751,17 @@ const handleDropdownChange = (selectedKey) => {
       </div>
     )
   ) : (
-    <div className="flex flex-col h-full w-full items-center justify-center text-center text-gray-800 text-xxxs p-2 bg-white border-2 mb-1 leading-tight">
-        {manuscript.man_doc_title}
-        <p className="block pt-12">By:</p>
-        <p className="block">{manuscript.authors?.length > 0 ? (
-            <div>
-                {manuscript.authors.map((author, index) => (
-                    <p key={index} className="text-xxxs text-gray-800 mb-1 leading-tight">{author.name}</p>))}
-            </div>) : ( <p >Unknown Authors</p>)}
-        </p>
-        <p className="block pt-5">{new Date(manuscript.updated_at).getFullYear()}</p>
-    </div>
+<div className="flex flex-col h-full w-full items-center justify-center text-center text-gray-800 text-xxxs p-2 bg-white border-2 mb-1 leading-tight">
+                    {manuscript.man_doc_title}
+                    <p className="block pt-12">By:</p> {/* This "By:" will now be on a new line */}
+                    <p className="block">{manuscript.authors?.length > 0 ? (
+                        <div>
+                            {manuscript.authors.map((author, index) => (
+                                <p key={index} className="text-xxxs text-gray-800 mb-1 leading-tight">{author.name}</p>))}
+                        </div>) : ( <p >Unknown Authors</p>)}
+                    </p>
+                    <p className="block pt-5">{new Date(manuscript.updated_at).getFullYear()}</p>
+                </div>
   )}
 
   {/* Maximize / Minimize ButthandleMaximizeon */}
@@ -755,16 +773,22 @@ const handleDropdownChange = (selectedKey) => {
   </button>
 </div>
                    ) : isAuthenticated ? (
-                    <div className="flex flex-col h-full w-full items-center justify-center text-center text-gray-800 text-xxxs p-2 bg-white border-2 mb-1 leading-tight">
-                        {manuscript.man_doc_title}
-                        <p className="block pt-12">By:</p>
-                        <p className="block">{manuscript.authors?.length > 0 ? (
-                            <div>
-                                {manuscript.authors.map((author, index) => (
-                                    <p key={index} className="text-xxxs text-gray-800 mb-1 leading-tight">{author.name}</p>))}
-                            </div>) : ( <p >Unknown Authors</p>)}
-                        </p>
-                        <p className="block pt-5">{new Date(manuscript.updated_at).getFullYear()}</p>
+                    <div className="relative">
+                      {/* Static Thumbnail for Authenticated User */}
+                      <div className="flex items-center justify-center h-full w-full text-gray-500">
+                      <div className="flex flex-col h-full w-full items-center justify-center text-center text-gray-800 text-xxxs p-2 bg-white border-2 mb-1 leading-tight">
+                    {manuscript.man_doc_title}
+                    <p className="block pt-12">By:</p> {/* This "By:" will now be on a new line */}
+                    <p className="block">{manuscript.authors?.length > 0 ? (
+                        <div>
+                            {manuscript.authors.map((author, index) => (
+                                <p key={index} className="text-xxxs text-gray-800 mb-1 leading-tight">{author.name}</p>))}
+                        </div>) : ( <p >Unknown Authors</p>)}
+                    </p>
+                    <p className="block pt-5">{new Date(manuscript.updated_at).getFullYear()}</p>
+                </div>
+                      </div>
+
                     </div>
                    ):null}
 
@@ -809,9 +833,21 @@ const handleDropdownChange = (selectedKey) => {
                                              onLoad={handlePdfLoad}
                                          ></iframe>
                                      </div>
+
+
                                  </div>
                              </div>
                          </Modal>
+                   )}
+
+                   {/* Modal for non-authenticated users */}
+                   { isLoginModalOpen && !isAuthenticated &&(
+                     <Modal
+                       show={isLoginModalOpen}
+                       onClose={closeLoginModal}
+                     >
+                <AskUserToLogin />
+                     </Modal>
                    )}
              </div>
 
@@ -952,14 +988,6 @@ const handleDropdownChange = (selectedKey) => {
         </button>
     </Tooltip>
 
-{/*
-                    <div
-                    key={manuscript.id}
-                    className="flex items-center text-blue-500 hover:text-blue-700 cursor-pointer"
-                    onClick={() => handleComments(manuscript.id, manuscript.man_doc_title)}  // Pass id and title to handleComments
-                    >
-                    <FaComment size={20} />
-                    </div> */}
 
 
 <div

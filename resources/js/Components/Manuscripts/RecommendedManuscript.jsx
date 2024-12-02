@@ -551,6 +551,25 @@ const handleDropdownChange = (selectedKey) => {
         <div
             className={`rounded ${maximizedId === manuscript.id ? 'w-full h-full' : 'w-40 h-48'} bg-gray-200 flex items-center justify-center relative transition-all duration-300 ease-in-out y-4 m-5`}
         >
+{!isAuthenticated && (
+  <div className="flex flex-col h-full w-full items-center justify-center text-center text-gray-800 text-xxxs p-2 bg-white border-2 mb-1 leading-tight">
+    <div>{manuscript.man_doc_title}</div>
+    <p className="block pt-12">By:</p>
+    <p className="block">
+      {manuscript.authors?.length > 0 ? (
+        <div>
+          {manuscript.authors.map((author, index) => (
+            <p key={index} className="text-xxxs text-gray-800 mb-1 leading-tight">{author.name}</p>
+          ))}
+        </div>
+      ) : (
+        <p>Unknown Authors</p>
+      )}
+    </p>
+    <p className="block pt-5">{new Date(manuscript.updated_at).getFullYear()}</p>
+  </div>
+)}
+
 
                    {isPremium ? (
                      // If the user is premium, show the link directly
@@ -590,7 +609,7 @@ const handleDropdownChange = (selectedKey) => {
 // Authenticated User
     <div className="flex flex-col h-full w-full items-center justify-center text-center text-gray-800 text-xxxs p-2 bg-white border-2 mb-1 leading-tight">
     {manuscript.man_doc_title}
-    <p className="block pt-12">By:</p> 
+    <p className="block pt-12">By:</p>
     <p className="block">{manuscript.authors?.length > 0 ? (
         <div>
             {manuscript.authors.map((author, index) => (
