@@ -128,7 +128,6 @@ export default function InstitutionSubscriptionForm({ plan }) {
             setData('campus', value.uni_branch_name);
             checkIfUniversityExist(value.id);
             setFilteredBranches([]);
-            
         }
 
     }
@@ -251,8 +250,8 @@ export default function InstitutionSubscriptionForm({ plan }) {
                             type="number"
                             name="pnum"
                             value={data.pnum}
-                            className="mt-1 block w-full"
-                            placeholder="09XXXXXXX"
+                            className="mt-1 block w-full"s
+                            max={9999999999}
                             onChange={(e) => setData('pnum', e.target.value)}
                             required
                         />

@@ -22,11 +22,9 @@ export default function UpdateProfileInformationForm({ mustVerifyEmail, status, 
         user_dob: user.user_dob || ''
     });
 
-    // useEffect(() => {
-    //     console.log('dob: ', formatDateString(data.user_dob))
-    //     console.log(data.user_pnum);
-    //     console.log(user.university);
-    // })
+    useEffect(() => {
+        console.log(user);
+    })
 
     const [profilePic, setProfilePic] = useState(user.user_pic);
     const [message, setMessage] = useState('');
@@ -56,7 +54,7 @@ export default function UpdateProfileInformationForm({ mustVerifyEmail, status, 
         // }
 
         try {
-            await axios.patch(route('profile.update'), formData, {
+            await axios.patch(route('profile.update', data), {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
@@ -68,6 +66,19 @@ export default function UpdateProfileInformationForm({ mustVerifyEmail, status, 
         }
 
     };
+
+    const formatDateWithLocale = (date) => {
+        if (!date) return ''; // Handle empty or null values
+        const parsedDate = new Date(date); // Create a Date object from the string
+        if (isNaN(parsedDate)) {
+            // If `date` is not directly parsable by Date, handle custom parsing
+            const [month, day, year] = date.split('/');
+            return new Date(`${year}-${month}-${day}`).toISOString().split('T')[0];
+        }
+        return parsedDate.toLocaleDateString('en-CA'); // 'en-CA' ensures YYYY-MM-DD format
+    };
+    
+    
 
     return (
         <section className={className}>
@@ -169,7 +180,7 @@ export default function UpdateProfileInformationForm({ mustVerifyEmail, status, 
                         id="user_dob"
                         type="date"
                         name="user_dob"
-                        value={data.user_dob}
+                        value={formatDateWithLocale(data.user_dob)}
                         className="my-1 block w-full"
                         onChange={(e) => setData('user_dob', e.target.value)}
                     />
@@ -223,8 +234,9 @@ export default function UpdateProfileInformationForm({ mustVerifyEmail, status, 
                         <p className="text-sm text-gray-600">Saved.</p>
                     </Transition>
                 </div>
-                {message && <p>{message}</p>}
+                {message && <p className='text-green'>{message}</p>}
             </form>
         </section>
     );
 }
+

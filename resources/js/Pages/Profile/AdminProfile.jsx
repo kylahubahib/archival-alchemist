@@ -36,9 +36,6 @@ export default function AdminProfile({auth, mustVerifyEmail, status}) {
             <UpdatePasswordForm className="max-w-xl bg-white shadow-sm p-8 rounded-lg" />
         </div>
 
-
-
-
     </AdminLayout>
     );
 }

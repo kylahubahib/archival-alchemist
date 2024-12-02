@@ -130,6 +130,9 @@ class ProfileController extends Controller
      */
     public function update(Request $request): \Illuminate\Http\JsonResponse
     {
+
+        Log::info($request->all());
+
         // Validate request
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -137,6 +140,7 @@ class ProfileController extends Controller
             'uni_id_num' => 'nullable|string|max:11',
             'user_pnum' => 'nullable|string|max:11',
             'user_aboutme' => 'nullable|string|max:1000',
+            'user_dob' => 'required|string'
         ]);
 
         $user = $request->user();

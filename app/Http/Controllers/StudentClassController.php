@@ -1056,6 +1056,8 @@ public function isPremium()
     public function uploadToDrive($file, $authorIds, $teacherId, $manuscriptId)
     {
 
+        Log::info('Start Googlr Drive Upload Process');
+
         // Initialize Google Client
         $client = new GoogleClient();
         $client->setAuthConfig([
@@ -1302,8 +1304,7 @@ public function isPremium()
             Log::warning("Teacher ID not found for section ID: {$manuscript->section_id}");
         }
 
-    
-        return response()->json(['success' => 'Document permissions updated successfully.']);
+        return response()->json(['success' => 'Document updated successfully.']);
     }
 
 
