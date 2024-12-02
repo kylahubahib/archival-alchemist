@@ -167,12 +167,13 @@ const Manuscript = ({auth, user, choice}) => {
         console.error('Error incrementing view count:', error);
     });
 
+    // setIsLoading(false);
+
   };
 
   const handleClick = (id) => {
     // When the PDF is loaded, increment the view count
-    axios
-    .post(`/manuscripts/${id}/increment-view`)
+    axios.post(`/manuscripts/${id}/increment-view`)
     .then((response) => {
         console.log('View count incremented:', response.data);
     })

@@ -1,4 +1,4 @@
-import { Head } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Button, Divider, Skeleton, useDisclosure } from '@nextui-org/react';
@@ -30,6 +30,7 @@ export default function SubscriptionForm({user}) {
     const [message, setMessage] = useState(null);
     const [personalPlans, setPersonalPlans] = useState([]);
     const [planFeatures, setPlanFeatures] = useState([]);
+    const [error, setError] = useState(null);
 
     const submit = (e) => {
         e.preventDefault();
@@ -66,6 +67,7 @@ export default function SubscriptionForm({user}) {
         axios.post('/remove-affiliation')
         .then(response => {
             setIsAffiliated(response.data.is_affiliated);
+            router.reload();
             setLoading(false);
         });
     };
@@ -231,9 +233,9 @@ export default function SubscriptionForm({user}) {
                          onClick={() => handleRenewal(personalSubscription.plan_id)} >
                             Renew Subscription
                         </Button>
-                        <Button onClick={() => {openModal('popup')}} radius="large" variant='bordered' size='sm' className=" border-red-500 text-red-500 shadow">
+                        {/* <Button onClick={() => {openModal('popup')}} radius="large" variant='bordered' size='sm' className=" border-red-500 text-red-500 shadow">
                             Cancel Subscription
-                        </Button>
+                        </Button> */}
                         </div>
 
                     </div>

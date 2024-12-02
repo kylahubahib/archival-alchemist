@@ -209,68 +209,81 @@ class ProfileController extends Controller
     use CheckSubscriptionTrait;
 
     public function affiliateUniversity(Request $request)
-    {
-        try {
-            $request->validate([
-                'uni_branch_id' => 'required|integer',
-                'uni_id_num' => 'required|string|max:20',
+{
+    Log::info($request->all());
+
+    try {
+        $request->validate([
+            'uni_branch_id' => 'required|integer',
+            'uni_id_num' => 'required|string|max:20',
+            'user_role' => 'required|string|in:general_user,student,teacher'
+        ]);
+
+        $user = Auth::user();
+
+        // Check for active institution subscription for the selected branch
+        $subscriptionExist = InstitutionSubscription::where('uni_branch_id', $request->uni_branch_id)
+            ->where('insub_status', 'Active')
+            ->first();
+
+        if (!$subscriptionExist) {
+            return response()->json([
+                'is_affiliated' => $user->is_affiliated,
+                'message' => 'Your university currently does not have an active subscription. Please reach out to your institution for more information or updates.'
+            ]);
+        }
+
+        $user->update([
+            'uni_id_num' => $request->uni_id_num,
+        ]);
+
+        // Call method to check if user exists in the institution's subscription records
+        $result = $this->checkInstitutionSubscription($subscriptionExist, $user);
+
+        if ($result['status'] === true) {
+            // Update user with affiliation details
+            $user->update([
+                'user_type' => $request->user_role
             ]);
 
-            $user = Auth::user();
-            $student = Student::where('user_id', $user->id)->first();
-            
-            $subscriptionExist = InstitutionSubscription::where('uni_branch_id', $student->uni_branch_id)
-                ->where('insub_status', 'Active')
-                ->first();
-
-            if ($subscriptionExist == null) {
-                return response()->json([
-                    'is_affiliated' => $user->is_affiliated,
-                    'message' => 'Your university currently does not have an active subscription. Please reach out to your institution for more information or updates.'
+            // Handle additional update for students only
+            if ($request->user_role === 'student') {
+                $student = Student::firstOrCreate(['user_id' => $user->id], [
+                    'uni_branch_id' => $request->uni_branch_id
                 ]);
-            } else {
-                $result = $this->checkInstitutionSubscription($subscriptionExist, $user);
-
-                 //Return true if user exist in the csv file
-                if ($result['status']  == true) {
-
-                    $user->update([
-                        'uni_id_num' => $request->uni_id_num
-                    ]);
-
-                    $student->update([
-                        'uni_branch_id' => $request->uni_branch_id
-                    ]);
-
-                   
-                    return response()->json([
-                        'message' => $result['message'],
-                        'is_affiliated' => $user->is_affiliated
-                    ]);
-                } 
-                 //Return false if user exist does not exist or there's no uploaded csv or university does not have an active subscription
-                else {
-                    return response()->json([
-                        'is_affiliated' => $user->is_affiliated,
-                        'message' => $result['message']
-                    ]);
-                }
+                $student->update([
+                    'uni_branch_id' => $request->uni_branch_id
+                ]);
             }
-        } catch (\Exception $e) {
-            // Catch all exceptions, including validation errors
+
             return response()->json([
-                'message' => 'An error occurred.',
-                'error' => $e->getMessage(),
-            ], 500);
-        }
+                'message' => $result['message'],
+                'is_affiliated' => $user->is_affiliated
+            ]);
+        } 
+
+        return response()->json([
+            'is_affiliated' => $user->is_affiliated,
+            'message' => $result['message']
+        ]);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'message' => 'An error occurred.',
+            'error' => $e->getMessage(),
+        ], 500);
     }
+}
+
+
 
     public function removeAffiliation(Request $request)
     {
         $user = Auth::user()->load(['student', 'faculty']);
 
         $user->update([
-            'is_affiliated' => false
+            'is_affiliated' => false,
+            'is_premium' => false
         ]);
 
         

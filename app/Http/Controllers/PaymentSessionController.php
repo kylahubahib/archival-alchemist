@@ -10,7 +10,6 @@ use App\Models\InstitutionAdmin;
 use App\Models\Transaction;
 use App\Models\User;
 
-
 use App\Models\University;
 use App\Models\UniversityBranch;
 
@@ -52,7 +51,13 @@ class PaymentSessionController extends Controller
 
         // \Log::info('User Info:', $user->toArray());
 
-        $price = $plan->plan_price * $request->num_user;
+        if($num_user)
+        {
+            $price = $plan->plan_price * $request->num_user;
+        } else {
+            $price = $plan->plan_price;
+        }
+
         $discount = $plan->plan_discount;
 
         //Check if there's a discount

@@ -456,9 +456,7 @@ Route::get('api/universities-branches', [UniversityController::class, 'getUniver
     Route::get('/api/publishedMyUniBooks-manuscripts', [StudentClassController::class, 'getMyUniBooks']);
     Route::get('/api/my-approved-manuscripts', [StudentClassController::class, 'myApprovedManuscripts']);
     Route::get('/api/my-favorite-manuscripts', [StudentClassController::class, 'myfavoriteManuscripts']);
-    Route::post('/api/addfavorites', [StudentClassController::class, 'storefavorites'])
-        ->middleware(['auth', 'verified', 'user-type:student, teacher'])
-        ->name('storefavorites');
+    Route::post('/api/addfavorites', [StudentClassController::class, 'storefavorites'])->name('storefavorites');
     Route::get('/manuscript/{id}/download', [StudentClassController::class, 'downloadPdf'])->name('manuscript.download');
 
 
