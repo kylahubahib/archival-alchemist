@@ -28,7 +28,6 @@ public function store(Request $request)
 {
     $validated = $request->validate([
         'forum_post_id' => 'required|exists:forum_posts,id',
-        'user_id' => 'required|exists:users,id',
         'comment' => 'required|string|max:500',
     ]);
 
@@ -36,7 +35,7 @@ public function store(Request $request)
 
     $comment = ForumComment::create([
         'forum_post_id' => $validated['forum_post_id'],
-        'user_id' => $request->user_id ?? Auth::id(),
+        'user_id' => Auth::id(),
         'comment' => $validated['comment']
     ]);
 
