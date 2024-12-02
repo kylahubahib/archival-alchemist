@@ -733,11 +733,17 @@ const handleDropdownChange = (selectedKey) => {
       </div>
     )
   ) : (
-    <img
-      className="rounded w-25 h-30"
-      src="/images/pdf2.png"
-      alt="PDF Thumbnail"
-    />
+    <div className="flex flex-col h-full w-full items-center justify-center text-center text-gray-800 text-xxxs p-2 bg-white border-2 mb-1 leading-tight">
+        {manuscript.man_doc_title}
+        <p className="block pt-12">By:</p> {/* This "By:" will now be on a new line */}
+        <p className="block">{manuscript.authors?.length > 0 ? (
+            <div>
+                {manuscript.authors.map((author, index) => (
+                    <p key={index} className="text-xxxs text-gray-800 mb-1 leading-tight">{author.name}</p>))}
+            </div>) : ( <p >Unknown Authors</p>)}
+        </p>
+        <p className="block pt-5">{new Date(manuscript.updated_at).getFullYear()}</p>
+    </div>
   )}
 
   {/* Maximize / Minimize ButthandleMaximizeon */}
@@ -749,23 +755,16 @@ const handleDropdownChange = (selectedKey) => {
   </button>
 </div>
                    ) : isAuthenticated ? (
-                    <div className="relative">
-                      {/* Static Thumbnail for Authenticated User */}
-                      <div className="flex items-center justify-center h-full w-full text-gray-500">
-                        <img
-                          className="rounded w-25 h-30"
-      src="/images/pdf2.png"
-                          alt="PDF Thumbnail"
-                        />
-                      </div>
-
-                      {/* Preview Button at bottom */}
-                      <button
-                        onClick={openModal}
-                        className="absolute bottom-6 w-max bg-white opacity-75 border-2 border-gray-600 text-gray-800 px-12 py-2 rounded transition duration-300 ease-in-out hover:bg-blue-500 hover:text-white hover:text-opacity-100 focus:outline-none"
-                      >
-                        Preview
-                      </button>
+                    <div className="flex flex-col h-full w-full items-center justify-center text-center text-gray-800 text-xxxs p-2 bg-white border-2 mb-1 leading-tight">
+                        {manuscript.man_doc_title}
+                        <p className="block pt-12">By:</p> {/* This "By:" will now be on a new line */}
+                        <p className="block">{manuscript.authors?.length > 0 ? (
+                            <div>
+                                {manuscript.authors.map((author, index) => (
+                                    <p key={index} className="text-xxxs text-gray-800 mb-1 leading-tight">{author.name}</p>))}
+                            </div>) : ( <p >Unknown Authors</p>)}
+                        </p>
+                        <p className="block pt-5">{new Date(manuscript.updated_at).getFullYear()}</p>
                     </div>
                    ):null}
 

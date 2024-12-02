@@ -439,11 +439,17 @@ const Manuscript = ({auth, user, choice }) => {
                 )
             ) : (
                 // Display a static thumbnail when the manuscript is not maximized
-                <img
-                    className="rounded w-25 h-30"
-                    src="/images/pdf2.png"
-                    alt="PDF Thumbnail"
-                />
+                <div className="flex flex-col h-full w-full items-center justify-center text-center text-gray-800 text-xxxs p-2 bg-white border-2 mb-1 leading-tight">
+                {manuscript.man_doc_title}
+                <p className="block pt-12">By:</p> {/* This "By:" will now be on a new line */}
+                <p className="block">{manuscript.authors?.length > 0 ? (
+                    <div>
+                        {manuscript.authors.map((author, index) => (
+                            <p key={index} className="text-xxxs text-gray-800 mb-1 leading-tight">{author.name}</p>))}
+                    </div>) : ( <p >Unknown Authors</p>)}
+                </p>
+                <p className="block pt-5">{new Date(manuscript.updated_at).getFullYear()}</p>
+            </div>
             )}
 
             {/* Maximize / Minimize Button */}

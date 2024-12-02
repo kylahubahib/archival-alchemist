@@ -68,7 +68,9 @@ export default {
             },
             blur: {
                 md: '10px', // Extend the blur effect here
-            },
+            },fontSize: {
+                'xxxs': '8px', // 4px font size
+              },
         },
     },
 
