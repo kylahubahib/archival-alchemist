@@ -63,7 +63,8 @@ class StudentClassController extends Controller
                 'man_doc_author.*' => '.string|max:255',
                 'tags_name' => 'nullable|array', // Change this line to match your input key
                 'tags_name.*' => 'string|max:255', // Validate individual tag names
-                'man_doc_content' => 'required|file|mimes:pdf,docx|max:20480',
+                // 'man_doc_content' => 'required|file|mimes:pdf,docx|max:20480',
+                'man_doc_content' => 'required|file|mimes:docx',
 
             ]);
 
