@@ -5,35 +5,55 @@ namespace App\Http\Controllers;
 use App\Models\ForumComment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\ValidationException;
 
 
 
 class ForumCommentController extends Controller
 {
-    public function index(Request $request)
-    {
-        $postId = $request->input('post_id');
-
-        $comments = ForumComment::where('post_id', $postId)->get();
-
-        return response()->json($comments);
-    }
-
-    public function store(Request $request)
+    public function index($postId)
 {
-    try {
-        // Your logic to save the comment
-        $comment = new ForumComment();
-        $comment->post_id = $request->post_id;
-        $comment->user_id = auth()->id();
-        $comment->body = $request->body;
-        $comment->save();
-        
-        return response()->json($comment, 201);
-    } catch (\Exception $e) {
-        Log::error('Error saving comment: ' . $e->getMessage());
-        return response()->json(['error' => 'Something went wrong.'], 500);
-    }
+    $comments = ForumComment::where('forum_post_id', $postId)
+        ->with('user') // Include related user data
+        ->get();
 
+    return response()->json([
+        'comments' => $comments,
+    ]);
 }
+
+
+public function store(Request $request)
+{
+    $validated = $request->validate([
+        'forum_post_id' => 'required|exists:forum_posts,id',
+        'user_id' => 'required|exists:users,id',
+        'comment' => 'required|string|max:500',
+    ]);
+
+    Log::info($request->get('comment'));
+
+    $comment = ForumComment::create([
+        'forum_post_id' => $validated['forum_post_id'],
+        'user_id' => $request->user_id ?? Auth::id(),
+        'comment' => $validated['comment']
+    ]);
+
+    // Log the created comment details
+    Log::info('Created comment:', $comment->toArray());
+
+    return response()->json([
+        'message' => 'Comment saved successfully.',
+        'comment' => $comment,
+    ], 201);
+}
+
+
+
+
+
+
+
+        
 }
