@@ -1,131 +1,138 @@
-import React, { useEffect, useState } from "react";
-import axios from "axios";
-import { toast } from "react-toastify";
-import { io } from 'socket.io-client';
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 
-const CommentSection = ({ documentId, userId }) => {
-  const [comments, setComments] = useState([]);
-  const [newComment, setNewComment] = useState("");
-  const [replyContent, setReplyContent] = useState("");
-  const [replyTo, setReplyTo] = useState(null); // Track which comment we are replying to
-  const [socket, setSocket] = useState(null);
+const Comment = ({ comment, onReply, onDelete, onReport }) => {
+  const [showReply, setShowReply] = useState(false);
+  const [replyText, setReplyText] = useState('');
 
-  useEffect(() => {
-    // Fetch existing comments when component mounts
-    const fetchComments = async () => {
-      try {
-        const response = await axios.get(`http://localhost/api/comments/${documentId}`);
-        setComments(response.data);
-      } catch (error) {
-        console.error("Error fetching comments:", error);
-      }
-    };
-
-    fetchComments();
-
-    // Setup socket connection for real-time updates
-    const socketInstance = io("http://localhost:3000");
-    setSocket(socketInstance);
-
-    // Listen for new comments
-    socketInstance.on("new_comment", (comment) => {
-      setComments((prevComments) => [comment, ...prevComments]);
-    });
-
-    // Cleanup the socket connection on unmount
-    return () => {
-      socketInstance.disconnect();
-    };
-  }, [documentId]);
-
-  const handleCommentSubmit = async () => {
-    if (!newComment.trim()) return;
-
-    try {
-      const response = await axios.post("http://localhost/api/comments", {
-        content: newComment,
-        man_doc_id: documentId,
-        user_id: userId,
-      });
-
-      setNewComment(""); // Clear the input field
-      toast.success("Comment added successfully!");
-
-      // Emit a socket event for real-time updates
-      socket.emit("new_comment", response.data);
-    } catch (error) {
-      toast.error("Error posting comment");
-      console.error("Error posting comment:", error);
+  const handleReply = () => {
+    if (replyText.trim()) {
+      onReply(replyText, comment.id);
+      setReplyText('');
+      setShowReply(false);
     }
   };
 
-  const handleReplySubmit = async (parentId) => {
-    if (!replyContent.trim()) return;
+  return (
+    <div className="ml-4 mt-4 border-l pl-4">
+      <p className="font-medium">{comment.comment}</p>
+      <div className="flex space-x-2 text-sm text-gray-500">
+        <button onClick={() => setShowReply(!showReply)}>Reply</button>
+        <button onClick={() => onReport(comment.id)}>Report</button>
+        <button onClick={() => onDelete(comment.id)}>Delete</button>
+      </div>
+      {showReply && (
+        <div className="mt-2">
+          <textarea
+            className="w-full border rounded p-2"
+            rows="2"
+            value={replyText}
+            onChange={(e) => setReplyText(e.target.value)}
+          />
+          <button className="mt-2 bg-blue-500 text-white px-4 py-2 rounded" onClick={handleReply}>
+            Submit Reply
+          </button>
+        </div>
+      )}
+      {comment.replies && comment.replies.map((reply) => (
+        <Comment
+          key={reply.id}
+          comment={reply}
+          onReply={onReply}
+          onDelete={onDelete}
+          onReport={onReport}
+        />
+      ))}
+    </div>
+  );
+};
 
+const CommentSection = ({ postId, userId }) => {
+  const [comments, setComments] = useState([]);
+  const [commentText, setCommentText] = useState('');
+
+  useEffect(() => {
+    fetchComments();
+  }, []);
+
+  const fetchComments = async () => {
     try {
-      const response = await axios.post("http://localhost/api/comments", {
-        content: replyContent,
-        man_doc_id: documentId,
-        user_id: userId,
-        parent_id: parentId, // Linking the reply to the parent comment
-      });
-
-      setReplyContent(""); // Clear the reply input field
-      setReplyTo(null); // Reset reply state
-      toast.success("Reply added successfully!");
-
-      // Emit a socket event for real-time updates
-      socket.emit("new_comment", response.data);
+      const response = await axios.get(`/forum-comments/${postId}`);
+      setComments(response.data);
     } catch (error) {
-      toast.error("Error posting reply");
-      console.error("Error posting reply:", error);
+      console.error('Error fetching comments:', error);
+    }
+  };
+
+  const handleCommentSubmit = async () => {
+    if (commentText.trim()) {
+      try {
+        const response = await axios.post('/forum-comments', {
+          forum_post_id: postId,
+          user_id: userId,
+          comment: commentText,
+        });
+        setComments((prev) => [...prev, response.data]);
+        setCommentText('');
+      } catch (error) {
+        console.error('Error posting comment:', error);
+      }
+    }
+  };
+
+  const handleReply = async (text, parentId) => {
+    try {
+      const response = await axios.post('/forum-comments', {
+        forum_post_id: postId,
+        user_id: userId,
+        comment: text,
+        parent_comment_id: parentId,
+      });
+      fetchComments();
+    } catch (error) {
+      console.error('Error posting reply:', error);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    try {
+      await axios.delete(`/forum-comments/${id}`);
+      fetchComments();
+    } catch (error) {
+      console.error('Error deleting comment:', error);
+    }
+  };
+
+  const handleReport = async (id) => {
+    try {
+      await axios.post(`/forum-comments/${id}/report`);
+      alert('Comment reported successfully');
+    } catch (error) {
+      console.error('Error reporting comment:', error);
     }
   };
 
   return (
     <div>
-      <div className="comment-form">
-        <textarea
-          value={newComment}
-          onChange={(e) => setNewComment(e.target.value)}
-          placeholder="Write a comment..."
-        ></textarea>
-        <button onClick={handleCommentSubmit}>Post Comment</button>
-      </div>
-
-      <div className="comments-list">
+      <h3 className="text-lg font-semibold">Comments</h3>
+      <textarea
+        className="w-full border rounded p-2"
+        rows="3"
+        value={commentText}
+        onChange={(e) => setCommentText(e.target.value)}
+      />
+      <button className="mt-2 bg-blue-500 text-white px-4 py-2 rounded" onClick={handleCommentSubmit}>
+        Submit Comment
+      </button>
+      <div className="mt-4">
         {comments.map((comment) => (
-          <div key={comment.id} className="comment">
-            <strong>{comment.user.name}</strong>
-            <p>{comment.content}</p>
-
-            {/* Reply Button */}
-            <button onClick={() => setReplyTo(comment.id)}>Reply</button>
-
-            {/* Show reply form when replying to a comment */}
-            {replyTo === comment.id && (
-              <div className="reply-form">
-                <textarea
-                  value={replyContent}
-                  onChange={(e) => setReplyContent(e.target.value)}
-                  placeholder="Write a reply..."
-                ></textarea>
-                <button onClick={() => handleReplySubmit(comment.id)}>Post Reply</button>
-              </div>
-            )}
-
-            {/* Render replies if they exist */}
-            {comment.replies && comment.replies.length > 0 && (
-              <div className="replies">
-                {comment.replies.map((reply) => (
-                  <div key={reply.id} className="reply">
-                    <strong>{reply.user.name}</strong>
-                    <p>{reply.content}</p>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+          <Comment
+            key={comment.id}
+            comment={comment}
+            onReply={handleReply}
+            onDelete={handleDelete}
+            onReport={handleReport}
+          />
         ))}
       </div>
     </div>

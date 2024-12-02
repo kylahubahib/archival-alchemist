@@ -72,6 +72,14 @@ use Illuminate\Support\Facades\Auth;
 Route::get('/admin-registration/{token}', [UserController::class, 'adminRegistrationForm'])->name('admin.registration-form');
 Route::post('/submit-admin-registration', [UserController::class, 'submitAdminRegistration'])->name('admin.submit-admin-registration');
 
+// Route::get('/auth/user', function (Request $request) {
+//         return response()->json([
+//             'id' => $request->user()->id,
+//             'user_type' => $request->user()->user_type,
+//             // Add any other fields you might need
+//         ]);
+//     })->middleware('auth');
+
 Route::get('/', function () {
     return Inertia::render('Home');
 });

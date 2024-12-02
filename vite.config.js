@@ -14,7 +14,7 @@ export default defineConfig({
         },
         // hmr: {
         //     timeout: 3000,
-        //     overlay: false,
+        //     overlay: false, // Disable error overlay
         // },
     },
     build: {

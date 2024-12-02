@@ -44,6 +44,7 @@ export default function Forum({ auth }) {
   const [selectedSort, setSelectedSort] = useState('latest');
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
 
+
     
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -430,6 +431,7 @@ const handleTitleClick = async (postId) => {
                                 isOpen={isModalOpen}
                                 onClose={closeModal}
                                 post={selectedPost}
+                                
                      />
                           </div>
                         </div>
