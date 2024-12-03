@@ -555,6 +555,7 @@ Route::middleware(['web'])->group(function () {
     //Route for Forum Comments
     Route::get('/forum-comments/{postId}', [ForumCommentController::class, 'index']);
     Route::post('/forum-comments', [ForumCommentController::class, 'store']);
+    
 });
 
 

@@ -20,11 +20,35 @@ class ForumPostController extends Controller
     // Fetch all forum posts with the associated user relationship
     public function index(Request $request)
 {
-    // Get the sort parameter from the request (default to 'latest')
+    // Get the sort and filter parameters from the request
     $sort = $request->input('sort', 'latest');
+    $titleFilter = $request->input('title', '');
+    $authorFilter = $request->input('author', '');  // Username or user ID
+    $tagsFilter = $request->input('tags', []);  // Array of tags
 
-    // Fetch forum posts with the associated user, tags, and comments relationships
+    // Initialize query for forum posts
     $postsQuery = ForumPost::with(['user', 'tags']);
+
+    // Apply title filter if provided
+    if ($titleFilter) {
+        $postsQuery->where('title', 'like', '%' . $titleFilter . '%');
+    }
+
+    // Apply author filter if provided (filter by user ID or username)
+    if ($authorFilter) {
+        $postsQuery->whereHas('user', function ($query) use ($authorFilter) {
+            // You can filter by user ID or username, depending on your requirement
+            $query->where('name', 'like', '%' . $authorFilter . '%')
+                  ->orWhere('id', '=', $authorFilter);
+        });
+    }
+
+    // Apply tags filter if provided
+    if (!empty($tagsFilter)) {
+        $postsQuery->whereHas('tags', function ($query) use ($tagsFilter) {
+            $query->whereIn('name', $tagsFilter); // Assuming tags are stored as strings in the 'name' field
+        });
+    }
 
     // Apply sorting based on the 'sort' parameter
     if ($sort === 'latest') {
@@ -33,11 +57,11 @@ class ForumPostController extends Controller
         $postsQuery->orderBy('created_at', 'asc');
     }
 
-    // Fetch the posts after applying the sort
+    // Fetch the posts after applying filters and sorting
     $posts = $postsQuery->get();
 
     // Log fetched posts for debugging
-    \Log::info('Forum Posts Retrieved:', $posts->toArray());
+    \Log::info('Filtered Forum Posts Retrieved:', $posts->toArray());
 
     // Format posts for the response
     $formattedPosts = $posts->map(function ($post) {
@@ -46,7 +70,6 @@ class ForumPostController extends Controller
             'title' => $post->title,
             'body' => $post->body,
             'viewCount' => $post->viewCount,
-            //'commentCount' => $post->comments->count(), // Corrected comment count
             'user' => $post->user,
             'created_at' => $post->formatted_created_at,
             'tags' => $post->tags->map(function ($tag) {
@@ -60,6 +83,21 @@ class ForumPostController extends Controller
 
     return response()->json($formattedPosts);
 }
+
+
+public function search(Request $request)
+    {
+        $query = $request->input('query');
+        
+        $posts = ForumPost::with('user') // Eager load the user relationship
+            ->where('title', 'like', "%{$query}%")
+            ->orWhereHas('user', function ($q) use ($query) {
+                $q->where('name', 'like', "%{$query}%");
+            })
+            ->get();
+        
+        return response()->json($posts);
+    }
 
 
     // Store a new forum post
