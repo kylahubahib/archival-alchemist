@@ -101,7 +101,8 @@ export default function Authenticated({ user, children, newProfile = null, searc
                                                     type="button"
                                                     className="relative items-center px-0 py-0 border border-transparent text-sm leading-4 font-medium rounded-full h-10 w-10 flex justify-center text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150"
                                                 >
-                                                    <img src={profilePic} className="w-full h-full rounded-full object-cover" />
+                                                    <img src={`http://127.0.0.1:8000/${user?.user_pic}`} 
+                                                        className="w-full h-full rounded-full object-cover" />
 
                                                 </button>
                                             </span>

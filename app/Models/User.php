@@ -99,17 +99,6 @@ class User extends Authenticatable
         return $this->belongsToMany(ManuscriptProject::class, 'author', 'user_id', 'man_doc_id');
     }
 
-
-    public function forum(): HasMany
-    {
-        return $this->hasMany(Forum::class, 'user_id');
-    }
-
-    public function post(): HasMany
-    {
-        return $this->hasMany(Post::class, 'user_id');
-    }
-
     public function user_report(): HasMany
     {
         return $this->hasMany(UserReport::class, 'reporter_id', 'reported_id');
@@ -207,7 +196,10 @@ class User extends Authenticatable
         return $this->hasMany(ForumComment::class);
     }
 
-
+    public function forum_post()
+    {
+        return $this->hasMany(ForumPost::class, 'user_id'); 
+    }
 
 
     public function groupMembers()
@@ -233,4 +225,10 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(ManuscriptProject::class, 'book_views', 'user_id', 'man_doc_id');
     }
+
+    public function getRouteKeyName()
+    {
+        return 'name';
+    } 
+    
 }

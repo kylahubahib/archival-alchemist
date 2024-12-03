@@ -19,47 +19,47 @@ class ForumPostController extends Controller
 {
     // Fetch all forum posts with the associated user relationship
     public function index(Request $request)
-{
-    // Get the sort parameter from the request (default to 'latest')
-    $sort = $request->input('sort', 'latest');
+    {
+        // Get the sort parameter from the request (default to 'latest')
+        $sort = $request->input('sort', 'latest');
 
-    // Fetch forum posts with the associated user, tags, and comments relationships
-    $postsQuery = ForumPost::with(['user', 'tags']);
+        // Fetch forum posts with the associated user, tags, and comments relationships
+        $postsQuery = ForumPost::with(['user', 'tags']);
 
-    // Apply sorting based on the 'sort' parameter
-    if ($sort === 'latest') {
-        $postsQuery->orderBy('created_at', 'desc');
-    } else if ($sort === 'oldest') {
-        $postsQuery->orderBy('created_at', 'asc');
+        // Apply sorting based on the 'sort' parameter
+        if ($sort === 'latest') {
+            $postsQuery->orderBy('created_at', 'desc');
+        } else if ($sort === 'oldest') {
+            $postsQuery->orderBy('created_at', 'asc');
+        }
+
+        // Fetch the posts after applying the sort
+        $posts = $postsQuery->get();
+
+        // Log fetched posts for debugging
+        \Log::info('Forum Posts Retrieved:', $posts->toArray());
+
+        // Format posts for the response
+        $formattedPosts = $posts->map(function ($post) {
+            return [
+                'id' => $post->id,
+                'title' => $post->title,
+                'body' => $post->body,
+                'viewCount' => $post->viewCount,
+                'comments' => $post->comments, 
+                'user' => $post->user,
+                'created_at' => $post->formatted_created_at,
+                'tags' => $post->tags->map(function ($tag) {
+                    return [
+                        'id' => $tag->id,
+                        'name' => $tag->name ?? 'Unnamed Tag', // Set default for null names
+                    ];
+                }),
+            ];
+        });
+
+        return response()->json($formattedPosts);
     }
-
-    // Fetch the posts after applying the sort
-    $posts = $postsQuery->get();
-
-    // Log fetched posts for debugging
-    \Log::info('Forum Posts Retrieved:', $posts->toArray());
-
-    // Format posts for the response
-    $formattedPosts = $posts->map(function ($post) {
-        return [
-            'id' => $post->id,
-            'title' => $post->title,
-            'body' => $post->body,
-            'viewCount' => $post->viewCount,
-            //'commentCount' => $post->comments->count(), 
-            'user' => $post->user,
-            'created_at' => $post->formatted_created_at,
-            'tags' => $post->tags->map(function ($tag) {
-                return [
-                    'id' => $tag->id,
-                    'name' => $tag->name ?? 'Unnamed Tag', // Set default for null names
-                ];
-            }),
-        ];
-    });
-
-    return response()->json($formattedPosts);
-}
 
 
     // Store a new forum post

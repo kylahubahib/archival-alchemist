@@ -21,6 +21,8 @@ use Inertia\Response;
 use App\Models\InstitutionSubscription;
 use App\Models\Student;
 use App\Models\Faculty;
+use App\Models\User;
+
 
 
 
@@ -213,73 +215,71 @@ class ProfileController extends Controller
     use CheckSubscriptionTrait;
 
     public function affiliateUniversity(Request $request)
-{
-    Log::info($request->all());
+    {
+        Log::info($request->all());
 
-    try {
-        $request->validate([
-            'uni_branch_id' => 'required|integer',
-            'uni_id_num' => 'required|string|max:20',
-            'user_role' => 'required|string|in:general_user,student,teacher'
-        ]);
-
-        $user = Auth::user();
-
-        // Check for active institution subscription for the selected branch
-        $subscriptionExist = InstitutionSubscription::where('uni_branch_id', $request->uni_branch_id)
-            ->where('insub_status', 'Active')
-            ->first();
-
-        if (!$subscriptionExist) {
-            return response()->json([
-                'is_affiliated' => $user->is_affiliated,
-                'message' => 'Your university currently does not have an active subscription. Please reach out to your institution for more information or updates.'
-            ]);
-        }
-
-        $user->update([
-            'uni_id_num' => $request->uni_id_num,
-        ]);
-
-        // Call method to check if user exists in the institution's subscription records
-        $result = $this->checkInstitutionSubscription($subscriptionExist, $user);
-
-        if ($result['status'] === true) {
-            // Update user with affiliation details
-            $user->update([
-                'user_type' => $request->user_role
+        try {
+            $request->validate([
+                'uni_branch_id' => 'required|integer',
+                'uni_id_num' => 'required|string|max:20',
+                'user_role' => 'required|string|in:general_user,student,teacher'
             ]);
 
-            // Handle additional update for students only
-            if ($request->user_role === 'student') {
-                $student = Student::firstOrCreate(['user_id' => $user->id], [
-                    'uni_branch_id' => $request->uni_branch_id
-                ]);
-                $student->update([
-                    'uni_branch_id' => $request->uni_branch_id
+            $user = Auth::user();
+
+            // Check for active institution subscription for the selected branch
+            $subscriptionExist = InstitutionSubscription::where('uni_branch_id', $request->uni_branch_id)
+                ->where('insub_status', 'Active')
+                ->first();
+
+            if (!$subscriptionExist) {
+                return response()->json([
+                    'is_affiliated' => $user->is_affiliated,
+                    'message' => 'Your university currently does not have an active subscription. Please reach out to your institution for more information or updates.'
                 ]);
             }
 
-            return response()->json([
-                'message' => $result['message'],
-                'is_affiliated' => $user->is_affiliated
+            $user->update([
+                'uni_id_num' => $request->uni_id_num,
             ]);
-        } 
 
-        return response()->json([
-            'is_affiliated' => $user->is_affiliated,
-            'message' => $result['message']
-        ]);
+            // Call method to check if user exists in the institution's subscription records
+            $result = $this->checkInstitutionSubscription($subscriptionExist, $user);
 
-    } catch (\Exception $e) {
-        return response()->json([
-            'message' => 'An error occurred.',
-            'error' => $e->getMessage(),
-        ], 500);
+            if ($result['status'] === true) {
+                // Update user with affiliation details
+                $user->update([
+                    'user_type' => $request->user_role
+                ]);
+
+                // Handle additional update for students only
+                if ($request->user_role === 'student') {
+                    $student = Student::firstOrCreate(['user_id' => $user->id], [
+                        'uni_branch_id' => $request->uni_branch_id
+                    ]);
+                    $student->update([
+                        'uni_branch_id' => $request->uni_branch_id
+                    ]);
+                }
+
+                return response()->json([
+                    'message' => $result['message'],
+                    'is_affiliated' => $user->is_affiliated
+                ]);
+            } 
+
+            return response()->json([
+                'is_affiliated' => $user->is_affiliated,
+                'message' => $result['message']
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'An error occurred.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
-}
-
-
 
     public function removeAffiliation(Request $request)
     {
@@ -326,6 +326,31 @@ class ProfileController extends Controller
 
 
         return response()->json();
+    }
+
+
+    public function viewProfile(string $id)
+    {
+        $user = User::select('id', 'name', 'email', 'user_pic', 'created_at', 'user_status', 'user_aboutme') 
+        ->findOrFail($id);
+
+        $user->load([
+            'manuscripts' => function ($query) {
+                $query->where('is_publish', 1)
+                    ->where('man_doc_visibility', 'Y'); 
+            },
+            'forum_post' => function ($query) {
+                $query->where('status', 'Visible')
+                    ->with(['tags', 'user:id,name,user_pic']); 
+            }
+        ]);
+
+        Log::info($user->toArray());
+
+        return Inertia::render('Users/ViewUserProfile/UserProfile', [
+            'selectedUser' => $user, 
+        ]);
+
     }
 
 }

@@ -410,6 +410,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/assign-user-role', [ProfileController::class, 'assignUserRole']);
     Route::get('/get-plans', [SubscriptionPlanController::class, 'getPlans'])->name('get-plans');
     Route::get('/get-semesters', [SemesterController::class, 'getSemester'])->name('get-semester');
+    Route::get('/profile/{id}',[ProfileController::class, 'viewProfile'])->name('profile.view');
 });
 
 //Universities Controller Route
@@ -553,7 +554,11 @@ Route::middleware(['web'])->group(function () {
     //Route for Forum Comments
     Route::get('/forum-comments/{postId}', [ForumCommentController::class, 'index']);
     Route::post('/forum-comments', [ForumCommentController::class, 'store']);
+    Route::put('/forum-comments/{comId}/edit', [ForumCommentController::class, 'update']);
+    Route::delete('/forum-comments/{comId}', [ForumCommentController::class, 'destroy']);
 });
+
+
 
 
 

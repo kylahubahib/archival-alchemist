@@ -1,6 +1,6 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import GuestLayout from '@/Layouts/GuestLayout';
-import { Head } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
 import { 
   Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, 
   useDisclosure, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, 
@@ -279,6 +279,7 @@ const handleTitleClick = async (postId) => {
 
       <div className="py-12">
         <div className="mx-auto sm:px-6 lg:px-14 min-h-screen">
+        { !isModalOpen ? (
           <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg  min-h-screen">
               <div className="p-8 font-bold text-xl text-black overflow-auto">
                 {/* Sort Dropdown and Search Bar */}
@@ -340,16 +341,21 @@ const handleTitleClick = async (postId) => {
 
 
                 <div className="flex-grow ">
-                  <p className="font-light">{post.user?.name || "Anonymous"}</p>
+
+                  <Link href={`/profile/${post.user?.id}`} className="font-semibold hover:underline">
+                    {post.user?.name || "Anonymous"}
+                  </Link>
+
+
                   <h3
-                    className="text-2xl text-black cursor-pointer hover:text-gray-700"
+                    className="text-xl text-black font-normal cursor-pointer mt-2 hover:text-gray-700"
                     onClick={() => handleTitleClick(post.id)}
                   >
                     {post.title}
                   </h3>
 
                   {/* Body Preview */}
-                  <p className="mt-2 text-gray-700 text-medium font-extralight truncate  max-w-xl">
+                  <p className="mt-2 text-gray-700 text-medium font-extralight truncate max-w-xl">
                     {post.body}
                   </p>
 
@@ -367,7 +373,7 @@ const handleTitleClick = async (postId) => {
                       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-4 w-4 mr-1">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 0 1 .865-.501 48.172 48.172 0 0 0 3.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018Z" />
                       </svg>
-                      {post.commentCount || 0}
+                      {post.comments || 0}
                     </span>
                   </div>
 
@@ -420,17 +426,31 @@ const handleTitleClick = async (postId) => {
               }
               </div>
 
-              {/* Modal for displaying post details */}
+              {/* Modal for displaying post details
+              <PostDetailModal
+                isOpen={isModalOpen}
+                onClose={closeModal}
+                post={selectedPost}
+                loggedInUser={auth.user}
+              /> */}
+
+            </div>
+          </div>
+        ) : (
+          <div className="bg-white shadow-sm rounded-lg px-5">
               <PostDetailModal
                 isOpen={isModalOpen}
                 onClose={closeModal}
                 post={selectedPost}
                 loggedInUser={auth.user}
               />
-
-            </div>
           </div>
+        )
+        }
+
         </div>
+
+
 
           {/* Create Post Modal */}
           <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
