@@ -230,4 +230,10 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(ManuscriptProject::class, 'book_views', 'user_id', 'man_doc_id');
     }
+
+    public function user()
+{
+    return $this->belongsTo(User::class, 'stud_id');
+}
+
 }

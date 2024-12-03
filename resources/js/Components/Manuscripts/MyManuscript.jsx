@@ -588,7 +588,7 @@ const Manuscript = ({auth, user}) => {
 
 
 
-<Tooltip content="Bookmark">
+                {/* <Tooltip content="Bookmark">
                     <button
                         className="text-gray-600 hover:text-blue-500"
                         onClick={() => {
@@ -606,7 +606,7 @@ const Manuscript = ({auth, user}) => {
                     >
                         <FaBookmark size={20} />
                     </button>
-                </Tooltip>
+                </Tooltip> */}
 
                 {/* <Tooltip content="Download">
                     <button
@@ -653,14 +653,14 @@ const Manuscript = ({auth, user}) => {
                     </Modal>
                 )}
 
-<Tooltip content="Ratings">
+{/* <Tooltip content="Ratings">
                                 <button
                                     className="text-gray-600 hover:text-blue-500"
                                     onClick={() => handleRatings(manuscript)}
                                 >
                                     <FaStar size={20} />
                                 </button>
-                            </Tooltip>
+                            </Tooltip> */}
 
 
 

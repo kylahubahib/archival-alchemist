@@ -36,4 +36,6 @@ class GroupMember extends Model
     {
         return $this->belongsTo(User::class, 'stud_id');
     }
+
+
 }

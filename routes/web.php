@@ -611,4 +611,6 @@ Route::get('/api/check-group', [StudentClassController::class, 'checkGroup']);
 Route::get('/fetch-userType', [TeacherClassController::class, 'fetchUserType']);
  Route::get('/fetch-affiliation', [TeacherClassController::class, 'fetchAffiliation']);
 
+
+ Route::get('/export-csv', [ClassController::class, 'exportCSV']);
 require __DIR__.'/auth.php';

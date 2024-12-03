@@ -52,6 +52,8 @@ class StudentClassController extends Controller
 
     public function storeManuscriptProject(Request $request)
     {
+
+        $uniBranchId = $this->fetchUniBranchId();
         Log::info('Request Data:', $request->all());
         try {
             $validatedData = $request->validate([
@@ -112,6 +114,7 @@ class StudentClassController extends Controller
                 'group_id' => $group->id, // The group ID from the saved manuscript
                 'section_id' => $section_id,
                 'man_doc_status' => 'P',
+                'uni_branch_id' => $uniBranchId,
             ]);
 
             Log::info('Manuscript Project Created:', ['id' => $manuscriptProject->id]);
@@ -581,6 +584,7 @@ public function getMyUniBooks(Request $request)
     try {
 
         $uniBranchId = $this->fetchUniBranchId();
+        // Log::info('Uni Branch Id: ', $uniBranchId);
         // Retrieve the 'keyword' and 'searchField' query parameters
         $keyword = $request->query('keyword');
         $searchField = $request->query('searchField', 'Title'); // Default to Title if not specified
@@ -654,9 +658,15 @@ public function getMyUniBooks(Request $request)
         // Find the student record where user_id matches Auth::id()
         $student = Student::where('user_id', $userId)->first();
 
+        // Log the student's details
+        Log::info('Users uni branch ID:', $student ? $student->toArray() : []);
+        Log::info('Users uni branch ID:', ['uni_branch_id' => $student?->uni_branch_id]);
+
+
         // Return the uni_branch_id if a student record exists
         return $student ? $student->uni_branch_id : null;
     }
+
 
 // SELECT *
 // FROM manuscripts mp
@@ -1120,20 +1130,25 @@ public function isPremium()
 public function uploadToDrive($file, $authorIds, $teacherId, $manuscriptId)
 {
 
+    Log::info('Start Google Drive Upload Process');
+
+    $keyFilePath = storage_path('app/document-management-438910-d2725c4da7e7.json');
+
     // Initialize Google Client
     $client = new GoogleClient();
-    $client->setAuthConfig([
-        'type' => env('GOOGLE_SERVICE_TYPE'),
-        'project_id' => env('GOOGLE_SERVICE_PROJECT_ID'),
-        'private_key_id' => env('GOOGLE_SERVICE_PRIVATE_KEY_ID'),
-        'private_key' => env('GOOGLE_SERVICE_PRIVATE_KEY'),
-        'client_email' => env('GOOGLE_SERVICE_CLIENT_EMAIL'),
-        'client_id' => env('GOOGLE_SERVICE_CLIENT_ID'),
-        'auth_uri' => env('GOOGLE_SERVICE_AUTH_URI'),
-        'token_uri' => env('GOOGLE_SERVICE_TOKEN_URI'),
-        'auth_provider_x509_cert_url' => env('GOOGLE_SERVICE_AUTH_PROVIDER_CERT_URL'),
-        'client_x509_cert_url' => env('GOOGLE_SERVICE_CLIENT_CERT_URL'),
-    ]);
+    $client->setAuthConfig($keyFilePath);
+    // $client->setAuthConfig([
+    //     'type' => env('GOOGLE_SERVICE_TYPE'),
+    //     'project_id' => env('GOOGLE_SERVICE_PROJECT_ID'),
+    //     'private_key_id' => env('GOOGLE_SERVICE_PRIVATE_KEY_ID'),
+    //     'private_key' => env('GOOGLE_SERVICE_PRIVATE_KEY'),
+    //     'client_email' => env('GOOGLE_SERVICE_CLIENT_EMAIL'),
+    //     'client_id' => env('GOOGLE_SERVICE_CLIENT_ID'),
+    //     'auth_uri' => env('GOOGLE_SERVICE_AUTH_URI'),
+    //     'token_uri' => env('GOOGLE_SERVICE_TOKEN_URI'),
+    //     'auth_provider_x509_cert_url' => env('GOOGLE_SERVICE_AUTH_PROVIDER_CERT_URL'),
+    //     'client_x509_cert_url' => env('GOOGLE_SERVICE_CLIENT_CERT_URL'),
+    // ]);
     $client->addScope(GoogleDrive::DRIVE_FILE);
 
 
@@ -1143,14 +1158,14 @@ public function uploadToDrive($file, $authorIds, $teacherId, $manuscriptId)
     // Upload the file to Google Drive
     $driveFile = new GoogleDriveFile();
     $driveFile->setName($file->getClientOriginalName());
-    $driveFile->setMimeType($file->getMimeType());
+    $driveFile->setMimeType('application/vnd.google-apps.document');
 
     // Convert the file to google docs format
     $uploadOptions = [
         'data' => file_get_contents($file->getRealPath()),
-        'mimeType' => $file->getMimeType(),
+        'mimeType' => 'application/vnd.google-apps.document',
         'uploadType' => 'multipart',
-        'fields' => 'id',
+        'fields' => 'id'
     ];
 
     try {
@@ -1167,7 +1182,6 @@ public function uploadToDrive($file, $authorIds, $teacherId, $manuscriptId)
         return response()->json(['error' => 'Error uploading file: ' . $e->getMessage()], 500);
     }
 }
-
 
 
 private function setPermissions($driveService, $fileId, $authorIds, $teacherId, $manuscriptId)
@@ -1256,104 +1270,122 @@ private function setPermissions($driveService, $fileId, $authorIds, $teacherId, 
     return;
 }
 
+public function sendForRevision(Request $request)
+{
+    $manuscriptId = $request->get('manuscript_id');
+    Log::info("Starting 'sendForRevision' process for manuscript ID: $manuscriptId");
 
-    public function sendForRevision(Request $request)
-    {
-        $manuscriptId = $request->get('manuscript_id');
-        Log::info("Starting 'sendForRevision' process for manuscript ID: $manuscriptId");
+    // Find the manuscript
+    $manuscript = ManuscriptProject::find($manuscriptId);
 
-        // Find the manuscript
-        $manuscript = ManuscriptProject::find($manuscriptId);
-
-        if (!$manuscript || empty($manuscript->man_doc_adviser)) {
-            Log::warning("Manuscript not found or invalid data. Manuscript ID: $manuscriptId");
-            return response()->json(['error' => 'Manuscript not found or invalid data.'], 404);
-        }
-
-        $manuscript->update(['man_doc_status' => 'To Review']);
-        $googleDocUrl = $manuscript->man_doc_content;
-        $googleDocId = $this->extractGoogleDocId($googleDocUrl);
-
-        if (!$googleDocId) {
-            Log::warning("Invalid Google Doc URL for manuscript ID: $manuscriptId");
-            return response()->json(['error' => 'Invalid Google Doc URL.'], 400);
-        }
-
-        // Initialize Google Client
-        $client = new GoogleClient();
-        $client->setAuthConfig([
-            'type' => env('GOOGLE_SERVICE_TYPE'),
-            'project_id' => env('GOOGLE_SERVICE_PROJECT_ID'),
-            'private_key_id' => env('GOOGLE_SERVICE_PRIVATE_KEY_ID'),
-            'private_key' => env('GOOGLE_SERVICE_PRIVATE_KEY'),
-            'client_email' => env('GOOGLE_SERVICE_CLIENT_EMAIL'),
-            'client_id' => env('GOOGLE_SERVICE_CLIENT_ID'),
-            'auth_uri' => env('GOOGLE_SERVICE_AUTH_URI'),
-            'token_uri' => env('GOOGLE_SERVICE_TOKEN_URI'),
-            'auth_provider_x509_cert_url' => env('GOOGLE_SERVICE_AUTH_PROVIDER_CERT_URL'),
-            'client_x509_cert_url' => env('GOOGLE_SERVICE_CLIENT_CERT_URL'),
-        ]);
-        $client->addScope(GoogleDrive::DRIVE_FILE);
-        $client->setSubject('file-manager@document-management-438910.iam.gserviceaccount.com');
-
-        $driveService = new GoogleDrive($client);
-
-
-        $authors = Author::with('user')->where('man_doc_id', $manuscriptId)->get();
-        // $emails = $authors->pluck('user.email')->toArray();
-
-
-        foreach ($authors as $author) {
-            $email = $author->user->email;
-            $permId = $author->permission_id;
-
-            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-                Log::warning('Invalid Email Address:', ['email' => $email]);
-                continue;
-            }
-
-
-            try {
-                // Fetch existing permissions
-                $permissions = $driveService->permissions->listPermissions($googleDocId);
-                Log::info("Existing Permissions: ", ['permissions' => $permissions]);
-
-                $permissionFound = false;
-
-                // Delete the existing permission if found
-                foreach ($permissions as $permission) {
-                    if ($permission->getId() === $permId) {
-                        $driveService->permissions->delete($googleDocId, $permission->getId());
-                        Log::info("Deleted existing permission for: $email");
-                        Log::info("Permission Id:", ['permissions' => $permission->getId()]);
-                        Log::info("Permission Id in Author Table:", ['permissions' => $permId]);
-
-                        $permissionFound = true;
-                        break;
-                    }
-                }
-
-                // Create a new permission for the user
-                $newPermission = new Permission();
-                $newPermission->setType('user');
-                $newPermission->setRole('reader');
-                $newPermission->setEmailAddress($email);
-                $driveService->permissions->create($googleDocId, $newPermission, ['sendNotificationEmail' => false]);
-                Log::info("Created new 'reader' permission for: $email");
-
-                // If no permission found, log the error
-                if (!$permissionFound) {
-                    Log::warning("Permission not found for: $email. Skipping permission creation.");
-                }
-
-            } catch (Exception $e) {
-                Log::error("Error deleting/creating permission for: $email", ['error' => $e->getMessage()]);
-                return response()->json(['error' => 'Error setting permission: ' . $e->getMessage()], 500);
-            }
-        }
-
-        return response()->json(['success' => 'Document permissions updated successfully.']);
+    if (!$manuscript || empty($manuscript->man_doc_adviser)) {
+        Log::warning("Manuscript not found or invalid data. Manuscript ID: $manuscriptId");
+        return response()->json(['error' => 'Manuscript not found or invalid data.'], 404);
     }
+
+    $manuscript->update(['man_doc_status' => 'To Review']);
+    $googleDocUrl = $manuscript->man_doc_content;
+    $googleDocId = $this->extractGoogleDocId($googleDocUrl);
+
+    if (!$googleDocId) {
+        Log::warning("Invalid Google Doc URL for manuscript ID: $manuscriptId");
+        return response()->json(['error' => 'Invalid Google Doc URL.'], 400);
+    }
+
+    $keyFilePath = storage_path('app/document-management-438910-d2725c4da7e7.json');
+
+    // Initialize Google Client
+    $client = new GoogleClient();
+    $client->setAuthConfig($keyFilePath);
+    // $client->setAuthConfig([
+    //     'type' => env('GOOGLE_SERVICE_TYPE'),
+    //     'project_id' => env('GOOGLE_SERVICE_PROJECT_ID'),
+    //     'private_key_id' => env('GOOGLE_SERVICE_PRIVATE_KEY_ID'),
+    //     'private_key' => env('GOOGLE_SERVICE_PRIVATE_KEY'),
+    //     'client_email' => env('GOOGLE_SERVICE_CLIENT_EMAIL'),
+    //     'client_id' => env('GOOGLE_SERVICE_CLIENT_ID'),
+    //     'auth_uri' => env('GOOGLE_SERVICE_AUTH_URI'),
+    //     'token_uri' => env('GOOGLE_SERVICE_TOKEN_URI'),
+    //     'auth_provider_x509_cert_url' => env('GOOGLE_SERVICE_AUTH_PROVIDER_CERT_URL'),
+    //     'client_x509_cert_url' => env('GOOGLE_SERVICE_CLIENT_CERT_URL'),
+    // ]);
+    $client->addScope(GoogleDrive::DRIVE_FILE);
+    $client->setSubject('file-manager@document-management-438910.iam.gserviceaccount.com');
+
+    $driveService = new GoogleDrive($client);
+
+
+    $authors = Author::with('user')->where('man_doc_id', $manuscriptId)->get();
+    // $emails = $authors->pluck('user.email')->toArray();
+
+    foreach ($authors as $author) {
+        $email = $author->user->email;
+        $permId = $author->permission_id;
+
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            Log::warning('Invalid Email Address:', ['email' => $email]);
+            continue;
+        }
+
+
+        try {
+            // Fetch existing permissions
+            $permissions = $driveService->permissions->listPermissions($googleDocId);
+            Log::info("Existing Permissions: ", ['permissions' => $permissions]);
+
+            $permissionFound = false;
+
+            // Delete the existing permission if found
+            foreach ($permissions as $permission) {
+                if ($permission->getId() === $permId) {
+                    $driveService->permissions->delete($googleDocId, $permission->getId());
+                    Log::info("Deleted existing permission for: $email");
+                    Log::info("Permission Id:", ['permissions' => $permission->getId()]);
+                    Log::info("Permission Id in Author Table:", ['permissions' => $permId]);
+
+                    $permissionFound = true;
+                    break;
+                }
+            }
+
+            // Create a new permission for the user
+            $newPermission = new Permission();
+            $newPermission->setType('user');
+            $newPermission->setRole('reader');
+            $newPermission->setEmailAddress($email);
+            $driveService->permissions->create($googleDocId, $newPermission, ['sendNotificationEmail' => false]);
+            Log::info("Created new 'reader' permission for: $email");
+
+            // If no permission found, log the error
+            if (!$permissionFound) {
+                Log::warning("Permission not found for: $email. Skipping permission creation.");
+            }
+
+        } catch (Exception $e) {
+            Log::error("Error deleting/creating permission for: $email", ['error' => $e->getMessage()]);
+            return response()->json(['error' => 'Error setting permission: ' . $e->getMessage()], 500);
+        }
+    }
+
+    $teacherId = Section::where('id', $manuscript->section_id)->value('ins_id');
+
+    if ($teacherId) {
+        $user = User::find($teacherId);
+
+        if ($user) {
+            $user->notify(new UserNotification([
+                'message' => "A manuscript titled '{$manuscript->man_doc_title}' is ready for review",
+                'user_id' => $user->id
+            ]));
+        } else {
+            Log::warning("User not found for teacher ID: {$teacherId}");
+        }
+    } else {
+        Log::warning("Teacher ID not found for section ID: {$manuscript->section_id}");
+    }
+
+    return response()->json(['success' => 'Document updated successfully.']);
+}
 
 
     // Method to extract Google Doc ID from the URL

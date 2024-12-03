@@ -4,6 +4,8 @@
 
 namespace App\Http\Controllers;
 
+
+use App\Models\Author;
 use App\Models\AssignedTask;
 use App\Models\Course;
 use App\Models\Faculty;
@@ -19,12 +21,20 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
+
+use Google\Client as GoogleClient;
+use Google\Service\Drive as GoogleDrive;
+use Google\Service\Drive\DriveFile as GoogleDriveFile;
+use Google\Service\Drive\Permission;
 use App\Notifications\UserNotification;
+use App\Mail\TeachersFeedbackMail;
+use Illuminate\Support\Facades\Mail;
 
 class ClassController extends Controller
 {
-   
+
     public function fetchCourses(Request $request)
     {
         $user = Auth::user()->load('faculty');
@@ -148,7 +158,7 @@ class ClassController extends Controller
            // $classes = Section::with(['course'])->where('ins_id', Auth::id())->get();
 
         // Capture the semID from the request (either query or request body)
-        
+
         $semID = $request->query('sem_id'); // sem_id sent from the frontend
 
         //Fetch classes for the authenticated user and filter by sem_id (semester ID)
@@ -427,6 +437,8 @@ class ClassController extends Controller
 
             $history->save();
 
+            $this->returnStudentWork($request->manuscript_id, $validatedData['status'], $validatedData['comment']);
+
             return response()->json(['success' => true, 'message' => 'Feedback stored successfully']);
         } catch (\Exception $e) {
             // Handle any exception that may occur
@@ -434,6 +446,173 @@ class ClassController extends Controller
             return response()->json(['success' => false, 'message' => 'Error storing feedback'], 500);
         }
     }
+
+    private function returnStudentWork($manuscriptId, $feedbackStatus, $feedbackComment)
+    {
+        // $manuscriptId = $request->get('manuscript_id');
+        Log::info("Starting 'sendForRevision' process for manuscript ID: $manuscriptId");
+
+        // Find the manuscript
+        $manuscript = ManuscriptProject::find($manuscriptId);
+
+        if (!$manuscript || empty($manuscript->man_doc_adviser)) {
+            Log::warning("Manuscript not found or invalid data. Manuscript ID: $manuscriptId");
+            return response()->json(['error' => 'Manuscript not found or invalid data.'], 404);
+        }
+
+        $manuscript->update(['man_doc_status' => $feedbackStatus]);
+        $googleDocUrl = $manuscript->man_doc_content;
+        $googleDocId = $this->extractGoogleDocId($googleDocUrl);
+
+        if (!$googleDocId) {
+            Log::warning("Invalid Google Doc URL for manuscript ID: $manuscriptId");
+            return response()->json(['error' => 'Invalid Google Doc URL.'], 400);
+        }
+        $keyFilePath = storage_path('app/document-management-438910-d2725c4da7e7.json');
+
+        // Initialize Google Client
+        $client = new GoogleClient();
+        $client->setAuthConfig($keyFilePath);
+        $client->addScope(GoogleDrive::DRIVE_FILE);
+        $client->setSubject('file-manager@document-management-438910.iam.gserviceaccount.com');
+
+        $driveService = new GoogleDrive($client);
+
+
+        $authors = Author::with('user')->where('man_doc_id', $manuscriptId)->get();
+        // $emails = $authors->pluck('user.email')->toArray();
+
+        switch($feedbackStatus) {
+            case 'A':
+                $feedbackStatus = 'Approved';
+                break;
+            case 'D':
+                $feedbackStatus = 'Declined';
+                break;
+        }
+
+
+        foreach ($authors as $author) {
+            $email = $author->user->email;
+            $permId = $author->permission_id;
+            $user = $author->user;
+
+            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                Log::warning('Invalid Email Address:', ['email' => $email]);
+                continue;
+            }
+
+            if ($user) {
+                $user->notify(new UserNotification([
+                    'message' => "Your adviser has finished reviewing your manuscript titled '{$manuscript->man_doc_title}'. The current status of your manuscript is '{$feedbackStatus}'.",
+                    'user_id' => $user->id
+                ]));
+            }
+
+            Mail::to($user->email)->send(new TeachersFeedbackMail([
+                'name' => $user->name,
+                'manuscriptTitle' => $manuscript->man_doc_title,
+                'feedbackStatus' => $feedbackStatus,
+                'feedbackComment' => $feedbackComment
+            ]));
+
+            if($feedbackStatus === 'Approved')
+            {
+                $this->convertGoogleDocToPdf($driveService, $googleDocId, $manuscript->man_doc_title, $manuscript->id);
+                return;
+            }
+
+
+            try {
+                // Fetch existing permissions
+                $permissions = $driveService->permissions->listPermissions($googleDocId);
+                Log::info("Existing Permissions: ", ['permissions' => $permissions]);
+
+                $permissionFound = false;
+
+                // Delete the existing permission if found
+                foreach ($permissions as $permission) {
+                    if ($permission->getId() === $permId) {
+                        $driveService->permissions->delete($googleDocId, $permission->getId());
+                        Log::info("Deleted existing permission for: $email");
+                        Log::info("Permission Id:", ['permissions' => $permission->getId()]);
+                        Log::info("Permission Id in Author Table:", ['permissions' => $permId]);
+
+                        $permissionFound = true;
+                        break;
+                    }
+                }
+
+                // Create a new permission for the user
+                $newPermission = new Permission();
+                $newPermission->setType('user');
+                $newPermission->setRole('writer');
+                $newPermission->setEmailAddress($email);
+                $driveService->permissions->create($googleDocId, $newPermission, ['sendNotificationEmail' => false]);
+                Log::info("Created new 'writer' permission for: $email");
+
+                // If no permission found, log the error
+                if (!$permissionFound) {
+                    Log::warning("Permission not found for: $email. Skipping permission creation.");
+                }
+
+
+            } catch (Exception $e) {
+                Log::error("Error deleting/creating permission for: $email", ['error' => $e->getMessage()]);
+                return response()->json(['error' => 'Error setting permission: ' . $e->getMessage()], 500);
+            }
+        }
+
+        return;
+    }
+
+
+        // Method to extract Google Doc ID from the URL
+        private function extractGoogleDocId($url)
+        {
+            // Remove the base URL portion
+            $baseUrl = "https://docs.google.com/document/d/";
+
+            // Check if the URL starts with the expected base URL
+            if (strpos($url, $baseUrl) === 0) {
+                // Remove the base URL and return the remaining part of the URL as the document ID
+                return substr($url, strlen($baseUrl));
+            }
+
+            return null;
+        }
+
+
+            // Converts docs into pdf file
+   private function convertGoogleDocToPdf($driveService, $googleDocId, $title, $manuscriptId)
+   {
+       try {
+           $file = $driveService->files->get($googleDocId, ['fields' => 'mimeType']);
+
+           if ($file->mimeType !== 'application/vnd.google-apps.document') {
+               Log::warning("File is not a Google Docs file. MimeType: {$file->mimeType}");
+               throw new \Exception("Only Google Docs files can be exported to PDF.");
+           }
+
+           // Export as PDF
+           $response = $driveService->files->export($googleDocId, 'application/pdf', ['alt' => 'media']);
+           $pdfFilePath = public_path("storage/capstone_files/{$title}.pdf");
+           file_put_contents($pdfFilePath, $response->getBody()->getContents());
+
+           $manuscript = ManuscriptProject::find($manuscriptId);
+           $manuscript->update([
+               'man_doc_content' => "storage/capstone_files/{$title}.pdf",
+               'is_publish' => 1,
+               'man_doc_visibility' => 'Y'
+           ]);
+
+           Log::info("Google Doc converted to PDF: {$pdfFilePath}");
+       } catch (\Exception $e) {
+           Log::error("Error converting Google Doc to PDF: " . $e->getMessage());
+           throw $e;
+       }
+   }
+
 
     public function fetchHistory(Request $request)
     {
@@ -654,5 +833,68 @@ class ClassController extends Controller
         // Return the students record in group table as JSON
         return response()->json($grouprecord);
     }
+
+
+    // public function getManuscriptsByClass(Request $request)
+    // {
+    //     $section_id = $request->get('section_id');
+    //     $filter = $request->input('filter');
+
+    //     Log::info('Section Id:', (array)$section_id);
+
+    //     // Base query to join manuscripts and class tables
+    //     $query = ManuscriptProject::with(['authors', 'tags', 'revision_history', 'group'])
+    //         ->where('section_id', $section_id);
+
+    //     // Apply filter condition based on the filter, if set
+    //     if ($filter) {
+    //         switch ($filter) {
+    //             case 'approved':
+    //                 $query->where('man_doc_status', 'A');
+    //                 break;
+    //             case 'declined':
+    //                 $query->where('man_doc_status', 'D');
+    //                 break;
+    //             case 'in_progress':
+    //                 $query->where('man_doc_status', 'I');
+    //                 break;
+    //             case 'pending':
+    //                 $query->where('man_doc_status', 'P');
+    //                 break;
+    //             case 'missing':
+    //                 $query->where('man_doc_status', 'M');
+    //                 break;
+    //         }
+    //     }
+
+    //     $manuscripts = $query->get();
+
+    //     // Transform statuses into user-friendly labels
+    //     $manuscripts->transform(function ($manuscript) {
+    //         switch ($manuscript->man_doc_status) {
+    //             case 'A':
+    //                 $manuscript->man_doc_status = 'Approved';
+    //                 break;
+    //             case 'I':
+    //                 $manuscript->man_doc_status = 'In progress';
+    //                 break;
+    //             case 'D':
+    //                 $manuscript->man_doc_status = 'Declined';
+    //                 break;
+    //             case 'T':
+    //                 $manuscript->man_doc_status = 'To-Review';
+    //                 break;
+    //             case 'P':
+    //                 $manuscript->man_doc_status = 'Pending';
+    //                 break;
+    //             default:
+    //                 $manuscript->man_doc_status = 'Missing';
+    //         }
+    //         return $manuscript;
+    //     });
+
+    //     return response()->json($manuscripts);
+    // }
+
 
 }
