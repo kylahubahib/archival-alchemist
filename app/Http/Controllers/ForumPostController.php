@@ -50,12 +50,12 @@ class ForumPostController extends Controller
         });
     }
 
-    // Apply sorting based on the 'sort' parameter
-    if ($sort === 'latest') {
-        $postsQuery->orderBy('created_at', 'desc');
-    } else if ($sort === 'oldest') {
-        $postsQuery->orderBy('created_at', 'asc');
-    }
+        // Apply sorting based on the 'sort' parameter
+        if ($sort === 'latest') {
+            $postsQuery->orderBy('created_at', 'desc');
+        } else if ($sort === 'oldest') {
+            $postsQuery->orderBy('created_at', 'asc');
+        }
 
     // Fetch the posts after applying filters and sorting
     $posts = $postsQuery->get();
@@ -102,78 +102,78 @@ public function search(Request $request)
 
     // Store a new forum post
     public function store(Request $request)
-{
-    // Log CSRF token and incoming request data
-    Log::info('CSRF Token:', [$request->header('X-CSRF-TOKEN')]);
-    Log::info('Incoming Request Data:', $request->all());
+    {
+        // Log CSRF token and incoming request data
+        Log::info('CSRF Token:', [$request->header('X-CSRF-TOKEN')]);
+        Log::info('Incoming Request Data:', $request->all());
 
-    // Validate the incoming request
-    try {
-        $request->validate([
-            'title' => 'required|string|max:255',
-            'body' => 'required|string',
-            'tags' => 'nullable|array',
-            'tags.*' => 'string',
-        ]);
-    } catch (\Illuminate\Validation\ValidationException $e) {
-        Log::error('Validation Error:', [$e->errors()]);
-        return response()->json(['error' => 'Validation failed', 'messages' => $e->errors()], 422);
-    }
-
-    // Get the authenticated user
-    $user = Auth::user();
-
-    // Ensure the user is authenticated
-    if (!$user) {
-        return response()->json(['error' => 'User not authenticated'], 401);
-    }
-
-    // Initialize the post variable
-    $post = null;
-
-    try {
-        // Use DB transaction to handle multiple actions
-        DB::transaction(function () use ($request, $user, &$post) {
-            // Create a new forum post
-            $post = ForumPost::create([
-                'title' => $request->title,
-                'body' => $request->body,
-                'user_id' => $user->id,
+        // Validate the incoming request
+        try {
+            $request->validate([
+                'title' => 'required|string|max:255',
+                'body' => 'required|string',
+                'tags' => 'nullable|array',
+                'tags.*' => 'string',
             ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            Log::error('Validation Error:', [$e->errors()]);
+            return response()->json(['error' => 'Validation failed', 'messages' => $e->errors()], 422);
+        }
 
-            // Sync the tags with the post
-            if (!empty($request->tags)) {
-                $tagIds = [];
+        // Get the authenticated user
+        $user = Auth::user();
 
-                // Process each tag
-                foreach ($request->tags as $tagName) {
-                    // Find or create the tag by name
-                    $tag = ForumTag::firstOrCreate(['name' => trim($tagName)]);
-                    $tagIds[] = $tag->id; // Collect the tag's ID
+        // Ensure the user is authenticated
+        if (!$user) {
+            return response()->json(['error' => 'User not authenticated'], 401);
+        }
+
+        // Initialize the post variable
+        $post = null;
+
+        try {
+            // Use DB transaction to handle multiple actions
+            DB::transaction(function () use ($request, $user, &$post) {
+                // Create a new forum post
+                $post = ForumPost::create([
+                    'title' => $request->title,
+                    'body' => $request->body,
+                    'user_id' => $user->id,
+                ]);
+
+                // Sync the tags with the post
+                if (!empty($request->tags)) {
+                    $tagIds = [];
+
+                    // Process each tag
+                    foreach ($request->tags as $tagName) {
+                        // Find or create the tag by name
+                        $tag = ForumTag::firstOrCreate(['name' => trim($tagName)]);
+                        $tagIds[] = $tag->id; // Collect the tag's ID
+                    }
+
+                    // Attach the tags to the post
+                    $post->tags()->sync($tagIds);
+                    Log::info('Tags synced with post ID ' . $post->id, ['tags' => $tagIds]);
                 }
 
-                // Attach the tags to the post
-                $post->tags()->sync($tagIds);
-                Log::info('Tags synced with post ID ' . $post->id, ['tags' => $tagIds]);
-            }
+                // Broadcast the new post event to other users
+                broadcast(new NewPostCreated($post))->toOthers();
+            });
 
-            // Broadcast the new post event to other users
-            broadcast(new NewPostCreated($post))->toOthers();
-        });
+            // Load user and tags relationship to include in the response
+            $post->load('user', 'tags'); // Make sure to load tags here as well
 
-        // Load user and tags relationship to include in the response
-        $post->load('user', 'tags'); // Make sure to load tags here as well
-
-        Log::info('Created Post:', [$post]);
-        return response()->json($post, 201); // Return the created post
-    } catch (\Illuminate\Database\QueryException $e) {
-        Log::error('Database Error: ' . $e->getMessage());
-        return response()->json(['error' => 'Database error: ' . $e->getMessage()], 500);
-    } catch (\Exception $e) {
-        Log::error('Error creating post: ' . $e->getMessage());
-        return response()->json(['error' => 'Failed to create post: ' . $e->getMessage()], 500);
+            Log::info('Created Post:', [$post]);
+            return response()->json($post, 201); // Return the created post
+        } catch (\Illuminate\Database\QueryException $e) {
+            Log::error('Database Error: ' . $e->getMessage());
+            return response()->json(['error' => 'Database error: ' . $e->getMessage()], 500);
+        } catch (\Exception $e) {
+            Log::error('Error creating post: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to create post: ' . $e->getMessage()], 500);
+        }
     }
-}
 
     
 

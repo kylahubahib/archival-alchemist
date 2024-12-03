@@ -78,30 +78,29 @@ export default function Home({ auth }) {
                     ref={heroRef}
                     className="flex flex-col min-h-screen overflow-hidden bg-cover bg-center bg-no-repeat bg-[url('/images/img1.png')] bg-gray-700 bg-blend-multiply"
                 >
-                    <div className="flex-grow flex justify-center items-center mt-20 text-gray-50">
-                        <div className="mx-20 px-6 py-4 mb-16 text-center sm:rounded-t-lg align-middle">
-                            {hero && (
-                                <motion.div
-                                    initial={{ opacity: 0, scale: 0.9 }}
-                                    animate={isHeroInView ? { opacity: 1, scale: 1 } : {}}
-                                    transition={{ duration: 1.5, delay: 0.5 }}
-                                >
-                                    <h6 className="text-3xl md:text-5xl lg:text-7xl font-serif mt-6">
-                                        {hero.content_title || ''}
-                                    </h6>
-                                    <h4 className="mt-6">{hero.subject || 'Archival Alchemist'}</h4>
-                                </motion.div>
-                            )}
-                            <motion.p
-                                className="text-base md:text-lg p-10"
-                                initial={{ opacity: 0, y: 50 }}
-                                animate={isHeroInView ? { opacity: 1, y: 0 } : {}}
-                                transition={{ duration: 2, delay: 1 }}
-                            >
-                                {hero?.content_text || ''}
-                            </motion.p>
-                        </div>
+                <div className="flex-grow flex justify-center items-center mt-20 text-gray-50">
+                    <div className="mx-20 px-6 py-4 mb-16 text-center sm:rounded-t-lg align-middle">
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={isHeroInView ? { opacity: 1, scale: 1 } : {}}
+                        transition={{ duration: 1.5, delay: 0.5 }}
+                    >
+                        <h6 className="text-3xl md:text-5xl lg:text-7xl font-serif mt-6">
+                        {hero.content_title || ''}
+                        </h6>
+                        <h4 className="mt-6">{hero.subject || ''}</h4>
+                    </motion.div>
+
+                    <motion.p
+                        className="text-base md:text-lg p-10"
+                        initial={{ opacity: 0, y: 50 }}
+                        animate={isHeroInView ? { opacity: 1, y: 0 } : {}}
+                        transition={{ duration: 2, delay: 1 }}
+                    >
+                        {hero.content_text || ''}
+                    </motion.p>
                     </div>
+                </div>
                 </motion.section>
 
 
