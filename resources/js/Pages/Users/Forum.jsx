@@ -348,27 +348,27 @@ export default function Forum({ auth }) {
                     <DropdownItem key="popular" onClick={() => handleSortChange('popular')}>Most Popular</DropdownItem>
                   </DropdownMenu>
                 </Dropdown>
-
+        
                 {/* Search Bar */}
                 <div className="flex justify-between mb-6">
-  <div className="relative w-full max-w-lg">
-    <Input
-      value={searchQuery}
-      onChange={handleSearchChange}
-      placeholder="Search by title, author, or tags"
-      className="w-full px-5 py-3 rounded-lg shadow-md focus:ring-2 focus:ring-blue-500 transition-all duration-300"
-      startContent={<FaSearch className="text-gray-500" />}
-      endContent={searchQuery && (
-        <button
-          onClick={() => setSearchQuery('')}
-          className="text-gray-500 hover:text-gray-700 transition-colors"
-        >
-          ✕
-        </button>
-      )}
-    />
-  </div>
-</div>
+                  <div className="relative w-full max-w-lg">
+                    <Input
+                      value={searchQuery}
+                      onChange={handleSearchChange}
+                      placeholder="Search by title, author, or tags"
+                      className="w-full px-5 py-3 rounded-lg shadow-md focus:ring-2 focus:ring-blue-500 transition-all duration-300"
+                      startContent={<FaSearch className="text-gray-500" />}
+                      endContent={searchQuery && (
+                        <button
+                          onClick={() => setSearchQuery('')}
+                          className="text-gray-500 hover:text-gray-700 transition-colors"
+                        >
+                          ✕
+                        </button>
+                      )}
+                    />
+                  </div>
+                </div>
 
 
                 <div className="ml-auto">
@@ -496,7 +496,7 @@ export default function Forum({ auth }) {
               )
               }
     </div>
-  
+              
               
 
 
@@ -505,14 +505,13 @@ export default function Forum({ auth }) {
                                 isOpen={isModalOpen}
                                 onClose={closeModal}
                                 post={selectedPost}
-                                
+                
                      />
                           </div>
                         </div>
-                      </div>
+                        </div>
 
-
-
+                        
           {/* Create Post Modal */}
           <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
             <ModalContent>

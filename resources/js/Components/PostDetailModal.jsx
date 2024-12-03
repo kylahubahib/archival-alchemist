@@ -247,11 +247,7 @@ const PostDetailModal = ({ isOpen, onClose, post, loggedInUser }) => {
       No comments yet. Be the first to comment!
     </div>
   );
-    const customNoComment = () => (
-      <div className="text-gray-500 text-center mt-4">
-        No comments yet. Be the first to comment!
-      </div>
-    );
+   
 
 
     const renderCommentActions = (commentId, userId) => (
@@ -352,6 +348,6 @@ const PostDetailModal = ({ isOpen, onClose, post, loggedInUser }) => {
       </div>
     );
 };
-
+}
 export default PostDetailModal;
 

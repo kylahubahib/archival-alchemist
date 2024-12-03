@@ -4,6 +4,8 @@
         "scripts": {
                 "dev": "vite",
                 "build": "vite build"
+               
+
         },
         "devDependencies": {
                 "@babel/plugin-transform-react-jsx": "^7.25.9",
@@ -72,5 +74,6 @@
                 "styled-components": "^6.1.13",
                 "tailwind-scrollbar": "^3.1.0",
                 "uuid": "^11.0.3"
+
         }
 }
