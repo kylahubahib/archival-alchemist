@@ -4,6 +4,7 @@ namespace App\Imports;
 
 use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
@@ -12,7 +13,12 @@ use App\Models\User;
 use App\Models\Student;
 use App\Models\Faculty;
 use App\Models\Course;
+use App\Models\Department;
+use App\Models\InstitutionAdmin;
 use Exception;
+
+use App\Mail\AccountCredentialsMail;
+use Illuminate\Support\Facades\Mail;
 
 class UsersImport implements ToCollection, WithHeadingRow
 {
@@ -24,26 +30,35 @@ class UsersImport implements ToCollection, WithHeadingRow
      */
     public function collection(Collection $collection)
     {
+        $authUser = Auth::user(); 
+        $institution = InstitutionAdmin::with('institution_subscription')
+            ->where('user_id', $authUser->id)->first();
+        $uniBranchId = $institution->institution_subscription->uni_branch_id;
+
+        Log::info('Uni Branch Id: ', ['uni_branch_id' => $uniBranchId]);
+        
+
+        if (!$institution) {
+            Log::error("Institution not found for the logged-in user.");
+            return;
+        }
+
         foreach ($collection as $index => $row) {
             try {
-                // Log the start of processing a new row
                 Log::info("Processing row {$index} for user with email: {$row['email']}");
 
-                // Check if user already exists by email
+                // Check if user already exists
                 $userExist = User::where('email', $row['email'])->first();
-                
                 if ($userExist) {
                     Log::info("User already exists: {$row['email']}");
-                    continue; // Skip this row if the user already exists
+                    continue;
                 }
 
-                // Generate a secure password
-                $pwd = Str::password();
-                Log::info("Generated password for {$row['email']} is {$pwd}");
+                // Generate a secure random password
+                $pwd = Str::random(8);
 
                 $userType = Str::lower($row['type']);
-
-                $user = User::create([
+                $newUser = User::create([
                     'name' => $row['name'],
                     'email' => $row['email'],
                     'password' => Hash::make($pwd),
@@ -55,43 +70,110 @@ class UsersImport implements ToCollection, WithHeadingRow
                     'is_premium' => true,
                     'is_affiliated' => true,
                 ]);
-                Log::info("User created: {$user->id}");
 
-                // Find the course and its university branch ID
-                $course = Course::with('department:id,uni_branch_id')
-                    ->where('course_name', $row['course'])
-                    ->orWhere('course_acronym', $row['course'])
-                    ->first();
+                Log::info("New user created with ID: {$newUser->id}, Email: {$newUser->email}");
 
-                if (!$course || !$course->department) {
-                    Log::error("Course or department not found for row {$index} with course: {$row['course']}");
-                    continue; // Skip this row if course or department is missing
+                // Send account creation email
+                try {
+                    Mail::to($row['email'])->send(new AccountCredentialsMail([
+                        'name' => $newUser->name,
+                        'email' => $newUser->email,
+                        'password' => $pwd,
+                        'message' => 'Welcome to Archival Alchemist!',
+                    ]));
+                    Log::info("Welcome email sent to: {$row['email']}");
+                } catch (Exception $e) {
+                    Log::error("Failed to send email to {$row['email']}: " . $e->getMessage());
                 }
 
-                $uniBranchId = $course->department->uni_branch_id;
+                // Handle department
+                $departmentName = $row['department'];
+                $courseName = $row['course'];
 
-                // Create Student or Teacher based on user type
+                Log::info('Department Name: ', ['dept name' => $row['department']]);
+
+                if($departmentName)
+                {
+                    $foundDept = Department::where('uni_branch_id', $uniBranchId)
+                        ->where(function($query) use ($departmentName) {
+                            $query->where('dept_name', $departmentName)
+                                ->orWhere('dept_acronym', $departmentName);
+                        })->first();
+
+                    Log::info('Department Found: ', ['dept' => $foundDept]);
+
+                    if($foundDept != null) {
+                        Log::info('Existing Department Found');
+
+                        $department = $foundDept;
+
+                        $foundCourse = Course::where('dept_id', $foundDept->id)
+                        ->where(function($query) use ($courseName) {
+                            $query->where('course_name', $courseName)
+                                ->orWhere('course_acronym', $courseName);
+                        })->first();
+
+                        if(!$foundCourse) {
+                            $course = Course::create([
+                                'course_name' => $courseName,
+                                'course_acronym' => $courseName,
+                                'dept_id' => $foundDept->id,
+                                'added_by' => $authUser->name
+                            ]);
+
+                            Log::info('Course: ', ['course' => $course]);
+                        } else {$course = $foundCourse;}
+
+                    } else {
+                        Log::info('New Department is created');
+
+                        $department = Department::create([
+                            'dept_name' => $departmentName,
+                            'dept_acronym' => $departmentName,
+                            'uni_branch_id' => $uniBranchId,
+                            'added_by' => $authUser->name
+                        ]);
+
+                        Log::info('Department Created: ', ['dept' => $department]);
+
+                        $course = Course::create([
+                            'course_name' => $courseName,
+                            'course_acronym' => $courseName,
+                            'dept_id' => $department->id,
+                            'added_by' => $authUser->name
+                        ]);
+
+                        Log::info('Course Created: ', ['course' => $course]);
+                    }
+                }
+            
+
+                // Profile creation
                 if ($userType === 'student') {
                     Student::create([
-                        'user_id' => $user->id,
+                        'user_id' => $newUser->id,
                         'uni_branch_id' => $uniBranchId,
-                        'course' => $course->course_name
+                        'course' => $course->course_name,
                     ]);
-                    Log::info("Student profile created for user: {$user->id}");
+                    Log::info("Student profile created for user ID: {$newUser->id}, Course: {$course->course_name}");
                 } elseif ($userType === 'teacher') {
                     Faculty::create([
-                        'user_id' => $user->id,
+                        'user_id' => $newUser->id,
                         'uni_branch_id' => $uniBranchId,
-                        'course_id' => $course->id
+                        // 'course_id' => $course->id,
+                        'dept_id' => $department->id
                     ]);
-                    Log::info("Teacher profile created for user: {$user->id}");
+                    Log::info("Teacher profile created for user ID: {$newUser->id}, Course: {$course->course_name}");
                 } else {
                     Log::warning("Unrecognized user type '{$userType}' for row {$index}");
                 }
-                
+
             } catch (Exception $e) {
                 Log::error("Error processing row {$index} with email {$row['email']}: " . $e->getMessage());
             }
         }
     }
+
+
+
 }

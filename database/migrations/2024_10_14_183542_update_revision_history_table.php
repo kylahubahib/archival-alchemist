@@ -11,12 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('revision_history', function (Blueprint $table) {
-            $table->dropForeign(['stud_id']);
-            $table->dropColumn('stud_id'); // Remove the stud_id column
-            $table->timestamp('uploaded_at')->nullable(); // Add uploaded_at column
-            $table->string('status')->nullable();
-        });
+        // Comment out the migration code to prevent execution
+        // Schema::table('revision_history', function (Blueprint $table) {
+        //     $table->dropForeign(['stud_id']);
+        //     $table->dropColumn('stud_id');
+        //     $table->timestamp('uploaded_at')->nullable();
+        //     $table->string('status')->nullable();
+        // });
     }
 
     /**

@@ -7,10 +7,10 @@ use App\Models\UniversityBranch;
 use App\Models\InstitutionSubscription;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Validation\Rules;
 use Inertia\Inertia;
 use Inertia\Response;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 
 
 class UniversityController extends Controller
@@ -79,22 +79,52 @@ class UniversityController extends Controller
      */
     public function update(Request $request, string $id)
     {
+        // Find the university branch before validation
+        $uniBranch = UniversityBranch::find($id);
+        if (!$uniBranch) {
+            return redirect()->back()->with('error', 'University branch not found.');
+        }
 
-            // $uni = University::find($id);
+        // Validate the incoming data
+        $validatedData = $request->validate([
+            'uni_branch_name' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('university_branches')->where(function ($query) use ($uniBranch) {
+                    return $query->where('uni_id', $uniBranch->uni_id);
+                })->ignore($id),
+            ],
+            'uni_name' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('universities', 'uni_name')->ignore($uniBranch->uni_id), // Correctly ignoring university based on `uni_id`
+            ],
+        ], [
+            'uni_branch_name.required' => 'The university branch is required.',
+            'uni_branch_name.unique' => 'The branch name has already been taken for this university.',
+            'uni_name.required' => 'The university name is required.',
+            'uni_name.unique' => 'The university name has already been taken.',
+        ]);
 
-            // $uni->update([
-            //     'university_name' => $request->university_name,
-            //]);
-         
-            $uniBranch = UniversityBranch::find($id);
-            $uniBranch->update([
-                'uni_branch_name' => $request->uni_branch_name,
+        // Update university branch
+        $uniBranch->update([
+            'uni_branch_name' => $validatedData['uni_branch_name'],
+        ]);
+
+        // Find and update the associated university
+        $uni = University::find($uniBranch->uni_id);
+        if ($uni) {
+            $uni->update([
+                'uni_name' => $validatedData['uni_name'],
             ]);
+        }
 
-            return redirect(route('manage-universities.index'))->with('success', 'University successfully updated.');
-            
-         
+        return redirect(route('manage-universities.index'))->with('success', 'University successfully updated.');
     }
+
+
 
     /**
      * Remove the specified resource from storage.

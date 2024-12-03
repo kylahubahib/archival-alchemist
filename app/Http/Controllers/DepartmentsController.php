@@ -6,23 +6,26 @@ use App\Models\Department;
 use App\Models\UniversityBranch;
 use App\Models\Course;
 use App\Models\Section;
+use App\Models\Faculty;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Validation\Rules;
 use Inertia\Inertia;
 use Inertia\Response;
 use Illuminate\Support\Facades\Auth; 
 use Illuminate\Validation\Rule;
 
+use App\Notifications\InstitutionAdminNotification;
 
 
-class DepartmentsController extends Controller
+class DepartmentsController extends Controller 
 {
     /**
      * Display a listing of the resource.
      */
     public function index() 
     {
+        // dd();
+
         // Initialize the departments variable as an empty collection
         $departments = collect();
 
@@ -103,12 +106,24 @@ class DepartmentsController extends Controller
 
         $request->validate([
             'uni_branch_id' => 'required|integer',
-            'dept_name' => 'required|string|unique:departments',
-            'dept_acronym' => 'nullable|string|unique:departments'
+            'dept_name' => [
+                'required',
+                'string',
+                Rule::unique('departments')->where(function ($query) use ($request) {
+                    return $query->where('uni_branch_id', $request->uni_branch_id);
+                }),
+            ],
+            'dept_acronym' => [
+                'nullable',
+                'string',
+                Rule::unique('departments')->where(function ($query) use ($request) {
+                    return $query->where('uni_branch_id', $request->uni_branch_id);
+                }),
+            ],
         ], [
-            'dept_name.unique' => 'The department name has already been taken.',
+            'dept_name.unique' => 'The department name has already been taken for this university.',
             'dept_name.required' => 'The department name is required.',
-            'dept_acronym.unique' => 'The department name has already been taken.',
+            'dept_acronym.unique' => 'The department acronym has already been taken for this university.',
         ]);
 
         \Log::info('Create Data: ', $request->all());
@@ -129,12 +144,24 @@ class DepartmentsController extends Controller
     public function update(Request $request, string $id)
     {
         $request->validate([
-            'dept_name' => 'required|string|unique:departments',
-            'dept_acronym' => 'nullable|string|unique:departments'
+            'dept_name' => [
+                'required',
+                'string',
+                Rule::unique('departments')->where(function ($query) use ($request) {
+                    return $query->where('uni_branch_id', $request->uni_branch_id);
+                }),
+            ],
+            'dept_acronym' => [
+                'nullable',
+                'string',
+                Rule::unique('departments')->where(function ($query) use ($request) {
+                    return $query->where('uni_branch_id', $request->uni_branch_id);
+                }),
+            ],
         ], [
-            'dept_name.unique' => 'The department name has already been taken.',
+            'dept_name.unique' => 'The department name has already been taken for this university.',
             'dept_name.required' => 'The department name is required.',
-            'dept_acronym.unique' => 'The department name has already been taken.',
+            'dept_acronym.unique' => 'The department acronym has already been taken for this university.',
         ]);
 
 

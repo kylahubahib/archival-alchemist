@@ -11,6 +11,7 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import { showToast } from '@/Components/Toast';
 import { Select, SelectItem } from '@nextui-org/react';
 import axios from 'axios';
+import { formatDate } from '@/utils';
 
 export default function Universities({ auth, uniBranches, universities }) {
     const [filteredData, setFilteredData] = useState(uniBranches.data);
@@ -20,6 +21,7 @@ export default function Universities({ auth, uniBranches, universities }) {
     const [wordEntered, setWordEntered] = useState("");
     const { data, setData, put, processing, errors, reset } = useForm({ 
         uni_branch_name: '',
+        uni_name: ''
     });
 
     useEffect (() => {
@@ -43,9 +45,11 @@ export default function Universities({ auth, uniBranches, universities }) {
 
     const openModal = (item) => {
         setSelectedData(item);
-        setData('uni_branch_name', item.uni_branch_name);
+        setData({
+            uni_branch_name: item.uni_branch_name,
+            uni_name: item.university.uni_name
+        });
         setIsEditModalOpen(true);
-
     }
 
     const closeModal = () => {
@@ -161,7 +165,7 @@ export default function Universities({ auth, uniBranches, universities }) {
                                                 </div>
                                             </th>
                                             <td className="px-6 py-4 max-w-60 truncate">{uni.uni_branch_name}</td>
-                                            <td className="px-6 py-4">{uni.created_at}</td>
+                                            <td className="px-6 py-4">{formatDate(uni.created_at)}</td>
                                             {/*<td className="px-6 py-4">yo</td>*/}
                                             <td className="px-6 py-4 flex flex-row space-x-2">
                                                 <a onClick={() => {openModal(uni)}} className="bg-customBlue text-white rounded p-1 hover:bg-transparent hover:text-customBlue cursor-pointer" title="Edit">
@@ -196,13 +200,24 @@ export default function Universities({ auth, uniBranches, universities }) {
                     <form onSubmit={submit}>
                         <div className='space-y-5'>
                             <div className="flex flex-col">
-                                <InputLabel htmlFor="uni_branch_name" value="Department" />
+                                <InputLabel htmlFor="uni_name" value="University" />
+                                <TextInput
+                                    id="uni_name"
+                                    value={data.uni_name}
+                                    onChange={(e) => {setData('uni_name', e.target.value)}}
+                                    className="mt-1 block w-full"
+                                    placeholder="University Name"
+                                />
+                                <InputError message={errors.uni_name} className="mt-2" />
+                            </div>
+                            <div className="flex flex-col">
+                                <InputLabel htmlFor="uni_branch_name" value="University Branch" />
                                 <TextInput
                                     id="uni_branch_name"
                                     value={data.uni_branch_name}
                                     onChange={(e) => {setData('uni_branch_name', e.target.value)}}
                                     className="mt-1 block w-full"
-                                    placeholder="Department"
+                                    placeholder="Branch Name"
                                 />
                                 <InputError message={errors.uni_branch_name} className="mt-2" />
                             </div>

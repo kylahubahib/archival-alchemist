@@ -1,4 +1,4 @@
-import { Head } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Button, Divider, Skeleton, useDisclosure } from '@nextui-org/react';
@@ -18,18 +18,19 @@ export default function SubscriptionForm({user}) {
     const {isOpen, onOpen, onOpenChange} = useDisclosure();
     const [transactionHistory, setTransactionHistory] = useState(null);
     const [agreement, setAgreement] = useState(null)
-    const [personalSubscription, setPersonalSubscription] = useState(null); 
+    const [personalSubscription, setPersonalSubscription] = useState(null);
     const [isAffiliated, setIsAffiliated] = useState(user.is_affiliated);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [modalContent, setModalContent] = useState(null);
     const [transaction, setTransaction] = useState(null);
     const [formData, setFormData] = useState({
-        message: '', 
+        message: '',
     });
     const [message, setMessage] = useState(null);
     const [personalPlans, setPersonalPlans] = useState([]);
-    const [planFeatures, setPlanFeatures] = useState([]); 
+    const [planFeatures, setPlanFeatures] = useState([]);
+    const [error, setError] = useState(null);
 
     const submit = (e) => {
         e.preventDefault();
@@ -39,7 +40,7 @@ export default function SubscriptionForm({user}) {
     useEffect(() => {
         console.log(personalPlans);
         console.log(planFeatures);
-        console.log(isAffiliated); 
+        console.log(isAffiliated);
         axios.get('/user-subscription')
         .then(response => {
             if(response.data.per_sub){
@@ -50,13 +51,13 @@ export default function SubscriptionForm({user}) {
                 setPersonalSubscription(null);
                 setAgreement(response.data.agreement);
             }
-            setLoading(false); 
+            setLoading(false);
         })
         .catch(error => {
             console.error('Error fetching subscription:', error);
         });
     }, [personalPlans, planFeatures, isAffiliated]);
-    
+
     // useEffect(() => {
     //     console.log('Updated personalSubscription:', personalSubscription);
     // }, [personalSubscription]);
@@ -66,6 +67,7 @@ export default function SubscriptionForm({user}) {
         axios.post('/remove-affiliation')
         .then(response => {
             setIsAffiliated(response.data.is_affiliated);
+            router.reload();
             setLoading(false);
         });
     };
@@ -76,7 +78,7 @@ export default function SubscriptionForm({user}) {
             const response = await axios.post('/payment', { plan_id: planId });
 
             if (response.data.checkout_url) {
-                
+
                 // Redirect the user to PayMongo's checkout page
                 window.location.href = response.data.checkout_url;
             }
@@ -92,9 +94,9 @@ export default function SubscriptionForm({user}) {
     const handleRenewal = async (id) => {
 
         const currentDate = new Date();
-        const subscriptionEndDate = new Date(personalSubscription.end_date); 
+        const subscriptionEndDate = new Date(personalSubscription.end_date);
         console.log(currentDate, ' and ', subscriptionEndDate  );
-      
+
         if(currentDate < subscriptionEndDate){
             console.log('You still have an active subscription');
             showToast('success', 'You still have an active subscription!');
@@ -103,9 +105,9 @@ export default function SubscriptionForm({user}) {
         {
             try {
                 const response = await axios.post('/payment', { plan_id: id });
-    
+
                 if (response.data.checkout_url) {
-                    
+
                     // Redirect the user to PayMongo's checkout page
                     //window.location.href = response.data.checkout_url;
                     window.open(response.data.checkout_url, '_blank');
@@ -114,14 +116,14 @@ export default function SubscriptionForm({user}) {
             } catch (err) {
                 console.error("Checkout session failed:", err);
                 setError("Failed to create checkout session. Please try again.");
-            } 
+            }
         }
     }
 
     const openModal = (content) => {
         setModalContent(content);
         setIsModalOpen(true);
-    } 
+    }
 
     const closeModal = () => {
         setModalContent(null);
@@ -177,11 +179,11 @@ export default function SubscriptionForm({user}) {
         //     setTimeout(() => {
         //         closeModal();
         //         setMessage(null);
-        //     }, 2000);   
+        //     }, 2000);
         // });
     }
 
-   
+
 
     if (loading) return (
         <div className="space-y-3">
@@ -231,11 +233,11 @@ export default function SubscriptionForm({user}) {
                          onClick={() => handleRenewal(personalSubscription.plan_id)} >
                             Renew Subscription
                         </Button>
-                        <Button onClick={() => {openModal('popup')}} radius="large" variant='bordered' size='sm' className=" border-red-500 text-red-500 shadow">
+                        {/* <Button onClick={() => {openModal('popup')}} radius="large" variant='bordered' size='sm' className=" border-red-500 text-red-500 shadow">
                             Cancel Subscription
-                        </Button>
+                        </Button> */}
                         </div>
-                        
+
                     </div>
                 </>
             ) : (
@@ -296,7 +298,7 @@ export default function SubscriptionForm({user}) {
                             <tbody>
                                 {transactionHistory.length > 0 ? (
                                     transactionHistory.map((data, index) => (
-                                        <tr key={index} className="hover:bg-gray-50"> 
+                                        <tr key={index} className="hover:bg-gray-50">
                                             <td className="px-6 py-4">{data.user.name}</td>
                                             <td className="px-6 py-4">{data.payment_method}</td>
                                             <td className="px-6 py-4">{data.plan.plan_name}</td>
@@ -305,7 +307,7 @@ export default function SubscriptionForm({user}) {
                                             <td className="px-6 py-4">
                                                 <button className="text-blue-600 text-sm font-semibold hover:underline cursor-pointer" onClick={() => viewReceipt(data)}>View Receipt</button>
                                             </td>
-                                            
+
                                         </tr>
                                     ))
                                 ) : (
@@ -346,10 +348,10 @@ export default function SubscriptionForm({user}) {
                         </div>
                     </div>
 
-                ) 
+                )
                 }
                 </div>
-                
+
             </Modal>}
 
              {/* Cancel Subscription Confirmation */}
@@ -362,16 +364,16 @@ export default function SubscriptionForm({user}) {
                     </svg>
                     <span className="sr-only">Close modal</span>
                 </button>
-                
+
                 <div className="p-4 md:p-5 text-center">
                     <svg className="mx-auto mb-4 text-gray-400 w-12 h-12 dark:text-gray-200" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
                         <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 11V6m0 8h.01M19 10a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
                     </svg>
-                    
+
                     <h3 className="my-5 text-lg  text-gray-700 font-semibold dark:text-gray-600">Are you sure you want to proceed?</h3>
-                    
+
                     <p className="mb-5 text-md font-normal text-gray-500 dark:text-gray-600">
-                        You are about to cancel your subscription. Since it is non-recurring, you will no longer receive expiration notifications. 
+                        You are about to cancel your subscription. Since it is non-recurring, you will no longer receive expiration notifications.
                     </p>
 
                     {!message ? (
@@ -390,7 +392,7 @@ export default function SubscriptionForm({user}) {
                         <h3 className="my-5 text-lg text-green-500 font-medium dark:text-gray-600">{message}</h3>
                         </>
                     )}
-                    
+
                 </div>
                 </div>
             </Modal>}
@@ -430,18 +432,18 @@ export default function SubscriptionForm({user}) {
                     key={plan.id}
                     className={`flex flex-col p-6 mx-auto min-w-80 max-w-md text-center text-gray-900 bg-white rounded-lg border border-gray-100 cursor-pointer shadow`}>
                     <h3 className="mb-4 text-xl font-semibold">{plan.plan_name}</h3>
-                    
+
                     <p className="font-light text-gray-500 sm:text-md">
                         {plan.plan_text}
                     </p>
-                    
+
                     <div className="flex justify-center items-baseline my-8">
                         <span className="mr-2 text-2xl font-bold">
                             ₱ {formatPrice(plan.plan_price)}
                         </span>
                         <span className="text-gray-500">{plan.plan_term}</span>
                     </div>
-                    
+
                     {/* Plan Features */}
                     <ul role="list" className="mb-8 space-y-2 text-left">
                         {getFeaturesByPlanId(plan.id).map((featureName, index) => (
@@ -481,10 +483,10 @@ export default function SubscriptionForm({user}) {
     </div>
 </Modal>
             }
-            
+
             {modalContent == 'inquiry' &&  <InquiryForm isOpen={isModalOpen} onClose={closeModal} />}
 
-           
+
 
 
 

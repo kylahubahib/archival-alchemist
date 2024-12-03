@@ -30,7 +30,7 @@ class GoogleController extends Controller
             $parameters = ['access_type' => 'offline', "prompt" => "consent", 'login_hint' => $user->email,];
                 return Socialite::driver('google')
                 ->scopes([
-                    'https://www.googleapis.com/auth/drive',
+                    'https://www.googleapis.com/auth/drive.file',
                     'https://www.googleapis.com/auth/documents',
                 ])
                 ->with($parameters)

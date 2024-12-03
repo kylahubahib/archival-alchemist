@@ -9,6 +9,7 @@ import RecManuscript from '@/Components/Manuscripts/RecommendedManuscript';
 import SearchBar from '@/Components/SearchBars/LibrarySearchBar';
 import React from 'react';
 import Manuscript from '@/Components/Manuscript';
+import MyUniBooks from '@/Components/Manuscripts/MyUniBooks';
 
 const currentYear = new Date().getFullYear(); // Get the current year
 const yearOptions = Array.from(
@@ -68,6 +69,7 @@ const renderActiveTabContent = () => {
             const choice = 'A';
             return (
                 <AllManuscript
+                    auth={auth}
                     title="All Capstone Manuscripts"
                     description="A list of all available capstone manuscripts."
                     manuscripts={manuscripts} // Pass manuscripts to Manuscript
@@ -80,26 +82,29 @@ const renderActiveTabContent = () => {
             const choice = 'R';
             return (
                 <RecManuscript
-                    title="Recommended Manuscripts"
-                    description="A selection of manuscripts recommended for you."
-                    manuscripts={manuscripts} // Update this with actual data as needed
-                    user={auth.user} // Pass the user to Manuscript
-                    //choice={choice} // Pass choice to Manuscript
+                auth={auth}
+                title="All Capstone Manuscripts"
+                description="A list of all available capstone manuscripts."
+                manuscripts={manuscripts} // Pass manuscripts to Manuscript
+                user={auth.user} // Pass the user to Manuscript
+                //choice={choice} // Pass choice to Manuscript
                 />
             );
-        }
+         }
         case 'ByUniversity': {
             const choice = 'U';
             return (
-                <Manuscript
-                    title="Manuscripts by University"
-                    description="Manuscripts categorized by university."
-                    manuscripts={manuscripts} // Update this with actual data as needed
-                    user={auth.user} // Pass the user to Manuscript
-                    //choice={choice} // Pass choice to Manuscript
+                <MyUniBooks
+                auth={auth}
+                title="My Uni-Books"
+                description="A list of all available capstone manuscripts of their universrity."
+                manuscripts={manuscripts} // Pass manuscripts to Manuscript
+                user={auth.user} // Pass the user to Manuscript
+                //choice={choice} // Pass choice to Manuscript
                 />
             );
         }
+
         default: {
             const choice = 'Default';
             return (
@@ -134,7 +139,7 @@ const handleEndYearChange = (e) => {
             <Head title="Library" />
 
             <div className="bg-white m-4 min-h-screen rounded-xl">
-                <div className="mx-auto sm:px-6 lg:px-8 bg-gray-100 h-screen pt-6">
+                <div className="mx-auto sm:px-6 lg:px-8 bg-gray-100 min-poh-screen pt-6">
                     <div className="flex flex-col">
                         <div className="flex justify-between items-center mb-4">
                             <div className="flex">
@@ -154,7 +159,7 @@ const handleEndYearChange = (e) => {
                                     onClick={() => handleTabClick('ByUniversity')}
                                     className={buttonStyle('ByUniversity')}
                                 >
-                                    University
+                                    My Uni-Books
                                 </button>
                             </div>
 
@@ -211,5 +216,4 @@ const handleEndYearChange = (e) => {
         </MainLayout>
     );
 }
-
 

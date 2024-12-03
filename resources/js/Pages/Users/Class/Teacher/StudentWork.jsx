@@ -1,6 +1,4 @@
 import { AiOutlineMenu, AiOutlineClose } from "react-icons/ai";
-
-
 import React, { useState, useEffect } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head } from '@inertiajs/react';
@@ -9,14 +7,11 @@ import { Link } from '@inertiajs/react';
 import ShowMemersModal from '@/Components/Modal';
 import ClassDropdown from "@/Components/ClassDropdown";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-
 import { faFolder, faUsers, faUser, faEllipsisV } from '@fortawesome/free-solid-svg-icons';
 import { Avatar, Button, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, useDisclosure } from "@nextui-org/react";
 import { Skeleton } from '@nextui-org/skeleton'; // Import Skeleton
 import CreateClassSection from '@/Pages/Users/Class/Teacher/CreateClassSection';
-
 import ReviewManuscript from '@/Pages/Users/Class/Teacher/ReviewManuscript';
-
 import ViewModal from '@/Components/studentworkModal';
 
 //axios.defaults.headers.common['X-CSRF-TOKEN'] = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
@@ -53,15 +48,44 @@ const [isMembersLoading, setIsMembersLoading] = useState(false);
 const [isViewModalOpen, setIsViewModalOpen] = useState(false);
 const [reviewManuscriptProps, setReviewManuscriptProps] = useState(null);
 const [groupNames, setgroupNames] = useState(null);
+const [selectedGroupId, setSelectedGroupId] = useState(null); // Track selected group_id
+const [filteredClasses, setFilteredClasses] = useState([]);
+
+// Handler for dropdown change
+  // Handler for dropdown change
+  const handleGroupChange = (selectedGroupId) => {
+    // Convert selectedGroupId to an integer since it's passed as a string
+    const groupId = parseInt(selectedGroupId, 10);
+
+    // Find the manuscript whose group_id matches the selected group_id
+    const selectedManuscript = classes.find(item => item.group.id === groupId);
+
+    if (selectedManuscript) {
+      // If a manuscript is found, set it in reviewManuscriptProps
+      setReviewManuscriptProps(selectedManuscript);
+    } else {
+      // Optionally handle cases where no matching manuscript is found
+      setReviewManuscriptProps(null);
+    }
+  };
+
+  // Log reviewManuscriptProps when it changes
+  useEffect(() => {
+    if (reviewManuscriptProps) {
+      console.log("Updated reviewManuscriptProps:", reviewManuscriptProps);
+    }
+  }, [reviewManuscriptProps]); // This will run whenever reviewManuscriptProps changes
 
 
-console.log("These are the props:", reviewManuscriptProps)
+console.log("These are the props setFilteredClasses:", setFilteredClasses)
+console.log("These are the props reviewManuscriptProps:", reviewManuscriptProps)
 // Fetch members whenever hoveredClass changes
 useEffect(() => {
+
     const fetchMembers = async () => {
         setIsMembersLoading(true); // Set loading state to true before fetching
         try {
-            const response = await axios.get(`/groupmembers/${hoveredClass.manuscript_id}`);
+            const response = await axios.get(`/groupmembers/${hoveredClass.id}`);
             setMembers(response.data);
 
     console.log(hoveredClass);
@@ -103,6 +127,7 @@ useEffect(() => {
             });
 
     }
+
 }, [authorInputValue]);
 
 
@@ -162,14 +187,14 @@ useEffect(() => {
 useEffect(() => {
     console.log('Selected Class:', selectedClass); // Debugging line
 
-    axios.get('/manuscripts/class', {
+    axios.get('/get-manuscripts', {
         params: {
-            ins_id: selectedClass?.ins_id // Safely access ins_id using optional chaining
+            section_id: folders?.id
         }
     })
     .then(response => {
         console.log(response.data); // Log the response to check its structure
-       // setClasses(response.data); // Store the manuscripts data
+       setClasses(response.data); // Store the manuscripts data
     })
     .catch(error => {
         console.error("Error fetching manuscripts:", error);
@@ -177,35 +202,47 @@ useEffect(() => {
 }, [selectedClass]);
 
 
-    const getStatusButton = (status) => {
-        switch (status.toLowerCase()) {  // Make sure to handle case sensitivity
-            case 'approved':
+const getStatusButton = (status) => {
+    switch (status.toLowerCase()) {  // Make sure to handle case sensitivity
+        case 'approved':
+            return (
+                <Button
+                    size="xs"
+                    color="success"
+                    radius="full"
+                    className="text-center text-[13px] p-1 h-auto min-h-0"
+                >
+                    {status.charAt(0).toUpperCase() + status.slice(1)}
+                </Button>
+            );
+        case 'declined':
+            return (
+                <Button
+                    size="xs"
+                    color="danger"
+                    radius="full"
+                    className="text-center text-[13px] p-1 h-auto min-h-0"
+                >
+                    {status.charAt(0).toUpperCase() + status.slice(1)}
+                </Button>
+            );
+        case 'to-review':
+            return (
+                <Button
+                    size="xs"
+                    color="primary"
+                    radius="full"
+                    className="text-center text-[13px] p-1 h-auto min-h-0"
+                >
+                    {status.charAt(0).toUpperCase() + status.slice(1)}
+                </Button>
+            );
+
+            case 'pending':
                 return (
                     <Button
                         size="xs"
-                        color="success"
-                        radius="full"
-                        className="text-center text-[13px] p-1 h-auto min-h-0"
-                    >
-                        {status.charAt(0).toUpperCase() + status.slice(1)}
-                    </Button>
-                );
-            case 'declined':
-                return (
-                    <Button
-                        size="xs"
-                        color="danger"
-                        radius="full"
-                        className="text-center text-[13px] p-1 h-auto min-h-0"
-                    >
-                        {status.charAt(0).toUpperCase() + status.slice(1)}
-                    </Button>
-                );
-            case 'to-review':
-                return (
-                    <Button
-                        size="xs"
-                        color="primary"
+                        color="warning"
                         radius="full"
                         className="text-center text-[13px] p-1 h-auto min-h-0"
                     >
@@ -213,29 +250,29 @@ useEffect(() => {
                     </Button>
                 );
 
-                case 'missing':
-                    <Button
-                        size="xs"
-                        color="danger"
-                        radius="full"
-                        className="text-center text-[13px] p-1 h-auto min-h-0"
-                        >
-                        {status.charAt(0).toUpperCase() + status.slice(1)}
-                    </Button>
-
-            default:
-                return (
-                    <Button
-                        size="xs"
-                        color="default"
-                        radius="full"
-                        className="text-center text-[13px] p-1 h-auto min-h-0"
+            case 'missing':
+                <Button
+                    size="xs"
+                    color="danger"
+                    radius="full"
+                    className="text-center text-[13px] p-1 h-auto min-h-0"
                     >
-                        {status.charAt(0).toUpperCase() + status.slice(1)}
-                    </Button>
-                );
-        }
-    };
+                    {status.charAt(0).toUpperCase() + status.slice(1)}
+                </Button>
+
+        default:
+            return (
+                <Button
+                    size="xs"
+                    color="default"
+                    radius="full"
+                    className="text-center text-[13px] p-1 h-auto min-h-0"
+                >
+                    {status.charAt(0).toUpperCase() + status.slice(1)}
+                </Button>
+            );
+    }
+};
 
     const [activeSection, setActiveSection] = useState('');
 
@@ -254,7 +291,7 @@ const handleShowStudentWork = () => {
 
     const handleViewClick = (classItem) => {
         setReviewManuscriptProps(classItem); // Set manuscript data
-        console.log("These are the props:", setReviewManuscriptProps);
+        console.log("These are the props setReviewManuscriptProps:", setReviewManuscriptProps);
         setIsViewModalOpen(true); // Open modal
     };
 
@@ -266,8 +303,10 @@ const handleShowStudentWork = () => {
 
 
     return (
-        <div
-            className="relative bg-white px-6 mb-10 w-full items-center"
+
+    <div className="mt-0 relative  mb-10"
+        // <div
+            // className="relative bg-white px-6 mb-10 w-full items-center"
             style={{
                 position: "relative",
                 top: "-48px",
@@ -281,10 +320,10 @@ const handleShowStudentWork = () => {
                 </div>
             </header>
 
-            <div className="relative w-relative m-10">
+            <div className="relative w-relative m-10 ">
                 <Table>
                     <TableHeader>
-                        <TableColumn className="w-[10%] text-left">Class Name</TableColumn>
+                        <TableColumn className="w-[10%] text-left">Group Name</TableColumn>
                         <TableColumn className="w-[60%] text-center">Title</TableColumn>
                         <TableColumn className="text-center">Created</TableColumn>
                         <TableColumn className="text-center">Updated</TableColumn>
@@ -300,30 +339,29 @@ const handleShowStudentWork = () => {
                                         className="cursor-pointer text-blue-500 hover:underline"
                                         onMouseEnter={() => handleMouseEnter(classItem)}
                                     >
-                    {classItem.group_name || "No Name Available"}
+                                        {classItem.group?.group_name || "No Name Available"}
                                     </span>
                                 </TableCell>
                                 <TableCell className="text-left">
-                                    {classItem.man_doc_title || "No manuscript submission from the group."}
+                                    {classItem.man_doc_title || ""}
                                 </TableCell>
                                 <TableCell className="text-center">
-                                    {new Date(classItem.manuscript_created_at).toLocaleDateString() || "N/A"}
+                                    {new Date(classItem.created_at).toLocaleDateString() || ""}
                                 </TableCell>
                                 <TableCell className="text-center">
-                                    {new Date(classItem.manuscript_updated_at).toLocaleDateString() || "N/A"}
+                                    {new Date(classItem.updated_at).toLocaleDateString() || ""}
                                 </TableCell>
                                 <TableCell className="text-center">
-
-    {console.log(classItem.man_doc_status)} {/* Log to check status value */}
-                                    {getStatusButton(classItem.man_doc_status || "norecords")}
+                                    {console.log(classItem.man_doc_status)} {/* Log to check status value */}
+                                    {getStatusButton(classItem.man_doc_status || "")}
                                 </TableCell>
                                 <TableCell className="text-center">
                                 <button
-                    onClick={() => handleViewClick(classItem)}
-                    className="text-gray-600 font-semibold hover:text-blue-500"
-                >
-                    View
-                </button>
+                                    onClick={() => handleViewClick(classItem)}
+                                    className="text-gray-600 font-semibold hover:text-blue-500"
+                                >
+                                    View
+                                </button>
                                 </TableCell>
                             </TableRow>
                         ))}
@@ -331,132 +369,134 @@ const handleShowStudentWork = () => {
                 </Table>
 
                 <ViewModal show={isViewModalOpen} onClose={closeViewModal}>
-    {reviewManuscriptProps && (
-        <div className="relative bg-white w-full items-center flex flex-col">
-            {/* Header */}
-            <header
-                className="w-full bg-white text-gray-800 py-4 px-6 shadow-md border-t border-b border-gray-300"
-                style={{ zIndex: 100 }}
-            >
-                <div className="flex justify-between items-center">
-                    <h1 className="text-lg font-medium text-gray-500">
-                    {reviewManuscriptProps.man_doc_title || "No manuscript submission from the group."}
-                    </h1>
 
-                    {/* Filter Options */}
-                    <div className="flex space-x-6">
-                        <div className="flex items-center space-x-2">
-                            <label htmlFor="filter" className="text-sm">
-                                Filter:
-                            </label>
-                            <select
-                                id="filter"
-                defaultValue="all"
-                                className="p-2 rounded border border-gray-300 text-sm w-56"
+{console.log("These are the props reviewManuscriptProps:", reviewManuscriptProps)}
+                    {reviewManuscriptProps && (
+                        <div className="relative bg-white w-full items-center flex flex-col">
+                            {/* Header */}
+                            <header
+                                className="w-full bg-white text-gray-800 py-4 px-6 shadow-md border-t border-b border-gray-300"
+                                style={{ zIndex: 100 }}
                             >
-                                <option value="all" disabled>Group names</option>
-                                {/* Dynamically render group names */}
-                                {classes.map((group) => (
-                                    <option key={group.id} value={group.group_name}>
-                                        {group.group_name}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
+                                <div className="flex justify-between items-center">
+                                    <h1 className="text-lg font-medium text-gray-500">
+                                    {reviewManuscriptProps.man_doc_title || "No manuscript submission from the group."}
+                                    </h1>
 
-                        <div className="flex items-center space-x-2">
-                            {/* <label htmlFor="search" className="text-sm">
-                                Search:
-                            </label>
-                            <input
-                                id="search"
-                                type="text"
-                                className="p-2 rounded border border-gray-300 text-sm"
-                                placeholder="Search work..."
-                            /> */}
-                            <div className="pl-5 flex items-center">
-                                <Button
-                                    auto
-                                    bordered
-                                    color="error"
-                                    className="text-gray-600 font-semibold hover:text-blue-500 flex items-center"
-                                    onClick={closeViewModal}
-                                >
-                                    Close
-                                    <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        className="h-6 w-6 transform rotate-180 group-hover:text-blue-600"
-                                        fill="none"
-                                        viewBox="0 0 24 24"
-                                        stroke="currentColor"
-                                    >
-                                        <path
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            strokeWidth={2}
-                                            d="M15 19l-7-7 7-7"
-                                        />
-                                    </svg>
-                                </Button>
+                                    {/* Filter Options */}
+                                    <div className="flex space-x-6">
+                                        <div className="flex items-center space-x-2">
+                                            <label htmlFor="filter" className="text-sm">
+                                                Filter:
+                                            </label>
+                                            <select
+  onChange={(event) => handleGroupChange(event.target.value)}
+  className="rounded border border-gray-300 text-sm w-full"
+>
+  <option value="" disabled selected>Select a Group</option>
+  {classes.map((item) => (
+    <option key={item.group?.id} value={item.group?.id}>
+      {item.group?.group_name}
+    </option>
+  ))}
+</select>
+                                        </div>
+
+                                        <div className="flex items-center space-x-2">
+                                            {/* <label htmlFor="search" className="text-sm">
+                                                Search:
+                                            </label>
+                                            <input
+                                                id="search"
+                                                type="text"
+                                                className="p-2 rounded border border-gray-300 text-sm"
+                                                placeholder="Search work..."
+                                            /> */}
+                                            <div className="pl-5 flex items-center">
+                                                <Button
+                                                    auto
+                                                    bordered
+                                                    color="error"
+                                                    className="text-gray-600 font-semibold hover:text-blue-500 flex items-center"
+                                                    onClick={closeViewModal}
+                                                >
+                                                    Close
+                                                    <svg
+                                                        xmlns="http://www.w3.org/2000/svg"
+                                                        className="h-6 w-6 transform rotate-180 group-hover:text-blue-600"
+                                                        fill="none"
+                                                        viewBox="0 0 24 24"
+                                                        stroke="currentColor"
+                                                    >
+                                                        <path
+                                                            strokeLinecap="round"
+                                                            strokeLinejoin="round"
+                                                            strokeWidth={2}
+                                                            d="M15 19l-7-7 7-7"
+                                                        />
+                                                    </svg>
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </header>
+
+                            {/* Content of the Modal */}
+                            <div className="w-full">
+                                <ReviewManuscript
+                                groupId={reviewManuscriptProps.group_id}
+                                    folders={folders}
+                                    onBack={onBack}
+                                    task={task}
+                                    taskID={taskID}
+                                    closeModal={closeModal}
+                                    classes={classes} // Pass the fetched data
+                                    manuscript = {reviewManuscriptProps}
+                                    {...reviewManuscriptProps}
+                                    fileUrl={reviewManuscriptProps.man_doc_content}
+                                />
                             </div>
                         </div>
-                    </div>
-                </div>
-            </header>
-
-            {/* Content of the Modal */}
-            <div className="w-full">
-                <ReviewManuscript
-                    folders={folders}
-                    onBack={onBack}
-                    task={task}
-                    taskID={taskID}
-                    closeModal={closeModal}
-                    classes={classes} // Pass the fetched data
-                    manuscript = {reviewManuscriptProps}
-                    {...reviewManuscriptProps}
-                />
-            </div>
-        </div>
-    )}
-</ViewModal>
+                    )}
+                </ViewModal>
 
 
-{isShowMembersModalOpen && hoveredClass && (
-    <Modal isOpen={isShowMembersModalOpen} onClose={handleModalClose2}>
-        <ModalContent>
-            <button
-                disabled={true}
-                className="bg-gray-300 text-gray py-2 text-gray-500 px-4 font-bold rounded w-full"
-            >
-                Members
-            </button>
-            <div className="flex flex-col items-center justify-center p-6 rounded-lg shadow-md">
-                <h5 className="mb-4 text-center font-bold text-gray-500">
-                    {hoveredClass.man_doc_title || "No manuscript submission from the group."}
-                </h5>
-                {error && <p className="text-red-500">{error}</p>}
-                {isMembersLoading ? (
-                    // Customized Skeleton
-                    <div className="flex flex-col space-y-2 w-full">
-                        {/* Title Skeleton */}
-                        <Skeleton className="mb-2 w-full h-6" />
-                        <Skeleton className="mb-2 w-full h-6" />
-                        <Skeleton className="mb-2 w-full h-6" />
-                        <Skeleton className="mb-2 w-full h-6" />
-                        <Skeleton className="mb-2 w-full h-6" />
-                    </div>
-                ) : members.length > 0 ? (
-                    members.map(member => (
-                        <p key={member.user.id} className="mb-2 text-gray-600">{member.user.name}</p>
-                    ))
-                ) : (
-                    <p className="mb-2 text-gray-600">No members found.</p>
+                {isShowMembersModalOpen && hoveredClass && (
+                    <Modal isOpen={isShowMembersModalOpen} onClose={handleModalClose2}>
+                        <ModalContent>
+                            <button
+                                disabled={true}
+                                className="bg-gray-300 text-gray py-2 text-gray-500 px-4 font-bold rounded w-full"
+                            >
+                                Members
+                            </button>
+                            <div className="flex flex-col items-center justify-center p-6 rounded-lg shadow-md">
+                                <h5 className="mb-4 text-center font-bold text-gray-500">
+                                    {hoveredClass.man_doc_title || "No manuscript submission from the group."}
+                                </h5>
+                                {error && <p className="text-red-500">{error}</p>}
+                                {isMembersLoading ? (
+                                    // Customized Skeleton
+                                    <div className="flex flex-col space-y-2 w-full">
+                                        {/* Title Skeleton */}
+                                        <Skeleton className="mb-2 w-full h-6" />
+                                        <Skeleton className="mb-2 w-full h-6" />
+                                        <Skeleton className="mb-2 w-full h-6" />
+                                        <Skeleton className="mb-2 w-full h-6" />
+                                        <Skeleton className="mb-2 w-full h-6" />
+                                    </div>
+                                ) : members.length > 0 ? (
+                                    members.map(member => (
+                                        <p key={member.user.id} className="mb-2 text-gray-600">{member.user.name}</p>
+                                    ))
+                                ) : (
+                                    <p className="mb-2 text-gray-600">No members found.</p>
+                                )}
+                            </div>
+                        </ModalContent>
+                    </Modal>
                 )}
-            </div>
-        </ModalContent>
-    </Modal>
-)}
 
                 {/* Add other modals if necessary */}
             </div>

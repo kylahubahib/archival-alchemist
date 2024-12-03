@@ -41,7 +41,7 @@ export default function Tags({ auth }) {
         >
             <Head title="Tags" />
 
-            <div className="bg-white rounded m-4 h-screen rounded-xl ">
+            <div className="bg-white rounded m-4 h-screen ">
                 <div className="rounded h-full items-center justify-center">
                     <div className="overflow-hidden shadow-sm sm:rounded-lg p-10">
                         {/* Set up a 6-column grid */}

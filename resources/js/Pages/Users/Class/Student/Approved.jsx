@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import Manuscript from '@/Components/Manuscripts/MyManuscript';
+import MyManuscript from '@/Components/Manuscripts/MyManuscript';
 
 
-const Approved = () => {
+const Approved = (auth, user) => {
     const [manuscripts, setManuscripts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -13,6 +13,7 @@ const Approved = () => {
             .then(response => {
                 setManuscripts(response.data);
                 setLoading(false);
+                console.log("These are the approved manuscripts: ", response.data)
             })
             .catch(error => {
                 console.error('Error fetching manuscripts:', error);
@@ -28,7 +29,7 @@ const Approved = () => {
     //if (manuscripts.length === 0) return <div>No approved manuscripts available.</div>;
 
     // <div className="flex flex-col items-start justify-start w-h-screen  relative w-relative px-10">
-    return<div className="flex   relative w-relative px-10"><Manuscript manuscripts={manuscripts} /></div>;
+    return<div className="flex   relative w-relative px-10"><MyManuscript auth={auth} user={auth.user} manuscripts={manuscripts} /></div>;
 };
 
 export default Approved;

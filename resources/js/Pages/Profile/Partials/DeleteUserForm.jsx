@@ -46,25 +46,24 @@ export default function DeleteUserForm({ className = '' }) {
     return (
         <section className={`space-y-6 ${className}`}>
             <header>
-                <h2 className="text-lg font-medium text-gray-900">Delete Account</h2>
+                <h2 className="text-lg font-medium text-gray-900">Deactivate Account</h2>
 
                 <p className="mt-1 text-sm text-gray-600">
-                    Once your account is deleted, all of its resources and data will be permanently deleted. Before
-                    deleting your account, please download any data or information that you wish to retain.
+                Once you deactivate your account, you won’t be able to log in, send, or receive messages. Other users may not see your profile or be able to contact you. However, your previous messages may remain visible to those you’ve interacted with. You can always reactivate your account by logging back in to restore full functionality.
                 </p>
             </header>
 
-            <DangerButton onClick={confirmUserDeletion}>Delete Account</DangerButton>
+            <DangerButton onClick={confirmUserDeletion}>Deactivate Account</DangerButton>
 
             <Modal show={confirmingUserDeletion} onClose={closeModal}>
                 <form onSubmit={deleteUser} className="p-6">
                     <h2 className="text-lg font-medium text-gray-900">
-                        Are you sure you want to delete your account?
+                        Are you sure you want to deactivate your account?
                     </h2>
 
                     <p className="mt-1 text-sm text-gray-600">
-                        Once your account is deleted, all of its resources and data will be permanently deleted. Please
-                        enter your password to confirm you would like to permanently delete your account.
+                    You can reactivate your account anytime by logging in with your credentials. Please
+                        enter your password to confirm you would like to deac your accoutivate your accout nt.
                     </p>
 
                     <div className="mt-6">
@@ -89,7 +88,7 @@ export default function DeleteUserForm({ className = '' }) {
                         <SecondaryButton onClick={closeModal}>Cancel</SecondaryButton>
 
                         <DangerButton className="ms-3" disabled={processing}>
-                            Delete Account
+                            Deactivate Account
                         </DangerButton>
                     </div>
                 </form>

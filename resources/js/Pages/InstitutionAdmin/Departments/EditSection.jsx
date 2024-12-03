@@ -39,17 +39,17 @@ export default function EditSections({isOpen, onClose, section, sections}) {
                 },
             });
         }
-        
+
     };
 
     const closeClick = () => {
         setErrorMessage(null);
         onClose();
     }
-    
+
 
     return (
-      
+
         <Modal show={isOpen} onClose={closeClick}>
                 <div className="bg-customBlue p-3" >
                     <h2 className="text-xl text-white font-bold">Edit Section</h2>

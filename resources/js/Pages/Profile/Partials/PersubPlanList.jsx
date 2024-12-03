@@ -43,7 +43,7 @@ export default function PersonalSubscriptionPlanList({}) {
             const response = await axios.post('/payment', { plan_id: planId });
 
             if (response.data.checkout_url) {
-                
+
                 // Redirect the user to PayMongo's checkout page
                 window.location.href = response.data.checkout_url;
             }
@@ -65,7 +65,7 @@ export default function PersonalSubscriptionPlanList({}) {
        <>
         <div className="py-8 px-4 mx-auto max-w-screen-xl lg:py-5 lg:px-6">
             <div className="flex flex-col space-x-5">
-                
+
                 <div className="mt-8">
                     <div className="space-y-8 lg:grid lg:grid-cols-3 sm:gap-6 xl:gap-10 lg:space-y-0">
                         {plans.map((plan) => (
@@ -90,8 +90,8 @@ export default function PersonalSubscriptionPlanList({}) {
                                 </ul>
 
                                 <div className="mt-auto px-4">
-                                
-                                    <button 
+
+                                    <button
                                         className={`w-full block text-white bg-customBlue hover:bg-blue-900 focus:ring-4 focus:ring-primary-200 font-medium rounded-lg text-sm px-5 py-2.5 text-center ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
                                         onClick={() => handleCheckout(plan.id)}
                                         disabled={loading}

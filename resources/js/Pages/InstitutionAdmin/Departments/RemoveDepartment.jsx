@@ -5,15 +5,15 @@ import axios from 'axios';
 import { router } from '@inertiajs/react';
 
 export default function RemoveDepartment({ isOpen, onClose, selectedDept, departments }) {
-    const [choices, setChoices] = useState(false); 
+    const [choices, setChoices] = useState(false);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         if (selectedDept) {
-            setLoading(true); 
+            setLoading(true);
             axios.get('get-courses', {params: { id: selectedDept.id }}).then(response => {
                 setChoices(response.data.courses.data.length > 0);
-                setLoading(false); 
+                setLoading(false);
             }).catch(error => {console.error("Error fetching courses:", error);})
         }
     }, [selectedDept]);
@@ -50,40 +50,6 @@ export default function RemoveDepartment({ isOpen, onClose, selectedDept, depart
             {/* Show loading spinner or message while fetching data */}
             {loading ? (
                 <div className="p-6 text-center"><Spinner /></div>
-            ) : choices ? (
-                <div>
-                    <div className="p-6 pb-3 space-y-5">
-                        This department has courses associated with it. Before deleting, will you:
-                    </div>
-
-                    <div className="p-6 flex flex-row justify-between items-center">
-                        {/* Reassign courses to a different department */}
-                        <div>
-                            <Dropdown>
-                                <DropdownTrigger>
-                                    <Button variant="bordered" color="primary">REASSIGN TO ANOTHER DEPARTMENT</Button>
-                                </DropdownTrigger>
-                                <DropdownMenu
-                                    aria-label="Departments"
-                                    items={departments.filter(dept => selectedDept?.id && dept.id !== selectedDept.id)}
-                                >
-                                    {(dept) => (
-                                        <DropdownItem key={dept.id} onClick={() => handleReassign(dept.id)}>
-                                            {dept.dept_name}
-                                        </DropdownItem>
-                                    )}
-                                </DropdownMenu>
-                            </Dropdown>
-                        </div>
-
-                        <div>or</div>
-
-                        {/* Unassign the courses */}
-                        <div>
-                            <Button variant="bordered" color="danger" onClick={() => handleUnassigning(selectedDept.id)}>COURSES REMAIN UNASSIGNED</Button>
-                        </div>
-                    </div>
-                </div>
             ) : (
                 <div className="py-3 space-y-3">
                     <div className="p-6 pb-3 flex justify-center text-lg">

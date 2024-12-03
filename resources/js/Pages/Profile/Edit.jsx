@@ -6,7 +6,7 @@ import axios from 'axios';
 import { format } from 'date-fns';
 import Modal from '@/Components/Modal';
 import { MdMessage } from 'react-icons/md';
-import Repository from './Partials/Repository';
+import StudentRepository from '@/Pages/Users/Class/Student/Approved';
 import Posts from './Partials/Posts';
 import SubscriptionForm from './Partials/SubscriptionForm';
 import { Accordion, AccordionItem } from '@nextui-org/react';
@@ -25,7 +25,7 @@ export default function Edit({ auth, mustVerifyEmail, status }) {
     const [showErrorModal, setShowErrorModal] = useState(false);
     const [showConfirmModal, setShowConfirmModal] = useState(false);
 
-    
+
 
     const { data, setData, post, processing, recentlySuccessful, errors, reset } = useForm({
         user_pic: null,
@@ -89,6 +89,7 @@ export default function Edit({ auth, mustVerifyEmail, status }) {
             user={auth.user}
             header={<h2 className="font-semibold text-xl text-gray-800 leading-tight">Profile</h2>}
             newProfile={profilePic}
+            searchProfile={true}
         >
             <Head title="Profile" />
 
@@ -173,10 +174,10 @@ export default function Edit({ auth, mustVerifyEmail, status }) {
 
                         <div className="mx-auto sm:px-6 lg:px-10 space-y-4">
 
-                            {auth.user.user_type === 'general_user' && <div className=" p-4 bg-white shadow sm:rounded-lg m-2">
+                            {/* {auth.user.user_type === 'general_user' && <div className=" p-4 bg-white shadow sm:rounded-lg m-2">
                                 <ChooseARole className="max-w-xl" user={auth.user}/>
                             </div>
-                            }
+                            } */}
 
                             <div className=" p-4 bg-white shadow sm:rounded-lg m-2">
                                 <SubscriptionForm className="max-w-xl" user={auth.user}/>
@@ -222,7 +223,7 @@ export default function Edit({ auth, mustVerifyEmail, status }) {
 
 
                             <div className="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
-                                <Repository className="max-w-xl" />
+                                <StudentRepository auth={auth} user={auth.user} className="max-w-xl" />
                             </div>
 
                         </div>

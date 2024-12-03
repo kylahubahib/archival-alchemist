@@ -288,5 +288,10 @@ class TermsAndConditionController extends Controller
     return redirect(route('manage-terms-and-conditions.index'))->with('success', 'Status updated.');
     }
 
+    public function terms_and_conditions()
+    {
+        return Inertia::render('TermsandConditions');
+    }
+
 
 }

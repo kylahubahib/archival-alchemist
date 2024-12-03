@@ -11,13 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('courses', function (Blueprint $table) {
-            $table->string('course_acronym')->nullable();
-        });
+        // Schema::table('courses', function (Blueprint $table) {
+        //     $table->string('course_acronym')->nullable();
+        // });
 
-        Schema::table('departments', function (Blueprint $table) {
-            $table->string('dept_acronym')->nullable();
-        });
+        // Schema::table('departments', function (Blueprint $table) {
+        //     $table->string('dept_acronym')->nullable();
+        // });
 
     }
 
@@ -26,12 +26,12 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('courses', function (Blueprint $table) {
-            $table->dropColumn('course_acronym');
-        });
+        // Schema::table('courses', function (Blueprint $table) {
+        //     $table->dropColumn('course_acronym');
+        // });
 
-        Schema::table('departments', function (Blueprint $table) {
-            $table->dropColumn('dept_acronym');
-        });
+        // Schema::table('departments', function (Blueprint $table) {
+        //     $table->dropColumn('dept_acronym');
+        // });
     }
 };

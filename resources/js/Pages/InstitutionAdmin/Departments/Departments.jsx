@@ -289,6 +289,7 @@ export default function Departments({ auth, departments, uniBranch_id, branch}) 
                         <div className="flex flex-row space-x-2">
                             <button onClick={() => displayDepts()} className="flex items-center hover:text-customBlue"> <span>Departments</span></button>
                         </div>
+                        
                     </div>
 
                     <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg flex flex-col min-h-custom">
@@ -305,13 +306,14 @@ export default function Departments({ auth, departments, uniBranch_id, branch}) 
                                         className=" min-w-sm flex-1"
                                     />
                                 </div>
-                              
-                                {/* Adding a new department */}
+
+                                 {/* Adding a new department */}
                                 <div>
                                     <AddButton onClick={openCreateModal} className="text-customBlue hover:text-white space-x-1">
                                         <FaPlus /><span>Add Department</span>
                                     </AddButton> 
                                 </div> 
+                               
                             </div>
                             
                             {/* Department List */}
@@ -391,30 +393,14 @@ export default function Departments({ auth, departments, uniBranch_id, branch}) 
                                         className=" min-w-sm flex-1"
                                     />
                                 </div>
-                                
-                                {/* <div className="relative">
-                                    <div className="absolute inset-y-0 rtl:inset-r-0 start-0 flex items-center ps-3 pointer-events-none">
-                                        <svg className="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
-                                            <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
-                                        </svg>
-                                    </div>
-                                    <input 
-                                        type="text" 
-                                        id="table-search-users" 
-                                        className="block pt-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg w-80 bg-gray-50 focus:ring-blue-500 focus:border-blue-500" 
-                                        placeholder="Search" 
-                                        value={wordEntered}
-                                        onChange={handleFilter}
-                                    />
-                                </div> */}
                                 <div className="flex flex-row items-center space-x-5">
                                     <AddButton onClick={openCreateModal} className="text-customBlue hover:text-white space-x-1">
                                         <FaPlus /><span>New Course</span>
                                     </AddButton>
 
-                                    <AddButton onClick={() => {assignCourseModal(selectedDept)}} className="text-customBlue hover:text-white space-x-1">
+                                    {/* <AddButton onClick={() => {assignCourseModal(selectedDept)}} className="text-customBlue hover:text-white space-x-1">
                                         <FaPlus /><span>Unassigned Course</span>
-                                    </AddButton>  
+                                    </AddButton>   */}
 
                                     <AddExistingCourse isOpen={isAddCourseModal} onClose={closeModal} deptId={selectedDept.id}/>
                                 </div> 
@@ -429,7 +415,8 @@ export default function Departments({ auth, departments, uniBranch_id, branch}) 
                                     shadow="sm"
                                     key={course.id}
                                     > 
-                                    <CardBody  onClick={() =>  displaySections(course)} className="cursor-pointer">
+                                    {/* onClick={() =>  displaySections(course)} */}
+                                    <CardBody className="cursor-pointer">
                                         <div className="w-full flex flex-row justify-between">
                                             <div className=" text-gray-600 font-semibold text-lg">{course.course_name} ({course.course_acronym})</div>
                                             <div className="relative flex justify-end items-center gap-2">
@@ -484,23 +471,6 @@ export default function Departments({ auth, departments, uniBranch_id, branch}) 
 
                     <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg flex flex-col min-h-custom p-5">
                         <div className="overflow-x-auto flex-grow px-5 pb-5 space-y-4 sm:px-5">
-                            {/* <div className="flex items-center justify-between flex-column md:flex-row flex-wrap space-y-4 mt-4 md:space-y-0 bg-white">
-                                <div className="relative">
-                                    <div className="absolute inset-y-0 rtl:inset-r-0 start-0 flex items-center ps-3 pointer-events-none">
-                                        <svg className="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
-                                            <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
-                                        </svg>
-                                    </div>
-                                    <input 
-                                        type="text" 
-                                        id="table-search-users" 
-                                        className="block pt-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg w-80 bg-gray-50 focus:ring-blue-500 focus:border-blue-500" 
-                                        placeholder="Search" 
-                                        value={wordEntered}
-                                        onChange={handleFilter}
-                                    />
-                                </div>
-                            </div> */}
                             <div className="grid lg:grid-cols-3 gap-5 md:grid-cols-2 grid-cols-1 pt-4">
                                 {filteredData.length > 0 ? (
                                     filteredData.map((section) => (

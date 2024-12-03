@@ -6,6 +6,12 @@ import axios from 'axios'; // Import Axios
 import Manuscript from '@/Components/Manuscripts/MyFavoriteManuscript';
 import {Skeleton} from "@nextui-org/skeleton";
 
+import { BookOpenIcon } from '@heroicons/react/24/outline';
+import Modal from '@/Components/Modal';
+import AllManuscript from '@/Components/Manuscripts/AllManuscript';
+import RecManuscript from '@/Components/Manuscripts/RecommendedManuscript';
+import SearchBar from '@/Components/SearchBars/LibrarySearchBar';
+
 export default function SavedList({ auth }) {
     const isAuthenticated = !!auth.user; // Check if user is authenticated
     const MainLayout = isAuthenticated ? AuthenticatedLayout : GuestLayout;
@@ -51,8 +57,13 @@ export default function SavedList({ auth }) {
                     </div>
                 ) : (
                     <div className="h-screen bg-white  m-4 rounded-xl">
-                        <Manuscript manuscripts={manuscripts} // Update this with actual data as needed
-                        user={auth.user} // Pass the user to Manuscript
+                        <Manuscript
+                    auth={auth}
+                            title="Favorite Manuscripts"
+                            description="A list of all available capstone manuscripts."
+                            manuscripts={manuscripts} // Pass manuscripts to Manuscript
+                            user={auth.user} // Pass the user to Manuscript
+                            //choice={choice} // Pass choice to Manuscript
                         /> {/* Pass the fetched manuscripts */}
                     </div>
                 )}

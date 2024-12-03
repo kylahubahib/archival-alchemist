@@ -13,15 +13,15 @@ class CreateChatifyMessagesTable extends Migration
      */
     public function up()
     {
-        Schema::create('ch_messages', function (Blueprint $table) {
-            $table->uuid('id')->primary();
-            $table->bigInteger('from_id');
-            $table->bigInteger('to_id');
-            $table->string('body',5000)->nullable();
-            $table->string('attachment')->nullable();
-            $table->boolean('seen')->default(false);
-            $table->timestamps();
-        });
+        // Schema::create('ch_messages', function (Blueprint $table) {
+        //     $table->uuid('id')->primary();
+        //     $table->bigInteger('from_id');
+        //     $table->bigInteger('to_id');
+        //     $table->string('body',5000)->nullable();
+        //     $table->string('attachment')->nullable();
+        //     $table->boolean('seen')->default(false);
+        //     $table->timestamps();
+        // });
     }
 
     /**
@@ -31,6 +31,6 @@ class CreateChatifyMessagesTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('ch_messages');
+        // Schema::dropIfExists('ch_messages');
     }
 }

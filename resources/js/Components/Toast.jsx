@@ -4,8 +4,8 @@ import 'react-toastify/dist/ReactToastify.css';
 export default function ToastNotification() {
     return (
         <ToastContainer
-            position="bottom-left"
-            autoClose={3000}
+            position="bottom-right"
+            autoClose={2000}
             hideProgressBar={false}
             // progressClassName={'!bg-customBlue'}
             newestOnTop={false}

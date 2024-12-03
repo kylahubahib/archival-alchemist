@@ -59,7 +59,7 @@
   <div id="pdf-container"></div>
 
   <!-- Modal for subscription -->
-  <div id="subscriptionModal" class="modal fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center hidden">
+  <div id="subscriptionModal" class="modal fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center ">
     <div class="modal-content bg-white p-6 rounded-lg max-w-sm text-center">
       <!-- Circle icon at the center -->
       <div class="icon-circle w-12 h-12 bg-green-500 text-white rounded-full flex items-center justify-center mx-auto mb-4">
@@ -152,27 +152,27 @@
       });
 
       // Optional: Navigation buttons for testing
-    //   const nextPageBtn = document.createElement('button');
-    //   nextPageBtn.textContent = 'Next Page';
-    //   document.body.appendChild(nextPageBtn);
+      // const nextPageBtn = document.createElement('button');
+      // nextPageBtn.textContent = 'Next Page';
+      // document.body.appendChild(nextPageBtn);
 
-    //   const prevPageBtn = document.createElement('button');
-    //   prevPageBtn.textContent = 'Previous Page';
-    //   document.body.appendChild(prevPageBtn);
+      // const prevPageBtn = document.createElement('button');
+      // prevPageBtn.textContent = 'Previous Page';
+      // document.body.appendChild(prevPageBtn);
 
-      nextPageBtn.addEventListener('click', () => {
-        if (currentPage < totalPages) {
-          currentPage++;
-          renderPage(currentPage);
-        }
-      });
+      // nextPageBtn.addEventListener('click', () => {
+      //   if (currentPage < totalPages) {
+      //     currentPage++;
+      //     renderPage(currentPage);
+      //   }
+      // });
 
-      prevPageBtn.addEventListener('click', () => {
-        if (currentPage > 1) {
-          currentPage--;
-          renderPage(currentPage);
-        }
-      });
+      // prevPageBtn.addEventListener('click', () => {
+      //   if (currentPage > 1) {
+      //     currentPage--;
+      //     renderPage(currentPage);
+      //   }
+      // });
     });
 
     function openModal() {

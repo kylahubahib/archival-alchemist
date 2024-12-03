@@ -11,7 +11,7 @@ import SearchBar from '@/Components/SearchBar';
 import { Inertia } from "@inertiajs/inertia";
 import { toast } from 'react-toastify';
 import axios from 'axios';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import PostDetailModal from '@/Components/PostDetailModal';
 import { formatDistanceToNow } from 'date-fns';
 import Echo from 'laravel-echo'; 
@@ -21,6 +21,8 @@ import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 import relativeTime from "dayjs/plugin/relativeTime";
 import ReportModal from '@/Components/ReportModal';
+import { FaSearch } from "react-icons/fa"; // For the search icon
+
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -43,111 +45,148 @@ export default function Forum({ auth }) {
   const [postToDelete, setPostToDelete] = useState(null);
   const [selectedSort, setSelectedSort] = useState('latest');
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
-
-
-    
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+  const [filteredPosts, setFilteredPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');  // Search query state
 
   // Set up Axios CSRF token configuration globally
   axios.defaults.headers.common['X-CSRF-TOKEN'] = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
   axios.defaults.withCredentials = true;
 
-
   const formatPostDate = (dateString) => {
     const date = dayjs.utc(dateString).tz(dayjs.tz.guess()); // Adjust to local timezone
     return date.fromNow(); // Display as relative time, e.g., "5 minutes ago"
-};
+  };
 
-// Fetch posts with sorting option
-const fetchPosts = async (sortType = 'latest') => {
-  setLoading(true); // Start loading
-  try {
+  useEffect(() => {
+    if (!searchQuery) {
+      setFilteredPosts(posts);
+    }
+  }, [posts, searchQuery]);
+  
+
+  const handleSearchChange = (e) => {
+    const query = e.target.value.toLowerCase();
+    setSearchQuery(query);
+  
+    if (query) {
+      const filtered = posts.filter((post) => {
+        const author = post.user?.name?.toLowerCase() || '';
+        const title = post.title?.toLowerCase() || '';
+        const tags = post.tags?.map((tag) => tag.name.toLowerCase()).join(' ') || '';
+  
+        return author.includes(query) || title.includes(query) || tags.includes(query);
+      });
+  
+      setFilteredPosts(filtered);
+    } else {
+      setFilteredPosts(posts); // Reset to all posts when search query is cleared
+    }
+  };
+  
+
+  // Fetch posts with sorting option
+  const fetchPosts = async (sortType = 'latest') => {
+    setLoading(true); // Start loading
+    try {
       console.log(`Fetching posts with sort type: ${sortType}`);
       const response = await axios.get(`/forum-posts?sort=${sortType}`);
       console.log('Fetched posts:', response.data);
       setPosts(Array.isArray(response.data) ? response.data : []);
-  } catch (error) {
+      setFilteredPosts(Array.isArray(response.data) ? response.data : []);  // Initially set all posts to filteredPosts
+    } catch (error) {
       console.error('Error fetching posts:', error.response || error.message);
       setError(error.message || 'Something went wrong');
-  } finally {
+    } finally {
       setLoading(false);
-  }
-};
+    }
+  };
 
-
-// useEffect for fetching posts and setting up Pusher
-useEffect(() => {
+  // useEffect for fetching posts and setting up Pusher
+  useEffect(() => {
     fetchPosts(selectedSort); // Fetch posts with the selected sort option
 
     const echo = new Echo({
-        broadcaster: 'pusher',
-        key: 'ed777339e9944a0f909f',
+      broadcaster: 'pusher',
+      key: 'ed777339e9944a0f909f',
+      cluster: 'ap1',
+      forceTLS: true,
+      client: new Pusher('ed777339e9944a0f909f', {
         cluster: 'ap1',
-        forceTLS: true,
-        client: new Pusher('ed777339e9944a0f909f', {
-            cluster: 'ap1',
-            encrypted: true,
-        }),
+        encrypted: true,
+      }),
     });
 
     echo.channel('forum-posts').listen('NewPostCreated', (event) => {
-        setPosts((prevPosts) => [event.post, ...prevPosts]);
+      setPosts((prevPosts) => [event.post, ...prevPosts]);
     });
 
     return () => {
-        echo.disconnect();
+      echo.disconnect();
     };
-}, [selectedSort]); // Re-fetch when the selectedSort changes
+  }, [selectedSort]); // Re-fetch when the selectedSort changes
 
-// Handle sorting option change
-    const handleSortChange = (sortType) => {
-      setSelectedSort(sortType); // Update sort option and trigger refetch
-      fetchPosts(sortType); // Re-fetch posts based on selected sort option
-    };
-
+  // Handle sorting option change
+  const handleSortChange = (sortType) => {
+    setSelectedSort(sortType); // Update sort option and trigger refetch
+    fetchPosts(sortType); // Re-fetch posts based on selected sort option
+  };
 
   // Handle post submission
   const handlePostSubmit = async () => {
-      const newPost = {
-          title: title.trim(),
-          body: body.trim(),
-          tags: tags.map(tag => tag.trim()).filter(tag => tag !== ""),
-      };
-
-      try {
-          const response = await axios.post('/forum-posts', newPost);
-          if (response.status === 201) {
-              const postWithUserData = {
-                  ...response.data,
-                  user: auth.user,
-              };
-              setPosts([postWithUserData, ...posts]);
-              resetForm();
-              onOpenChange();
-              toast.success("Post created successfully!");
-              
-              // Optionally, you can call fetchPosts again here if needed
-              // fetchPosts(); 
-          }
-      } catch (error) {
-          handlePostError(error, newPost);
+    // Validate fields
+    if (!title.trim() || !body.trim() || tags.length === 0 || tags.every(tag => tag.trim() === "")) {
+      toast.warn("All fields are required!", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+      return; // Stop the submission process if validation fails
+    }
+  
+    const newPost = {
+      title: title.trim(),
+      body: body.trim(),
+      tags: tags.map(tag => tag.trim()).filter(tag => tag !== ""),
+    };
+  
+    try {
+      const response = await axios.post('/forum-posts', newPost);
+      if (response.status === 201) {
+        const postWithUserData = {
+          ...response.data,
+          user: auth.user,
+        };
+  
+        // Add the new post to both posts and filteredPosts
+        setPosts((prevPosts) => [postWithUserData, ...prevPosts]);
+        setFilteredPosts((prevFiltered) => [postWithUserData, ...prevFiltered]);
+  
+        resetForm(); // Clear the form fields
+        onOpenChange(); // Close the modal
+        toast.success("Post created successfully!");
       }
+    } catch (error) {
+      handlePostError(error, newPost);
+    }
   };
+  
+  
 
-    
+  // Render loading or error states
+  if (loading) return <div>Loading posts...</div>;
+  if (error) return <div>Error: {error}</div>;
 
-     // Render loading or error states
-     //if (loading) return <div>Loading posts...</div>;
-     if (error) return <div>Error: {error}</div>;
-    
-
-const handleTitleClick = async (postId) => {
-  try {
+  const handleTitleClick = async (postId) => {
+    try {
       const response = await fetch(`http://127.0.0.1:8000/posts/${postId}`);
-      
+
       if (!response.ok) {
-          throw new Error('Network response was not ok');
+        throw new Error('Network response was not ok');
       }
 
       const postDetails = await response.json(); // Parse JSON from response
@@ -155,31 +194,27 @@ const handleTitleClick = async (postId) => {
 
       // Update the view count in the posts array
       setPosts(posts.map(post =>
-          post.id === postId ? { ...post, viewCount: updatedViewCount } : post
+        post.id === postId ? { ...post, viewCount: updatedViewCount } : post
       ));
 
       showModal(postDetails); // Show modal with post details
-  } catch (error) {
+    } catch (error) {
       console.error("Error fetching post details:", error);
-  }
-};
+    }
+  };
 
+  // Open the modal with post details
+  const showModal = (postDetails) => {
+    setSelectedPost(postDetails); // Set the selected post details
+    setIsModalOpen(true); // Open the modal
+  };
 
-
-    // Open the modal with post details
-      const showModal = (postDetails) => {
-        setSelectedPost(postDetails); // Set the selected post details
-        setIsModalOpen(true); // Open the modal
-      };
-
-      // Close the modal
-      const closeModal = () => {
-        setIsModalOpen(false); // Close the modal
-        setSelectedPost(null); // Clear the selected post
-        setIsReportModalOpen(false);
-      };
-
-
+  // Close the modal
+  const closeModal = () => {
+    setIsModalOpen(false); // Close the modal
+    setSelectedPost(null); // Clear the selected post
+    setIsReportModalOpen(false);
+  };
 
   const handlePostError = async (error, newPost) => {
     if (error.response?.status === 419) {
@@ -260,13 +295,30 @@ const handleTitleClick = async (postId) => {
     }
   };
 
+  const handleSearchResults = (filteredPosts) => {
+    setFilteredPosts(filteredPosts);  // Update the filtered posts based on search results
+  };
+
   const handleReportPost = (postId) => {
     setSelectedPost(postId);
     setIsReportModalOpen(true);
-    // alert(`Post ${postId} has been reported.`);
-    // toast.info('Post ${postId} has been reported.');
   };
 
+  const handleStartDiscussion = () => {
+    if (!isAuthenticated) {
+      const proceed = window.confirm(
+        "You need to log in or register to start a discussion. Would you like to log in now?"
+      );
+      if (proceed) {
+        Inertia.visit('/login'); // Redirect to login
+      }
+      return;
+    }
+  
+    // If authenticated, open the modal
+    onOpenChange();
+  };
+  
   
   
   return (
@@ -302,13 +354,33 @@ const handleTitleClick = async (postId) => {
                   </DropdownMenu>
                 </Dropdown>
 
-                <SearchBar placeholder="Search..." />
+                {/* Search Bar */}
+                <div className="flex justify-between mb-6">
+  <div className="relative w-full max-w-lg">
+    <Input
+      value={searchQuery}
+      onChange={handleSearchChange}
+      placeholder="Search by title, author, or tags"
+      className="w-full px-5 py-3 rounded-lg shadow-md focus:ring-2 focus:ring-blue-500 transition-all duration-300"
+      startContent={<FaSearch className="text-gray-500" />}
+      endContent={searchQuery && (
+        <button
+          onClick={() => setSearchQuery('')}
+          className="text-gray-500 hover:text-gray-700 transition-colors"
+        >
+          ✕
+        </button>
+      )}
+    />
+  </div>
+</div>
+
 
                 <div className="ml-auto">
                   <Button
                     radius="full"
                     className="bg-gradient-to-r from-sky-400 to-blue-800 text-white w-60"
-                    onClick={onOpen}
+                    onClick={handleStartDiscussion}
                   >
                     Start Discussion
                   </Button>
@@ -318,8 +390,8 @@ const handleTitleClick = async (postId) => {
               <div className="flex flex-col items-center -mt-21 ml-32">
               { !loading ? (
                 <>
-              {Array.isArray(posts) && posts.length > 0 ? (
-                posts.map(post => {
+              {Array.isArray(filteredPosts) && filteredPosts.length > 0 ? (
+                filteredPosts.map(post => {
                   // Date formatting with error handling
                   let formattedDate;
                   try {
@@ -424,6 +496,7 @@ const handleTitleClick = async (postId) => {
               }
     </div>
   
+              
 
 
                     {/* Modal for displaying post details */}
@@ -448,6 +521,12 @@ const handleTitleClick = async (postId) => {
                 label="Title"
                 placeholder="Enter post title"
                 className="mb-4"
+                classNames={{
+                    base: "max-w-full",
+                    mainWrapper: "h-full",
+                    input: "text-small focus:outline-none border-transparent focus:border-transparent focus:ring-0",
+                    inputWrapper: "h-full font-normal text-default-500",
+                }}
               />
               <Textarea
                 value={body}
@@ -455,6 +534,12 @@ const handleTitleClick = async (postId) => {
                 label="Body"
                 placeholder="Enter post content"
                 className="mb-4"
+                classNames={{
+                    base: "max-w-full",
+                    mainWrapper: "h-full",
+                    input: "text-small focus:outline-none border-transparent focus:border-transparent focus:ring-0",
+                    inputWrapper: "h-full font-normal text-default-500",
+                }}
               />
               <Input
                 value={tagInput}
@@ -463,6 +548,12 @@ const handleTitleClick = async (postId) => {
                 label="Tags"
                 placeholder="Add a tag and press Enter"
                 className="mb-4"
+                classNames={{
+                    base: "max-w-full",
+                    mainWrapper: "h-full",
+                    input: "text-small focus:outline-none border-transparent focus:border-transparent focus:ring-0",
+                    inputWrapper: "h-full font-normal text-default-500",
+                }}
               />
               <div className="flex flex-wrap mt-2">
                 {tags.map((tag) => (

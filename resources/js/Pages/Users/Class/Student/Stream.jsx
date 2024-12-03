@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Card, Button } from '@nextui-org/react';
 import PreviewTask from '@/Pages/Users/Class/Student/PreviewTask';
 
-const Stream = ({ folders, onBack }) => {
+const Stream = ({ auth, user, folders, onBack }) => {
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -13,14 +13,14 @@ const Stream = ({ folders, onBack }) => {
 
   // Fetch tasks with pagination
   const fetchAssignedTasks = useCallback(async () => {
-    if (!folders || !folders[0]) return;  // Using the first folder object from the array
+    if (!folders || !folders) return;  // Using the first folder object from the array
 
     console.log("This is the folder:", folders);
-    console.log("This is the Section ID:", folders[0]?.section_id);
+    console.log("This is the Section ID:",folders.id);
 
     try {
       setLoading(true);
-      const response = await fetch(`/fetch-AssignedTask/${folders[0]?.section_id}?page=${page}`);
+      const response = await fetch(`/fetch-AssignedTask/${folders.id}?page=${page}`);
       if (!response.ok) throw new Error('Failed to fetch tasks');
 
       const data = await response.json();
@@ -35,7 +35,9 @@ const Stream = ({ folders, onBack }) => {
 
   useEffect(() => {
     fetchAssignedTasks();
-  }, [fetchAssignedTasks]);
+    console.log('FOLDERS: ', folders);
+
+  }, [fetchAssignedTasks, folders]);
 
   // Scroll event listener
   const handleScroll = () => {
@@ -104,16 +106,16 @@ const Stream = ({ folders, onBack }) => {
   ));
 
   // Access first folder from the folders array
-  const folder = folders[0]; // Assuming you want the first folder's details
-  const courseAcronym = folder?.course_acronym || 'Unknown Course';
-  const sectionName = folder?.section_name || 'Unknown Section';
+  const folder = folders; // Assuming you want the first folder's details
+  const courseAcronym = folder.course?.course_acronym || 'Unknown Course';
+  const sectionName = folder.section_name || 'Unknown Section';
 
   if (isPreviewMode) {
-    return <PreviewTask folders={folders} onBack={handleBackToStream} task={selectedTask} taskID={selectedTask?.id}/>;
+    return <PreviewTask auth={auth} user={user} folders={folders} onBack={handleBackToStream} task={selectedTask} taskID={selectedTask?.id}/>;
   }
 
   return (
-    <div className="mt-0 bg-gray-100 rounded-lg shadow-lg w-full">
+    <div className="mt-0 bg-gray-100 rounded-lg w-full">
       {/* Static Cover Photo Above All Cards with text overlays */}
       <div className="relative w-full h-48 mb-5">
         <img

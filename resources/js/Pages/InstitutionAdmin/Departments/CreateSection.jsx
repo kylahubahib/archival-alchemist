@@ -37,17 +37,17 @@ export default function CreateSections({isOpen, onClose, sections, courseId}) {
                 },
             });
         }
-        
+
     };
 
     const closeClick = () => {
         setErrorMessage(null);
         onClose();
     }
-    
+
 
     return (
-      
+
         <Modal show={isOpen} onClose={closeClick}>
                 <div className="bg-customBlue p-3" >
                     <h2 className="text-xl text-white font-bold">New Section</h2>

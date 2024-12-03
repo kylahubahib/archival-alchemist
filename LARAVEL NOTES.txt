@@ -594,6 +594,9 @@ php artisan storage:link
 php artisan route:list
 php artisan session:clear
 
+undo the pull
+git reset --hard ORIG_HEAD
+
 
 
 PS C:\xampp\htdocs\archival-alchemist-main> composer require maatwebsite/excel:^3.1.35 --with-all-dependencies

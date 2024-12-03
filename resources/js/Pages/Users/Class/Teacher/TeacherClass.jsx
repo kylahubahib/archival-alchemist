@@ -43,23 +43,52 @@ const [hoveredClass, setHoveredClass] = useState(null);
 const [members, setMembers] = useState([]);
 const [error, setError] = useState('');
 const [isMembersLoading, setIsMembersLoading] = useState(false);
+const [semesters, setSemesters] = useState([]);
+const [selectedSemester, setSelectedSemester] = useState('');
+const [dropdownVisible, setDropdownVisible] = useState(true); // Controls dropdown visibility
+
+useEffect(() => {
+    const fetchSemesters = async () => {
+      try {
+        // Fetch semesters from the backend
+        const response = await axios.get('/api/semesters'); // Adjust API route if necessary
+        const fetchedSemesters = response.data;
+
+        // Sort the semesters by `created_at` (assuming created_at is a valid timestamp)
+        const sortedSemesters = [...fetchedSemesters].sort(
+          (a, b) => new Date(b.created_at) - new Date(a.created_at)
+        );
+
+        setSemesters(sortedSemesters); // Update state with sorted semesters
+
+        // Automatically select the latest semester
+        if (sortedSemesters.length > 0) {
+          setSelectedSemester(sortedSemesters[0].id); // Set the default semester
+        }
+      } catch (err) {
+        setError('Failed to fetch semesters.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSemesters();
+  }, []);
 
 
+// Handle the selection change
+const handleChange = (event) => {
+    const selectedId = event.target.value;
+    setSelectedSemester(selectedId); // Set the selected semester ID to the state
+    console.log("Mao ni ang selected semester:", selectedId); // Log the selected ID
+  };
 
-// useEffect(() => {
-//     if (isShowMembersModalOpen && hoveredClass?.id) {
-//         const fetchMembers = async () => {
-//             try {
-//                 const response = await axios.get(`/groupmembers/${hoveredClass.id}`);
-//                 setMembers(response.data);
-//                 setError(''); // Clear any previous error
-//             } catch (err) {
-//                 setError('Failed to load members.'); // Handle error
-//             }
-//         };
-//         fetchMembers();
-//     }
-// }, [isShowMembersModalOpen, hoveredClass]);
+console.log("semesters:", semesters)
+
+
+useEffect(() => {
+    console.log("Updated selected semester ID:", selectedSemester);
+  }, [selectedSemester]);
 
 
 // Fetch members whenever hoveredClass changes
@@ -82,18 +111,6 @@ useEffect(() => {
     }
 }, [hoveredClass]); // Only depend on hoveredClass
 
-const handleMouseEnter = (classItem) => {
-    setHoveredClass(classItem);
-    setIsShowMembersModalOpen(true);
-};
-
-const handleModalClose2 = () => {
-    setIsShowMembersModalOpen(false);
-    setHoveredClass(null);
-};
-
-
-
 useEffect(() => {
     // Fetch students from the database to display suggestions when typing
     if (authorInputValue.length > 2) {
@@ -107,94 +124,6 @@ useEffect(() => {
     }
 }, [authorInputValue]);
 
-const handleAddStudent = async () => {
-    setIsLoading(true);
-    setErrorMessage(''); // Clear any previous error message
-
-    try {
-        const response = await axios.post('/classes/add-students', {
-            class_name: selectedClassName,
-            class_code: selectedClassCode,
-            ins_id: 32, // Pass the appropriate ins_id
-            students: users, // Assuming users is an array of student names
-        });
-
-        // Handle success response (e.g., close modal, refresh data)
-        closeModal();
-        setAuthors([]); // Clear authors after adding
-        setAuthorInputValue(''); // Clear input after adding
-
-        // You can also refresh the classes or show a success message
-    } catch (error) {
-        // Handle error (e.g., show error message)
-        console.error('Error adding students:', error);
-
-        // Check if error response exists and set the error message accordingly
-        if (error.response && error.response.data.message) {
-            setErrorMessage(error.response.data.message); // Set error message from the API
-        } else {
-            setErrorMessage('Failed to add students. Please try again.'); // Fallback error message
-        }
-    } finally {
-        setIsLoading(false);
-    }
-};
-
-
-    const openModal = (className, classCode) => {
-        setSelectedClassName(className);
-        setSelectedClassCode(classCode);
-        setIsModalOpen(true);
-    };
-
-    const closeModal = () => {
-        setIsModalOpen(false);
-        setAuthors([]); // Clear authors when closing modal
-        setAuthorInputValue(''); // Clear input when closing modal
-    };
-    // Other functions (handleAuthorKeyDown, fetchAuthorSuggestions, etc.) remain unchanged
-
-    const handleAuthorKeyDown = (e) => {
-        if (e.key === 'Enter' && e.target.value.trim() !== '') {
-            e.preventDefault(); // Prevent form submission on Enter
-            setAuthors([...users, e.target.value.trim()]);  // Update authors
-            setAuthorInputValue('');  // Clear input after adding author
-            setAuthorSuggestions([]); // Clear suggestions
-        }
-    };
-
-    const handleAuthorsRemove = (index) => {
-        setAuthors(users.filter((_, i) => i !== index));
-    };
-
-    const handleAuthorInputChange = (e) => {
-        const { value } = e.target;
-        setAuthorInputValue(value);
-        if (value.trim()) {
-            fetchAuthorSuggestions(value);
-        } else {
-            setAuthorSuggestions([]);
-        }
-    };
-
-
-    const fetchAuthorSuggestions = async (query) => {
-        try {
-            const response = await axios.get('/students/search', {
-                params: { name: query },
-            });
-            setAuthorSuggestions(response.data); // response.data should be an array of { id, name }
-        } catch (error) {
-            console.error('Error fetching Author suggestions:', error);
-            setAuthorSuggestions([]);
-        }
-    };
-
-    const handleAuthorSuggestionSelect = (suggestion) => {
-        setAuthors([...users, suggestion]);
-        setAuthorInputValue('');
-        setAuthorSuggestions([]);
-    };
 
 
     const fetchUpdatedManuscripts = async () => {
@@ -210,21 +139,6 @@ const handleAddStudent = async () => {
         }
     };
 
-    const handleStatusChange = async (id, status) => {
-        try {
-            const response = await axios.put(`/manuscripts/${id}/update-status`, {
-                status: status // 'Y' for Approve, 'X' for Decline
-            });
-
-            // Show success message or refresh data if needed
-            setMessage(`Manuscript status updated: ${response.data.message}`);
-
-            // Call the fetch function to update the table
-            await fetchUpdatedManuscripts(); // Fetch updated data
-        } catch (error) {
-            setMessage(`Failed to update status: ${error.response?.data?.message || error.message}`);
-        }
-    };
 
     const handleCreate = async () => {
         setIsLoading(true);
@@ -316,62 +230,6 @@ const handleAddStudent = async () => {
     }, [selectedClass]);
 
 
-    const staticData = [
-        { id: 1, dateCreated: '2024-10-01', dateUpdated: '2024-10-02', status: 'approved', title: 'ByteBuddies' },
-        { id: 2, dateCreated: '2024-10-03', dateUpdated: '2024-10-04', status: 'declined', title: 'GentleMatch' },
-        { id: 3, dateCreated: '2024-10-05', dateUpdated: '2024-10-06', status: 'in progress', title: 'ITMan' },
-        { id: 4, dateCreated: '2024-10-07', dateUpdated: '2024-10-08', status: 'norecords', title: 'New ITMan' },
-    ];
-
-    const getStatusButton = (status) => {
-        switch (status.toLowerCase()) {  // Make sure to handle case sensitivity
-            case 'approved':
-                return (
-                    <Button
-                        size="xs"
-                        color="success"
-                        radius="full"
-                        className="text-center text-[13px] p-1 h-auto min-h-0"
-                    >
-                        {status.charAt(0).toUpperCase() + status.slice(1)}
-                    </Button>
-                );
-            case 'declined':
-                return (
-                    <Button
-                        size="xs"
-                        color="danger"
-                        radius="full"
-                        className="text-center text-[13px] p-1 h-auto min-h-0"
-                    >
-                        {status.charAt(0).toUpperCase() + status.slice(1)}
-                    </Button>
-                );
-            case 'in progress':
-                return (
-                    <Button
-                        size="xs"
-                        color="warning"
-                        radius="full"
-                        className="text-center text-[13px] p-1 h-auto min-h-0"
-                    >
-                        {status.charAt(0).toUpperCase() + status.slice(1)}
-                    </Button>
-                );
-            default:
-                return (
-                    <Button
-                        size="xs"
-                        color="default"
-                        radius="full"
-                        className="text-center text-[13px] p-1 h-auto min-h-0"
-                    >
-                        {status.charAt(0).toUpperCase() + status.slice(1)}
-                    </Button>
-                );
-        }
-    };
-
 
     return (
         <AuthenticatedLayout
@@ -386,26 +244,54 @@ const handleAddStudent = async () => {
                 </div>
             }
         >
-        <div className="flex bg-white justify-start items-start w-h-screen mt-8 mx-8 border-b border-gray-300 ">
-        <Link
-            to="/teacherclass"
-            className="flex justify-start items-start my-3 mt-5 mx-5 w-full text-gray-700 text-2xl hover:underline hover:text-blue-500"
-        >
-        <div className="flex items-center space-x-10 border-gray-200">
-            <div className="pr-3">
-                <Avatar
-                    src="images/img1.png"
-                    alt="Teacher"
-                    size="8"
-                />
-            </div>
-            Alchemist Room
-        </div>
 
-        </Link>
-    </div>
+        {/* <div className="max-w-7xl mx-auto bg-white  flex justify-center h-screen items-center shadow-sm sm:rounded-lg sticky"> */}
+        <div className="flex bg-white justify-start  items-start w-h-screen mt-8 mx-8 border-b border-gray-300 ">
+            <Link
+                to="/teacherclass"
+                className="flex justify-start items-start my-3 mt-5 mx-5 w-full text-gray-700 text-2xl hover:underline hover:text-blue-500"
+            >
+            <div className="flex items-center space-x-10  border-gray-200">
+                <div className="pr-3">
+                    <Avatar
+                        src="images/img1.png"
+                        alt="Teacher"
+                        size="8"
+                    />
+                </div>
+                Alchemist Room
+            </div></Link>
+            <div className="m-4">
+            {dropdownVisible && (
+        <div>
+          {/* Dropdown Component */}
+          <select
+            className="w-[300px] px-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all duration-300 ease-in-out"
+            value={selectedSemester}
+            onChange={(e) => setSelectedSemester(e.target.value)}
+          >
+            <option value="" disabled>
+              Select a Semester
+            </option>
+            {semesters.map((semester) => (
+              <option key={semester.id} value={semester.id}>
+                {semester.name} {semester.school_year}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
+</div>
+
+
+
+        </div>
             {isCreating ? (
                 <CreateClassSection
+                setDropdownVisible={setDropdownVisible}
+        visible={dropdownVisible} // Control visibility
+                selectedSemester={selectedSemester}
+                semesters={semesters} // Passing fetched semesters here as a prop
                     onCreate={handleCreate}
                     className="flex justify-between items-center w-h-full"
                 />
@@ -415,214 +301,7 @@ const handleAddStudent = async () => {
                 </div>
             )}
 
-            <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg mx-8">
 
-                <div className="p-6 text-gray-900 w-full">
-
-                    <hr className="mb-4" />
-                    <>
-                        {/* Render selected class information */}
-                        {selectedClass && (
-                            <>
-                                <div className="flex items-center justify-between mb-4">
-                                    <div className="w-1/6">
-                                        <Button
-                                            color="primary"
-                                            variant="bordered"
-                                            onClick={() => setIsGroupModalOpen(true)}
-                                            startContent={<FontAwesomeIcon icon={faUser} />}
-                                        >
-                                            New Group Class
-                                        </Button>
-
-                                        <Modal
-                                            backdrop="opaque"
-                                            isOpen={isGroupModalOpen}
-                                            onOpenChange={handleModalClose}
-                                            classNames={{
-                                                backdrop: "bg-gradient-to-t from-zinc-900 to-zinc-900/10 backdrop-opacity-20",
-                                            }}
-                                        >
-                                            <ModalContent>
-                                                {(onClose) => (
-                                                    <>
-                                                        <ModalHeader className="flex flex-col gap-1">New Class Group</ModalHeader>
-                                                        <ModalBody>
-                                                            <div className="flex flex-col gap-4">
-                                                                <input
-                                                                    id="className"
-                                                                    type="text"
-                                                                    className={`border p-2 rounded-md ${!className ? 'border-red-500' : 'border-gray-300'}`}
-                                                                    placeholder="Enter class group name"
-                                                                    onChange={(e) => setClassName(e.target.value)}
-                                                                    value={className}
-                                                                />
-                                                            </div>
-                                                        </ModalBody>
-                                                        <ModalFooter>
-                                                            <Button
-                                                                color="primary"
-                                                                auto
-                                                                flat
-                                                                onClick={handleCreate}
-                                                                disabled={isLoading}
-                                                            >
-                                                                {isLoading ? 'Creating...' : 'Create'}
-                                                            </Button>
-                                                            <Button auto flat onClick={handleModalClose}>
-                                                                Close
-                                                            </Button>
-                                                        </ModalFooter>
-                                                    </>
-                                                )}
-                                            </ModalContent>
-                                        </Modal>
-                                    </div>
-                                    <div className="flex justify-end space-x-4">
-                                        <ClassDropdown ins_id={selectedClass.ins_id} onUpdate={fetchUpdatedManuscripts} />
-                                    </div>
-                                </div>
-                                <hr className="mb-4" />
-
-                                <div className="flex">
-                                    <div className="w-full">
-                                        <Table>
-                                            <TableHeader>
-                                                <TableColumn className="w-[10%] text-left">Class Name</TableColumn>
-                                                <TableColumn className="w-[60%] text-center">Title</TableColumn>
-                                                <TableColumn className="text-center">Created</TableColumn>
-                                                <TableColumn className="text-center">Updated</TableColumn>
-                                                <TableColumn className="text-center">Status</TableColumn>
-                                                <TableColumn className="text-center">Actions</TableColumn>
-                                            </TableHeader>
-
-                                            <TableBody>
-                                                {classes.map((classItem) => (
-                                                    <TableRow key={classItem.id}>
-                                                        <TableCell className="w-[10%] text-left">
-                                                            <span
-                                                                className="cursor-pointer text-blue-500 hover:underline"
-                                                                onMouseEnter={() => handleMouseEnter(classItem)}
-                                                            >
-                                                                {classItem.class_name}
-                                                            </span>
-                                                        </TableCell>
-                                                        <TableCell className="text-left">
-                                                            {classItem.man_doc_title || "No manuscript submission from the group."}
-                                                        </TableCell>
-                                                        <TableCell className="text-center">
-                                                            {new Date(classItem.created_at).toLocaleDateString() || "N/A"}
-                                                        </TableCell>
-                                                        <TableCell className="text-center">
-                                                            {new Date(classItem.updated_at).toLocaleDateString() || "N/A"}
-                                                        </TableCell>
-                                                        <TableCell className="text-center">
-                                                            {getStatusButton(classItem.man_doc_status || "norecords")}
-                                                        </TableCell>
-                                                        <TableCell className="text-center">
-                                                            <Dropdown>
-                                                                <DropdownTrigger>
-                                                                    <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-300 text-white">
-                                                                        <FontAwesomeIcon icon={faEllipsisV} />
-                                                                    </div>
-                                                                </DropdownTrigger>
-                                                                <DropdownMenu aria-label="Actions">
-                                                                    <DropdownItem key="code" onClick={() => handleStatusChange(classItem.id, 'X')}>Copy group code</DropdownItem>
-                                                                    <DropdownItem key="add" onClick={() => openModal(classItem.class_name, classItem.class_code)}>Add student</DropdownItem>
-                                                                    <DropdownItem key="approve" onClick={() => handleStatusChange(classItem.id, 'Y')}>Approve</DropdownItem>
-                                                                    <DropdownItem key="decline" onClick={() => handleStatusChange(classItem.id, 'X')}>Decline</DropdownItem>
-                                                                    <DropdownItem key="delete" className="text-danger" color="danger">Delete</DropdownItem>
-                                                                </DropdownMenu>
-                                                            </Dropdown>
-                                                        </TableCell>
-                                                    </TableRow>
-                                                ))}
-                                            </TableBody>
-                                        </Table>
-
-                                        {/* Modal for Adding Authors */}
-                                        <Modal isOpen={isModalOpen} onClose={closeModal}>
-                                            <ModalContent>
-                                                <ModalHeader>Add Student</ModalHeader>
-                                                <ModalBody>
-                                                    <div className="flex flex-col gap-4">
-                                                        <input
-                                                            type="text"
-                                                            placeholder="Enter authors name and press Enter"
-                                                            className="w-full p-2 border rounded mb-2"
-                                                            value={authorInputValue}
-                                                            onChange={handleAuthorInputChange}
-                                                            onKeyDown={handleAuthorKeyDown}
-                                                        />
-                                                        {errors.users && <div className="text-red-600 text-sm mb-2">{errors.users}</div>}
-                                                        {errorMessage && <div className="text-red-600 text-sm mb-2">{errorMessage}</div>} {/* Error message display */}
-
-                                                        {authorSuggestions.length > 0 && (
-                                                            <ul className="absolute bg-white border border-gray-300 mt-1 max-h-60 overflow-auto z-10 w-full">
-                                                                {authorSuggestions.map((suggestion, index) => (
-                                                                    <li
-                                                                        key={index}
-                                                                        className="p-2 cursor-pointer hover:bg-gray-200"
-                                                                        onClick={() => handleAuthorSuggestionSelect(suggestion.name)}
-                                                                    >
-                                                                        {suggestion.name}
-                                                                    </li>
-                                                                ))}
-                                                            </ul>
-                                                        )}
-
-                                                        <div className="tags-container flex flex-wrap mt-2">
-                                                            {users.map((author, index) => (
-                                                                <div key={index} className="tag bg-gray-200 p-1 rounded mr-2 mb-2 flex items-center">
-                                                                    {author}
-                                                                    <button
-                                                                        type="button"
-                                                                        className="ml-1 text-red-600"
-                                                                        onClick={() => handleAuthorsRemove(index)}
-                                                                    >
-                                                                        &times;
-                                                                    </button>
-                                                                </div>
-                                                            ))}
-                                                        </div>
-                                                    </div>
-                                                </ModalBody>
-                                                <ModalFooter>
-                                                    <Button color="primary" auto onClick={handleAddStudent} disabled={isLoading}>
-                                                        {isLoading ? 'Adding...' : 'Add'}
-                                                    </Button>
-                                                    <Button auto onClick={closeModal}>Close</Button>
-                                                </ModalFooter>
-                                            </ModalContent>
-                                        </Modal>
-
-                                        {isShowMembersModalOpen && hoveredClass && (
-                                            <Modal isOpen={isShowMembersModalOpen} onClose={handleModalClose2}>
-                                                <ModalContent>
-                                                    <button
-                                                        disabled={true}
-                                                        className="bg-gray-300 text-gray py-2 text-gray-500 px-5 cursor-auto rounded-md"
-                                                    >
-                                                        {hoveredClass.class_name}
-                                                    </button>
-                                                    <ModalBody className="p-5">
-                                                        <UserGroups classId={hoveredClass.id} />
-                                                    </ModalBody>
-                                                </ModalContent>
-                                            </Modal>
-
-
-
-                                        )}
-
-
-                                    </div>
-                                </div>
-                            </>
-                        )}
-                    </>
-                </div>
-            </div>
         </AuthenticatedLayout>
     );
 }

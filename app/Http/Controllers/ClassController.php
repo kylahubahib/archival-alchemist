@@ -4,12 +4,17 @@
 
 namespace App\Http\Controllers;
 
+
+use App\Models\Author;
 use App\Models\AssignedTask;
 use App\Models\Course;
+use App\Models\Faculty;
 use App\Models\Section;
+use App\Models\Semester;
 use App\Models\User;
 use App\Models\GroupMember;
 use App\Models\RevisionHistory;
+use App\Models\ManuscriptProject;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
@@ -17,37 +22,45 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
+
+use Google\Client as GoogleClient;
+use Google\Service\Drive as GoogleDrive;
+use Google\Service\Drive\DriveFile as GoogleDriveFile;
+use Google\Service\Drive\Permission;
+use App\Notifications\UserNotification;
+use App\Mail\TeachersFeedbackMail;
+use Illuminate\Support\Facades\Mail;
+
 class ClassController extends Controller
 {
+   
     public function fetchCourses(Request $request)
     {
         $user = Auth::user()->load('faculty');
+        $deptId = 1; // Default value for dept_id if no faculty is found
 
-        $deptId = null;
+        // Ensure we have at least one faculty record
+        if ($user->faculty->isNotEmpty()) {
+            // Access the first faculty record (or modify to select based on other conditions)
+            $faculty = $user->faculty->first();  // Or use some other condition to get the desired faculty
 
-        if($user->faculty)
-        {
-            $deptId = $user->faculty->dept_id;
+            $deptId = $faculty->dept_id;  // Now, dept_id is accessible on the Faculty model
         }
 
-        
-        // Log::info('Branch Id: ', (array)$user->faculty);
+        if (!$deptId) {
+            return response()->json(['error' => 'Department ID not found'], 400);
+        }
 
-        // $uniBranchId = $user->faculty->first()->uni_branch_id;
+        try {
+            // Fetch courses based on the dept_id
+            $courses = Course::where('dept_id', $deptId)->limit(25)->get();
+        } catch (\Exception $e) {
+            Log::error("Error fetching courses: " . $e->getMessage());
+            return response()->json(['error' => 'Error fetching courses'], 500);
+        }
 
-
-        // if($uniBranchId)
-        // {
-        //     $dept = Department::with('course')->where('uni_branch_id', $uniBranchId)->get();
-        //     Log::info('Department: ', $dept->toArray());
-        // }
-
-        // $courses = Course::where('dept_id', 1)->limit(25)->get();
-        $courses = Course::where('dept_id', $deptId)->limit(25)->get();
         return response()->json($courses);
     }
-
-
 
 
     public function storeSection(Request $request)
@@ -55,10 +68,13 @@ class ClassController extends Controller
         // Log the request data
         Log::info('Store Section Request Data:', $request->all());
 
+       // Log::info('Semester ID:', $request->query('sem_id'));
         $validatedData = $request->validate([
             'course_id' => 'required|integer|exists:courses,id', // Validate that course_id exists in courses table
             'subject_name' => 'required|string',
             'section_name' => 'required|string',
+            'sem_id' => 'required|integer|exists:semesters,id', // Validate sem_id exists in the semesters table
+
         ]);
 
         // Log the validated data
@@ -66,6 +82,7 @@ class ClassController extends Controller
         Log::info('Checking for duplicate section', [
             'course_id' => $validatedData['course_id'],
             'subject_name' => $validatedData['subject_name'],
+            'sem_id' =>  $validatedData['sem_id'],
             'ins_id' => Auth::id() // Log the logged-in user's ID as well
         ]);
 
@@ -89,6 +106,7 @@ class ClassController extends Controller
             $section->subject_name = $validatedData['subject_name'];
             $section->section_name = $validatedData['section_name'];
             $section->section_classcode = $classcode;
+            $section->sem_id = $validatedData['sem_id'];
             $section->ins_id = Auth::id();
             $section->save();
 
@@ -132,14 +150,18 @@ class ClassController extends Controller
     public function fetchClasses(Request $request)
     {
         try {
-            
-            $classes = Section::with(['course'])->where('ins_id', Auth::id())->get();
 
-            // $classes = Section::join('courses', 'sections.course_id', '=', 'courses.id')
-            // ->where('sections.ins_id', Auth::id())
-            // ->select('sections.*', 'courses.*')
-            // ->get();
+           // $classes = Section::with(['course'])->where('ins_id', Auth::id())->get();
 
+        // Capture the semID from the request (either query or request body)
+        
+        $semID = $request->query('sem_id'); // sem_id sent from the frontend
+
+        //Fetch classes for the authenticated user and filter by sem_id (semester ID)
+        $classes = Section::with(['course'])   // Eager load the related course model
+            ->where('ins_id', Auth::id())      // Filter by the authenticated instructor's ID
+            ->where('sem_id', $semID)          // Filter by the semID passed from the frontend
+            ->get();
 
             return response()->json($classes);
         } catch (\Exception $e) {
@@ -172,7 +194,7 @@ class ClassController extends Controller
             // Find the section by instructor ID and section_classcode
             //Remove the where('ins_id', $instructorId) since id of section is already unique
             $section = Section::where('id', $section_id)->first();
-                                
+
             Log::info('Section Found: ', (array)$section);
 
             if ($section) {
@@ -271,7 +293,7 @@ class ClassController extends Controller
         $user = Auth::user();
         Log::info('Authenticated user found: ' . $user->id);
 
-        
+
         return response()->json($user);
     }
 
@@ -332,11 +354,30 @@ class ClassController extends Controller
     }
 
 
+    // public function fetchAssignedTask($section_id)
+    // {
+    //     Log::info('STudent tas ID:', ['id' => 1]);
+
+    //     Log::info('Task accessed with GET method');
+
+    //     // Retrieve all tasks assigned to the given section_id
+    //     $tasks = AssignedTask::where('section_id', $section_id) // Filter tasks by section_id
+    //         ->select('id','task_title', 'task_instructions', 'task_startdate', 'task_duedate', 'section_id') // Only select required columns
+    //         ->get(); // Retrieve all tasks for the given section_id
+
+    //     // Log the retrieved tasks
+    //     Log::info('Tasks Retrieved', ['tasks' => $tasks->toArray()]);
+
+    //     return response()->json($tasks); // Return the tasks as a JSON response
+    // }
+
+
     public function fetchAssignedTask($section_id)
     {
         Log::info('STudent tas ID:', ['id' => 1]);
 
-        Log::info('Task accessed with GET method');
+    // Log the section_id with proper context as an array
+    Log::info('Task accessed with GET method', ['section_id' => $section_id]);
 
         // Retrieve all tasks assigned to the given section_id
         $tasks = AssignedTask::where('section_id', $section_id) // Filter tasks by section_id
@@ -392,7 +433,11 @@ class ClassController extends Controller
 
             $history->save();
 
+            $this->returnStudentWork($request->manuscript_id, $validatedData['status'], $validatedData['comment']);
+
             return response()->json(['success' => true, 'message' => 'Feedback stored successfully']);
+
+
         } catch (\Exception $e) {
             // Handle any exception that may occur
             Log::error('Error storing feedback:', ['error' => $e->getMessage()]);
@@ -441,12 +486,6 @@ class ClassController extends Controller
         Log::info('Retrieved History Data:', ['getHistory' => $getHistory->toArray()]);
         return response()->json($getHistory);
     }
-
-
-
-
-
-
 
     //STUDENT
 
@@ -515,18 +554,20 @@ class ClassController extends Controller
 
         try {
             // Enable query log to capture the actual SQL query
-            DB::enableQueryLog();
 
             // Fetch classes with proper joins
-            $classes = Section::join('group_members', 'sections.id', '=', 'group_members.section_id')
-            ->join('courses', 'courses.id', '=', 'sections.course_id')
-            ->where('group_members.stud_id', Auth::id())
-            ->select('sections.*', 'courses.*', 'group_members.*')
-            ->get();
+            // $classes = Section::join('group_members', 'sections.id', '=', 'group_members.section_id')
+            // ->join('courses', 'courses.id', '=', 'sections.course_id')
+            // ->where('group_members.stud_id', Auth::id())
+            // ->select('sections.*', 'courses.*', 'group_members.*')
+            // ->get();
 
+            $section_ids = GroupMember::where('stud_id', Auth::id())->pluck('section_id');
 
-            // Log the SQL query for debugging
-            Log::info('SQL Query: ' . DB::getQueryLog()[0]['query']);
+            $classes = Section::with(['course', 'group'])->whereIn('id', $section_ids)->get();
+
+            Log::info(Section::with(['course', 'group'])->whereIn('id', $section_ids)->get());
+
 
             // Log the fetched data for debugging
             Log::info('Fetched student classes:', $classes->toArray());
@@ -542,6 +583,250 @@ class ClassController extends Controller
         }
     }
 
+
+
+    public function getRecords(Request $request)
+    {
+        try {
+            // Fetch the uni_branch_id for the authenticated user directly
+            $facultyRecord = Faculty::where('user_id', Auth::id())->first(); // Fetch the first record for the authenticated user
+
+            // If the faculty record is not found, return an error
+            if (!$facultyRecord) {
+                return response()->json(['message' => 'Faculty record not found'], 404);
+            }
+
+            $uni_ID = $facultyRecord->uni_branch_id; // Get the uni_branch_id
+
+            // Fetch the semesters where the uni_branch_id matches
+            $semester = Semester::where('uni_branch_id', $uni_ID)->get();
+
+            // Return the semesters as a JSON response
+            return response()->json($semester, 200);
+
+        } catch (\Exception $e) {
+            // Handle error and return a response
+            return response()->json(['message' => 'Error fetching semester records', 'error' => $e->getMessage()], 500);
+        }
+    }
+
+
+
+    // public function getUniID(Request $request)
+    // {
+    //     try {
+    //         // Fetch the uni_branch_id where the user_id matches the authenticated user's ID
+    //         $facultyRecord = Faculty::where('user_id', Auth::id())->first(); // Fetch the first record for the authenticated user
+
+    //         // Check if the record is found
+    //         if ($facultyRecord) {
+    //             return response()->json(['uni_branch_id' => $facultyRecord->uni_branch_id], 200);
+    //         } else {
+    //             return response()->json(['message' => 'Faculty record not found'], 404);
+    //         }
+
+    //     } catch (\Exception $e) {
+    //         // Handle error and return a response
+    //         return response()->json(['message' => 'Error fetching uni_branch_id from faculty table', 'error' => $e->getMessage()], 500);
+    //     }
+    // }
+
+
+
+        /**
+     * Fetch manuscripts by group ID.
+     *
+     * @param  int  $groupId
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getManuscriptsByGroup($groupId)
+    {
+        // Validate the input to ensure groupId is numeric
+        if (!is_numeric($groupId)) {
+            return response()->json(['error' => 'Invalid group ID'], 400);
+        }
+        // Fetch manuscripts associated with the group ID
+        $manuscripts = ManuscriptProject::where('group_id', $groupId)->get();
+
+        // Return the manuscripts as JSON
+        return response()->json($manuscripts);
+    }
+
+
+    public function getgroupID()
+    {
+        // Fetch Group associated with the users ID
+        $grouprecord = GroupMember::where('stud_id', Auth::id())->get();
+
+        // Return the students record in group table as JSON
+        return response()->json($grouprecord);
+    }
+
+    
+    private function returnStudentWork($manuscriptId, $feedbackStatus, $feedbackComment)
+    {
+        // $manuscriptId = $request->get('manuscript_id');
+        Log::info("Starting 'sendForRevision' process for manuscript ID: $manuscriptId");
+    
+        // Find the manuscript
+        $manuscript = ManuscriptProject::find($manuscriptId);
+    
+        if (!$manuscript || empty($manuscript->man_doc_adviser)) {
+            Log::warning("Manuscript not found or invalid data. Manuscript ID: $manuscriptId");
+            return response()->json(['error' => 'Manuscript not found or invalid data.'], 404);
+        }
+    
+        $manuscript->update(['man_doc_status' => $feedbackStatus]);
+        $googleDocUrl = $manuscript->man_doc_content;
+        $googleDocId = $this->extractGoogleDocId($googleDocUrl);
+    
+        if (!$googleDocId) {
+            Log::warning("Invalid Google Doc URL for manuscript ID: $manuscriptId");
+            return response()->json(['error' => 'Invalid Google Doc URL.'], 400);
+        }
+        $keyFilePath = storage_path('app/document-management-438910-d2725c4da7e7.json');
+
+        // Initialize Google Client
+        $client = new GoogleClient();
+        $client->setAuthConfig($keyFilePath);
+        $client->addScope(GoogleDrive::DRIVE_FILE);
+        $client->setSubject('file-manager@document-management-438910.iam.gserviceaccount.com');
+
+        $driveService = new GoogleDrive($client);
+        
+    
+        $authors = Author::with('user')->where('man_doc_id', $manuscriptId)->get();
+        // $emails = $authors->pluck('user.email')->toArray();
+
+        switch($feedbackStatus) {
+            case 'A':
+                $feedbackStatus = 'Approved';
+                break;
+            case 'D':
+                $feedbackStatus = 'Declined';
+                break;
+        }
+
+
+        foreach ($authors as $author) {
+            $email = $author->user->email;
+            $permId = $author->permission_id;
+            $user = $author->user;
+
+            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                Log::warning('Invalid Email Address:', ['email' => $email]);
+                continue;
+            }
+    
+            if ($user) {
+                $user->notify(new UserNotification([
+                    'message' => "Your adviser has finished reviewing your manuscript titled '{$manuscript->man_doc_title}'. The current status of your manuscript is '{$feedbackStatus}'.",
+                    'user_id' => $user->id
+                ]));
+            }
+
+            Mail::to($user->email)->send(new TeachersFeedbackMail([
+                'name' => $user->name,
+                'manuscriptTitle' => $manuscript->man_doc_title,
+                'feedbackStatus' => $feedbackStatus,
+                'feedbackComment' => $feedbackComment
+            ]));
+
+            if($feedbackStatus === 'Approved')
+            {
+                $this->convertGoogleDocToPdf($driveService, $googleDocId, $manuscript->man_doc_title, $manuscript->id);
+                return;
+            }
+            
+           
+            try {
+                // Fetch existing permissions
+                $permissions = $driveService->permissions->listPermissions($googleDocId);
+                Log::info("Existing Permissions: ", ['permissions' => $permissions]);
+    
+                $permissionFound = false;
+    
+                // Delete the existing permission if found
+                foreach ($permissions as $permission) {
+                    if ($permission->getId() === $permId) {
+                        $driveService->permissions->delete($googleDocId, $permission->getId());
+                        Log::info("Deleted existing permission for: $email");
+                        Log::info("Permission Id:", ['permissions' => $permission->getId()]);
+                        Log::info("Permission Id in Author Table:", ['permissions' => $permId]);
+                        
+                        $permissionFound = true;
+                        break;
+                    }
+                }
+
+                // Create a new permission for the user
+                $newPermission = new Permission();
+                $newPermission->setType('user');
+                $newPermission->setRole('writer');
+                $newPermission->setEmailAddress($email);
+                $driveService->permissions->create($googleDocId, $newPermission, ['sendNotificationEmail' => false]);
+                Log::info("Created new 'writer' permission for: $email");
+    
+                // If no permission found, log the error
+                if (!$permissionFound) {
+                    Log::warning("Permission not found for: $email. Skipping permission creation.");
+                }
+    
+            
+            } catch (Exception $e) {
+                Log::error("Error deleting/creating permission for: $email", ['error' => $e->getMessage()]);
+                return response()->json(['error' => 'Error setting permission: ' . $e->getMessage()], 500);
+            }
+        }
+    
+        return;
+    }
+
+    // Method to extract Google Doc ID from the URL
+    private function extractGoogleDocId($url)
+    {
+        // Remove the base URL portion
+        $baseUrl = "https://docs.google.com/document/d/";
+
+        // Check if the URL starts with the expected base URL
+        if (strpos($url, $baseUrl) === 0) {
+            // Remove the base URL and return the remaining part of the URL as the document ID
+            return substr($url, strlen($baseUrl));
+        }
+
+        return null;
+    }
+
+
+    // Converts docs into pdf file
+   private function convertGoogleDocToPdf($driveService, $googleDocId, $title, $manuscriptId)
+    {
+        try {
+            $file = $driveService->files->get($googleDocId, ['fields' => 'mimeType']);
+
+            if ($file->mimeType !== 'application/vnd.google-apps.document') {
+                Log::warning("File is not a Google Docs file. MimeType: {$file->mimeType}");
+                throw new \Exception("Only Google Docs files can be exported to PDF.");
+            }
+
+            // Export as PDF
+            $response = $driveService->files->export($googleDocId, 'application/pdf', ['alt' => 'media']);
+            $pdfFilePath = public_path("storage/capstone_files/{$title}.pdf");
+            file_put_contents($pdfFilePath, $response->getBody()->getContents());
+
+            $manuscript = ManuscriptProject::find($manuscriptId);
+            $manuscript->update([
+                'man_doc_content' => "storage/capstone_files/{$title}.pdf",
+                'is_publish' => 1,
+                'man_doc_visibility' => 'Y'
+            ]);
+
+            Log::info("Google Doc converted to PDF: {$pdfFilePath}");
+        } catch (\Exception $e) {
+            Log::error("Error converting Google Doc to PDF: " . $e->getMessage());
+            throw $e;
+        }
+    }
 
 
 

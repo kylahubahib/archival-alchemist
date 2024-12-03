@@ -71,8 +71,15 @@ class UniversityBranch extends Model
         return $this->hasMany(Department::class, 'uni_branch_id');
     }
 
+    public function semester(): HasMany
+    {
+        return $this->hasMany(Semester::class, 'uni_branch_id');
+    }
+
+
     // public function capstone_document(): HasMany
     // {
     //     return $this->hasMany(CapstoneDocument::class, 'cap_doc_id');
     // }
+
 }

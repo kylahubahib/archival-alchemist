@@ -13,7 +13,7 @@ const ViewClass = ({ onBack, folders }) => {
         console.log('Folders: ',folders);
     })
 
-    const handleShowGrades = () => { 
+    const handleShowGrades = () => {
         setActiveSection('grades');
     };
 
@@ -30,7 +30,7 @@ const ViewClass = ({ onBack, folders }) => {
     };
 
     return (
-        <div className="w-full">
+        <div className="w-full min-h-screen">
             {/* Header Bar */}
             <div className="header-bar w-h-screen bg-gray-100 border-b border-gray-200 shadow-sm ml-5 py-1 flex items-center justify-between">
                 {/* Left side buttons */}

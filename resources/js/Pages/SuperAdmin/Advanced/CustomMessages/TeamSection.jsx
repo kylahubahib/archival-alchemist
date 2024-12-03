@@ -22,17 +22,17 @@ export default function TeamSection({ isOpen, onClose, team }) {
 
     useEffect(() => {
         if (index !== null) {
-            const selectedTeam = team.find((s) => s.id === index); 
+            const selectedTeam = team.find((s) => s.id === index);
             setData({
                 content_text: selectedTeam?.content_text || '',
                 content_title: selectedTeam?.content_title || '',
                 content_type: selectedTeam?.content_type || '',
             });
             setPic(selectedTeam?.subject || '')
-            setPreviewUrl(null);  
+            setPreviewUrl(null);
         }
     }, [index]);
-    
+
 
     const handleFileChange = (e) => {
         const file = e.target.files[0];
@@ -72,19 +72,19 @@ export default function TeamSection({ isOpen, onClose, team }) {
         setNewTeam(true);
         setIndex(null);
         reset();
-        setPreviewUrl(null);  
+        setPreviewUrl(null);
     };
 
     const handleCloseCreate = () => {
         setNewTeam(false);
         reset();
-        setPreviewUrl(null);  
+        setPreviewUrl(null);
     };
 
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        
+
         if (pic instanceof File) {
             uploadIcon(index);
         }
@@ -127,7 +127,7 @@ export default function TeamSection({ isOpen, onClose, team }) {
                     <CgClose />
                 </button>
             </div>
- 
+
             <div className="px-4 flex justify-between">
                 <h2 className="text-xl text-gray-700 font-bold">Team Section</h2>
                 <Button onClick={handleCreateItem} radius="large" variant='bordered' size='sm' className="border-customBlue text-customBlue shadow">
@@ -137,7 +137,7 @@ export default function TeamSection({ isOpen, onClose, team }) {
 
             {!newTeam ? (
             <div className="px-5 py-5">
-                <div > 
+                <div >
                     <Table className='overflow-auto max-h-[500px]'  isHeaderSticky>
                         <TableHeader>
                             <TableColumn>Picture</TableColumn>
@@ -152,7 +152,7 @@ export default function TeamSection({ isOpen, onClose, team }) {
                                         {index === team.id ? (
                                             <div className="relative w-14 h-14">
                                                 <img
-                                                    src={previewUrl || `/${pic || team.subject}`}  
+                                                    src={previewUrl || `/${pic || team.subject}`}
                                                     alt="picture"
                                                     className="h-14 w-14 rounded-t-lg object-cover p-2"
                                                 />
@@ -169,8 +169,8 @@ export default function TeamSection({ isOpen, onClose, team }) {
                                                 onChange={handleFileChange}
                                                 className="absolute inset-0 opacity-0 cursor-pointer z-20"
                                                 />
-                                                
-                                                
+
+
                                             </div>
 
                                         ) : (

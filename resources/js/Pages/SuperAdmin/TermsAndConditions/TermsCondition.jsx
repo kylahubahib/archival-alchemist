@@ -13,6 +13,7 @@ import Edit from "./Edit";
 
 import BillingAgreement from './BillingAgreement';
 import PrivacyPolicy from './PrivacyPolicy';
+import PageHeader from '@/Components/Admins/PageHeader';
 
 
 
@@ -106,7 +107,7 @@ export default function TermsCondition({ auth, termsConditions = [], billingAgre
 
             <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
                 <div className="flex flex-row justify-between my-5">
-                    <div className="text-gray-800 text-3xl font-bold">Terms and Conditions</div>
+                    <PageHeader>TERMS AND CONDITIONS</PageHeader>
                     <div>
                         <AddButton onClick={openCreateModal} className="text-customBlue hover:text-white space-x-1">
                             <FaPlus /><span>Add T&Cs</span>
@@ -153,9 +154,9 @@ export default function TermsCondition({ auth, termsConditions = [], billingAgre
                                 </button>
                             </div>
                         </div>
-                        <div className="overflow-y-auto h-480">
-                        <table className="w-full text-sm text-left rtl:text-right text-gray-500">
-                            <thead className="text-xs text-gray-700 uppercase bg-gray-50">
+                        <div className="overflow-y-auto h-480 mb-5">
+                        <table className="w-full text-sm text-left rtl:text-right text-gray-500 border-1">
+                            <thead className="text-xs sticky z-20 -top-[1px] pb-[20px] text-customGray uppercase align-top bg-customLightGray">
                                 <tr>
                                     <th scope="col" className="px-6 py-3">
                                         Title

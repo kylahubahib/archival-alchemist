@@ -70,7 +70,7 @@ export function SidebarItem({ icon, text, color, marginTop, marginBottom, alert,
 
   if (externalLink) {
     return (
-      <a href={to} target="_blank" rel="noopener noreferrer">
+      <a href={to} target="_blank" rel="noopener noreferrer" {...props}>
         <li className={`${itemClasses}`}>
           {icon}
           <span className={`${textColor} overflow-hidden whitespace-nowrap transition-all group-hover:text-gray-600 ${expanded ? 'w-52 ml-3' : 'w-0'} mt-${marginTop} mb-${marginBottom}`}>
@@ -89,7 +89,7 @@ export function SidebarItem({ icon, text, color, marginTop, marginBottom, alert,
     );
   } else {
     return to ? (
-      <Link href={to}>
+      <Link href={to} {...props}>
         <li className={`${itemClasses}`}>
           {icon}
           <span className={`${textColor} overflow-hidden whitespace-nowrap transition-all group-hover:text-gray-600 ${expanded ? 'w-52 ml-3' : 'w-0'} mt-${marginTop} mb-${marginBottom}`}>
@@ -106,7 +106,7 @@ export function SidebarItem({ icon, text, color, marginTop, marginBottom, alert,
         </li>
       </Link>
     ) : (
-      <li className={`${itemClasses} relative`} onClick={handleClick}>
+      <li className={`${itemClasses} relative`} onClick={handleClick} {...props}>
         {icon}
         <span className={`${textColor} overflow-hidden whitespace-nowrap transition-all group-hover:text-gray-600 ${expanded ? 'w-52 ml-3' : 'w-0'} mt-${marginTop} mb-${marginBottom}`}>
           {text}
@@ -126,19 +126,12 @@ export function SidebarItem({ icon, text, color, marginTop, marginBottom, alert,
 
 
 
-export function SidebarSeparator({ marginTop=56 }) {
+export function SidebarSeparator({ marginTop }) {
   const { expanded } = useContext(SidebarContext);
-
-  const marginTopClass = {
-    56: 'mt-56',
-    60: 'mt-60',
-    72: 'mt-72',
-    80: 'mt-80',
-  }[marginTop] || '';
 
   return (
     <div
-      className={`${marginTopClass} transition-all duration-300 ease-in-out ${
+      className={`${marginTop} transition-all duration-300 ease-in-out ${
         expanded ? 'w-full' : 'w-10 mx-auto'
       }`}
     />

@@ -30,7 +30,7 @@ export default function EditCourse({isOpen, onClose, deptId, course}) {
 
 
     return (
-      
+
         <Modal show={isOpen} onClose={onClose}>
                 <div className="bg-customBlue p-3" >
                     <h2 className="text-xl text-white font-bold">Update Course</h2>
