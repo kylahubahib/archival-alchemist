@@ -45,7 +45,7 @@ class ProfileController extends Controller
         $user = Auth::user();
         
 
-        if($user->user_type === 'superadmin' || $user->user_type === 'institution_admin')
+        if($user->user_type === 'superadmin' || $user->user_type === 'admin')
         {
             return Inertia::render('Profile/AdminProfile', [
                 'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
@@ -337,7 +337,8 @@ class ProfileController extends Controller
         $user->load([
             'manuscripts' => function ($query) {
                 $query->where('is_publish', 1)
-                    ->where('man_doc_visibility', 'Y'); 
+                    ->where('man_doc_visibility', 'Y')
+                    ->with(['authors', 'tags']); 
             },
             'forum_post' => function ($query) {
                 $query->where('status', 'Visible')

@@ -16,7 +16,7 @@ const JoinClassSection = ({ auth, user, userId, }) => {
     const [isViewClassOpen, setIsViewClassOpen] = useState(false);
 
     const userToken = localStorage.getItem('userToken');
-    const DEFAULT_PROFILE_IMAGE = '/path/to/default/profile.jpg';
+    const DEFAULT_PROFILE_IMAGE = '/images/class.jpg';
 
     useEffect(() => {
         // Retrieve CSRF token from the meta tag
@@ -146,7 +146,7 @@ const JoinClassSection = ({ auth, user, userId, }) => {
                                             alt="Instructor"
                                             className="object-cover"
                                             height={80}
-                                            src="https://nextui.org/images/hero-card.jpeg"
+                                            src="images/class.png"
                                             width={80}
                                         />
                                         {/* Text (Subject and Section) */}

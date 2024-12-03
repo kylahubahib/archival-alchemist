@@ -4,6 +4,7 @@ import { Head } from '@inertiajs/react';
 import { format } from 'date-fns';
 import UserPost from './UserPost';
 import { MdMessage } from 'react-icons/md';
+import UserRepository from './UserRepository';
 
 export default function UserProfile({ auth, selectedUser }) {
     const [activeTab, setActiveTab] = useState('posts');
@@ -76,6 +77,7 @@ export default function UserProfile({ auth, selectedUser }) {
                             {/* Repository Content */}
                             <div className="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
                                 {/* Display repository here */}
+                                <UserRepository auth={auth} manuscript={selectedUser?.manuscripts} user={auth.user}/>
                             </div>
                         </div>
                     )}

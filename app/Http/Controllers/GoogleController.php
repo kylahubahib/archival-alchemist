@@ -37,12 +37,16 @@ class GoogleController extends Controller
                 ->redirect();
         }
         else 
-        {
-            return Socialite::driver('google')->redirect();
+        {   
+            $parameters = ['access_type' => 'offline', "prompt" => "consent",];
+                return Socialite::driver('google')
+                ->scopes([
+                    'https://www.googleapis.com/auth/drive.file',
+                    'https://www.googleapis.com/auth/documents',
+                ])
+                ->with($parameters)
+                ->redirect();
         }
-
-       
-  
     }
 
     /**
@@ -128,7 +132,7 @@ class GoogleController extends Controller
             }
 
             // Redirect based on user type
-            if ($user->user_type === 'institution_admin') {
+            if ($user->user_type === 'admin') {
                 return redirect()->route('institution-students');
             } else {
                 return redirect()->route('library');

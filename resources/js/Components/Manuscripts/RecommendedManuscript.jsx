@@ -131,6 +131,7 @@ const Manuscript = ({auth, user, choice}) => {
 
   // Function to handle the view increment
   const handlePdfLoad = (id) => {
+    setIsLoading(false); // Set loading to false once PDF is loaded
     // When the PDF is loaded, increment the view count
     axios
     .post(`/manuscripts/${id}/increment-view`)
@@ -172,7 +173,7 @@ const Manuscript = ({auth, user, choice}) => {
 
     };
 
-    
+
       const toggleSidebar = () => {
           setIsSidebarOpen((prevState) => !prevState); // Toggle sidebar visibility
       };
@@ -551,6 +552,25 @@ const handleDropdownChange = (selectedKey) => {
         <div
             className={`rounded ${maximizedId === manuscript.id ? 'w-full h-full' : 'w-40 h-48'} bg-gray-200 flex items-center justify-center relative transition-all duration-300 ease-in-out y-4 m-5`}
         >
+{!isAuthenticated && (
+  <div className="flex flex-col h-full w-full items-center justify-center text-center text-gray-800 text-xxxs p-2 bg-white border-2 mb-1 leading-tight">
+    <div>{manuscript.man_doc_title}</div>
+    <p className="block pt-12">By:</p>
+    <p className="block">
+      {manuscript.authors?.length > 0 ? (
+        <div>
+          {manuscript.authors.map((author, index) => (
+            <p key={index} className="text-xxxs text-gray-800 mb-1 leading-tight">{author.name}</p>
+          ))}
+        </div>
+      ) : (
+        <p>Unknown Authors</p>
+      )}
+    </p>
+    <p className="block pt-5">{new Date(manuscript.updated_at).getFullYear()}</p>
+  </div>
+)}
+
 
                    {isPremium ? (
                      // If the user is premium, show the link directly
@@ -565,40 +585,40 @@ const handleDropdownChange = (selectedKey) => {
       </div>
     )
   ) : (
-    <img
-      className="rounded w-25 h-30"
-      src="/images/pdf2.png"
-      alt="PDF Thumbnail"
-    />
+    <div className="flex flex-col h-full w-full items-center justify-center text-center text-gray-800 text-xxxs p-2 bg-white border-2 mb-1 leading-tight">
+        {manuscript.man_doc_title}
+        <p className="block pt-12">By:</p> {/* This "By:" will now be on a new line */}
+        <p className="block">{manuscript.authors?.length > 0 ? (
+            <div>
+                {manuscript.authors.map((author, index) => (
+                    <p key={index} className="text-xxxs text-gray-800 mb-1 leading-tight">{author.name}</p>))}
+            </div>) : ( <p >Unknown Authors</p>)}
+        </p>
+        <p className="block pt-5">{new Date(manuscript.updated_at).getFullYear()}</p>
+    </div>
   )}
 
   {/* Maximize / Minimize Button */}
   <button
     onClick={() => handleMaximize(manuscript.id)}
-    className="absolute top-2 right-2 bg-gray-500 text-white p-2 rounded-full shadow-lg hover:bg-gray-600 transition-colors duration-200 z-40"
+    className="text-xxxss absolute top-2 right-2 bg-gray-500 text-white p-2 rounded-full shadow-lg hover:bg-gray-600 transition-colors duration-200 z-40"
   >
     {maximizedId === manuscript.id ? 'X' : 'Preview'}
   </button>
 </div>
                    ) : isAuthenticated ? (
-                    <div className="relative">
-                      {/* Static Thumbnail for Authenticated User */}
-                      <div className="flex items-center justify-center h-full w-full text-gray-500">
-                        <img
-                          className="rounded w-25 h-30"
-      src="/images/pdf2.png"
-                          alt="PDF Thumbnail"
-                        />
-                      </div>
-
-                      {/* Preview Button at bottom */}
-                      <button
-                        onClick={openModal}
-                        className="absolute bottom-6 w-max bg-white opacity-75 border-2 border-gray-600 text-gray-800 px-12 py-2 rounded transition duration-300 ease-in-out hover:bg-blue-500 hover:text-white hover:text-opacity-100 focus:outline-none"
-                      >
-                        Preview
-                      </button>
-                    </div>
+// Authenticated User
+    <div className="flex flex-col h-full w-full items-center justify-center text-center text-gray-800 text-xxxs p-2 bg-white border-2 mb-1 leading-tight">
+    {manuscript.man_doc_title}
+    <p className="block pt-12">By:</p>
+    <p className="block">{manuscript.authors?.length > 0 ? (
+        <div>
+            {manuscript.authors.map((author, index) => (
+                <p key={index} className="text-xxxs text-gray-800 mb-1 leading-tight">{author.name}</p>))}
+        </div>) : ( <p >Unknown Authors</p>)}
+    </p>
+    <p className="block pt-5">{new Date(manuscript.updated_at).getFullYear()}</p>
+</div>
                    ):null}
 
                     {/* Modal for non-premium authenticated users */}
@@ -635,8 +655,10 @@ const handleDropdownChange = (selectedKey) => {
                                                  <div className="w-16 h-16 border-t-4 border-blue-600 border-solid rounded-full animate-spin"></div>
                                              </div>
                                          )}
+
+
                                          <iframe
-                                             src={`http://127.0.0.1:8000/pdfViewer.html?pdfUrl=http://127.0.0.1:8000/${manuscript.man_doc_content}`}
+                                             src={`http://127.0.0.1:8000/pdfViewer.html?pdfUrl=http://127.0.0.1:8000/${selectedManuscript}`}
                                              className="w-full h-full border-0 rounded-lg shadow-md"
                                              title="PDF Viewer"
                                              onLoad={handlePdfLoad}
@@ -727,7 +749,7 @@ const handleDropdownChange = (selectedKey) => {
                                  </div>
                              )}
                              <iframe
-                                 src={`http://127.0.0.1:8000/pdfViewer.html?pdfUrl=http://127.0.0.1:8000/${manuscript.man_doc_content}`}
+                                 src={`http://127.0.0.1:8000/pdfViewer.html?pdfUrl=http://127.0.0.1:8000/${selectedManuscript}`}
                                  className="w-full h-full border-0 rounded-lg shadow-md"
                                  title="PDF Viewer"
                                  onLoad={handlePdfLoad}

@@ -17,7 +17,9 @@ class Section extends Model
         'subject_name',
         'section_name',
         'added_by',
-        'ins_id'
+        'ins_id',
+        'section_classcode',
+        'sem_id',
     ];
 
     public function course(): BelongsTo
@@ -36,6 +38,11 @@ class Section extends Model
     {
         return $this->belongsTo(User::class, 'ins_id');
     }
+
+    // public function faculty()
+    // {
+    //     return $this->belongsTo(Faculty::class, 'ins_id');
+    // }
 
     public function manuscript()
     {

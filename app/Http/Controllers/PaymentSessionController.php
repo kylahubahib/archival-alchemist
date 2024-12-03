@@ -198,7 +198,7 @@ class PaymentSessionController extends Controller
                             'payment_method' => $checkoutDetails['payment_method_used'],
                         ]);
 
-                        if($user->user_type === 'institution_admin') {
+                        if($user->user_type === 'admin') {
 
                             $institutionSubscription = InstitutionSubscription::find($insub_id);
 
@@ -269,7 +269,7 @@ class PaymentSessionController extends Controller
                 'name' => $userInfo['name'],
                 'email' => $userInfo['email'],
                 'password' => Hash::make($password),
-                'user_type' => 'institution_admin', 
+                'user_type' => 'admin', 
                 'user_pic' => 'storage/profile_pics/default_pic.png',
                 'user_status' => 'Active',
                 'is_premium' => 0,

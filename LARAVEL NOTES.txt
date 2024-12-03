@@ -621,3 +621,12 @@ PS C:\xampp\htdocs\archival-alchemist-main>
 
 
 composer require maatwebsite/excel:^3.1.35 --with-all-dependencies
+
+
+doxc size
+->check php.ini
+upload_max_filesize = 500M
+post_max_size = 500M
+max_execution_time = 300
+
+'man_doc_content' => 'required|file|mimes:pdf,docx',

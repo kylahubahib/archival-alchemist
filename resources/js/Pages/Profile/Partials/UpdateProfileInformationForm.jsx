@@ -92,7 +92,7 @@ export default function UpdateProfileInformationForm({ mustVerifyEmail, status, 
             {/* <div>{user.university || 'No affiliated university'}</div> */}
 
             <form onSubmit={submit}  method="POST" encType="multipart/form-data" className="mt-6 space-y-6">
-               {(user.user_type === 'superadmin' || user.user_type === 'institution_admin') &&
+               {(user.user_type === 'superadmin' || user.user_type === 'admin') &&
                 <div className="flex items-center space-x-4">
                     <div className="relative w-20 h-20">
                         {profilePic ? (
@@ -147,7 +147,7 @@ export default function UpdateProfileInformationForm({ mustVerifyEmail, status, 
                     <InputError className="mt-2" message={errors.email} />
                 </div>
 
-                {(user.user_type !== 'superadmin' && user.user_type !== 'institution_admin') &&
+                {(user.user_type !== 'superadmin' && user.user_type !== 'admin') &&
                 <div>
                     <InputLabel htmlFor="uni_id_num" value="School ID #" />
                     <TextInput
@@ -187,7 +187,7 @@ export default function UpdateProfileInformationForm({ mustVerifyEmail, status, 
                     <InputError message={errors.user_dob} className="mt-2" />
                 </div>
 
-                {(user.user_type != 'superadmin' && user.user_type != 'institution_admin') &&
+                {(user.user_type != 'superadmin' && user.user_type != 'admin') &&
                 <div>
                     <InputLabel htmlFor="user_aboutme" value="About Me" />
                     <TextInput

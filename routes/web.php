@@ -326,7 +326,7 @@ Route::middleware(['auth', 'verified', 'user-type:superadmin'])->group(function 
 
 
 //institution admin
-Route::middleware(['auth', 'verified', 'user-type:institution_admin'])->prefix('institution')->group(function () {
+Route::middleware(['auth', 'verified', 'user-type:admin'])->prefix('institution')->group(function () {
 
     // Common data for all pages
     Route::get('/get-departments-with-courses', [InsAdminCommonDataController::class, 'getDepartmentsWithCourses'])
@@ -420,10 +420,10 @@ Route::get('api/universities-branches', [UniversityController::class, 'getUniver
 
 
 
-    //manuscript project
-    Route::middleware(['auth'])->group(function () {
-        // Route for storing a new manuscript project
-        Route::post('/api/capstone/upload', [StudentClassController::class, 'storeManuscriptProject'])->name('api.capstone.upload');
+//manuscript project
+// Route::middleware(['auth'])->group(function () {
+    // Route for storing a new manuscript project
+    Route::post('/api/capstone/upload', [StudentClassController::class, 'storeManuscriptProject'])->name('api.capstone.upload');
 
         // Route for tracking a student's activity
         Route::post('/student/track-activity', [StudentClassController::class, 'trackActivity'])
@@ -434,7 +434,7 @@ Route::get('api/universities-branches', [UniversityController::class, 'getUniver
             ->name('student.approveProject.store');
 
         Route::post('/api/check-title', [StudentClassController::class, 'checkTitle'])->name('capstone.checkTitle');
-    });
+    // });
 
     //Add a route for fetching tag suggestions:
     // In api.php or web.php
@@ -454,18 +454,21 @@ Route::get('api/universities-branches', [UniversityController::class, 'getUniver
     Route::get('/api/authors/suggestions', [TagController::class, 'Authorsuggestions']);
     Route::get('/api/title/suggestions', [TagController::class, 'Titlesuggestions']);
 
-    //route for checking the class code
-    Route::post('/check-class-code', [StudentClassController::class, 'checkClassCode']);
-    // routes for storing student in class table
-    Route::post('/store-student-class', [StudentClassController::class, 'storeStudentClass']);
-    // routes for checking the user premium subscription
-    Route::post('/check-user-premium-status', [CheckSubscriptionController::class, 'is_premium']);
-    Route::get('/check-student-in-class', [StudentClassController::class, 'checkStudentInClass']);
-    Route::get('/api/publishedRec-manuscripts', [StudentClassController::class, 'getPublishedRecManuscripts']);
-    Route::get('/api/publishedMyUniBooks-manuscripts', [StudentClassController::class, 'getMyUniBooks']);
-    Route::get('/api/my-approved-manuscripts', [StudentClassController::class, 'myApprovedManuscripts']);
-    Route::get('/api/my-favorite-manuscripts', [StudentClassController::class, 'myfavoriteManuscripts']);
-    Route::post('/api/addfavorites', [StudentClassController::class, 'storefavorites'])->name('storefavorites');
+//route for checking the class code
+Route::post('/check-class-code', [StudentClassController::class, 'checkClassCode']);
+// routes for storing student in class table
+Route::post('/store-student-class', [StudentClassController::class, 'storeStudentClass']);
+// routes for checking the user premium subscription
+Route::post('/check-user-premium-status', [CheckSubscriptionController::class, 'is_premium']);
+Route::get('/check-student-in-class', [StudentClassController::class, 'checkStudentInClass']);
+Route::get('/api/publishedRec-manuscripts', [StudentClassController::class, 'getPublishedRecManuscripts']);
+Route::get('/api/publishedMyUniBooks-manuscripts', [StudentClassController::class, 'getMyUniBooks']);
+Route::get('/api/my-approved-manuscripts', [StudentClassController::class, 'myApprovedManuscripts']);
+Route::get('/api/teachers-repository', [StudentClassController::class, 'teachersRepository']);
+Route::get('/api/my-favorite-manuscripts', [StudentClassController::class, 'myfavoriteManuscripts']);
+Route::post('/api/addfavorites', [StudentClassController::class, 'storefavorites'])
+    ->middleware(['auth', 'verified', 'user-type:student, teacher'])
+    ->name('storefavorites');
     Route::get('/manuscript/{id}/download', [StudentClassController::class, 'downloadPdf'])->name('manuscript.download');
 
 
@@ -609,6 +612,10 @@ Route::get('/fetch-comments/{id}', [DocCommentsController::class, 'fetchComments
 
 Route::post('/manuscripts/{id}/increment-view', [StudentClassController::class, 'incrementViewCount']);
 
+
+Route::get('/api/check-group', [StudentClassController::class, 'checkGroup']);
+Route::get('/fetch-userType', [TeacherClassController::class, 'fetchUserType']);
+ Route::get('/fetch-affiliation', [TeacherClassController::class, 'fetchAffiliation']);
 
 
 require __DIR__.'/auth.php';

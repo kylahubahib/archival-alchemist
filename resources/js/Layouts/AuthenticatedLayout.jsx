@@ -1,5 +1,6 @@
 import { RiMessengerLine } from "react-icons/ri";
 import { BiEnvelope } from "react-icons/bi";
+import { FaUniversity } from "react-icons/fa";
 import { MdChatBubbleOutline, MdOutlineForum, MdOutlineLabel,  } from "react-icons/md";
 import { SiGoogleclassroom } from "react-icons/si";
 import { BiBookBookmark, BiBookOpen } from "react-icons/bi";
@@ -21,6 +22,19 @@ export default function Authenticated({ user, children, newProfile = null, searc
     const [isPremium, setIsPremium] = useState(user.is_premium);
     const [profilePic, setProfilePic] = useState(user.user_pic);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isAffiliated, setAffiliation] = useState(null); // Initialize as null or an appropriate value
+
+    useEffect(() => {
+      axios.get('/fetch-affiliation') // Replace with your actual API endpoint
+        .then(response => {
+            setAffiliation(response.data.isAffiliated); // Update the state with the userType value
+        })
+        .catch(error => {
+          console.error('Error fetching affiliation:', error);
+        });
+    }, []); // Empty dependency array means this runs only once after the component mounts
+
+    console.log("Is Affiliated?: ", isAffiliated);
 
 
 
@@ -94,9 +108,16 @@ export default function Authenticated({ user, children, newProfile = null, searc
                                 </div>
 
                                 <div className=" relative">
+
                                     <Dropdown>
                                         <Dropdown.Trigger>
-                                            <span className="inline-flex rounded-md">
+                                            <span className="inline-flex rounded-md">{isAffiliated ? (
+                                             <div
+                                             className="relative items-center mr-2 px-0 py-0 border border-transparent text-sm leading-4 font-medium rounded-full h-10 w-10 flex justify-center text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150"
+                                             >
+                                                    <FaUniversity size={24} />
+
+                                                </div>):(null)}
                                                 <button
                                                     type="button"
                                                     className="relative items-center px-0 py-0 border border-transparent text-sm leading-4 font-medium rounded-full h-10 w-10 flex justify-center text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150"
@@ -105,7 +126,12 @@ export default function Authenticated({ user, children, newProfile = null, searc
                                                         className="w-full h-full rounded-full object-cover" />
 
                                                 </button>
+
+
+
+
                                             </span>
+
                                         </Dropdown.Trigger>
 
                                         <Dropdown.Content>
