@@ -24,12 +24,13 @@ class InsAdminCommonDataController extends Controller
     public function getInsAdminAffiliation()
     {
         $affiliation = UniversityBranch::where('id', $this->insAdminUniBranchId)
-            ->select('uni_id', 'uni_branch_name')
-            ->with('university:id,uni_name')
-            ->get();
+            ->select('uni_id', 'uni_branch_name') // Add the fields you want to select
+            ->with(['university:id,uni_name', 'institution_subscription']) // Eager load related data
+            ->get(); // Execute the query and fetch results
 
         return $affiliation;
     }
+
 
     public function getInsAdminUniBranchId()
     {
@@ -43,8 +44,8 @@ class InsAdminCommonDataController extends Controller
     public function getDepartmentsWithCourses()
     {
         $departmentsWithCourses = Department::where('uni_branch_id', $this->insAdminUniBranchId)
-            ->select('id', 'dept_name')
-            ->with('course:id,dept_id,course_name')
+            ->select('id', 'dept_name', 'dept_acronym')
+            ->with('course:id,dept_id,course_name,course_acronym')
             ->get();
 
         return response()->json($departmentsWithCourses);
@@ -69,4 +70,6 @@ class InsAdminCommonDataController extends Controller
 
         return response()->json($plansWithPlanStatus);
     }
+
+    public function getInsAdminNumbersOfUsersThatHeCan() {}
 }

@@ -1,7 +1,7 @@
 import { Dialog, DialogPanel, Transition, TransitionChild } from '@headlessui/react';
 
-export default function Modal({ children, show = false, maxWidth = '2xl', closeable = true, onClose = () => {}, maxHeight = '2xl' }) {
-    
+export default function Modal({ children, show = false, maxWidth = '2xl', closeable = true, onClose = () => { }, maxHeight = '2xl' }) {
+
     // Define max width and height classes based on props
     const maxWidthClass = {
         sm: 'sm:max-w-sm',
@@ -15,7 +15,7 @@ export default function Modal({ children, show = false, maxWidth = '2xl', closea
     }[maxWidth];
 
     const maxHeightClass = {
-       sm: 'max-h-[50vh]', 
+        sm: 'max-h-[50vh]',
         md: 'max-h-[60vh]',
         lg: 'max-h-[70vh]',
         xl: 'max-h-[80vh]',

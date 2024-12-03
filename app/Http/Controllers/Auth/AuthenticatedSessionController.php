@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers\Auth;
+
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
@@ -54,23 +55,48 @@ class AuthenticatedSessionController extends Controller
             } elseif ($user->user_type == 'teacher') {
                 $checkInSub = InstitutionSubscription::where('uni_branch_id', $user->faculty->first()->uni_branch_id)->first();
             }
-            
 
-            if($user->is_premium == 0 || $user->is_affiliated == 0) {
+
+            if ($user->is_premium == 0 || $user->is_affiliated == 0) {
                 $this->checkInstitutionSubscription($checkInSub, $user);
             }
         }
 
-        // Redirect based on user_type
+        // Redirect based on user_type with super admin access control
         switch ($user->user_type) {
             case 'student':
                 return redirect()->route('library')->with('user', $user);
-            case 'teacher':
+            case 'faculty':
                 return redirect()->route('library');
             case 'admin':
                 return redirect()->route('institution-students');
             case 'superadmin':
-                return redirect()->route('dashboard.index');
+                $accessRoutes = [
+                    'dashboard_access' => 'dashboard',
+                    'users_access' => 'users',
+                    'archives_access' => 'archives',
+                    'subscriptions_and_billings_access' => 'subscription-billing',
+                    'user_reports_access' => 'user-reports',
+                    'user_feedbacks_access' => 'user-feedbacks',
+                    'terms_and_conditions_access' => 'terms-condition',
+                    'subscription_plans_access' => 'subscription-plans',
+                    'faqs_access' => 'faq',
+                    'advanced_access' => 'advanced',
+                ];
+
+                // Automatically sets the default route redirection if one of the pages can't be accessed.
+                foreach ($accessRoutes as $access => $route) {
+                    if ($user->access_control->$access) {
+                        return redirect()->route($route);
+                    }
+                }
+
+                // If no access granted for all pages, log out the user and show error
+                Auth::logout();
+                return redirect()->route('login')->withErrors([
+                    'password' => "Can't log in. All page access has been blocked. Please contact support for more information.",
+                ]);
+
             default:
                 return redirect('/');
         }
@@ -80,15 +106,14 @@ class AuthenticatedSessionController extends Controller
     /**
      * Destroy an authenticated session.
      */
-        public function destroy(Request $request): RedirectResponse
-        {
-            Auth::guard('web')->logout();
+    public function destroy(Request $request): RedirectResponse
+    {
+        Auth::guard('web')->logout();
 
-            $request->session()->invalidate();
+        $request->session()->invalidate();
 
-            $request->session()->regenerateToken();
+        $request->session()->regenerateToken();
 
-            return redirect('/home');
-        }
-
+        return redirect('/home');
+    }
 }

@@ -13,12 +13,8 @@ class Section extends Model
     protected $table = 'sections';
 
     protected $fillable = [
-<<<<<<< HEAD
-        'course_id',  
-=======
         'course_id',  // Corrected spelling here
         'subject_name',
->>>>>>> 809d8214ae5878541f4f68dd4ad2c54a10b13446
         'section_name',
         'added_by',
         'ins_id'
@@ -32,5 +28,10 @@ class Section extends Model
     public function user()
     {
         return $this->belongsTo(User::class, 'ins_id');
+    }
+
+    public function student(): BelongsTo
+    {
+        return $this->belongsTo(Student::class, 'id', 'section_id');
     }
 }

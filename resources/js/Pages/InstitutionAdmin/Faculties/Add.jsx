@@ -9,10 +9,12 @@ import { MdTextFields } from "react-icons/md";
 import { MdRemoveDone } from "react-icons/md";
 import { showToast } from '@/Components/Toast';
 import Modal from '@/Components/Modal';
-import { autocompleteInputProps, inputClassNames, onChangeHandler, renderAutocompleteItems } from '@/Components/Admins/Functions';
+import { onChangeHandler, renderAutocompleteItems } from '@/Utils/admin-utils';
 import { FaBuilding, FaHashtag, FaRemoveFormat } from 'react-icons/fa';
 import axios from 'axios';
-import FileUpload from '@/Components/Admins/FileUpload';
+import FileUpload from '@/Components/Admin/FileUpload';
+import AutocompleteList from '@/Components/Admins/AutocompleteList';
+import { customAutocompleteInputProps, customInputClassNames } from '@/Utils/common-utils';
 
 
 export default function Add({ isOpen, onClose }) {
@@ -28,7 +30,7 @@ export default function Add({ isOpen, onClose }) {
             department_id: null,
             course_id: null,
             name: '',
-            department: { origText: '', acronym: '' },
+            department: '',
             email: '',
         }
     )
@@ -63,13 +65,13 @@ export default function Add({ isOpen, onClose }) {
             console.log('deptcourses', response);
 
             // Extracting department names only
-            const departmentNames = response.data.map(department => department.dept_name);
+            const departmentAcronyms = response.data.map(department => department.dept_acronym);
 
             setDepartmentsWithCoursesResponse(response.data);
 
             setAutocomplete({
                 ...autocomplete,
-                department: departmentNames,
+                department: departmentAcronyms,
             });
         }
         catch (error) {
@@ -109,9 +111,9 @@ export default function Add({ isOpen, onClose }) {
 
     const handleAutocompleteErrors = (category) => {
         if (category === 'Department') {
-            return errors["department.origText"];
-        } else if (category === 'Course' && data.department?.origText) {
-            return errors["course.origText"];
+            return errors["department"];
+        } else if (category === 'Course' && data.department) {
+            return errors["course"];
         }
     }
 
@@ -120,29 +122,29 @@ export default function Add({ isOpen, onClose }) {
         clearErrors();
     }
 
-    const handleDepartmentClick = (deptName) => {
+    const handleDepartmentClick = (deptAcronym) => {
         // Find the courses for the selected department
-        const selectedDepartment = departmentsWithCoursesResponse.find(department => department.dept_name === deptName);
+        const selectedDepartment = departmentsWithCoursesResponse.find(department => department.dept_acronym === deptAcronym);
         setData('department_id', selectedDepartment.dept_id);
 
 
         console.log('selectedDepartment', selectedDepartment);
 
         // Get the courses through mapping
-        const courses = selectedDepartment.course.map(c => c.course_name);
+        const courseAcronyms = selectedDepartment.course.map(c => c.course_acronym);
 
         setAutocomplete(prevState => ({
             ...prevState,
-            course: courses,
+            course: courseAcronyms,
         }));
     };
 
-    const handleCourseClick = (courseName) => {
-        const selectedDepartment = departmentsWithCoursesResponse.find(department => department.dept_id === data.department_id);
-        const selectedCourse = selectedDepartment.course.find(course => course.course_name === courseName);
+    // const handleCourseClick = (courseAcronyms) => {
+    //     const selectedDepartment = departmentsWithCoursesResponse.find(department => department.dept_id === data.department_id);
+    //     const selectedCourse = selectedDepartment.course.find(course => course.course_acronym === courseAcronyms);
 
-        setData('course_id', selectedCourse.course_id);
-    };
+    //     setData('course_id', selectedCourse.course_id);
+    // };
 
     return (
         <Modal show={isOpen} onClose={onClose} maxWidth="2xl">
@@ -173,7 +175,7 @@ export default function Add({ isOpen, onClose }) {
                                 errorMessage={errors.faculty_id}
                                 value={data.faculty_id}
                                 onChange={(e) => setData('faculty_id', e.target.value)}
-                                classNames={inputClassNames()}
+                                classNames={customInputClassNames()}
                             />
                             <Input
                                 type="text"
@@ -185,7 +187,7 @@ export default function Add({ isOpen, onClose }) {
                                 errorMessage={errors.name}
                                 value={data.name}
                                 onChange={(e) => setData('name', e.target.value)}
-                                classNames={inputClassNames()}
+                                classNames={customInputClassNames()}
                             />
                             <Autocomplete
                                 aria-label="Autocomplete Filter"
@@ -200,11 +202,11 @@ export default function Add({ isOpen, onClose }) {
                                 inputProps={autocompleteInputProps({}, { marginBottom: '0px' })}
                                 startContent={<FaBuilding size={25} />}
                                 defaultSelectedKey=""
-                                onInputChange={(value) => onChangeHandler({ setter: setData, category: "Department", value, forOnInputChange: true })}
-                                onSelectionChange={(value) => onChangeHandler({ setter: setData, category: "Department", value, forOnSelectionChange: true })}
+                                onInputChange={(value) => onChangeHandler(setData, value, true)}
+                                onSelectionChange={(value) => onChangeHandler(setData, value, true)}
                                 className="col-span-2"
                             >
-                                {renderAutocompleteItems('Department', autocomplete.department, () => handleDepartmentClick(data.department.origText))}
+                                {renderAutocompleteItems(autocomplete.department, () => handleDepartmentClick(data.department))}
                             </Autocomplete>
 
                             <Input
@@ -217,7 +219,7 @@ export default function Add({ isOpen, onClose }) {
                                 startContent={<IoMail size={20} />}
                                 isInvalid={errors.email}
                                 errorMessage={errors.email}
-                                classNames={inputClassNames({ base: "col-span-2" }, {})}
+                                classNames={customInputClassNames({ base: "col-span-2" }, {})}
                             />
                         </div>
                         <div className="flex gap-3 justify-center items-center">
@@ -248,7 +250,7 @@ export default function Add({ isOpen, onClose }) {
                             </div>
 
                         </div>
-                        {/* <div className="flex justify-center items-center">
+                        <div className="flex justify-center items-center">
                             <Button
                                 startContent={<FaFileExcel size={20} />}
                                 color="default"
@@ -260,7 +262,7 @@ export default function Add({ isOpen, onClose }) {
                             >
                                 Remove
                             </Button>
-                        </div> */}
+                        </div>
                     </div>
 
                 </div>

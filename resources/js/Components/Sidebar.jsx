@@ -30,7 +30,7 @@ export default function Sidebar({ children, color, borderRadius, margin }) {
 
   return (
     <>
-      <aside className="fixed top-0 left-0 h-screen z-50">
+      <aside className="top-0 left-0 h-screen z-50">
         <nav className={`h-full flex flex-col ${bgColor} shadow-sm rounded-none`} style={{ marginLeft: 0 }}>
 
 
@@ -65,8 +65,8 @@ export function SidebarItem({ icon, text, color, marginTop, marginBottom, alert,
   };
 
   const itemClasses = `relative flex items-center py-2 px-3 my-1 font-medium rounded-md cursor-pointer transition-colors group ${isActive
-      ? 'bg-gradient-to-tr from-indigo-200 to-indigo-100 text-gray-600'
-      : 'hover:bg-indigo-50 text-gray-600'
+    ? 'bg-gradient-to-tr from-indigo-200 to-indigo-100 text-gray-600'
+    : 'hover:bg-indigo-50 text-gray-600'
     }`;
 
   const textColor = `text-${color}`;

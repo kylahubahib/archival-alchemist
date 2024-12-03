@@ -26,7 +26,7 @@ class AccessControlMiddleware
 
         // Check if the user has the necessary access
         if (!$user->access_control->{$permission}) {
-            if ($user->user_type === "super_admin") {
+            if ($user->user_type === "superadmin") {
                 return Inertia::render('AccessDenied', [
                     'user' => $user,
                 ]);

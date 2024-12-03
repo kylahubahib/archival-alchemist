@@ -32,10 +32,10 @@ class ManuscriptProject extends Model
     /**
      * Get the student that owns the manuscript project.
      */
-    public function student(): BelongsTo
-    {
-        return $this->belongsTo(Student::class, 'student_id');
-    }
+    // public function student(): BelongsTo
+    // {
+    //     return $this->belongsTo(Student::class, 'student_id');
+    // }
 
 
     /**

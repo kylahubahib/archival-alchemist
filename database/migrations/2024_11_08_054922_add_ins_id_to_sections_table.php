@@ -11,22 +11,20 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::table('sections', function (Blueprint $table) {
-            $table->dropColumn('added_by');
-            $table->unsignedBigInteger('ins_id')->nullable()->after('section_name');
-            $table->foreign('ins_id')->references('id')->on('users')->onDelete('cascade');
+            // Check if the column exists before adding it
+            if (!Schema::hasColumn('sections', 'ins_id')) {
+                $table->unsignedBigInteger('ins_id')->nullable()->after('section_name');
+                $table->foreign('ins_id')->references('id')->on('users')->onDelete('cascade');
+            }
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::table('sections', function (Blueprint $table) {
+            // Drop the foreign key and column in the down method
             $table->dropForeign(['ins_id']);
             $table->dropColumn('ins_id');
-            $table->string('added_by')->after('section_name');
         });
     }
 };
-

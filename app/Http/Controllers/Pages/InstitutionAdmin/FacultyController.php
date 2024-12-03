@@ -44,18 +44,21 @@ class FacultyController extends Controller
         $query = DB::table('users')
             ->join('faculties', 'users.id', '=', 'faculties.user_id')
             ->join('university_branches', 'faculties.uni_branch_id', '=', 'university_branches.id')
+            ->leftJoin('courses', 'faculties.course_id', '=', 'courses.id')
+            ->leftJoin('departments', 'courses.dept_id', '=', 'departments.id')
             ->leftJoin('personal_subscriptions', 'users.id', '=', 'personal_subscriptions.user_id')
             ->leftJoin('subscription_plans', 'personal_subscriptions.plan_id', '=', 'subscription_plans.id')
             ->select(
-                'faculties.id',
-                'faculties.fac_position',
-                'users.id',
+                'users.id as user_id',
                 'users.name',
                 'users.created_at',
                 'users.email',
                 'users.is_premium',
                 'users.user_pic',
                 'users.user_status',
+                'faculties.id as fac_id',
+                'faculties.faculty_position',
+                'departments.dept_acronym',
                 'subscription_plans.plan_name',
                 'personal_subscriptions.start_date',
                 'personal_subscriptions.end_date',
@@ -78,9 +81,9 @@ class FacultyController extends Controller
             });
         }
 
-        // if ($department) {
-        //     $query->where('departments.dept_name', $department);
-        // }
+        if ($department) {
+            $query->where('departments.dept_acronym', $department);
+        }
 
         if ($plan) {
             $query->where('subscription_plans.plan_name', $plan);

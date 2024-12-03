@@ -3,9 +3,9 @@ import { Button, DateRangePicker, Skeleton } from "@nextui-org/react";
 import { FaFilter } from 'react-icons/fa';
 import { FaFileLines, FaXmark } from 'react-icons/fa6';
 import Modal from '@/Components/Modal';
-import NoDataPrompt from '@/Components/Admins/NoDataPrompt';
 import axios from 'axios';
-import SearchBar from '@/Components/Admins/SearchBar';
+import SearchBar from '@/Components/Admin/SearchBar';
+import NoDataPrompt from '@/Components/Admin/NoDataPrompt';
 
 export default function Logs({ userId, username, isOpen, onClose }) {
     const [userLogs, setUserLogs] = useState([]);
@@ -27,34 +27,12 @@ export default function Logs({ userId, username, isOpen, onClose }) {
         setIsLoading(true);
 
         const debounce = setTimeout(() => {
-            const fetchData = async () => {
-                try {
-                    const response = await axios.get(route('users.logs', userId), {
-                        params: {
-                            // Filter params
-                            search_activity: searchActivity.trim(),
-                            start_date: (date && date.start)
-                                ? `${date.start.year}-${date.start.month}-${date.start.day} ${date.start.hour}:${date.start.minute}:00`
-                                : null,
-                            end_date: (date && date.end)
-                                ? `${date.end.year}-${date.end.month}-${date.end.day} ${date.end.hour}:${date.end.minute}:00`
-                                : null
-                        }
-                    });
-
-                    setUserLogs(response.data);
-                } catch (error) {
-                    console.error("There was an error fetching the data", error);
-                } finally {
-                    setIsLoading(false);
-                }
-            };
-            fetchData();
-        }, 300)
+            if (userId !== null) fetchData();
+        }, 300);
 
         return () => clearTimeout(debounce);
-
     }, [userId, searchActivity, date]);
+
 
     // Clear the filter values when the modal is closed
     useEffect(() => {
@@ -66,6 +44,37 @@ export default function Logs({ userId, username, isOpen, onClose }) {
         return () => clearTimeout(counterModalAnimation);
 
     }, [!isOpen]);
+
+
+    const fetchData = async () => {
+        if (!userId) {
+            console.error("userId is missing");
+            setIsLoading(false);
+            return;
+        }
+
+        try {
+            const response = await axios.get(route('users.logs'), {
+                params: {
+                    user_id: userId,
+                    search_activity: searchActivity.trim(),
+                    start_date: date?.start
+                        ? `${date.start.year}-${date.start.month}-${date.start.day} ${date.start.hour}:${date.start.minute}:00`
+                        : null,
+                    end_date: date?.end
+                        ? `${date.end.year}-${date.end.month}-${date.end.day} ${date.end.hour}:${date.end.minute}:00`
+                        : null,
+                },
+            });
+
+            setUserLogs(response.data);
+        } catch (error) {
+            console.error("There was an error fetching the data", error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
 
     return (
         <Modal show={isOpen} onClose={onClose} maxWidth="3xl">
@@ -148,10 +157,7 @@ export default function Logs({ userId, username, isOpen, onClose }) {
                                             </tr>
                                         </thead>
                                     </table>
-                                    <NoDataPrompt
-                                        leftIcon={<FaFileLines />}
-                                        textContent={!searchActivity ? 'No logs available' : 'No logs found'}
-                                    />
+                                    <NoDataPrompt />
                                 </>
 
                         ) :

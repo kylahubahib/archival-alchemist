@@ -1,5 +1,5 @@
 import TextInput from '@/Components/TextInput';
-import { Input, Button, Autocomplete, useCalendar } from '@nextui-org/react';
+import { Input, Button, Autocomplete, useCalendar, DatePicker } from '@nextui-org/react';
 import React, { useState, useEffect } from 'react';
 import { useForm } from '@inertiajs/react';
 import { FaFileExcel, FaUser } from "react-icons/fa6";
@@ -9,30 +9,45 @@ import { MdTextFields } from "react-icons/md";
 import { MdRemoveDone } from "react-icons/md";
 import { showToast } from '@/Components/Toast';
 import Modal from '@/Components/Modal';
-import { autocompleteInputProps, inputClassNames, onChangeHandler, renderAutocompleteItems } from '@/Components/Admins/Functions';
+import { autocompleteOnChangeHandler } from '@/Utils/admin-utils';
 import { FaBuilding, FaHashtag, FaRemoveFormat } from 'react-icons/fa';
 import axios from 'axios';
-import FileUpload from '@/Components/Admins/FileUpload';
-
+import FileUpload from '@/Components/Admin/FileUpload';
+import { customAutocompleteInputProps, customInputClassNames, parseNextUIDate } from '@/Utils/common-utils';
+import { renderAutocompleteList } from '@/Pages/SuperAdmin/Users/Filter';
 
 export default function Add({ isOpen, onClose }) {
+
+    const [dateOfBirth, setDateOfBirth] = useState(null);
+    const [selectedFile, setSelectedFile] = useState(null);
+    const [errorMessage, setErrorMessage] = useState('');
     const [departmentsWithCoursesResponse, setDepartmentsWithCoursesResponse] = useState([]);
     const [autocomplete, setAutocomplete] = useState({
         department: [], course: [], plan: [], planStatus: []
     });
 
+    useEffect(() => {
+        console.log('selectedFile', selectedFile);
+    }, [selectedFile]);
+
     const [isAutocompleteItemsLoading, setIsAutocompleteItemsLoading] = useState(false);
     const { data, setData, post, processing, errors, clearErrors, reset } = useForm(
         {
-            student_id: null,
+            uni_id_num: null,
             department_id: null,
             course_id: null,
             name: '',
-            department: { origText: '', acronym: '' },
-            course: { origText: '', acronym: '' },
+            department: '',
+            course: '',
             email: '',
+            date_of_birth: null,
         }
     )
+
+    useEffect(() => {
+        setData('date_of_birth', parseNextUIDate(dateOfBirth));
+        console.log('data.date_of_birth', data.date_of_birth);
+    }, [dateOfBirth]);
 
     useEffect(() => {
         fetchData();
@@ -65,13 +80,13 @@ export default function Add({ isOpen, onClose }) {
             console.log('deptcourses', response);
 
             // Extracting department names only
-            const departmentNames = response.data.map(department => department.dept_name);
+            const departmentAcronyms = response.data.map(department => department.dept_acronym);
 
             setDepartmentsWithCoursesResponse(response.data);
 
             setAutocomplete({
                 ...autocomplete,
-                department: departmentNames,
+                department: departmentAcronyms,
             });
         }
         catch (error) {
@@ -83,6 +98,11 @@ export default function Add({ isOpen, onClose }) {
 
     const handleAddStudent = (e) => {
         e.preventDefault();
+
+        if (selectedFile) {
+
+
+        }
 
         post(route('institution-students.add'), {
             onSuccess: () => {
@@ -100,6 +120,7 @@ export default function Add({ isOpen, onClose }) {
                 onClose();
             },
             onError: (error) => {
+                showToast('error', `${error}`);
                 console.error('Error occurred while adding the student:', error);
                 // showToast('error', 'An error occurred. Please try again.', {
                 //     autoClose: 5000,
@@ -111,9 +132,9 @@ export default function Add({ isOpen, onClose }) {
 
     const handleAutocompleteErrors = (category) => {
         if (category === 'Department') {
-            return errors["department.origText"];
-        } else if (category === 'Course' && data.department?.origText) {
-            return errors["course.origText"];
+            return errors["department"];
+        } else if (category === 'Course' && data.department) {
+            return errors["course"];
         }
     }
 
@@ -122,29 +143,45 @@ export default function Add({ isOpen, onClose }) {
         clearErrors();
     }
 
-    const handleDepartmentClick = (deptName) => {
-        // Find the courses for the selected department
-        const selectedDepartment = departmentsWithCoursesResponse.find(department => department.dept_name === deptName);
-        setData('department_id', selectedDepartment.dept_id);
+    const handleFileChange = (event) => {
+        const file = event.target.files[0];
 
+        // Validate the file type if it is a CSV or not
+        if (file && file.type !== 'text/csv' && file.name.split('.').pop().toLowerCase() !== 'csv') {
+            setErrorMessage('Please upload a valid CSV file.');
+            setSelectedFile(null);
+            return;
+        }
 
-        console.log('selectedDepartment', selectedDepartment);
-
-        // Get the courses through mapping
-        const courses = selectedDepartment.course.map(c => c.course_name);
-
-        setAutocomplete(prevState => ({
-            ...prevState,
-            course: courses,
-        }));
+        // Clear previous errors and set the selected file
+        setErrorMessage('');
+        setSelectedFile(file);
+        //console.log("Selected file:", file);
     };
 
-    const handleCourseClick = (courseName) => {
-        const selectedDepartment = departmentsWithCoursesResponse.find(department => department.dept_id === data.department_id);
-        const selectedCourse = selectedDepartment.course.find(course => course.course_name === courseName);
+    // const handleDepartmentClick = (deptAcronym) => {
+    //     // Find the courses for the selected department
+    //     const selectedDepartment = departmentsWithCoursesResponse.find(department => department.dept_acronym === deptAcronym);
+    //     setData('department_id', selectedDepartment.dept_id);
 
-        setData('course_id', selectedCourse.course_id);
-    };
+
+    //     console.log('selectedDepartment', selectedDepartment);
+
+    //     // Get the courses through mapping
+    //     const courses = selectedDepartment.course.map(c => c.course_acronym);
+
+    //     setAutocomplete(prevState => ({
+    //         ...prevState,
+    //         course: courses,
+    //     }));
+    // };
+
+    // const handleCourseClick = (courseAcronym) => {
+    //     const selectedDepartment = departmentsWithCoursesResponse.find(department => department.dept_id === data.department_id);
+    //     const selectedCourse = selectedDepartment.course.find(course => course.course_acronym === courseAcronym);
+
+    //     setData('course_id', selectedCourse.course_id);
+    // };
 
     return (
         <Modal show={isOpen} onClose={onClose} maxWidth="2xl">
@@ -159,7 +196,7 @@ export default function Add({ isOpen, onClose }) {
 
                     {/* Single Add */}
                     <div className="flex flex-col w-[70%] gap-4">
-                        <div className="pb-2">
+                        <div className="pb-1">
                             <label className="font-bold text-md">Single Add</label>
                             <hr />
                         </div>
@@ -169,13 +206,13 @@ export default function Add({ isOpen, onClose }) {
                                 min={1}
                                 radius="sm"
                                 labelPlacement="outside"
-                                label="Student ID"
+                                label="Student University ID"
                                 startContent={<FaHashtag />}
-                                isInvalid={errors.student_id}
-                                errorMessage={errors.student_id}
-                                value={data.student_id}
-                                onChange={(e) => setData('student_id', e.target.value)}
-                                classNames={inputClassNames()}
+                                isInvalid={errors.uni_id_num}
+                                errorMessage={errors.uni_id_num}
+                                value={data.uni_id_num}
+                                onChange={(e) => setData('uni_id_num', e.target.value)}
+                                classNames={customInputClassNames()}
                             />
                             <Input
                                 type="text"
@@ -187,10 +224,11 @@ export default function Add({ isOpen, onClose }) {
                                 errorMessage={errors.name}
                                 value={data.name}
                                 onChange={(e) => setData('name', e.target.value)}
-                                classNames={inputClassNames()}
+                                classNames={customInputClassNames()}
                             />
-                            {["Department", "Course"].map(category => (
+                            {/* {["Department", "Course"].map(category => (
                                 <Autocomplete
+                                    key={category}
                                     aria-label="Autocomplete Filter"
                                     radius="sm"
                                     label={category}
@@ -200,19 +238,31 @@ export default function Add({ isOpen, onClose }) {
                                     errorMessage={handleAutocompleteErrors(category)}
                                     isInvalid={handleAutocompleteErrors(category)}
                                     autoFocus={false}
-                                    isDisabled={category === 'Course' && data.department.acronym === ''}
-                                    inputProps={autocompleteInputProps({}, { marginBottom: '0px' })}
+                                    isDisabled={category === 'Course' && data.department === ''}
+                                    inputProps={customAutocompleteInputProps({}, { marginBottom: '0px' })}
                                     startContent={category === "Department" ? <FaBuilding size={25} /> : <GiGraduateCap size={43} />}
-                                    defaultSelectedKey={""}
-                                    onInputChange={(value) => onChangeHandler({ setter: setData, category, value, forOnInputChange: true })}
-                                    onSelectionChange={(value) => onChangeHandler({ setter: setData, category, value, forOnSelectionChange: true })}
+                                    onInputChange={(value) => autocompleteOnChangeHandler(setData, category, value)}
+                                    onSelectionChange={(value) => autocompleteOnChangeHandler(setData, category, value)}
                                     className="min-w-1"
                                 >
-                                    {category === 'Department' && renderAutocompleteItems('Department', autocomplete.department, () => handleDepartmentClick(data.department.origText))}
-                                    {category === 'Course' && renderAutocompleteItems('Course', autocomplete.course, () => handleCourseClick(data.course.origText))}
+                                    {category === 'Department' && renderAutocompleteList(autocomplete.department, () => handleDepartmentClick(data.department))}
+                                    {category === 'Course' && renderAutocompleteList(autocomplete.course, () => handleCourseClick(data.course))}
                                 </Autocomplete>
                             ))
-                            }
+                            } */}
+                            <DatePicker
+                                label="Birth date"
+                                labelPlacement="outside"
+                                placeholder=" "
+                                radius="sm"
+                                isInvalid={errors.date_of_birth}
+                                errorMessage={errors.date_of_birth}
+                                className="w-full"
+                                classNames={customInputClassNames({ base: "col-span-2" }, {})}
+                                value={dateOfBirth}
+                                onChange={(value) => setDateOfBirth(value)}
+                            />
+
                             <Input
                                 type="email"
                                 radius="sm"
@@ -223,7 +273,7 @@ export default function Add({ isOpen, onClose }) {
                                 startContent={<IoMail size={20} />}
                                 isInvalid={errors.email}
                                 errorMessage={errors.email}
-                                classNames={inputClassNames({ base: "col-span-2" }, {})}
+                                classNames={customInputClassNames({ base: "col-span-2" }, {})}
                             />
                         </div>
                         <div className="flex gap-3 justify-center items-center">
@@ -249,12 +299,14 @@ export default function Add({ isOpen, onClose }) {
                             </div>
                             <div className="pt-2 flex h-full">
                                 <FileUpload
-                                    fileFormat="CSV"
+                                    fileFormat="csv, xls, xlsx"
+                                    accept=".csv, .xls, .xlsx"
+                                    onChange={handleFileChange}
                                 />
                             </div>
 
                         </div>
-                        {/* <div className="flex justify-center items-center">
+                        <div className="flex justify-center items-center">
                             <Button
                                 startContent={<FaFileExcel size={20} />}
                                 color="default"
@@ -266,10 +318,11 @@ export default function Add({ isOpen, onClose }) {
                             >
                                 Remove
                             </Button>
-                        </div> */}
+                        </div>
                     </div>
 
                 </div>
+
 
 
                 <div className="bg-customBlue p-2 gap-2 flex justify-end">

@@ -11,10 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Add the `section_id` column only if it doesn't already exist
         Schema::table('manuscripts', function (Blueprint $table) {
-
-            $table->foreignId('section_id')->nullable()->references('id')->on('sections')->onDelete('cascade'); // Links to Section table
-
+            if (!Schema::hasColumn('manuscripts', 'section_id')) {
+                $table->foreignId('section_id')->nullable()->constrained('sections')->onDelete('cascade');
+            }
         });
     }
 
@@ -23,8 +24,10 @@ return new class extends Migration
      */
     public function down(): void
     {
+        // Drop the foreign key and column
         Schema::table('manuscripts', function (Blueprint $table) {
-            //
+            $table->dropForeign(['section_id']);  // Drop the foreign key constraint first
+            $table->dropColumn('section_id');     // Then drop the column
         });
     }
 };

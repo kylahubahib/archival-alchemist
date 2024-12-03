@@ -15,7 +15,7 @@ return new class extends Migration
     {
         Schema::table('faculties', function (Blueprint $table) {
             $table->unsignedBigInteger('uni_branch_id')->nullable()->change();
-            $table->string('fac_position')->nullable()->change();
+            $table->string('faculty_position')->nullable()->change();
         });
     }
 
@@ -28,7 +28,7 @@ return new class extends Migration
     {
         Schema::table('faculties', function (Blueprint $table) {
             $table->unsignedBigInteger('uni_branch_id')->nullable(false)->change();
-            $table->string('fac_position')->nullable(false)->change();
+            $table->string('faculty_position')->nullable(false)->change();
         });
     }
 };

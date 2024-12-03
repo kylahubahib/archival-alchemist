@@ -13,6 +13,8 @@ class PersonalSubscription extends Model
 {
     use HasFactory, Notifiable;
 
+    protected $table = 'personal_subscriptions';
+
     protected $fillable = [
         'user_id',
         'plan_id',

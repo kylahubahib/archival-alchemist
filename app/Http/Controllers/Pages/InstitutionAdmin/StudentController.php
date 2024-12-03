@@ -2,13 +2,17 @@
 
 namespace App\Http\Controllers\Pages\InstitutionAdmin;
 
+use App\Mail\AccountDetailsMail;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Pages\InsAdminCommonDataController;
 use App\Models\{PersonalSubscription, Student, User};
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Hash;
 use Inertia\Inertia;
+use Maatwebsite\Excel\Concerns\ToArray;
 
 class StudentController extends Controller
 {
@@ -18,7 +22,7 @@ class StudentController extends Controller
 
     public function __construct()
     {
-        // Create an instance of CommonDataController to get the values intended for the institution admin
+        // Create an instance of CommonDataController to get the values intended for the institution admins
         $commonData = new InsAdminCommonDataController();
         $this->authUserId = Auth::id();
         $this->insAdminUniBranchId = $commonData->getInsAdminUniBranchId();
@@ -38,79 +42,87 @@ class StudentController extends Controller
         $plan = request('plan', null);
         $planStatus = request('plan_status', null);
         $dateCreated = request('date_created', null);
-        $entriesPerPage = (int) request('entries', 10);
+        $entries = (int) request('entries', 10);
 
-        $query = DB::table('users')
-            ->join('students', 'users.id', '=', 'students.user_id')
-            ->join('university_branches', 'students.uni_branch_id', '=', 'university_branches.id')
-            ->leftJoin('class_students', 'students.id', '=', 'class_students.stud_id')
-            ->leftJoin('class', 'class_students.class_id', '=', 'class.id')
-            ->leftJoin('sections', 'class.section_id', '=', 'sections.id')
-            ->leftJoin('courses', 'sections.course_id', '=', 'courses.id')
-            ->leftJoin('departments', 'courses.dept_id', '=', 'departments.id')
-            ->leftJoin('personal_subscriptions', 'users.id', '=', 'personal_subscriptions.user_id')
-            ->leftJoin('subscription_plans', 'personal_subscriptions.plan_id', '=', 'subscription_plans.id')
-            ->select(
-                'users.name',
-                'users.created_at',
-                'users.email',
-                'users.is_premium',
-                'users.user_pic',
-                'users.user_status',
-                'students.id',
-                'departments.dept_acronym',
-                'courses.course_acronym',
-                'sections.section_name',
-                'subscription_plans.plan_name',
-                'personal_subscriptions.start_date',
-                'personal_subscriptions.end_date',
-                'personal_subscriptions.persub_status',
-            )
-            ->where('university_branches.id', $this->insAdminUniBranchId);
+        $query = User::where('user_type', 'student') // Only students
+            ->select('id', 'uni_id_num', 'name', 'email', 'is_premium', 'user_pic', 'created_at', 'user_status');
 
+        // Filter premium access
         if ($hasStudentPremiumAccess === 'with-premium-access') {
             $query->where('users.is_premium', true);
         } elseif ($hasStudentPremiumAccess === 'no-premium-access') {
             $query->where('users.is_premium', false);
         }
 
+        $query->with([
+            'student:id,user_id,section_id,uni_branch_id',
+            'student.university_branch:id,uni_id,uni_branch_name',
+            'student.university_branch.university:id,uni_name,uni_acronym',
+            'student.section:id,course_id,section_name',
+            'student.section.course:id,course_name,course_acronym,dept_id',
+            'student.section.course.department:id,dept_name,dept_acronym,uni_branch_id',
+            'personal_subscription:id,user_id,plan_id,start_date,end_date,persub_status',
+            'personal_subscription.plan:id,plan_name,plan_type,plan_term',
+        ]);
+
+        // Filter by related university branch
+        $query->whereHas('student', function ($q) {
+            $q->where('uni_branch_id', $this->insAdminUniBranchId);
+        });
+
+        // Filter by subscription plan type
+        // $query->whereHas('personal_subscription.plan', function ($q) {
+        //     $q->where('plan_type', 'Personal');
+        // });
+
+        // Search by user name or student ID
         if ($search) {
-            // Proper way to have multiple where statements is to wrap it in the closure or a function
-            // to avoid canceling out the next where queries
             $query->where(function ($q) use ($search) {
-                $q->where('users.name', 'LIKE', '%' . $search . '%')
-                    ->orWhere('students.id', 'LIKE', '%' . $search . '%');
+                $q->where('name', 'LIKE', '%' . $search . '%')
+                    ->orWhereHas('student', function ($q) use ($search) {
+                        $q->where('id', 'LIKE', '%' . $search . '%');
+                    });
             });
         }
 
+        // Filter by department
         if ($department) {
-            $query->where('departments.dept_name', $department);
+            $query->whereHas('student.section.course.department', function ($q) use ($department) {
+                $q->where('dept_acronym', $department);
+            });
         }
 
+        // Filter by course
         if ($course) {
-            $query->where('courses.course_name', $course);
+            $query->whereHas('student.section.course', function ($q) use ($course) {
+                $q->where('course_acronym', $course);
+            });
         }
 
+        // Filter by subscription plan name
         if ($plan) {
-            $query->where('subscription_plans.plan_name', $plan);
+            $query->whereHas('personal_subscription.plan', function ($q) use ($plan) {
+                $q->where('plan_name', $plan);
+            });
         }
 
+        // Filter by subscription status
         if ($planStatus) {
-            $query->where('personal_subscriptions.persub_status', $planStatus);
+            $query->whereHas('personal_subscription', function ($q) use ($planStatus) {
+                $q->where('persub_status', $planStatus);
+            });
         }
 
+        // Filter by creation date range
         if ($dateCreated) {
-            // Extract the date
-            list($startDate, $endDate) = explode(' - ', $dateCreated);
-            Log::error('startDate,', ['startDate,' => $startDate,]);
-            Log::error('endDate', ['endDate' => $endDate]);
-
+            [$startDate, $endDate] = explode(' - ', $dateCreated);
             $query->whereBetween('users.created_at', [$startDate, $endDate]);
         }
-
         $students = $query
-            ->orderBy('students.id', 'asc')
-            ->paginate($entriesPerPage)
+            // ->whereHas('student', function ($q) {
+            //     $q->orderBy('id', 'asc');
+            // })
+            ->paginate($entries)
             ->withQueryString();
 
         if (request()->expectsJson()) {
@@ -119,46 +131,101 @@ class StudentController extends Controller
 
         return Inertia::render('InstitutionAdmin/Students/Students', [
             'insAdminAffiliation' => $this->insAdminAffiliation,
-            'retrievedStudents' => $students,
+            'students' => $students,
             'hasStudentPremiumAccess' => $hasStudentPremiumAccess,
-            'retrievedEntriesPerPage' => $entriesPerPage,
-            'retrievedSearchName' => $search,
+            'entries' => $entries,
+            'search' => $search,
         ]);
     }
 
-    public function setPlanStatus($hasStudentPremiumAccess)
+    public function updatePlanStatus($hasStudentPremiumAccess)
     {
         $userId = request('user_id');
+
+        Log::info('user_Id', ['userID' => $userId]);
         $personalPlan = PersonalSubscription::firstWhere('user_id', $userId);
-        $personalPlan->persub_status = $personalPlan->persub_status === 'active' ? 'deactivated' : 'active';
+        $personalPlan->persub_status = $personalPlan->persub_status === 'Active' ? 'Inactive' : 'Active';
 
         $personalPlan->save();
 
         return  $this->filter($hasStudentPremiumAccess);
     }
 
-    public function addStudent()
+    public function uploadCSV($fileName)
     {
-        $validatedData = request()->validate(
+        // Validate the request
+        $request->validate([
+            'file' => 'required|file|mimes:csv,txt|max:2048',
+            'university' => 'required|string|max:255',
+        ]);
+
+        $file = $request->file('file');
+        $university = $request->input('university');
+
+        // Generate a unique filename
+        $fileName = $university . '_' . time() . '.' . $file->getClientOriginalExtension();
+
+        try {
+            // Process the uploaded file directly without saving it
+            Excel::import(new UsersImport, $file->getRealPath());
+            \Log::info('Import user successfully!');
+        } catch (\Exception $e) {
+            \Log::error('Error during user import: ' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to process the file.',
+            ], 500);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Successfully uploaded and processed.',
+        ]);
+    }
+
+    public function addStudent(Request $request)
+    {
+        $csvFile = $request->file('file');
+
+        if ($csvFile) {
+            // Handle CSV upload and processing
+            return $this->uploadCSV($request);
+        }
+
+        // Validate the student data
+        $validatedData = $request->validate(
             [
-                'student_id' => 'required|integer|unique:students,id',
-                'department_id' => 'required|integer',
-                'course_id' => 'required|integer',
-                'name' => 'required|string|max:255',
-                'department.origText' => 'required|string|max:100',
-                'course.origText' => 'required|string|max:100',
+                'uni_id_num' => [
+                    'required',
+                    'string',
+                    'max:20',
+                    // Check if the uni_id_num already exists within the university
+                    function ($attribute, $value, $fail) {
+                        $exists = Student::where('uni_branch_id', $this->insAdminUniBranchId)
+                            ->whereHas('user', function ($query) use ($value) {
+                                $query->where('uni_id_num', $value);
+                            })
+                            ->exists();
+
+                        if ($exists) {
+                            $fail('The student university ID is already in use.');
+                        }
+                    },
+                ],
+                'name' => 'string|max:255',
                 'email' => 'required|email|max:255|unique:users,email',
+                'date_of_birth' => 'required|max:150',
             ],
             [],
             [
-                // Custom attribute names
-                'department.origText' => 'department',
-                'course.origText' => 'course',
+                'uni_id_num' => 'student university ID',
             ]
         );
 
-        Log::info('dept_id', ['deptId' => $validatedData['department_id']]);
-
+        $password = 'AA' . $validatedData['date_of_birth'] . '44'; // Plain password for email
+        $hashedPassword = Hash::make($password); // Hash the password for storing in the database
+        $loginPageLink = route('login');
 
         DB::beginTransaction();
 
@@ -167,24 +234,38 @@ class StudentController extends Controller
             $user = User::create([
                 'user_type' => 'student',
                 'name' => $validatedData['name'],
+                'uni_id_num' => $validatedData['uni_id_num'],
+                'user_dob' => $validatedData['date_of_birth'],
                 'email' => $validatedData['email'],
-                'password' => 'AA' . $validatedData['email'] . '44',
+                'password' => $hashedPassword, // Store the hashed password
             ]);
 
             // Create the student
             Student::create([
-                'id' => $validatedData['student_id'],
-                'user_id' => $user->user_id,
+                'user_id' => $user->id,
                 'uni_branch_id' => $this->insAdminUniBranchId,
-                'dept_id' => $validatedData['department_id'],
-                'course_id' => $validatedData['course_id'],
             ]);
 
             DB::commit(); // Commit the transaction if everything is fine
+
+            // Send the student account details via email
+            Mail::to($validatedData['email'])->send(new AccountDetailsMail(
+                $validatedData['name'],
+                $validatedData['email'],
+                $password,
+                $loginPageLink
+            ));
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Student added successfully!',
+            ]);
         } catch (\Exception $e) {
             DB::rollBack(); // Rollback the transaction on error
-            // Log::error($e->getMessage());
-            return back()->withErrors(['error' => 'Failed to add student: ' . $e->getMessage()]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to add student: ' . $e->getMessage(),
+            ], 500);
         }
     }
 }

@@ -21,7 +21,7 @@ return new class extends Migration
             $table->string('user_pnum')->nullable();
             $table->string('user_aboutme')->nullable();
             $table->string('user_type');
-            $table->string('user_status')->default('active');
+            $table->string('user_status')->default('Active');
             $table->boolean('is_premium')->default(false);
             $table->string('user_pics')->nullable();
             $table->rememberToken();
