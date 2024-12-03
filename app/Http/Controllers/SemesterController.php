@@ -26,7 +26,7 @@ class SemesterController extends Controller
         {
             $uniBranchId = $user->faculty->uniBranchId;
         }
-        else if($user->user_type === 'institution_admin')
+        else if($user->user_type === 'admin')
         {
             $uniBranchId = $user->institution_admin->uniBranchId;
 

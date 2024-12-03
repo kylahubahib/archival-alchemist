@@ -94,7 +94,7 @@ export default function AdminLayout({ user, header, children, university = '' })
             <nav className="bg-white sticky top-0 shadow-sm z-50">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
                     <div className="flex justify-between">
-                        {user.user_type === 'institution_admin' &&
+                        {user.user_type === 'admin' &&
                         <div className="flex items-center">
                             <PageHeader className="uppercase">{university}</PageHeader>
                         </div>

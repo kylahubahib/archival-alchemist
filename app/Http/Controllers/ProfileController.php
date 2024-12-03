@@ -45,7 +45,7 @@ class ProfileController extends Controller
         $user = Auth::user();
         
 
-        if($user->user_type === 'superadmin' || $user->user_type === 'institution_admin')
+        if($user->user_type === 'superadmin' || $user->user_type === 'admin')
         {
             return Inertia::render('Profile/AdminProfile', [
                 'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,

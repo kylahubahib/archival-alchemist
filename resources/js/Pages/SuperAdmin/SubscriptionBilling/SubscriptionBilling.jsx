@@ -239,7 +239,7 @@ export default function SubscriptionBilling({ auth, subscriptions, userType, sea
                         {/* Handles the visibility and text of the add button*/}
                         {userType === 'superadmin' && (
                             <AddButton onClick={() => setIsCreateModalOpen(true)} icon={<FaPlus />}>
-                                {userType === "institution_admin" ? "Add co-ins admin" : "Add co-super admin"}
+                                {userType === "admin" ? "Add co-ins admin" : "Add co-super admin"}
                             </AddButton>
                         )}
 

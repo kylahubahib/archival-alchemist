@@ -128,7 +128,7 @@ class GoogleController extends Controller
             }
 
             // Redirect based on user type
-            if ($user->user_type === 'institution_admin') {
+            if ($user->user_type === 'admin') {
                 return redirect()->route('institution-students');
             } else {
                 return redirect()->route('library');

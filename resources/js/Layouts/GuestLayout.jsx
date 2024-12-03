@@ -23,7 +23,7 @@ export default function GuestLayout({ user, children }) {
                                 <>
                                     {user.user_type === 'superadmin' ? (
                                         <NavLink to={'/dashboard'} active={route().current('dashboard')} className="text-customBlue">My Account</NavLink>
-                                    ) : user.user_type === 'institution_admin' ? (
+                                    ) : user.user_type === 'admin' ? (
                                         <NavLink to={'/institution/students'} active={route().current('institution-students')} className="text-customBlue">My Account</NavLink>
                                     ) : (
                                         <NavLink to={'/savedlist'} active={route().current('savedlist')} className="text-customBlue">My Account</NavLink>
@@ -63,7 +63,7 @@ export default function GuestLayout({ user, children }) {
                                     <>
                                         {user.user_type === 'superadmin' ? (
                                             <li><NavLink to={'/dashboard'} active={route().current('dashboard')} className="text-customBlue block">My Account</NavLink></li>
-                                        ) : user.user_type === 'institution_admin' ? (
+                                        ) : user.user_type === 'admin' ? (
                                             <li><NavLink to={'/institution/students'} active={route().current('institution-students')} className="text-customBlue block">My Account</NavLink></li>
                                         ) : (
                                             <li><NavLink to={'/savedlist'} active={route().current('savedlist')} className="text-customBlue block">My Account</NavLink></li>
