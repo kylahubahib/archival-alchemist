@@ -1,5 +1,6 @@
 import { RiMessengerLine } from "react-icons/ri";
 import { BiEnvelope } from "react-icons/bi";
+import { FaUniversity } from "react-icons/fa";
 import { MdChatBubbleOutline, MdOutlineForum, MdOutlineLabel,  } from "react-icons/md";
 import { SiGoogleclassroom } from "react-icons/si";
 import { BiBookBookmark, BiBookOpen } from "react-icons/bi";
@@ -110,7 +111,13 @@ export default function Authenticated({ user, children, newProfile = null, searc
 
                                     <Dropdown>
                                         <Dropdown.Trigger>
-                                            <span className="inline-flex rounded-md">
+                                            <span className="inline-flex rounded-md">{isAffiliated ? (
+                                             <div
+                                             className="relative items-center mr-2 px-0 py-0 border border-transparent text-sm leading-4 font-medium rounded-full h-10 w-10 flex justify-center text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150"
+                                             >
+                                                    <FaUniversity size={24} />
+
+                                                </div>):(null)}
                                                 <button
                                                     type="button"
                                                     className="relative items-center px-0 py-0 border border-transparent text-sm leading-4 font-medium rounded-full h-10 w-10 flex justify-center text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150"
@@ -119,13 +126,7 @@ export default function Authenticated({ user, children, newProfile = null, searc
                                                 </button>
 
 
-                                                {isAffiliated ? (
-                                             <div
-                                                    className="ml-1 relative items-center px-0 py-0 border border-transparent text-sm leading-4 font-medium rounded-full h-5 w-5 flex justify-center text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150"
-                                                >
-                                                    <img src="images/class.png" className="w-full h-full rounded-full object-cover" />
 
-                                                </div>):(null)}
 
                                             </span>
 
