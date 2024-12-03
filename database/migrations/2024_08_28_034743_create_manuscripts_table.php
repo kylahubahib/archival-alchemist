@@ -20,11 +20,6 @@ return new class extends Migration
             $table->boolean('is_publish')->default(false);
             $table->decimal('man_doc_rating', 5, 2)->nullable();
             $table->timestamps();
-
-
-            // Ensure that these foreign key columns are unsignedBigInteger if you are referencing an id column of that type
-            $table->foreignId('class_id')->nullable()->constrained('class_code')->on('class')->onDelete('set null');
-
         });
     }
 
@@ -32,6 +27,4 @@ return new class extends Migration
     {
         Schema::dropIfExists('manuscripts');
     }
-
-
 };

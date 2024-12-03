@@ -11,6 +11,7 @@ import { Slide, ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 export default function ViewCSV({ isOpen, onClose, file, ins_sub }) {
+export default function ViewCSV({ isOpen, onClose, file, ins_sub }) {
     const [insubContent, setInsubContent] = useState(ins_sub.insub_content);
     const [csvData, setCsvData] = useState([]);
     const [selectedFile, setSelectedFile] = useState(null);
@@ -62,6 +63,7 @@ export default function ViewCSV({ isOpen, onClose, file, ins_sub }) {
             toast.warning('Please select a file.', {position: "bottom-right"});
             return;
         }
+
 
         const formData = new FormData();
         formData.append('file', selectedFile);

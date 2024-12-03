@@ -1,181 +1,122 @@
 
 import React, { useState, useEffect } from "react";
-import { motion, AnimatePresence } from 'framer-motion';
-import { GoDotFill } from "react-icons/go";
-import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, Button, User, Skeleton, Chip, Tooltip } from "@nextui-org/react";
-import { FaHandsHolding, FaPlus, FaRegCircleDot, FaTableList, FaFileCircleCheck, FaFileCircleMinus, FaEye, FaUser, FaFileInvoice, FaCircleXmark, FaXmark, FaFilterCircleXmark, } from "react-icons/fa6";
-import { FaChevronDown, FaFilter, FaHandHolding, FaHands } from "react-icons/fa";
-import PageHeader from '@/Components/Admins/PageHeader';
-import AdminLayout from '@/Layouts/AdminLayout';
-import SearchBar from "@/Components/Admins/SearchBar";
-import MainNav from "@/Components/MainNav";
+import { User, Chip, } from "@nextui-org/react";
+import { FaPlus, FaFileCircleCheck, FaFileCircleMinus, FaFileInvoice } from "react-icons/fa6";
 import { HiDocumentCheck, HiDocumentMinus } from "react-icons/hi2";
-import AddButton from "@/Components/Admins/AddButton";
-import { format } from "date-fns";
-import { MdOutlineMoneyOff } from "react-icons/md";
-import axios from "axios";
-import SetPlanStatus from "./SetPlanStatus";
-import ActionButton from "@/Components/Admins/ActionButton";
-import Pagination from "@/Components/Admins/Pagination";
-import { encodeParam, setStatusChip, updateUrl } from "@/Components/Admins/Functions";
-import NoDataPrompt from "@/Components/Admins/NoDataPrompt";
+import { decodeURLParam, formatDateTime } from "@/Utils/common-utils";
+import { renderTableControls, renderTableHeaders } from "@/Pages/SuperAdmin/Users/Users";
+import { fetchSearchFilteredData, getTotalFilters, handleSetEntriesPerPageClick } from "@/Utils/admin-utils";
+import PageHeader from '@/Components/Admin/PageHeader';
+import AdminLayout from '@/Layouts/AdminLayout';
+import MainNav from "@/Components/MainNav";
+import AddButton from "@/Components/Admin/AddButton";
+import ActionButton from "@/Components/Admin/ActionButton";
+import Pagination from "@/Components/Admin/Pagination";
+import TableSkeleton from "@/Components/Admin/TableSkeleton";
+import StatusChip from "@/Components/Admin/StatusChip";
+import NoDataPrompt from "@/Components/Admin/NoDataPrompt";
 import Filter from "./Filter";
-import { Link, router } from "@inertiajs/react";
-import autoprefixer from "autoprefixer";
-import NoResultsFound from "@/Components/Admins/NoResultsFound";
 import Add from "./Add";
-import FileUpload from "@/Components/FileUpload";
+import UpdatePlanStatus from "./UpdatePlanStatus";
 
-export default function Students({ auth, insAdminAffiliation, retrievedStudents, hasStudentPremiumAccess, retrievedSearchName, retrievedEntriesPerPage }) {
-    console.log('retrievedStudents', retrievedStudents);
-    const [studentsToRender, setStudentsToRender] = useState(retrievedStudents);
+export default function Students({ auth, insAdminAffiliation, students, hasStudentPremiumAccess, search, entries }) {
+    console.log('students', students);
+    const [studentsToRender, setStudentsToRender] = useState(students);
     const [userId, setUserId] = useState(null);
-    const [isLoading, setIsLoading] = useState(false);
+    const [isDataLoading, setIsDataLoading] = useState(false);
+    const [hasFilteredData, setHasFilteredData] = useState(false);
     const [name, setName] = useState('');
-    const [search, setSearch] = useState(retrievedSearchName ? decodeURIComponent(retrievedSearchName) : '');
-    const [currentPlan, setCurrentPlan] = useState('');
+    const [searchTerm, setSearchTerm] = useState(search ? decodeURLParam(search) : '');
+    const [currentPlanName, setCurrentPlanName] = useState('');
     const [currentPlanStatus, setCurrentPlanStatus] = useState('');
-    const [entriesPerPage, setEntriesPerPage] = useState(retrievedEntriesPerPage ?? 10);
+    const [entriesPerPage, setEntriesPerPage] = useState(entries || 10);
     const [totalFilters, setTotalFilters] = useState(null);
     const [isAddStudentModalOpen, setIsAddStudentModalOpen] = useState(false);
-    const [isSetPlanStatusModalOpen, setIsSetPlanStatusModalOpen] = useState(false);
-    const [isFilterOpen, setIsFilterOpen] = useState(() => {
-        return localStorage.getItem('filterOpen') === 'true';
-    });
+    const [isUpdatePlanStatusModalOpen, setIsUpdatePlanStatusModalOpen] = useState(false);
+    const [isFilterOpen, setIsFilterOpen] = useState(false);
 
     // State variables to be passed to the Filter component
-    const [autocomplete, setAutocomplete] = useState({
-        department: [], course: [], plan: [], planStatus: []
-    });
-    const [selected, setSelected] = useState({
-        department: { origText: null, acronym: null }, course: { origText: null, acronym: null },
-        plan: null, planStatus: null, dateCreated: { start: null, end: null, }
-    });
+    const [autocompleteItems, setAutocompleteItems] = useState({ department: [], course: [], plan: [], currentPlanStatus: [] });
+    const [selectedAutocompleteItems, setSelectedAutocompleteItems] = useState({ department: '', course: '', plan: '', currentPlanStatus: '', dateCreated: { start: null, end: null, } });
 
     const [{ university, uni_branch_name }] = insAdminAffiliation;
     const params = route().params;
 
+    console.log('params', params);
+
+    useEffect(() => {
+        console.log('hasFilteredData', hasFilteredData);
+
+    }, [hasFilteredData]);
+
+    useEffect(() => {
+        console.log('insAdminAffiliation', insAdminAffiliation);
+    }, []);
+
+
     const filterParams = ['department', 'course', 'plan', 'plan_status', 'date_created'];
-    const studentsNavigation = [
-        { text: 'Premium Access', icon: <HiDocumentCheck />, routeParam: 'with-premium-access' },
-        { text: 'No Premium Access', icon: <HiDocumentMinus />, routeParam: 'no-premium-access' },
+    const navigations = [
+        { text: 'Premium Access', icon: <HiDocumentCheck />, param: 'with-premium-access' },
+        { text: 'No Premium Access', icon: <HiDocumentMinus />, param: 'no-premium-access' },
     ];
+
     const tableHeaders = {
         'with-premium-access': ['Name', 'Student ID', 'Department', 'Course', 'Section', 'Date Created', 'Current Plan', 'Plan Status', 'Action'],
         'no-premium-access': ['Name', 'Student ID', 'Department', 'Course', 'Section', 'Date Created', 'Current Plan'],
     };
 
+    // Get the total number of filters from the query parameters that have values
     useEffect(() => {
-        localStorage.setItem('filterOpen', isFilterOpen);
-    }, [isFilterOpen]);
-
-    // Get the total filters
-    useEffect(() => {
-        let count = 0;
-
-        filterParams.filter(param => param in params)
-            .forEach(_ => count++)
-
-        setTotalFilters(count);
+        setTotalFilters(getTotalFilters(params, filterParams));
     }, [params])
 
-    // For inertia responses
+    // For inertia responses, it updates automatically when the page is refreshed
     useEffect(() => {
-        setStudentsToRender(retrievedStudents);
-    }, [retrievedStudents])
+        setStudentsToRender(students);
+    }, [students])
 
-    // For json responses
+    // For responses that receive JSON, like search filters
     useEffect(() => {
-        setIsLoading(true);
-
-        // Remove the search parameter if there is no search input
-        if (search.trim() === '') {
-            setIsLoading(false);
-            updateUrl('search', null);
-            router.reload({ preserveState: true, preserveScroll: true })
-            return;
-        }
+        setIsDataLoading(true);
 
         const debounce = setTimeout(() => {
-            updateUrl('search', encodeParam(search));
-            updateUrl('page', null);
-            handleSearchFilter();
-
+            fetchSearchFilteredData('institution-students.filter', params, searchTerm,
+                setIsDataLoading, setStudentsToRender, setHasFilteredData);
         }, 300);
 
         return () => clearTimeout(debounce);
 
-    }, [search.trim()]);
+    }, [searchTerm.trim()]);
 
-    const handleSearchFilter = async () => {
-        setIsLoading(true);
+    const renderActionButtons = (userId, name, currentPlanName, currentPlanStatus) => (
+        <div className="p-2 flex gap-2">
+            {currentPlanStatus && (
+                <ActionButton
+                    icon={currentPlanStatus === 'Active' ? <FaFileCircleMinus /> : <FaFileCircleCheck />}
+                    tooltipContent={currentPlanStatus === 'Active' ? 'Deactivate plan' : 'Activate plan'}
+                    onClick={() =>
+                        handleUpdatePlanStatusModalClick(
+                            userId,
+                            name,
+                            currentPlanName,
+                            currentPlanStatus,
+                        )
+                    }
+                />
+            )}
+        </div>
+    );
 
-        try {
-            const response = await axios.get(route('institution-students.filter', { hasStudentPremiumAccess }), {
-                params: {
-                    search: search.trim(),
-                    // Include entries param to retain the current entries state upon page reload.
-                    entries: params.entries,
-                },
-            });
-            setStudentsToRender(response.data);
-            // // Remove the page parameter whenever search changes
-            updateUrl('page', null);
-
-        } catch (error) {
-            console.error("Error fetching students:", error);
-        }
-        finally {
-            setIsLoading(false);
-        }
-    };
-
-    const handleSetEntriesPerPage = async (entries) => {
-        setEntriesPerPage(entries);
-
-        try {
-            const response = await axios.get(route('institution-students.filter', { hasStudentPremiumAccess }), {
-                params: {
-                    entries: entries,
-                    search: params.search,
-                }
-            });
-            setStudentsToRender(response.data);
-            updateUrl('entries', entries);
-            updateUrl('page', null);
-
-        } catch (error) {
-            console.error("Error fetching entries:", error);
-        }
-    };
-
-    const handleSetStatusModal = (id, name, currentPlan, planStatus) => {
-        setIsSetPlanStatusModalOpen(true);
+    const handleUpdatePlanStatusModalClick = (id, name, currentPlanName, currentPlanType, currentPlanStatus) => {
+        setIsUpdatePlanStatusModalOpen(true);
         setUserId(id);
         setName(name);
-        setCurrentPlan(currentPlan);
-        setCurrentPlanStatus(planStatus);
+        setCurrentPlanName(currentPlanName);
+        setCurrentPlanStatus(currentPlanStatus);
     }
 
-    const handleClearFilters = () => {
-        setSelected(
-            {
-                department: { origText: null, acronym: null }, course: { origText: null, acronym: null },
-                plan: null, planStatus: null, dateCreated: null
-            })
-    }
-
-    const renderTableHeader = () => {
-        return <thead className="text-xs sticky z-20 -top-[1px] pb-[20px] text-customGray uppercase align-top bg-customLightGray">
-            <tr>
-                {/* Loads the tableHeader for a specific user type */}
-                {tableHeaders[hasStudentPremiumAccess]?.map((header, index) => (
-                    <th key={index} scope="col" className="p-2">
-                        {header}
-                    </th>
-                ))}
-            </tr>
-        </thead>
+    const handleClearFiltersClick = () => {
+        setSelectedAutocompleteItems({ department: '', course: '', plan: '', currentPlanStatus: '', dateCreated: null })
     }
 
     return (
@@ -190,16 +131,15 @@ export default function Students({ auth, insAdminAffiliation, retrievedStudents,
                 </div>
 
                 <div className="mx-auto sm:px-2 lg:px-4">
-                    {/* Main Filter Navigation */}
                     <div className="MainNavContainer flex gap-3 py-4">
-                        {studentsNavigation.map(nav => (
+                        {navigations.map(nav => (
                             <MainNav
                                 key={nav.text}
                                 icon={nav.icon}
-                                href={route('institution-students.filter', { ...params, hasStudentPremiumAccess: nav.routeParam })}
+                                href={route('institution-students.filter', { ...params, hasStudentPremiumAccess: nav.param })}
                                 active={
-                                    (route().current('institution-students') && nav.routeParam === 'with-premium-access')
-                                    || route().current('institution-students.filter', nav.routeParam)
+                                    (route().current('institution-students') && nav.param === 'with-premium-access')
+                                    || route().current('institution-students.filter', nav.param)
                                 }>
                                 {nav.text}
                             </MainNav>))
@@ -210,172 +150,73 @@ export default function Students({ auth, insAdminAffiliation, retrievedStudents,
                         </AddButton>
                     </div>
 
-                    <div className="bg-white flex flex-col gap-4 relative shadow-md sm:rounded-lg overflow-hidden p-4">
-                        {/* Table Controls */}
-                        <div className="flex flex-col gap-3 min-[480px]:flex-row md:gap-20 w-full">
-                            <SearchBar
-                                name='search'
-                                value={search}
-                                variant="bordered"
-                                onChange={(e) => setSearch(e.target.value)}
-                                placeholder="Search by name, student id..."
-                                className="min-w-sm flex-1"
-                            />
+                    <div className="bg-white flex flex-col gap-4 h-[68dvh] relative shadow-md sm:rounded-lg overflow-hidden p-4">
 
-                            <div className="flex w-full flex-1 gap-2 ml-auto min-h-[35px]">
-                                {/* Filter */}
-                                <div className="flex flex-1 gap-1 justify-end">
-                                    {/* Clear filters */}
-                                    <AnimatePresence>
-                                        {totalFilters > 0 && (
-                                            <motion.div
-                                                key="close-button" // Ensure a unique key for AnimatePresence to track
-                                                initial={{ opacity: 0, scale: 0.8 }}
-                                                animate={{ opacity: 1, scale: 1 }}
-                                                exit={{ opacity: 0, scale: 0.8 }} // Exit animation when it disappears
-                                                transition={{ duration: 0.3 }}
-                                            >
-                                                <Tooltip
-                                                    color="danger"
-                                                    size="sm"
-                                                    closeDelay={180}
-                                                    content="Clear filters"
-                                                >
-                                                    <Button
-                                                        preserveScroll
-                                                        preserveState
-                                                        isIconOnly
-                                                        radius="sm"
-                                                        variant="bordered"
-                                                        onClick={handleClearFilters}
-                                                        className="border ml-auto flex border-red-500 bg-white"
-                                                    >
-                                                        <FaFilterCircleXmark size={19} className="text-red-500" />
-                                                    </Button>
-                                                </Tooltip>
-                                            </motion.div>
-                                        )}
-                                    </AnimatePresence>
+                        {/* TABLE CONTROLS */}
+                        {renderTableControls('institution-students.filter', searchTerm, setSearchTerm, 'Search by name or student id...',
+                            students.data.length === 0, totalFilters, handleClearFiltersClick, isFilterOpen, setIsFilterOpen,
+                            handleSetEntriesPerPageClick, entriesPerPage, setEntriesPerPage, setStudentsToRender
+                        )}
 
-                                    <div>
-                                        <Button
-                                            className="text-customGray border min-w-[100px] border-customLightGray bg-white"
-                                            radius="sm"
-                                            disableRipple
-                                            startContent={<FaFilter size={16} />}
-                                            onClick={() => setIsFilterOpen(prev => !prev)}
-                                        >
-                                            <span className='tracking-wide'>
-                                                {!isFilterOpen ? 'Filters' : 'Hide Filters'}
-                                                {totalFilters > 0 && <strong>: {totalFilters}</strong>}
-                                            </span>
-                                        </Button>
-                                    </div>
-                                </div>
-
-                                {/* Entries per page */}
-                                <Dropdown>
-                                    <DropdownTrigger>
-                                        <Button
-                                            radius="sm"
-                                            disableRipple
-                                            endContent={<FaChevronDown size={14} className="text-customGray" />}
-                                            className="border w-[190px] max-sm:w-full border-customLightGray bg-white"
-                                        >
-                                            <span className='text-gray-500 tracking-wide'>Entries per page
-                                                <strong>: {entriesPerPage}</strong>
-                                            </span>
-                                        </Button>
-                                    </DropdownTrigger>
-
-                                    <DropdownMenu
-                                        disabledKeys={[entriesPerPage.toString()]}
-                                    >
-                                        {[1, 5, 10, 15, 20, 25, 30, 50].map((entry) => (
-                                            <DropdownItem
-                                                key={entry}
-                                                className="!text-customGray"
-                                                onClick={() => handleSetEntriesPerPage(entry)}
-                                            >
-                                                {entry}
-                                            </DropdownItem>
-                                        ))}
-                                    </DropdownMenu>
-                                </Dropdown>
-                            </div>
-                        </div>
-
-                        {/* Filters shows here */}
+                        {/* FILTER COMPONENT PLACEMENT */}
                         <Filter
                             hasStudentPremiumAccess={hasStudentPremiumAccess}
-                            autocomplete={autocomplete}
-                            setAutocomplete={setAutocomplete}
-                            selected={selected}
-                            setSelected={setSelected}
+                            autocompleteItems={autocompleteItems}
+                            setAutocompleteItems={setAutocompleteItems}
+                            selectedAutocompleteItems={selectedAutocompleteItems}
+                            setSelectedAutocompleteItems={setSelectedAutocompleteItems}
                             isFilterOpen={isFilterOpen}
                         />
 
-                        {/* Table */}
+                        {/* STUDENT DATA */}
                         <div className="TableContainer border overflow-y-auto  max-h-[50vh] ">
-                            {!isLoading ?
+                            {!isDataLoading ?
                                 (studentsToRender.data.length > 0 ? (
                                     <table className="w-full table-auto relative text-xs text-left text-customGray tracking-wide">
-                                        {renderTableHeader()}
+                                        {renderTableHeaders(tableHeaders, hasStudentPremiumAccess)}
                                         <tbody>
-                                            {studentsToRender.data.map((student, index) => {
-                                                const formattedDateCreated = format(new Date(student.created_at), 'MM/dd/yyyy HH:mm aa');
+                                            {studentsToRender.data.map((stud, index) => {
+                                                const { id, uni_id_num, name, email, created_at, user_pic, student, personal_subscription } = stud;
 
-                                                const actionButtons = () => {
-                                                    return (
-                                                        <div className="p-2 flex gap-2">
-                                                            {student.persub_status &&
-                                                                (<ActionButton
-                                                                    icon={student.persub_status === 'Active' ? <FaFileCircleMinus /> : <FaFileCircleCheck />}
-                                                                    tooltipContent={student.persub_status === 'Active' ? 'Deactivate plan' : 'Acitvate plan'}
-                                                                    onClick={() =>
-                                                                        handleSetStatusModal(
-                                                                            student.user_id,
-                                                                            student.name,
-                                                                            student.plan_type,
-                                                                            student.persub_status
-                                                                        )}
-                                                                />)
-                                                            }
-
-                                                        </div>
-                                                    );
-
-                                                }
+                                                const studentId = student?.id || 'N/A';
+                                                const departmentAcronym = student?.section?.course?.department?.dept_acronym || 'N/A';
+                                                const courseAcronym = student?.section?.course?.course_acronym || 'N/A';
+                                                const sectionName = student?.section?.section_name || 'N/A';
+                                                const planName = personal_subscription?.plan?.plan_name || 'Basic Plan';
+                                                const planStatus = personal_subscription?.persub_status || 'N/A';
+                                                const formattedDateCreated = formatDateTime(created_at) || 'N/A';
 
                                                 return (
                                                     <tr key={index} className="border-b border-customLightGray hover:bg-gray-100">
                                                         <td className="flex items-center content-center pl-3 p-2">
                                                             <User
-                                                                name={student.name}
-                                                                description={student.email}
+                                                                name={name}
+                                                                description={email}
                                                                 avatarProps={{
-                                                                    src: student.user_pic ? `/storage/${student.user_pic}` : '/images/default-profile.png',
-                                                                    alt: "profile-pic",
+                                                                    src: user_pic ? `/${user_pic}` : '/images/default-profile.png',
+                                                                    alt: "Profile Picture",
                                                                     isBordered: true
                                                                 }}
                                                             />
                                                         </td>
-                                                        <td className="p-2">{student.id}</td>
-                                                        <td className="p-2">{student.dept_acronym ?? 'N/A'}</td>
-                                                        <td className="p-2">{student.course_acronym ?? 'N/A'}</td>
-                                                        <td className="p-2">{student.section_name ?? 'N/A'}</td>
+                                                        <td className="p-2">{studentId}</td>
+                                                        <td className="p-2">{departmentAcronym ?? 'N/A'}</td>
+                                                        <td className="p-2">{courseAcronym ?? 'N/A'}</td>
+                                                        <td className="p-2">{sectionName ?? 'N/A'}</td>
                                                         <td className="p-2">{formattedDateCreated}</td>
                                                         <td className="p-2">
-                                                            <Chip startContent={<FaFileInvoice size={16} />} size="sm" className="text-customGray h-full p-1 text-wrap flex" variant='faded'>
-                                                                {student.plan_name ?? 'Free Plan'}
+                                                            <Chip startContent={<FaFileInvoice size={16} />} size="sm" className="text-customGray h-full p-1 text-wrap flex text-center" variant='faded'>
+                                                                {planName}
                                                             </Chip>
                                                         </td>
 
-                                                        {hasStudentPremiumAccess === 'with-premium-access' &&
+                                                        {hasStudentPremiumAccess === 'with-premium-access' && (
                                                             <>
-                                                                <td className="p-2">{setStatusChip(student.persub_status)}</td>
-                                                                <td className="p-2">{actionButtons()}</td>
+                                                                <td className="p-2">{<StatusChip status={currentPlanStatus} />}</td>
+                                                                <td className="p-2">{renderActionButtons(id, name, planName, planStatus)}</td>
                                                             </>
+                                                        )
+
                                                         }
 
                                                     </tr>
@@ -386,45 +227,17 @@ export default function Students({ auth, insAdminAffiliation, retrievedStudents,
                                 )
                                     : <>
                                         <table className="w-full table-auto relative text-xs text-left border-current text-customGray tracking-wide">
-                                            {renderTableHeader()}
+                                            {renderTableHeaders(tableHeaders, hasStudentPremiumAccess)}
                                         </table>
-                                        <NoResultsFound />
+                                        <NoDataPrompt type={hasFilteredData ? '' : 'filter'} />
                                     </>
                                 )
-
-                                // Skeleton loading
-                                : <table className="w-full table-auto relative text-xs text-left border-current text-customGray tracking-wide">
-                                    {renderTableHeader()}
-                                    <tbody>
-                                        {Array.from({ length: 4 }).map((_, rowIndex) => (
-                                            <tr key={rowIndex} className="text-gray-400 border border-gray">
-                                                {tableHeaders[hasStudentPremiumAccess].map((header, index) => (
-                                                    <td
-                                                        key={index}
-                                                        className={`p-2 border ${header === 'Name' ? 'min-w-[150px]' : ''} border-gray`}
-                                                    >
-                                                        {header === 'Name' ?
-                                                            <div className="flex items-center gap-3">
-                                                                <div>
-                                                                    <Skeleton className="flex rounded-full w-11 h-11" />
-                                                                </div>
-                                                                <div className="w-full flex flex-col gap-2">
-                                                                    <Skeleton className="h-4 w-3/5 rounded-lg" />
-                                                                    <Skeleton className="h-3 w-4/5 rounded-lg" />
-                                                                </div>
-                                                            </div>
-                                                            : <Skeleton className="h-5 w-full rounded-lg" />
-                                                        }
-                                                    </td>
-                                                ))}
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
+                                : <TableSkeleton tableHeaders={tableHeaders} tableHeaderType={hasStudentPremiumAccess} />
                             }
 
                         </div>
-                        {(!isLoading && studentsToRender.data.length > 0) &&
+
+                        {(!isDataLoading && studentsToRender.data.length > 0) &&
                             <Pagination
                                 tableData={studentsToRender}
                             />
@@ -438,15 +251,15 @@ export default function Students({ auth, insAdminAffiliation, retrievedStudents,
                 isOpen={isAddStudentModalOpen}
                 onClose={() => setIsAddStudentModalOpen(false)}
             />
-            <SetPlanStatus
+            <UpdatePlanStatus
                 hasStudentPremiumAccess={hasStudentPremiumAccess}
                 userId={userId}
                 name={name}
-                currentPlan={currentPlan}
+                currentPlanName={currentPlanName}
                 currentPlanStatus={currentPlanStatus}
                 setStudentsToRender={setStudentsToRender}
-                isOpen={isSetPlanStatusModalOpen}
-                onClose={() => setIsSetPlanStatusModalOpen(false)}
+                isOpen={isUpdatePlanStatusModalOpen}
+                onClose={() => setIsUpdatePlanStatusModalOpen(false)}
             />
         </AdminLayout >
     );

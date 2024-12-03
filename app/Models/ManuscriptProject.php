@@ -36,13 +36,13 @@ class ManuscriptProject extends Model
     /**
      * Get the student that owns the manuscript project.
      */
-    public function student(): BelongsTo
-    {
-        return $this->belongsTo(Student::class, 'student_id');
-    }
+    // public function student(): BelongsTo
+    // {
+    //     return $this->belongsTo(Student::class, 'student_id');
+    // }
 
 
-     /**
+    /**
      * Many-to-Many relationship with Tags.
      * A manuscript can have multiple tags.
      */
@@ -104,5 +104,4 @@ class ManuscriptProject extends Model
     {
         return $this->belongsToMany(User::class, 'book_views', 'man_doc_id', 'user_id');
     }
-
 }

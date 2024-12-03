@@ -130,7 +130,13 @@ return [
         App\Providers\AuthServiceProvider::class,
         //Usamamuneerchaudhary\Commentify\Providers\CommentifyServiceProvider::class,
     //     Maatwebsite\Excel\ExcelServiceProvider::class,
-     //],
+    //     // Laravel\Reverb\ApplicationManagerServiceProvider::class,
+    //     Illuminate\Filesystem\FilesystemServiceProvider::class,
+    //     Illuminate\Cache\CacheServiceProvider::class,
+    //     Tighten\Ziggy\ZiggyServiceProvider::class,
+    //     Elibyy\TCPDF\ServiceProvider::class,
+
+    // ],
 
     // 'aliases' => [
     //     'Excel' => Maatwebsite\Excel\Facades\Excel::class,

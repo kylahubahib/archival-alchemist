@@ -1,17 +1,22 @@
-import { Autocomplete, AutocompleteItem, Button, DatePicker, DateRangePicker } from "@nextui-org/react";
+import { Autocomplete, Button, DateRangePicker } from "@nextui-org/react";
 import { useState, useEffect } from 'react';
 import { FaFilterCircleXmark, FaXmark } from "react-icons/fa6";
 import { FaFilter } from "react-icons/fa";
 import { toast } from 'react-toastify';
 import Modal from '@/Components/Modal';
 import axios from 'axios';
-import { autocompleteInputProps, capitalize, encodeParam, onChangeHandler, parseDateTime, renderAutocompleteItems, sanitizeParam, updateUrl } from "@/Components/Admins/Functions";
 import { Link, router } from "@inertiajs/react";
-import { motion } from 'framer-motion'; // Import Framer Motion
+import { motion } from 'framer-motion';
+import { customAutocompleteInputProps, parseNextUIDateTime, sanitizeURLParam } from "@/Utils/common-utils";
+import { autocompleteOnChangeHandler } from "@/Utils/admin-utils";
+import { renderAutocompleteList } from "@/Pages/SuperAdmin/Users/Filter";
 
-export default function Filter({ hasStudentPremiumAccess, selected, setSelected, autocomplete, setAutocomplete, isFilterOpen }) {
+export default function Filter({ hasStudentPremiumAccess, selectedAutocompleteItems, setSelectedAutocompleteItems, autocompleteItems, setAutocompleteItems, isFilterOpen }) {
     const [isAutocompleteDataLoading, setIsAutocompleteDataLoading] = useState(false);
     const params = route().params;
+
+    console.log('autocompleteItems', autocompleteItems);
+    console.log('selectedAutocompleteItems', selectedAutocompleteItems);
 
     useEffect(() => {
         fetchData();
@@ -23,7 +28,7 @@ export default function Filter({ hasStudentPremiumAccess, selected, setSelected,
         }, 300);
 
         return () => clearTimeout(debounce);
-    }, [selected]);
+    }, [selectedAutocompleteItems]);
 
     const fetchData = async () => {
         try {
@@ -35,17 +40,17 @@ export default function Filter({ hasStudentPremiumAccess, selected, setSelected,
             ]);
 
             // Extract department names
-            const departmentNames = deptWithCourses.data.map(department => department.dept_name);
+            const departmentAcronyms = deptWithCourses.data.map(department => department.dept_acronym);
 
             // Extract course names from each department's course array
-            const courseNames = deptWithCourses.data.flatMap(department =>
-                department.course.map(course => course.course_name)
+            const courseAcronyms = deptWithCourses.data.flatMap(department =>
+                department.course.map(course => course.course_acronym)
             );
 
-            setAutocomplete({
-                ...autocomplete,
-                department: departmentNames,
-                course: courseNames,
+            setAutocompleteItems({
+                ...autocompleteItems,
+                department: departmentAcronyms,
+                course: courseAcronyms,
                 plan: plansWithPlanStatus.data.plans,
                 planStatus: plansWithPlanStatus.data.planStatus,
             });
@@ -57,18 +62,19 @@ export default function Filter({ hasStudentPremiumAccess, selected, setSelected,
         }
     };
 
-
     const setFilters = () => {
         router.get(
             route('institution-students.filter', {
                 ...params,
                 hasStudentPremiumAccess,
                 page: null,
-                department: sanitizeParam(selected.department?.origText),
-                course: sanitizeParam(selected.course?.origText),
-                plan: sanitizeParam(selected.plan),
-                plan_status: sanitizeParam(selected.planStatus)?.toLowerCase(),
-                date_created: selected.dateCreated ? parseDateTime(selected.dateCreated) : null,
+                department: sanitizeURLParam(selectedAutocompleteItems.department),
+                course: sanitizeURLParam(selectedAutocompleteItems.course),
+                plan: sanitizeURLParam(selectedAutocompleteItems.plan),
+                plan_status: sanitizeURLParam(selectedAutocompleteItems.planStatus),
+                date_created: selectedAutocompleteItems.dateCreated
+                    ? parseNextUIDateTime(selectedAutocompleteItems.dateCreated)
+                    : null,
             }),
             {}, // Additional data (if any)
             { preserveScroll: true, preserveState: true }
@@ -86,10 +92,11 @@ export default function Filter({ hasStudentPremiumAccess, selected, setSelected,
 
         const field = selectedWithCategories[category];
 
-        if (['Department', 'Course'].includes(category)) {
-            return selected[field]?.acronym ?? '';
+        if (category === 'Date Created') {
+            return selectedAutocompleteItems[field] ?? null;
+        } else {
+            return selectedAutocompleteItems[field] ?? '';
         }
-        return selected[field] ?? (category === 'Date Created' ? null : '');
     };
 
     return (
@@ -123,11 +130,16 @@ export default function Filter({ hasStudentPremiumAccess, selected, setSelected,
                                         granularity="minute"
                                         hideTimeZone
                                         visibleMonths={2}
-                                        value={handleInputValue(category)}
-                                        onChange={(date) => onChangeHandler({ setter: setSelected, category: 'Date Created', value: date, forOnSelectionChange: true })}
+                                        // defaultValue={handleInputValue(category)}
+                                        onChange={(date) => autocompleteOnChangeHandler(setSelectedAutocompleteItems, 'Date Created', date)}
                                     />
-                                    {(selected.dateCreated?.start && selected.dateCreated?.end) && (
-                                        <Button radius="sm" isIconOnly onClick={() => setSelected({ ...selected, dateCreated: null })} className="mb-auto h-[47.99px] bg-[#f4f4f5] hover:bg-[#e4e4e7] text-[#7f7f87]" >
+                                    {(selectedAutocompleteItems.dateCreated?.start && selectedAutocompleteItems.dateCreated?.end) && (
+                                        <Button
+                                            radius="sm"
+                                            isIconOnly
+                                            onClick={() => setSelectedAutocompleteItems({ ...selectedAutocompleteItems, dateCreated: null })}
+                                            className="mb-auto h-[47.99px] bg-[#f4f4f5] hover:bg-[#e4e4e7] text-[#7f7f87]"
+                                        >
                                             <FaXmark size={20} />
                                         </Button>
                                     )}
@@ -141,24 +153,25 @@ export default function Filter({ hasStudentPremiumAccess, selected, setSelected,
                                         placeholder=" "
                                         isLoading={isAutocompleteDataLoading}
                                         autoFocus={false}
-                                        inputProps={autocompleteInputProps()}
+                                        inputProps={customAutocompleteInputProps()}
+                                        // defaultInputValue={handleInputValue(category)}
                                         inputValue={handleInputValue(category)}
                                         defaultSelectedKey={
-                                            category === 'Department' && decodeURIComponent(params.department) ||
+                                            category === 'Department' && params.department ||
                                             category === 'Course' && params.course ||
                                             category === 'Current Plan' && params.plan ||
                                             category === 'Plan Status' && params.plan_status ||
                                             category === 'Date Created' && params.date_created
                                         }
-                                        onInputChange={(value) => onChangeHandler({ setter: setSelected, category, value, forOnInputChange: true })}
-                                        onSelectionChange={(value) => onChangeHandler({ setter: setSelected, category, value, forOnSelectionChange: true })}
+                                        onInputChange={(value) => autocompleteOnChangeHandler(setSelectedAutocompleteItems, category, value)}
+                                        onSelectionChange={(value) => autocompleteOnChangeHandler(setSelectedAutocompleteItems, category, value)}
                                         className="min-w-1"
                                     >
-                                        {category === 'Department' && renderAutocompleteItems('Department', autocomplete.department)}
-                                        {category === 'Course' && renderAutocompleteItems('Course', autocomplete.course)}
-                                        {category === 'Current Plan' && renderAutocompleteItems('Current Plan', autocomplete.plan)}
-                                        {category === 'Plan Status' && renderAutocompleteItems('Plan Status', autocomplete.planStatus)}
-                                        {category === 'Date Created' && renderAutocompleteItems('Date Created', autocomplete.dateCreated)}
+                                        {category === 'Department' && renderAutocompleteList(autocompleteItems.department)}
+                                        {category === 'Course' && renderAutocompleteList(autocompleteItems.course)}
+                                        {category === 'Current Plan' && renderAutocompleteList(autocompleteItems.plan)}
+                                        {category === 'Plan Status' && renderAutocompleteList(autocompleteItems.planStatus)}
+                                        {category === 'Date Created' && renderAutocompleteList(autocompleteItems.dateCreated)}
                                     </Autocomplete>
                                 </div>
                             }

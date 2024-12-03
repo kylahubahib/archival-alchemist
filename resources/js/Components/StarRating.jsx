@@ -39,7 +39,7 @@ export default function StarRating({totalStars = 5, onRatingSelect, initialRatin
               onClick={() => handleRatingClick(starValue)}
               onMouseEnter={() => handleMouseEnter(starValue)}
               onMouseLeave={handleMouseLeave}
-              className={`w-${size} h-${size} cursor-pointer transition-colors ${
+              className={`w-${size} h-${size} ${interactive ? 'cursor-pointer' : 'cursor-default'} transition-colors ${
                 (hoverRating || rating) >= starValue ? 'text-yellow-400' : 'text-gray-400'
               } ${!interactive && 'cursor-default'}`}
               xmlns="http://www.w3.org/2000/svg"

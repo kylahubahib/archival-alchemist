@@ -5,26 +5,28 @@ import { GoDotFill } from "react-icons/go";
 import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, Button, User, Skeleton, Chip, Tooltip } from "@nextui-org/react";
 import { FaHandsHolding, FaPlus, FaRegCircleDot, FaTableList, FaFileCircleCheck, FaFileCircleMinus, FaEye, FaUser, FaFileInvoice, FaCircleXmark, FaXmark, FaFilterCircleXmark, } from "react-icons/fa6";
 import { FaChevronDown, FaFilter, FaHandHolding, FaHands } from "react-icons/fa";
-import PageHeader from '@/Components/Admins/PageHeader';
+import PageHeader from '@/Components/Admin/PageHeader';
 import AdminLayout from '@/Layouts/AdminLayout';
-import SearchBar from "@/Components/Admins/SearchBar";
+import SearchBar from "@/Components/Admin/SearchBar";
 import MainNav from "@/Components/MainNav";
 import { HiDocumentCheck, HiDocumentMinus } from "react-icons/hi2";
-import AddButton from "@/Components/Admins/AddButton";
+import AddButton from "@/Components/Admin/AddButton";
 import { format } from "date-fns";
 import { MdOutlineMoneyOff } from "react-icons/md";
 import axios from "axios";
 import SetPlanStatus from "./SetPlanStatus";
-import ActionButton from "@/Components/Admins/ActionButton";
-import Pagination from "@/Components/Admins/Pagination";
-import { encodeParam, setStatusChip, updateUrl } from "@/Components/Admins/Functions";
-import NoDataPrompt from "@/Components/Admins/NoDataPrompt";
+import ActionButton from "@/Components/Admin/ActionButton";
+import Pagination from "@/Components/Admin/Pagination";
+import { encodeURLParam, updateURLParams } from '@/Utils/admin-utils';
+import NoDataPrompt from "@/Components/Admin/NoDataPrompt";
 import Filter from "./Filter";
 import { Link, router } from "@inertiajs/react";
 import autoprefixer from "autoprefixer";
 import NoResultsFound from "@/Components/Admins/NoResultsFound";
 import Add from "./Add";
 import FileUpload from "@/Components/FileUpload";
+import TableSkeleton from "@/Components/Admin/TableSkeleton";
+import StatusChip from "@/Components/Admin/StatusChip";
 
 export default function Faculties({ auth, insAdminAffiliation, retrievedFaculties, hasFacultyPremiumAccess, retrievedSearchName, retrievedEntriesPerPage }) {
 
@@ -48,7 +50,7 @@ export default function Faculties({ auth, insAdminAffiliation, retrievedFacultie
         department: [], plan: [], planStatus: []
     });
     const [selected, setSelected] = useState({
-        department: { origText: null, acronym: null }, plan: null, planStatus: null, dateCreated: { start: null, end: null, }
+        department: '', plan: null, planStatus: null, dateCreated: { start: null, end: null, }
     });
 
     const [{ university, uni_branch_name }] = insAdminAffiliation;
@@ -59,7 +61,7 @@ export default function Faculties({ auth, insAdminAffiliation, retrievedFacultie
         { text: 'Premium Access', icon: <HiDocumentCheck />, routeParam: 'with-premium-access' },
         { text: 'No Premium Access', icon: <HiDocumentMinus />, routeParam: 'no-premium-access' },
     ];
-    const tableHeaders = {
+    const facultyTableHeaders = {
         'with-premium-access': ['Name', 'Faculty ID', 'Department', 'Position', 'Date Created', 'Current Plan', 'Plan Status', 'Action'],
         'no-premium-access': ['Name', 'Faculty ID', 'Department', 'Position', 'Date Created', 'Current Plan'],
     };
@@ -90,14 +92,14 @@ export default function Faculties({ auth, insAdminAffiliation, retrievedFacultie
         // Remove the search parameter if there is no search input
         if (search.trim() === '') {
             setIsLoading(false);
-            updateUrl('search', null);
+            updateURLParams('search', null);
             router.reload({ preserveState: true, preserveScroll: true })
             return;
         }
 
         const debounce = setTimeout(() => {
-            updateUrl('search', encodeParam(search));
-            updateUrl('page', null);
+            updateURLParams('search', encodeURLParam(search));
+            updateURLParams('page', null);
             handleSearchFilter();
 
         }, 300);
@@ -119,7 +121,7 @@ export default function Faculties({ auth, insAdminAffiliation, retrievedFacultie
             });
             setFacultiesToRender(response.data);
             // // Remove the page parameter whenever search changes
-            updateUrl('page', null);
+            updateURLParams('page', null);
 
         } catch (error) {
             console.error("Error fetching students:", error);
@@ -140,8 +142,8 @@ export default function Faculties({ auth, insAdminAffiliation, retrievedFacultie
                 }
             });
             setFacultiesToRender(response.data);
-            updateUrl('entries', entries);
-            updateUrl('page', null);
+            updateURLParams('entries', entries);
+            updateURLParams('page', null);
 
         } catch (error) {
             console.error("Error fetching entries:", error);
@@ -157,24 +159,7 @@ export default function Faculties({ auth, insAdminAffiliation, retrievedFacultie
     }
 
     const handleClearFilters = () => {
-        setSelected(
-            {
-                department: { origText: null, acronym: null }, course: { origText: null, acronym: null },
-                plan: null, planStatus: null, dateCreated: null
-            })
-    }
-
-    const renderTableHeader = () => {
-        return <thead className="text-xs sticky z-20 -top-[1px] pb-[20px] text-customGray uppercase align-top bg-customLightGray">
-            <tr>
-                {/* Loads the tableHeader for a specific user type */}
-                {tableHeaders[hasFacultyPremiumAccess]?.map((header, index) => (
-                    <th key={index} scope="col" className="p-2">
-                        {header}
-                    </th>
-                ))}
-            </tr>
-        </thead>
+        setSelected({ department: '', course: '', plan: null, planStatus: null, dateCreated: null })
     }
 
     return (
@@ -202,7 +187,6 @@ export default function Faculties({ auth, insAdminAffiliation, retrievedFacultie
                             >
                                 {nav.text}
                             </MainNav>))
-
                         }
                         <AddButton onClick={() => setIsAddStudentModalOpen(true)} icon={<FaPlus />}>
                             Add Faculty
@@ -319,10 +303,9 @@ export default function Faculties({ auth, insAdminAffiliation, retrievedFacultie
                             {!isLoading ?
                                 (facultiesToRender.data.length > 0 ? (
                                     <table className="w-full table-auto relative text-xs text-left text-customGray tracking-wide">
-                                        {renderTableHeader()}
+                                        {renderTableHeaders(facultyTableHeaders, hasFacultyPremiumAccess)}
                                         <tbody>
                                             {facultiesToRender.data.map((faculty, index) => {
-                                                const department = faculty.dept_acronym;
                                                 const formattedDateCreated = format(new Date(faculty.created_at), 'MM/dd/yyyy HH:mm aa');
 
                                                 const actionButtons = () => {
@@ -360,8 +343,8 @@ export default function Faculties({ auth, insAdminAffiliation, retrievedFacultie
                                                                 }}
                                                             />
                                                         </td>
-                                                        <td className="p-2">{faculty.id}</td>
-                                                        <td className="p-2">{department.acronym}</td>
+                                                        <td className="p-2">{faculty.fac_id}</td>
+                                                        <td className="p-2">{faculty.dept_acronym}</td>
                                                         <td className="p-2">{faculty.fac_position}</td>
                                                         <td className="p-2">{formattedDateCreated}</td>
                                                         <td className="p-2">
@@ -372,7 +355,7 @@ export default function Faculties({ auth, insAdminAffiliation, retrievedFacultie
 
                                                         {hasFacultyPremiumAccess === 'with-premium-access' &&
                                                             <>
-                                                                <td className="p-2">{setStatusChip(faculty.persub_status)}</td>
+                                                                <td className="p-2">{<StatusChip status={faculty.persub_status} />}</td>
                                                                 <td className="p-2">{actionButtons()}</td>
                                                             </>
                                                         }
@@ -385,41 +368,12 @@ export default function Faculties({ auth, insAdminAffiliation, retrievedFacultie
                                 )
                                     : <>
                                         <table className="w-full table-auto relative text-xs text-left border-current text-customGray tracking-wide">
-                                            {renderTableHeader()}
+                                            {renderTableHeaders(facultyTableHeaders, hasFacultyPremiumAccess)}
                                         </table>
                                         <NoResultsFound />
                                     </>
                                 )
-
-                                // Skeleton loading
-                                : <table className="w-full table-auto relative text-xs text-left border-current text-customGray tracking-wide">
-                                    {renderTableHeader()}
-                                    <tbody>
-                                        {Array.from({ length: 4 }).map((_, rowIndex) => (
-                                            <tr key={rowIndex} className="text-gray-400 border border-gray">
-                                                {tableHeaders[hasFacultyPremiumAccess].map((header, index) => (
-                                                    <td
-                                                        key={index}
-                                                        className={`p-2 border ${header === 'Name' ? 'min-w-[150px]' : ''} border-gray`}
-                                                    >
-                                                        {header === 'Name' ?
-                                                            <div className="flex items-center gap-3">
-                                                                <div>
-                                                                    <Skeleton className="flex rounded-full w-11 h-11" />
-                                                                </div>
-                                                                <div className="w-full flex flex-col gap-2">
-                                                                    <Skeleton className="h-4 w-3/5 rounded-lg" />
-                                                                    <Skeleton className="h-3 w-4/5 rounded-lg" />
-                                                                </div>
-                                                            </div>
-                                                            : <Skeleton className="h-5 w-full rounded-lg" />
-                                                        }
-                                                    </td>
-                                                ))}
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
+                                : <TableSkeleton headers={facultyTableHeaders} headerType={hasFacultyPremiumAccess} />
                             }
 
                         </div>
