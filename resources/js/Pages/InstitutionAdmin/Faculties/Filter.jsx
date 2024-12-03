@@ -8,7 +8,7 @@ import axios from 'axios';
 import { autocompleteInputProps, onChangeHandler, parseNextUIDateTime, renderAutocompleteItems, sanitizeURLParam, updateURLParams } from '@/Components/Admin/Functions';
 import { router } from "@inertiajs/react";
 import { motion } from 'framer-motion'; // Import Framer Motion
-import AutocompleteList from "@/Components/Admins/AutocompleteList";
+// import AutocompleteList from "@/Components/Admins/AutocompleteList";
 
 export default function Filter({ hasFacultyPremiumAccess, selected, setSelected, autocomplete, setAutocomplete, isFilterOpen }) {
     const [isAutocompleteDataLoading, setIsAutocompleteDataLoading] = useState(false);

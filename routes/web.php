@@ -490,7 +490,7 @@ Route::get('/api/tags', [TagController::class, 'index']);
     Route::get('/manuscript/{id}/download', [StudentClassController::class, 'downloadPdf'])->name('manuscript.download');
 
 
-    Route::middleware(['auth', 'verified', 'user-type:student,teacher'])->group(function () {
+    // Route::middleware(['auth', 'verified', 'user-type:student,teacher'])->group(function () {
         // Route for getting user favorites
         Route::get('/user/{id}/favorites', [StudentClassController::class, 'getUserFavorites'])
             ->name('getUserFavorites');
@@ -513,7 +513,7 @@ Route::get('/api/tags', [TagController::class, 'index']);
     Route::get('/search', [SearchController::class, 'search']);
     Route::get('/searchlib', [SearchController::class, 'searchlib']);
 
-    });
+    // });
 
 
         

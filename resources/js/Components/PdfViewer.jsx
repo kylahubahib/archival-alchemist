@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import React, { useState, useEffect } from 'react';
 
 const PdfViewer = ({ pdfUrl }) => {
   const [scrollingTime, setScrollingTime] = useState(0); // Track the scrolling time

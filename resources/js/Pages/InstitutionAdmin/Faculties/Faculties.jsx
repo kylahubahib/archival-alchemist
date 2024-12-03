@@ -18,13 +18,13 @@ import SetPlanStatus from "./SetPlanStatus";
 import ActionButton from "@/Components/Admin/ActionButton";
 import Pagination from "@/Components/Admin/Pagination";
 import { encodeURLParam, updateURLParams } from '@/Utils/admin-utils';
-import NoDataPrompt from "@/Components/Admin/NoDataPrompt";
+// import NoDataPrompt from "@/Components/Admin/NoDataPrompt";
 import Filter from "./Filter";
 import { Link, router } from "@inertiajs/react";
 import autoprefixer from "autoprefixer";
-import NoResultsFound from "@/Components/Admins/NoResultsFound";
+// import NoResultsFound from "@/Components/Admins/NoResultsFound";
 import Add from "./Add";
-import FileUpload from "@/Components/FileUpload";
+// import FileUpload from "@/Components/FileUpload";
 import TableSkeleton from "@/Components/Admin/TableSkeleton";
 import StatusChip from "@/Components/Admin/StatusChip";
 
@@ -370,7 +370,7 @@ export default function Faculties({ auth, insAdminAffiliation, retrievedFacultie
                                         <table className="w-full table-auto relative text-xs text-left border-current text-customGray tracking-wide">
                                             {renderTableHeaders(facultyTableHeaders, hasFacultyPremiumAccess)}
                                         </table>
-                                        <NoResultsFound />
+                                        {/* <NoResultsFound /> */}
                                     </>
                                 )
                                 : <TableSkeleton headers={facultyTableHeaders} headerType={hasFacultyPremiumAccess} />

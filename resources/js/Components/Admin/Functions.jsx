@@ -33,4 +33,3 @@ export const renderAutocompleteItems = (autocompleteItems, onClick = null) => {
         })
         : null;
 };
-

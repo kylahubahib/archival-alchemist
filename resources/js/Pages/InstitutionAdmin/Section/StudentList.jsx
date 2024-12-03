@@ -1,5 +1,5 @@
 import { TbUserExclamation } from "react-icons/tb";
-import SearchBar from "@/Components/Admins/SearchBar";
+import SearchBar from '@/Components/Admin/SearchBar';
 import Pagination from "@/Components/Pagination";
 import { Select, SelectItem, Spinner } from "@nextui-org/react";
 import axios from "axios";

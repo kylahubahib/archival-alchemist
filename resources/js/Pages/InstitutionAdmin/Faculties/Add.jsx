@@ -13,7 +13,7 @@ import { onChangeHandler, renderAutocompleteItems } from '@/Utils/admin-utils';
 import { FaBuilding, FaHashtag, FaRemoveFormat } from 'react-icons/fa';
 import axios from 'axios';
 import FileUpload from '@/Components/Admin/FileUpload';
-import AutocompleteList from '@/Components/Admins/AutocompleteList';
+// import AutocompleteList from '@/Components/Admins/AutocompleteList';
 import { customAutocompleteInputProps, customInputClassNames } from '@/Utils/common-utils';
 
 

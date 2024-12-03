@@ -27,7 +27,7 @@ import { formatDate, formatPrice } from '@/utils';
 import RemoveDepartment from "./RemoveDepartment";
 import AddExistingCourse from "./AddExistingCourse";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import SearchBar from "@/Components/Admins/SearchBar";
+import SearchBar from '@/Components/Admin/SearchBar';
 
 export default function Departments({ auth, departments, uniBranch_id, branch}) {
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);

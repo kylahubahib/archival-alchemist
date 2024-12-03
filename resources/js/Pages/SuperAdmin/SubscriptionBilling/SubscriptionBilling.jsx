@@ -14,11 +14,11 @@ import AddButton from "@/Components/Admin/AddButton";
 import Pagination from "@/Components/Admin/Pagination";
 import ActionButton from "@/Components/Admin/ActionButton";
 import SearchBar from "@/Components/Admin/SearchBar";
-import Add from "./Add";
-import Filter from "./Filter";
-import UpdateStatus from "./UpdateStatus";
-import AccessControl from "./AccessControl";
-import Logs from "./Logs";
+// // import Add from "./Add";
+// import Filter from "./Filter";
+// import UpdateStatus from "./UpdateStatus";
+// import AccessControl from "./AccessControl";
+// import Logs from "./Logs";
 import axios from "axios";
 import StatusChip from "@/Components/Admin/StatusChip";
 import NoDataPrompt from "@/Components/Admin/NoDataPrompt";
@@ -126,32 +126,32 @@ export default function SubscriptionBilling({ auth, subscriptions, userType, sea
         })
     }
 
-    const fetchSearchFilteredData2 = async () => {
-        setIsDataLoading(true);
+    // const fetchSearchFilteredData2 = async () => {
+    //     setIsDataLoading(true);
 
-        try {
-            const response = await axios.get(route('subscriptions.filter', { userType }), {
-                params: {
-                    ...params,
-                    search: searchTerm.trim(),
-                },
-            });
+    //     try {
+    //         const response = await axios.get(route('subscriptions.filter', { userType }), {
+    //             params: {
+    //                 ...params,
+    //                 search: searchTerm.trim(),
+    //             },
+    //         });
 
-            updateURLParams('search', encodeURLParam(searchTerm.trim()));
-            updateURLParams('page', null);
+    //         updateURLParams('search', encodeURLParam(searchTerm.trim()));
+    //         updateURLParams('page', null);
 
 
-            setSubscriptionsToRender(response.data);
+    //         setSubscriptionsToRender(response.data);
 
-            response.data.length > 0 ? setHasFilteredData(true) : setHasFilteredData(false)
+    //         response.data.length > 0 ? setHasFilteredData(true) : setHasFilteredData(false)
 
-        } catch (error) {
-            console.error("Error fetching search results:", error);
-        }
-        finally {
-            setIsDataLoading(false);
-        }
-    };
+    //     } catch (error) {
+    //         console.error("Error fetching search results:", error);
+    //     }
+    //     finally {
+    //         setIsDataLoading(false);
+    //     }
+    // };
 
     const getAdminActionButtons = (authAdminRole, adminRole, userId, userStatus, name) => {
         let disableBtn = { accessControl: null, viewLogs: null, setStatus: null };
@@ -227,7 +227,7 @@ export default function SubscriptionBilling({ auth, subscriptions, userType, sea
                             <MainNav
                                 key={index}
                                 icon={nav.icon}
-                                href={route('subscriptions.filter', nav.param)}
+                                // href={route('subscriptions.filter', nav.param)}
                                 active={nav.param === 'student' ?
                                     route().current('subscriptions') :
                                     route().current('subscriptions.filter', nav.param)}

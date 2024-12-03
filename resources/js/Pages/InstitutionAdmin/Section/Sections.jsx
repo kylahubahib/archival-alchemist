@@ -9,6 +9,7 @@ import { Button, Select, SelectItem } from "@nextui-org/react";
 import Semester from "./SemesterModal";
 import { getYearFromDate } from "@/utils";
 import StudentList from "./StudentList";
+// import SearchBar from '@/Components/Admin/SearchBar';
 
 export default function Sections({ auth, sections, departments, semester, university }) {
     const [filteredSections, setFilteredSections] = useState(sections); 

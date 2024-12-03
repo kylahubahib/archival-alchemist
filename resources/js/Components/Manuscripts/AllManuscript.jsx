@@ -19,7 +19,6 @@ const Manuscript = ({auth, user, choice}) => {
     const [isPdfOpen, setPdfOpen] = useState(false);
     const [favorites, setFavorites] = useState(new Set());
     const [userId, setUserId] = useState(null); // Store the current logged-in user ID
-    const [userId, setUserId] = useState(null); // Store the current logged-in user ID
     const [manuscripts, setManuscripts] = useState([]);
     const [Manuscripts, setmanuscripts] = useState([]);
     const [searchResults, setSearchResults] = useState([]); // State to hold search results

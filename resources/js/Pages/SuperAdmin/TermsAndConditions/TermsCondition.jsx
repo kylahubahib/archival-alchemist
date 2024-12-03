@@ -13,8 +13,7 @@ import Edit from "./Edit";
 
 import BillingAgreement from './BillingAgreement';
 import PrivacyPolicy from './PrivacyPolicy';
-import PageHeader from '@/Components/Admins/PageHeader';
-
+import PageHeader from "@/Components/Admin/PageHeader";
 
 
 export default function TermsCondition({ auth, termsConditions = [], billingAgreement, privacyPolicy }) {
