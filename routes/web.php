@@ -213,7 +213,9 @@ Route::middleware(['auth', 'verified', 'user-type:superadmin'])->group(function 
     });
 
     Route::middleware('access:subscriptions_and_billings_access')->group(function () {
+        Route::redirect('/subscription-billing', '/subscription-billing/personal');
         Route::get('/subscription-billing', [SubscriptionBillingController::class, 'index'])->name('subscription-billing');
+        Route::get('/subscription-billing/{subscriptionType}', [SubscriptionBillingController::class, 'filter'])->name('subscription-billing.filter');
     });
 
     Route::middleware('access:subscription_plans_access')->group(function () {

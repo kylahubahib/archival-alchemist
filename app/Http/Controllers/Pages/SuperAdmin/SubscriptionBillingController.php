@@ -19,7 +19,6 @@ class SubscriptionBillingController extends Controller
 
     public function filter($subscriptionType)
     {
-
         $searchValue = request('search', null);
         $entries = request('entries', null);
 
@@ -27,18 +26,18 @@ class SubscriptionBillingController extends Controller
         $query = User::select('id', 'name', 'email', 'is_premium', 'user_pic', 'created_at', 'user_status');
 
         switch ($subscriptionType) {
-            case 'Personal':
+            case 'personal':
                 $query->with([
-                    'personal_subscription:id,user_id,persub_status,start_date,end_date,total_amount,uni_branch_id',
-                    'personal_subscription.plan:id,plan_id,plan_name,plan_term,plan_type',
-                    'personal_subscription.subscription_history:id,sub_his_type,sub_his_activity',
+                    'personal_subscription:id,user_id,plan_id,persub_status,start_date,end_date,total_amount',
+                    'personal_subscription.plan:id,plan_name,plan_term,plan_type',
+                    // 'personal_subscription.subscription_history:id,sub_his_type,sub_his_activity',
                 ]);
                 break;
-            case 'Institutional':
+            case 'institutional':
                 $query->with([
-                    'institution_admin:id,user_id',
-                    'institution_admin.institution_subscription:id,uni_branch_id,start_date,end_date,insub_num_user,insub_status',
-                    'institution_admin.institution_subscription.plan:id,plan_id,plan_name,plan_term,plan_type',
+                    'institution_admin:id,user_id,insub_id',
+                    'institution_admin.institution_subscription:id,plan_id,uni_branch_id,start_date,end_date,insub_num_user,insub_status',
+                    'institution_admin.institution_subscription.plan:id,plan_name,plan_term,plan_type',
                     // 'institution_admin.institution_subscription.subscription_history:id,sub_his_type,sub_his_activity',
                     'institution_admin.institution_subscription.university_branch:id,uni_id,uni_branch_name',
                     'institution_admin.institution_subscription.university_branch.university:id,uni_name,uni_acronym',
@@ -46,13 +45,13 @@ class SubscriptionBillingController extends Controller
                 break;
         }
 
-        if ($subscriptionType === 'Personal') {
+        if (strtolower($subscriptionType) === 'personal') {
             $query->whereHas('personal_subscription.plan', function ($q) use ($subscriptionType) {
-                $q->where('plan_type', $subscriptionType);
+                $q->whereRaw('LOWER(plan_type) = ?', [strtolower($subscriptionType)]);
             });
-        } else if ($subscriptionType === 'Institutional') {
+        } else if (strtolower($subscriptionType) === 'institutional') {
             $query->whereHas('institution_admin.institution_subscription.plan', function ($q) use ($subscriptionType) {
-                $q->where('plan_type', $subscriptionType);
+                $q->whereRaw('LOWER(plan_type) = ?', [strtolower($subscriptionType)]);
             });
         }
 

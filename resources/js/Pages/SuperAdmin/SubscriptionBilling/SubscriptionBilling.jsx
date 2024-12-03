@@ -1,30 +1,21 @@
 import React, { useEffect, useState, } from "react";
-import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, Button, User, Tooltip } from "@nextui-org/react";
-import { FaUserGraduate, FaUserSecret, FaUserTie, FaPlus, FaUserSlash, FaFileLines, FaShieldHalved, FaUserCheck, FaFilterCircleXmark } from "react-icons/fa6";
-import { FaChevronDown } from "react-icons/fa";
-import { FaFilter } from "react-icons/fa";
-import { RiShieldUserFill } from "react-icons/ri";
-import { motion, AnimatePresence } from "framer-motion";
-import { formatDateTime, encodeURLParam, updateURLParams, sanitizeURLParam } from "@/Utils/common-utils";
+import { Divider, User } from "@nextui-org/react";
+import { FaUserSlash, FaFileLines, FaShieldHalved, FaUserCheck } from "react-icons/fa6";
+import { FaHands, FaUniversity } from "react-icons/fa";
+import { capitalize, formatDateTime, titleCase } from "@/Utils/common-utils";
 import { fetchSearchFilteredData, formatAdminRole, getTotalFilters, handleSetEntriesPerPageClick } from "@/Utils/admin-utils";
 import PageHeader from "@/Components/Admin/PageHeader";
 import AdminLayout from "@/Layouts/AdminLayout";
 import MainNav from "@/Components/MainNav";
-import AddButton from "@/Components/Admin/AddButton";
 import Pagination from "@/Components/Admin/Pagination";
 import ActionButton from "@/Components/Admin/ActionButton";
-import SearchBar from "@/Components/Admin/SearchBar";
-import Add from "./Add";
-import Filter from "./Filter";
-import UpdateStatus from "./UpdateStatus";
-import AccessControl from "./AccessControl";
-import Logs from "./Logs";
-import axios from "axios";
 import StatusChip from "@/Components/Admin/StatusChip";
 import NoDataPrompt from "@/Components/Admin/NoDataPrompt";
 import TableSkeleton from "@/Components/Admin/TableSkeleton";
+import { renderTableControls, renderTableHeaders } from "../Users/Users";
+import StatisticCard from "@/Components/Admin/StatisticCard";
 
-export default function SubscriptionBilling({ auth, subscriptions, userType, searchValue }) {
+export default function SubscriptionBilling({ auth, subscriptions, subscriptionType, searchValue }) {
     console.log('subscriptions', subscriptions);
     console.log('auth', auth);
 
@@ -32,6 +23,7 @@ export default function SubscriptionBilling({ auth, subscriptions, userType, sea
     const [name, setName] = useState(null);
     const [action, setAction] = useState(null);
     const [subscriptionsToRender, setSubscriptionsToRender] = useState(subscriptions);
+    const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [totalFilters, setTotalFilters] = useState(0);
     const [searchTerm, setSearchTerm] = useState(searchValue || '');
     const [hasFilteredData, setHasFilteredData] = useState(false);
@@ -60,14 +52,16 @@ export default function SubscriptionBilling({ auth, subscriptions, userType, sea
     const filterParams = ['university', 'branch', 'department', 'course', 'currentPlan', 'role', 'dateCreated', 'status'];
 
     const navigations = [
-        // The param values here are the same as the userType values
-        { text: 'Personal', icon: <FaUserGraduate />, param: 'student' },
-        { text: 'Institutional', icon: <FaUserTie />, param: 'faculty' },
+        // The param values here are the same as the subscriptionType values
+        { text: 'Personal', icon: <FaHands />, param: 'personal' },
+        { text: 'Institutional', icon: <FaUniversity />, param: 'institutional' },
     ];
+
     const tableHeaders = {
-        'personal': ['Name', 'User ID', 'University', 'Department', 'Course', 'Section', 'Current Plan', 'Date Created', 'Status', 'Actions'],
-        'institutional': ['Name', 'User ID', 'University', 'Department', 'Current Plan', 'Position', 'Date Created', 'Status', 'Actions'],
+        'personal': ['Subscription ID', 'Plan Name', 'Customer Name', 'Start Date', 'End Date', 'Plan Status', 'Plan Term', 'Actions'],
+        'institutional': ['Subscription ID', 'Plan Name', 'Institution Name', 'No. of Users', 'Start Date', 'End Date', 'Plan Term', 'Plan Status', 'Actions']
     };
+
 
     useEffect(() => {
         console.log('subscriptionsToRender', subscriptionsToRender);
@@ -88,7 +82,7 @@ export default function SubscriptionBilling({ auth, subscriptions, userType, sea
         setIsDataLoading(true);
 
         const debounce = setTimeout(() => {
-            fetchSearchFilteredData('subscriptions.filter', { userType: userType }, params, searchTerm, setIsDataLoading, setSubscriptionsToRender, setHasFilteredData);
+            fetchSearchFilteredData('subscription-billing.filter', { subscriptionType: subscriptionType }, params, searchTerm, setIsDataLoading, setSubscriptionsToRender, setHasFilteredData);
         }, 350);
 
         return () => clearTimeout(debounce);
@@ -115,10 +109,6 @@ export default function SubscriptionBilling({ auth, subscriptions, userType, sea
         setName(name);
     }
 
-    const disableAuthtUserInTable = (user_id) => {
-        return auth.user.user_id === user_id;
-    }
-
     const handleClearFiltersClick = () => {
         setSelectedAutocompleteItem({
             university: '', branch: '', department: '', course: '', currentPlan: '', insAdminRole: '',
@@ -126,91 +116,53 @@ export default function SubscriptionBilling({ auth, subscriptions, userType, sea
         })
     }
 
-    const fetchSearchFilteredData2 = async () => {
-        setIsDataLoading(true);
+    const renderPersonalSubActionButtons = (authAdminRole, adminRole, userId, userStatus, name) => {
+        // let disableBtn = { accessControl: null, viewLogs: null, setStatus: null };
 
-        try {
-            const response = await axios.get(route('subscriptions.filter', { userType }), {
-                params: {
-                    ...params,
-                    search: searchTerm.trim(),
-                },
-            });
+        // const actionText = userStatus.toLowerCase() === 'active' ? "Deactivate" : "Activate";
 
-            updateURLParams('search', encodeURLParam(searchTerm.trim()));
-            updateURLParams('page', null);
-
-
-            setSubscriptionsToRender(response.data);
-
-            response.data.length > 0 ? setHasFilteredData(true) : setHasFilteredData(false)
-
-        } catch (error) {
-            console.error("Error fetching search results:", error);
-        }
-        finally {
-            setIsDataLoading(false);
-        }
+        // return (
+        //     <div className="p-2 flex gap-2">
+        //         <ActionButton
+        //             icon={<FaShieldHalved />}
+        //             tooltipContent="Access control"
+        //             isDisabled={disableBtn.accessControl}
+        //             onClick={() => handleAccessControlClick(userId, name)}
+        //         />
+        //         <ActionButton
+        //             icon={<FaFileLines />}
+        //             tooltipContent="View logs"
+        //             isDisabled={disableBtn.viewLogs}
+        //             onClick={() => handleLogsClick(userId, name)}
+        //         />
+        //         <ActionButton
+        //             icon={userStatus === 'active' ? <FaUserSlash /> : <FaUserCheck />}
+        //             tooltipContent={actionText}
+        //             isDisabled={disableBtn.setStatus}
+        //             onClick={() => handleUpdateStatusClick(userId, name, actionText)}
+        //         />
+        //     </div>
+        // );
     };
 
-    const getAdminActionButtons = (authAdminRole, adminRole, userId, userStatus, name) => {
-        let disableBtn = { accessControl: null, viewLogs: null, setStatus: null };
+    const renderInsSubActionButtons = (userId, userStatus, name) => {
 
-        // Manage access for the same and different admin levels for the visibililty of an action buttons
-        if (authAdminRole === 'super_admin' && adminRole === 'super_admin') {
-            disableBtn = { accessControl: true, viewLogs: false, setStatus: true };
-        } else if (authAdminRole === 'super_admin' && adminRole === 'co_super_admin') {
-            disableBtn = { accessControl: false, viewLogs: false, setStatus: false };
-        } else if (authAdminRole === 'co_super_admin' && adminRole === 'super_admin') {
-            disableBtn = { accessControl: true, viewLogs: false, setStatus: true };
-        } else if (authAdminRole === 'co_super_admin' && adminRole === 'co_super_admin') {
-            disableBtn = { accessControl: true, viewLogs: false, setStatus: true };
-        }
+        // const actionText = userStatus.toLowerCase() === 'active' ? "Deactivate" : "Activate";
 
-        const actionText = userStatus.toLowerCase() === 'active' ? "Deactivate" : "Activate";
-
-        return (
-            <div className="p-2 flex gap-2">
-                <ActionButton
-                    icon={<FaShieldHalved />}
-                    tooltipContent="Access control"
-                    isDisabled={disableBtn.accessControl}
-                    onClick={() => handleAccessControlClick(userId, name)}
-                />
-                <ActionButton
-                    icon={<FaFileLines />}
-                    tooltipContent="View logs"
-                    isDisabled={disableBtn.viewLogs}
-                    onClick={() => handleLogsClick(userId, name)}
-                />
-                <ActionButton
-                    icon={userStatus === 'active' ? <FaUserSlash /> : <FaUserCheck />}
-                    tooltipContent={actionText}
-                    isDisabled={disableBtn.setStatus}
-                    onClick={() => handleUpdateStatusClick(userId, name, actionText)}
-                />
-            </div>
-        );
-    };
-
-    const getClientActionButtons = (userId, userStatus, name) => {
-
-        const actionText = userStatus.toLowerCase() === 'active' ? "Deactivate" : "Activate";
-
-        return (
-            <div className="p-2 flex gap-2">
-                <ActionButton
-                    icon={<FaFileLines />}
-                    tooltipContent="View logs"
-                    onClick={() => handleLogsClick(userId, name)}
-                />
-                <ActionButton
-                    icon={userStatus === 'active' ? <FaUserSlash /> : <FaUserCheck />}
-                    tooltipContent={actionText}
-                    onClick={() => handleUpdateStatusClick(userId, name, actionText)}
-                />
-            </div>
-        );
+        // return (
+        //     <div className="p-2 flex gap-2">
+        //         <ActionButton
+        //             icon={<FaFileLines />}
+        //             tooltipContent="View logs"
+        //             onClick={() => handleLogsClick(userId, name)}
+        //         />
+        //         <ActionButton
+        //             icon={userStatus === 'active' ? <FaUserSlash /> : <FaUserCheck />}
+        //             tooltipContent={actionText}
+        //             onClick={() => handleUpdateStatusClick(userId, name, actionText)}
+        //         />
+        //     </div>
+        // );
     };
 
     return (
@@ -218,32 +170,33 @@ export default function SubscriptionBilling({ auth, subscriptions, userType, sea
             user={auth.user}
         >
             <div className="p-4">
-                <PageHeader>USERS</PageHeader>
+                <PageHeader>SUSBSCRIPTION AND BILLING</PageHeader>
 
                 <div className="max-w-7xl mx-auto sm:px-2 lg:px-4">
                     {/* MAIN NAVIGATION */}
                     <div className="MainNavContainer flex gap-3 py-4">
-                        {navigations.map((nav, index) =>
+                        {navigations.map((nav, index) => (
                             <MainNav
-                                key={index}
+                                key={nav.text}
                                 icon={nav.icon}
-                                href={route('subscriptions.filter', nav.param)}
-                                active={nav.param === 'student' ?
-                                    route().current('subscriptions') :
-                                    route().current('subscriptions.filter', nav.param)}
+                                href={route('subscription-billing.filter', { ...params, subscriptionType: nav.param })}
+                                active={
+                                    (route().current('subscription-billing') && nav.param === 'personal') ||
+                                    route().current('subscription-billing.filter') === nav.param
+                                }
                             >
                                 {nav.text}
                             </MainNav>
-                        )}
+                        ))}
+                    </div>
 
-                        {/* Handles the visibility and text of the add button*/}
-                        {userType === 'superadmin' && (
-                            <AddButton onClick={() => setIsCreateModalOpen(true)} icon={<FaPlus />}>
-                                {userType === "institution_admin" ? "Add co-ins admin" : "Add co-super admin"}
-                            </AddButton>
-                        )}
+                    <div className="flex gap-5 pb-4">
+                        {/* <StatisticCard />
+                        <StatisticCard /> */}
+
 
                     </div>
+
 
                     <div className="flex-col gap-3 max-h-[65dvh] relative bg-white flex shadow-md sm:rounded-lg overflow-hidden p-4">
                         {renderTableControls('entries route', searchTerm, setSearchTerm, 'Search by name or user id...', subscriptions.data.length === 0,
@@ -255,105 +208,72 @@ export default function SubscriptionBilling({ auth, subscriptions, userType, sea
                             {!isDataLoading ?
                                 (subscriptionsToRender.data.length > 0 ? (
                                     <table className="w-full table-auto relative text-xs text-left text-customGray tracking-wide">
-                                        {renderTableHeaders(tableHeaders, userType)}
+                                        {renderTableHeaders(tableHeaders, subscriptionType)}
 
                                         <tbody>
                                             {subscriptionsToRender.data.map((user, index) => {
-                                                const { id, name, email, is_premium, user_pic, created_at, user_status, student, faculty, institution_admin, access_control } = user;
+                                                // Extract the needed value and rename some of the keys
+                                                const { id, name, email, is_premium, user_pic, created_at, user_status, personal_subscription, institution_admin } = user;
 
-                                                // If the filtered data is for students, then the university is for students only.
-                                                const universityAcronym = student?.university_branch?.university?.uni_acronym
-                                                    ?? faculty?.university_branch?.university?.uni_acronym
-                                                    ?? institution_admin?.institution_subscription?.university_branch?.university?.uni_acronym
+                                                const universityAcronym = institution_admin?.institution_subscription?.university_branch?.university.uni_acronym
+                                                    ?? 'N/A';
+                                                const branch = institution_admin?.institution_subscription?.university_branch?.uni_branch_acronym
                                                     ?? 'N/A';
 
-                                                const studentId = student?.id;
+                                                const institutionName = universityAcronym + " - " + branch;
 
-                                                const facultyId = faculty?.id;
+                                                const numOfUsers = institution_admin?.institution_subscription?.insub_num_user;
 
-                                                const branch = student?.university_branch?.uni_branch_name
-                                                    ?? faculty?.university_branch?.uni_branch_name
-                                                    ?? institution_admin?.institution_subscription?.university_branch?.uni_branch_name
+                                                // Plan id for personal or institutional subscription
+                                                const planId = personal_subscription?.id
+                                                    ?? institution_admin?.institution_subscription?.id
                                                     ?? 'N/A';
 
-                                                const combinedUniAndBranch = universityAcronym + " - " + branch;
-
-                                                const departmentAcronym = student?.section?.course?.department?.dept_acronym
-                                                    ?? faculty?.section?.course?.department?.dept_acronym
+                                                const planName = personal_subscription?.plan?.plan_name
+                                                    ?? institution_admin?.institution_subscription?.plan?.plan_name
                                                     ?? 'N/A';
 
-                                                const courseAcronym = student?.section?.course.course_acronym
+                                                const planTerm = personal_subscription?.plan?.plan_term
+                                                    ?? institution_admin?.institution_subscription?.plan?.plan_term
                                                     ?? 'N/A';
 
-                                                const sectionName = student?.section?.section_name
+                                                const planStartDate = personal_subscription?.start_date
+                                                    ?? institution_admin?.institution_subscription?.start_date
                                                     ?? 'N/A';
 
-                                                const facultyPosition = faculty?.fac_position ?? 'N/A';
+                                                const planEndDate = personal_subscription?.end_date
+                                                    ?? institution_admin?.institution_subscription?.end_date
+                                                    ?? 'N/A';
 
-                                                const adminRole = access_control?.role ?? 'N/A';
-
-                                                const formattedDateCreated = formatDateTime(created_at);
+                                                const planStatus = personal_subscription?.persub_status
+                                                    ?? institution_admin?.institution_subscription?.insub_status
+                                                    ?? 'N/A';
 
                                                 return (
                                                     <tr key={index} className="border-b border-customLightGray hover:bg-gray-100">
 
-                                                        {/* Common columns */}
-                                                        <td className="flex items-center content-center pl-3 p-2">
-                                                            <User
-                                                                name={name}
-                                                                description={email}
-                                                                avatarProps={{
-                                                                    src: user_pic ? `/${user_pic}` : '/images/default-profile.png',
-                                                                    alt: "profile-pic",
-                                                                    isBordered: true
-                                                                }}
-                                                            />
-                                                        </td>
-                                                        <td className="p-2">{id}</td>
-
-                                                        {userType === 'student' && (
+                                                        <td className="p-2">{planId}</td>
+                                                        <td className="p-2">{planName}</td>
+                                                        {subscriptionType === 'personal' && (
                                                             <>
-                                                                {/* <td className="p-2">{studentId}</td> */}
-                                                                <td className="p-2">{combinedUniAndBranch}</td>
-                                                                <td className="p-2">{departmentAcronym}</td>
-                                                                <td className="p-2">{courseAcronym}</td>
-                                                                <td className="p-2">{sectionName}</td>
-                                                                <td className="p-2">{is_premium ? 'Premium' : 'Basic'}</td>
-                                                                <td className="p-2">{formattedDateCreated}</td>
-                                                                <td className="p-2"><StatusChip status={user_status} /></td>
-                                                                <td >{getClientActionButtons(id, user_status, name)} </td>
+                                                                <td className="p-2">{name}</td>
+                                                                <td className="p-2">{planStartDate}</td>
+                                                                <td className="p-2">{planEndDate}</td>
+                                                                <td className="p-2">{capitalize(planTerm)}</td>
+                                                                <td className="p-2"><StatusChip status={planStatus} /></td>
+                                                                <td >{renderPersonalSubActionButtons(id, user_status, name)} </td>
                                                             </>
                                                         )}
 
-                                                        {userType === 'faculty' && (
+                                                        {subscriptionType === 'institutional' && (
                                                             <>
-                                                                {/* <td className="p-2">{facultyId}</td> */}
-                                                                <td className="p-2">{combinedUniAndBranch}</td>
-                                                                <td className="p-2">{departmentAcronym}</td>
-                                                                <td className="p-2">{is_premium ? 'Premium' : 'Basic'}</td>
-                                                                <td className="p-2 max-w-[150px]">{facultyPosition}</td>
-                                                                <td className="p-2">{formattedDateCreated}</td>
-                                                                <td className="p-2"><StatusChip status={user_status} /></td>
-                                                                <td >{getClientActionButtons(id, user_status, name)} </td>
-                                                            </>
-                                                        )}
-
-                                                        {userType === 'admin' && (
-                                                            <>
-                                                                <td className="p-2">{combinedUniAndBranch}</td>
-                                                                <td className="p-2">{formatAdminRole(adminRole)} </td>
-                                                                <td className="p-2">{formattedDateCreated}</td>
-                                                                <td className="p-2"><StatusChip status={user_status} /></td>
-                                                                <td>{getAdminActionButtons(authAdminRole, adminRole, id, user_status, name)}</td>
-                                                            </>
-                                                        )}
-
-                                                        {userType === 'superadmin' && (
-                                                            <>
-                                                                <td className="p-2">{formattedDateCreated}</td>
-                                                                <td className="p-2">{formatAdminRole(adminRole)} </td>
-                                                                <td className="p-2"><StatusChip status={user_status} /></td>
-                                                                <td>{getAdminActionButtons(authAdminRole, adminRole, id, user_status, name)}</td>
+                                                                <td className="p-2">{institutionName}</td>
+                                                                <td className="p-2">{planName}</td>
+                                                                <td className="p-2">{planStartDate}</td>
+                                                                <td className="p-2">{planEndDate}</td>
+                                                                <td className="p-2">{capitalize(planTerm)}</td>
+                                                                <td className="p-2"><StatusChip status={planStatus} /></td>
+                                                                <td >{renderInsSubActionButtons(id, user_status, name)} </td>
                                                             </>
                                                         )}
                                                     </tr>
@@ -366,13 +286,13 @@ export default function SubscriptionBilling({ auth, subscriptions, userType, sea
                                     : (
                                         <>
                                             <table className="w-full table-auto relative text-xs text-left border-current text-customGray tracking-wide">
-                                                {renderTableHeaders(tableHeaders, userType)}
+                                                {renderTableHeaders(tableHeaders, subscriptionType)}
                                             </table>
                                             <NoDataPrompt type={hasFilteredData ? '' : 'filter'} />
                                         </>
                                     )
                                 )
-                                : <TableSkeleton tableHeaders={tableHeaders} tableHeaderType={userType} />
+                                : <TableSkeleton tableHeaders={tableHeaders} tableHeaderType={subscriptionType} />
                             }
 
                         </div>
