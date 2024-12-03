@@ -21,6 +21,19 @@ export default function Authenticated({ user, children, newProfile = null, searc
     const [isPremium, setIsPremium] = useState(user.is_premium);
     const [profilePic, setProfilePic] = useState(user.user_pic);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isAffiliated, setAffiliation] = useState(null); // Initialize as null or an appropriate value
+
+    useEffect(() => {
+      axios.get('/fetch-affiliation') // Replace with your actual API endpoint
+        .then(response => {
+            setAffiliation(response.data.isAffiliated); // Update the state with the userType value
+        })
+        .catch(error => {
+          console.error('Error fetching affiliation:', error);
+        });
+    }, []); // Empty dependency array means this runs only once after the component mounts
+
+    console.log("Is Affiliated?: ", isAffiliated);
 
 
 
@@ -94,6 +107,7 @@ export default function Authenticated({ user, children, newProfile = null, searc
                                 </div>
 
                                 <div className=" relative">
+
                                     <Dropdown>
                                         <Dropdown.Trigger>
                                             <span className="inline-flex rounded-md">
@@ -102,9 +116,19 @@ export default function Authenticated({ user, children, newProfile = null, searc
                                                     className="relative items-center px-0 py-0 border border-transparent text-sm leading-4 font-medium rounded-full h-10 w-10 flex justify-center text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150"
                                                 >
                                                     <img src={profilePic} className="w-full h-full rounded-full object-cover" />
-
                                                 </button>
+
+
+                                                {isAffiliated ? (
+                                             <div
+                                                    className="ml-1 relative items-center px-0 py-0 border border-transparent text-sm leading-4 font-medium rounded-full h-5 w-5 flex justify-center text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150"
+                                                >
+                                                    <img src="images/class.png" className="w-full h-full rounded-full object-cover" />
+
+                                                </div>):(null)}
+
                                             </span>
+
                                         </Dropdown.Trigger>
 
                                         <Dropdown.Content>

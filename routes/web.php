@@ -609,5 +609,6 @@ Route::post('/manuscripts/{id}/increment-view', [StudentClassController::class, 
 
 Route::get('/api/check-group', [StudentClassController::class, 'checkGroup']);
 Route::get('/fetch-userType', [TeacherClassController::class, 'fetchUserType']);
+ Route::get('/fetch-affiliation', [TeacherClassController::class, 'fetchAffiliation']);
 
 require __DIR__.'/auth.php';

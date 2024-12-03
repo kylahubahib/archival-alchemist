@@ -634,6 +634,23 @@ class TeacherClassController extends Controller
 }
 
 
+public function fetchAffiliation()
+{
+    $userId = Auth::id(); // Get the currently logged-in user ID
+
+    Log::info('Fetching user type', ['userId' => $userId]);
+
+    $isAffiliated = User::where('id', $userId)->first();
+
+    if (!$isAffiliated) {
+        return response()->json(['error' => 'User not found'], 404);
+    }
+
+
+    return response()->json(['isAffiliated' => (bool) $isAffiliated->is_affiliated]);
+}
+
+
 
 
 }
