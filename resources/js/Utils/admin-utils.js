@@ -1,5 +1,5 @@
 import { router } from "@inertiajs/react";
-import { encodeURLParam, updateURLParams } from "./common-utils";
+import { encodeURLParam, sanitizeURLParam, updateURLParams } from "./common-utils";
 import axios from "axios";
 import { showToast } from "@/Components/Toast";
 
@@ -52,7 +52,7 @@ export const fetchSearchFilteredData = async (routeName, requiredRouteParam, par
         const response = await axios.get(route(routeName, { ...requiredRouteParam }), {
             params: {
                 ...params,
-                search: encodeURLParam(searchTerm),
+                search: sanitizeURLParam(searchTerm),
             },
         });
 

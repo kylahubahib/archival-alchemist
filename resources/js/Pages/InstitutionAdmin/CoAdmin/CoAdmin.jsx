@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from "react";
-import { User, Chip, user, } from "@nextui-org/react";
-import { FaPlus, FaFileCircleCheck, FaFileCircleMinus, FaFileInvoice } from "react-icons/fa6";
+import { User, Chip, user, Button, } from "@nextui-org/react";
+import { FaPlus, FaFileCircleCheck, FaFileCircleMinus, FaFileInvoice, FaShieldHalved, FaFileLines } from "react-icons/fa6";
 import { HiDocumentCheck, HiDocumentMinus } from "react-icons/hi2";
 import { decodeURLParam, formatDateTime } from "@/Utils/common-utils";
 import { renderTableControls, renderTableHeaders } from "@/Pages/SuperAdmin/Users/Users";
@@ -18,6 +18,10 @@ import NoDataPrompt from "@/Components/Admin/NoDataPrompt";
 import Filter from "./Filter";
 import Add from "@/Pages/SuperAdmin/Users/Add";
 import AccessControl from "@/Pages/SuperAdmin/Users/AccessControl";
+import { FaUserCheck, FaUserSlash } from "react-icons/fa";
+import Logs from "@/Pages/SuperAdmin/Users/Logs";
+import UpdateStatus from "@/Pages/SuperAdmin/Users/UpdateStatus";
+import { router } from "@inertiajs/react";
 
 export default function CoAdmins({ auth, insAdminAffiliation, coAdmins, search, entries }) {
     console.log('coAdmins', coAdmins);
@@ -36,9 +40,16 @@ export default function CoAdmins({ auth, insAdminAffiliation, coAdmins, search, 
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [isAddInsAdminModalOpen, setIsAddInsAdminModalOpen] = useState(false);
     const [isAccessControlModalOpen, setIsAccessControlModalOpen] = useState(false);
+    const [isUpdateStatusModalOpen, setIsUpdateStatusModalOpen] = useState();
     const [coInsAdminId, setCoInsAdminId] = useState(null);
     const [coInsAdminName, setCoInsAdminName] = useState(null);
+    const [isLogsModalOpen, setIsLogsModalOpen] = useState(false);
 
+    const authAdminRole = auth.user.access_control;
+
+    console.log('authAdminRole', authAdminRole);
+
+    // const authAdminRole = auth.user.access_control.role;
 
     // State variables to be passed to the Filter component
     const [autocompleteItems, setAutocompleteItems] = useState({ role: [], course: [], plan: [], status: [] });
@@ -63,7 +74,7 @@ export default function CoAdmins({ auth, insAdminAffiliation, coAdmins, search, 
     const filterParams = ['role', 'course', 'status', 'date_created'];
 
     const tableHeaders = {
-        'admin': ['Name', 'User ID', 'Affiliated University', 'Role', 'Date Created', 'Status', 'Actions'],
+        'admin': ['Name', 'User ID', 'Date Created', 'Status', 'Actions'],
     };
 
     // Get the total number of filters from the query parameters that have values
@@ -81,7 +92,7 @@ export default function CoAdmins({ auth, insAdminAffiliation, coAdmins, search, 
         setIsDataLoading(true);
 
         const debounce = setTimeout(() => {
-            fetchSearchFilteredData('institution-coadmins.filter', null, params, searchTerm,
+            fetchSearchFilteredData('institution-coadmins', null, params, searchTerm,
                 setIsDataLoading, setCoAdminsToRender, setHasFilteredData);
         }, 300);
 
@@ -113,7 +124,7 @@ export default function CoAdmins({ auth, insAdminAffiliation, coAdmins, search, 
     };
 
     const handleUpdatePlanStatusModalClick = (id, name, currentPlanName, actionText) => {
-        setIsUpdatePlanStatusModalOpen(true);
+        setIsUpdateStatusModalOpen(true);
         setUserId(id);
         setName(name);
         setCurrentPlanName(currentPlanName);
@@ -123,6 +134,73 @@ export default function CoAdmins({ auth, insAdminAffiliation, coAdmins, search, 
     const handleClearFiltersClick = () => {
         setSelectedAutocompleteItems({ department: '', course: '', plan: '', currentPlanStatus: '', dateCreated: null })
     }
+
+    const handleUpdateStatusClick = (id, name, actionText) => {
+        console.log('actionText', actionText);
+        setIsUpdateStatusModalOpen(true);
+        setCoInsAdminId(id);
+        setCoInsAdminName(name);
+        setAction(actionText);
+    }
+
+    const handleAccessControlClick = (id, name) => {
+        setIsAccessControlModalOpen(true);
+        setCoInsAdminId(id);
+        setCoInsAdminName(name);
+    }
+
+    const handleLogsClick = (id, name) => {
+        setIsLogsModalOpen(true);
+        setCoInsAdminId(id);
+        setCoInsAdminName(name);
+    }
+
+    const handleSampleUpdate = () => {
+        router.patch(route('sample-update'));
+
+    }
+
+    const getAdminActionButtons = (authAdminRole, adminRole, userId, userStatus, name) => {
+        let disableBtn = { accessControl: null, viewLogs: null, setStatus: null };
+
+        // Manage access for the same and different admin levels for the visibililty of an action buttons
+        if (authAdminRole === 'super_admin' && adminRole === 'super_admin') {
+            disableBtn = { accessControl: true, viewLogs: false, setStatus: true };
+        } else if (authAdminRole === 'super_admin' && adminRole === 'co_super_admin') {
+            disableBtn = { accessControl: false, viewLogs: false, setStatus: false };
+        } else if (authAdminRole === 'co_super_admin' && adminRole === 'super_admin') {
+            disableBtn = { accessControl: true, viewLogs: false, setStatus: true };
+        } else if (authAdminRole === 'co_super_admin' && adminRole === 'co_super_admin') {
+            disableBtn = { accessControl: true, viewLogs: false, setStatus: true };
+        }
+
+        const actionText = userStatus.toLowerCase() === 'active' ? "Deactivate" : "Activate";
+
+        return (
+            <div className="p-2 flex gap-2">
+                <ActionButton
+                    icon={<FaShieldHalved />}
+                    tooltipContent="Access control"
+                    isDisabled={disableBtn.accessControl}
+                    onClick={() => handleAccessControlClick(userId, name, actionText)}
+                />
+                <ActionButton
+                    icon={<FaFileLines />}
+                    tooltipContent="View logs"
+                    isDisabled={disableBtn.viewLogs}
+                    onClick={() => handleLogsClick(userId, name)}
+                />
+                <ActionButton
+                    icon={userStatus === 'active' ? <FaUserSlash /> : <FaUserCheck />}
+                    tooltipContent={actionText}
+                    isDisabled={disableBtn.setStatus}
+                    onClick={() => handleUpdateStatusClick(userId, name, actionText)}
+                />
+            </div>
+        );
+    };
+
+
 
     return (
         <AdminLayout
@@ -140,7 +218,7 @@ export default function CoAdmins({ auth, insAdminAffiliation, coAdmins, search, 
                         <AddButton onClick={() => setIsAddInsAdminModalOpen(true)} icon={<FaPlus />}>
                             Add co-ins admin
                         </AddButton>
-
+                        <Button onClick={handleSampleUpdate} />
                     </div>
                     <div className="bg-white flex flex-col gap-4 h-[68dvh] relative shadow-md sm:rounded-lg overflow-hidden p-4">
 
@@ -167,7 +245,7 @@ export default function CoAdmins({ auth, insAdminAffiliation, coAdmins, search, 
                                         {renderTableHeaders(tableHeaders, 'admin')}
                                         <tbody>
                                             {coAdminsToRender.data.map((coAdmin, index) => {
-                                                const { id, uni_id_num, name, email, created_at, user_pic, student, personal_subscription } = coAdmin;
+                                                const { id, uni_id_num, name, email, created_at, user_pic, user_status, student, accessControl, personal_subscription } = coAdmin;
 
                                                 return (
                                                     <tr key={index} className="border-b border-customLightGray hover:bg-gray-100">
@@ -183,6 +261,10 @@ export default function CoAdmins({ auth, insAdminAffiliation, coAdmins, search, 
                                                             />
                                                         </td>
                                                         {/* <td className="p-2">{uni_id_num}</td> */}
+                                                        <td className="p-2">{id}</td>
+                                                        <td className="p-2">{formatDateTime(created_at)}</td>
+                                                        <td className="p-2"><StatusChip status={user_status} /></td>
+                                                        <td>{getAdminActionButtons(authAdminRole, accessControl?.role || 'N/A', id, user_status, name)}</td>
 
                                                         <td className="p-2">
                                                             {/* <Chip startContent={<FaFileInvoice size={16} />} size="sm" className="text-customGray h-full p-1 text-wrap flex text-center" variant='faded'>
@@ -225,11 +307,27 @@ export default function CoAdmins({ auth, insAdminAffiliation, coAdmins, search, 
                 uniBranchId={affiliatedUniBranchId}
             />
             <AccessControl
+                fetchAdminAccessRouteName='institution-coadmins.admin-access'
+                updateAdminAccessRouteName='institution-coadmins.update-admin-access'
                 isOpen={isAccessControlModalOpen}
                 onClose={() => setIsAccessControlModalOpen(false)}
                 userType='admin'
                 userId={coInsAdminId}
                 username={coInsAdminName}
+            />
+            <Logs
+                isOpen={isLogsModalOpen}
+                onClose={() => setIsLogsModalOpen(false)}
+                userId={coInsAdminId}
+                username={coInsAdminName}
+            />
+            <UpdateStatus
+                routeName="institution-coadmins.update-status"
+                isOpen={isUpdateStatusModalOpen}
+                onClose={() => setIsUpdateStatusModalOpen(false)}
+                action={action}
+                userId={coInsAdminId}
+                name={coInsAdminName}
             />
         </AdminLayout >
     );

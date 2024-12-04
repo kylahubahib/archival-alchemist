@@ -9,6 +9,7 @@ use App\Models\Course;
 use App\Models\Department;
 use App\Models\ManuscriptProject;
 use App\Models\Section;
+use App\Models\UniversityBranch;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -166,21 +167,28 @@ class InsAdminArchiveController extends Controller
 
         // Formats the manuscript data before passing it to the view
         $manuscripts->each(function ($manuscript) {
-            // Add alias manuscript_id key that stores the manuscript id for readability
+            // Add alias manuscript_id key for readability
             $manuscript->manuscript_id = $manuscript->id;
 
-            $manuscript->tag_names = $manuscript->tags->pluck('tags_name');
-            $manuscript->capstone_group = $manuscript->group ? [$manuscript->group->group_name] : [];
-            $manuscript->group_members = $manuscript->group->group_member->pluck('stud_id');
+            // Handle tags safely
+            $manuscript->tag_names = $manuscript->tags->pluck('tags_name') ?? collect();
 
-            // Map through group members to fetch author names, ensuring it's always an array
-            $manuscript->authors = $manuscript->group->group_member
-                ->map(fn($member) => $member->student->user->name ?? null)
+            // Handle capstone group safely
+            $manuscript->capstone_group = $manuscript->group ? [$manuscript->group->group_name] : [];
+
+            // Handle group members safely
+            $manuscript->group_members = $manuscript->group?->group_member?->pluck('stud_id') ?? collect();
+
+            // Safely map through group members to fetch author names
+            $manuscript->authors = $manuscript->group?->group_member
+                ? $manuscript->group->group_member
+                ->map(fn($member) => $member->student?->user?->name ?? null)
                 ->filter() // Remove null values
                 ->values() // Re-index the array
-                ->toArray();
+                ->toArray()
+                : []; // Default to an empty array if group or members are null
 
-            // Remove unnecessary loaded relationships 
+            // Remove unnecessary loaded relationships
             unset($manuscript->tags, $manuscript->group);
         });
 
@@ -194,13 +202,32 @@ class InsAdminArchiveController extends Controller
             'manuscript_visibility' => 'required|in:Public,Private',
         ]);
 
+        // Count the total public manuscripts related to the given UniversityBranch
+        $totalPublicManuscripts = ManuscriptProject::where('man_doc_visibility', 'Public')
+            ->whereHas('section.course.department.university_branch', function ($query) {
+                $query->where('id', $this->insAdminUniBranchId); // Filter by UniversityBranch ID
+            })
+            ->count();
+
+        Log::info(['totalPublicManuscripts' => $totalPublicManuscripts]);
+
+        // Fetch the manuscript to be updated
         $manuscript = ManuscriptProject::findOrFail($request->manuscript_id);
 
+        // Check if the manuscript visibility can be updated based on the public manuscripts count
+        if ($totalPublicManuscripts >= 3 && $request->manuscript_visibility === 'Private') {
+            return back()->with(['message' => 'Cannot update to private. Must have at least 3 public manuscripts to display.'], 400);
+        }
+
+        // Update the manuscript visibility based on the conditions
         $manuscript->man_doc_visibility = $request->manuscript_visibility;
+
+        // Save the changes
         $manuscript->save();
 
         return back()->with('success', 'Manuscript visibility updated successfully.');
     }
+
 
     public function downloadManuscript($id)
     {

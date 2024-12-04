@@ -12,6 +12,8 @@ import Modal from '@/Components/Modal';
 
 export default function Add({ routeName = 'users.send-admin-registration', uniBranchId, userType, isOpen, onClose }) {
 
+    console.log('uniBranchIdSheesh', uniBranchId);
+
     const { data, setData, post, processing, errors, clearErrors, reset } = useForm({
         user_type: userType,
         uni_branch_id: uniBranchId,
@@ -20,7 +22,6 @@ export default function Add({ routeName = 'users.send-admin-registration', uniBr
         access: [],
     });
 
-    console.log("add usertype", data.user_type);
 
     const inputClassName = {
         base: "tracking-wide pb-2",

@@ -66,9 +66,8 @@ export default function Filter({ selectedAutocompleteItems, setSelectedAutocompl
 
     const setFilters = () => {
         router.get(
-            route('institution-students.filter', {
+            route('institution-coadmins', {
                 ...params,
-                hasStudentPremiumAccess,
                 page: null,
                 department: sanitizeURLParam(selectedAutocompleteItems.department),
                 course: sanitizeURLParam(selectedAutocompleteItems.course),

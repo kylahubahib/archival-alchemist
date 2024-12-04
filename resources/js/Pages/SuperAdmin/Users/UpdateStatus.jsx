@@ -6,8 +6,11 @@ import { router } from '@inertiajs/react';
 import axios from 'axios';
 import Modal from '@/Components/Modal';
 
-export default function UpdateStatus({ isOpen, onClose, userId, name, action }) {
+export default function UpdateStatus({ routeName = 'users.update-status', isOpen, onClose, userId, name, action }) {
     const [isLoading, setIsLoading] = useState(false);
+
+    console.log('action', action);
+    console.log('userId', userId);
 
     console.log('name', name);
 
@@ -15,7 +18,7 @@ export default function UpdateStatus({ isOpen, onClose, userId, name, action }) 
         setIsLoading(true);
 
         try {
-            await axios.patch(route('users.update-status'), {
+            await axios.patch(route(routeName), {
                 user_id: userId,
                 action: action,
             });

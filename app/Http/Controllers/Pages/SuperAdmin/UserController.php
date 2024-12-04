@@ -205,7 +205,7 @@ class UserController extends Controller
     {
         $validatedData = $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|email|max:255|unique:users,email',  // Check if the email exists
+            'email' => 'required|email|max:255|unique:users,email',
         ]);
 
         $token = Str::random(50);
@@ -213,27 +213,42 @@ class UserController extends Controller
         $name = $validatedData['name'];
         $email = $validatedData['email'];
         $access = json_encode($request->input('access')); // Encode the access array to JSON
-
         $registrationLink = route('admin.registration-form', ['token' => $token]);
 
+        Log::info(['uni_branch_id' => $request->input('uni_branch_id')]);
 
-        DB::table('admin_registration_tokens')->insert([
-            'token' => $token,
-            'uni_branch_id' => $request->input('uni_branch_id') ?? null,
-            'name' => $name,
-            'email' => $email,
-            'user_type' => $userType,
-            'access' => $access,
-            'expires_at' => Carbon::now()->addDay(),
-        ]);
+        DB::beginTransaction();
 
-        // Insert the fields into this token table for temporary use
+        try {
+            // Attempt to insert the token into the database
+            DB::table('admin_registration_tokens')->insert([
+                'token' => $token,
+                'uni_branch_id' => $request->input('uni_branch_id') ?? null,
+                'name' => $name,
+                'email' => $email,
+                'user_type' => $userType,
+                'access' => $access,
+                'expires_at' => Carbon::now()->addDay(),
+            ]);
 
-        // Send the email
-        Mail::to($email)->send(new AdminRegistrationMail($userType, $name, $email, $access, $registrationLink));
+            // Attempt to send the email
+            Mail::to($email)->send(new AdminRegistrationMail($userType, $name, $email, $access, $registrationLink));
 
-        return redirect()->back()->with('message', 'Email sent successfully!');
+            // Commit the transaction if both operations succeed
+            DB::commit();
+
+            return redirect()->back()->with('message', 'Email sent successfully!');
+        } catch (\Exception $e) {
+            // Rollback the transaction if either operation fails
+            DB::rollBack();
+
+            // Log the error for debugging
+            Log::error('Error during admin registration: ' . $e->getMessage());
+
+            return redirect()->back()->with('error', 'An error occurred while processing your request. Please try again later.');
+        }
     }
+
 
 
     public function adminRegistrationForm($token)

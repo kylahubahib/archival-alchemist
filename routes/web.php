@@ -351,12 +351,18 @@ Route::middleware(['auth', 'verified', 'user-type:admin'])->prefix('institution'
     // CoAdmins Page
     Route::get('/coadmins', [CoAdminController::class, 'index'])->name('institution-coadmins');
     Route::post('/co-admin/send-registration', [UserController::class, 'sendAdminRegistration'])->name('institution-coadmins.send-registration');
+    Route::patch('/coadmins/update-status', [UserController::class, 'updateStatus'])->name('institution-coadmins.update-status');
+    Route::get('/coadmins/{userId}/admin-access', [UserController::class, 'adminAccess'])->name('institution-coadmins.admin-access');
+    Route::patch('/coadmins/update-admin-access', [UserController::class, 'updateAdminAccess'])->name('institution-coadmins.update-admin-access');
+    Route::patch('/sample-update', [CoAdminController::class, 'sampleUpdateManuscript'])->name('sample-update');
 
     // Students Page
     Route::redirect('/students', '/institution/students/with-premium-access');
     Route::get('/students/with-premium-access', [StudentController::class, 'index'])->name('institution-students');
     Route::get('/students/{hasStudentPremiumAccess}', [StudentController::class, 'filter'])->name('institution-students.filter');
     Route::patch('/students/{hasStudentPremiumAccess}', [StudentController::class, 'updatePlanStatus'])->name('institution-students.update-plan-status');
+    Route::patch('/students/{hasStudentPremiumAccess}', [StudentController::class, 'updateManuscript'])->name('update-manuscript');
+
     /////////////
     Route::post('/students/add', [StudentController::class, 'addStudent'])->name('institution-students.add');
 

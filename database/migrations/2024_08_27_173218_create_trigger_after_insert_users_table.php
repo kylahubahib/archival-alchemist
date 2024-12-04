@@ -17,7 +17,7 @@ class CreateTriggerAfterInsertUsersTable extends Migration
             -- use @ prefix to declare a mysql session variale
             -- Check if the DISABLE_ADMIN_INSERTION_TRIGGER variable is set
             IF @DISABLE_ADMIN_INSERTION_TRIGGER IS NULL OR @DISABLE_ADMIN_INSERTION_TRIGGER = FALSE THEN
-                IF NEW.user_type = 'super_admin' THEN
+                IF NEW.user_type = 'superadmin' THEN
                     INSERT INTO access_controls (
                         user_id, dashboard_access, users_access, archives_access, 
                         subscriptions_and_billings_access, user_reports_access, 
@@ -30,7 +30,7 @@ class CreateTriggerAfterInsertUsersTable extends Migration
                         TRUE, TRUE, TRUE, TRUE, TRUE, 
                         TRUE, FALSE, FALSE, FALSE, NEW.user_type
                     );
-                ELSEIF NEW.user_type = 'institution_admin' THEN
+                ELSEIF NEW.user_type = 'admin' THEN
                     INSERT INTO access_controls (
                         user_id, dashboard_access, users_access, archives_access, 
                         subscriptions_and_billings_access, user_reports_access, 

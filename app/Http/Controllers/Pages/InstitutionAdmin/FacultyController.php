@@ -46,13 +46,13 @@ class FacultyController extends Controller
         $entries = (int) request('entries', 10);
 
         $query = User::where('user_type', 'teacher') // Only students
-            ->select('id', 'uni_id_num', 'name', 'email', 'is_premium', 'user_pic', 'created_at', 'user_status');
+            ->select('id', 'uni_id_num', 'name', 'email', 'is_affiliated', 'is_premium', 'user_pic', 'created_at', 'user_status');
 
         // Filter premium access
         if ($hasFacultyPremiumAccess === 'with-premium-access') {
-            $query->where('users.is_premium', true);
+            $query->where('users.is_affiliated', true);
         } elseif ($hasFacultyPremiumAccess === 'no-premium-access') {
-            $query->where('users.is_premium', false);
+            $query->where('users.is_affiliated', false);
         }
 
         $query->with([
@@ -79,10 +79,8 @@ class FacultyController extends Controller
         // Search by user name or faculty ID
         if ($search) {
             $query->where(function ($q) use ($search) {
-                $q->where('name', 'LIKE', '%' . $search . '%')
-                    ->orWhereHas('faculty', function ($q) use ($search) {
-                        $q->where('id', 'LIKE', '%' . $search . '%');
-                    });
+                $q->where('name', 'LIKE', '%' . $search . '%');
+                $q->orWhere('uni_id_num', 'LIKE', '%' . $search . '%');
             });
         }
 

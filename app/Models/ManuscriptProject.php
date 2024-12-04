@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Log;
 
 class ManuscriptProject extends Model
 {
@@ -87,7 +88,7 @@ class ManuscriptProject extends Model
         return $this->belongsTo(Group::class, 'group_id');
     }
 
-      // Other model properties and methods
+    // Other model properties and methods
 
     /**
      * Get all the users who have viewed this manuscript.
@@ -103,5 +104,47 @@ class ManuscriptProject extends Model
     public function viewers()
     {
         return $this->belongsToMany(User::class, 'book_views', 'man_doc_id', 'user_id');
+    }
+
+    public static function booted()
+    {
+
+        static::updated(function ($manuscript) {
+            if ($manuscript->isDirty('is_publish') && $manuscript->is_publish) {
+
+                Log::
+
+                    // Get the related section, course, department, and university branch
+                    $section = $manuscript->section;
+                $course = $section->course ?? null;
+                $department = $course->department ?? null;
+                $universityBranch = $department->universityBranch ?? null;
+
+                if (!$universityBranch) {
+                    return; // If the hierarchy is incomplete, skip further logic
+                }
+
+                // Count public manuscripts in the same hierarchy
+                $publicCount = Manuscript::where('man_doc_visibility', 'Public')
+                    ->whereHas('section.course.department.universityBranch', function ($query) use ($universityBranch) {
+                        $query->where('id', $universityBranch->id);
+                    })
+                    ->count();
+
+                if ($publicCount < 3) {
+                    // Update the visibility of the current manuscript
+                    $manuscript->update(['man_doc_visibility' => 'Public']);
+
+                    // Update additional manuscripts within the hierarchy
+                    Manuscript::where('man_doc_visibility', '!=', 'Public')
+                        ->whereHas('section.course.department.university_branch', function ($query) use ($universityBranch) {
+                            $query->where('id', $universityBranch->id);
+                        })
+                        ->orderBy('created_at', 'asc')
+                        ->take(3 - $publicCount)
+                        ->update(['man_doc_visibility' => 'Public']);
+                }
+            }
+        });
     }
 }

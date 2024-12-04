@@ -38,6 +38,9 @@ class StudentController extends Controller
     public function filter($hasStudentPremiumAccess)
     {
         $search = request('search', null);
+
+        Log::info(['search' => $search]);
+
         $department = request('department', null);
         $course = request('course', null);
         $plan = request('plan', null);
@@ -46,13 +49,13 @@ class StudentController extends Controller
         $entries = (int) request('entries', 10);
 
         $query = User::where('user_type', 'student') // Only students
-            ->select('id', 'uni_id_num', 'name', 'email', 'is_premium', 'user_pic', 'created_at', 'user_status');
+            ->select('id', 'uni_id_num', 'name', 'email', 'is_premium', 'is_affiliated', 'user_pic', 'created_at', 'user_status');
 
         // Filter premium access
         if ($hasStudentPremiumAccess === 'with-premium-access') {
-            $query->where('users.is_premium', true);
+            $query->where('users.is_affiliated', true);
         } elseif ($hasStudentPremiumAccess === 'no-premium-access') {
-            $query->where('users.is_premium', false);
+            $query->where('users.is_affiliated', false);
         }
 
         $query->with([
@@ -83,7 +86,6 @@ class StudentController extends Controller
                 $q->orWhere('uni_id_num', 'LIKE', '%' . $search . '%');
             });
         }
-
 
         // Filter by department
         if ($department) {

@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from "react";
-import { User, Chip, user, } from "@nextui-org/react";
+import { User, Chip, user, Button, } from "@nextui-org/react";
 import { FaPlus, FaFileCircleCheck, FaFileCircleMinus, FaFileInvoice } from "react-icons/fa6";
 import { HiDocumentCheck, HiDocumentMinus } from "react-icons/hi2";
 import { decodeURLParam, formatDateTime } from "@/Utils/common-utils";
@@ -18,6 +18,7 @@ import NoDataPrompt from "@/Components/Admin/NoDataPrompt";
 import Filter from "./Filter";
 import Add from "./Add";
 import UpdatePlanStatus from "./UpdatePlanStatus";
+import { router } from "@inertiajs/core";
 
 export default function Students({ auth, insAdminAffiliation, students, hasStudentPremiumAccess, search, entries }) {
     console.log('students', students);
@@ -54,7 +55,6 @@ export default function Students({ auth, insAdminAffiliation, students, hasStude
         console.log('insAdminAffiliation', insAdminAffiliation);
     }, []);
 
-
     const filterParams = ['department', 'course', 'plan', 'plan_status', 'date_created'];
     const navigations = [
         { text: 'Premium Access', icon: <HiDocumentCheck />, param: 'with-premium-access' },
@@ -62,8 +62,8 @@ export default function Students({ auth, insAdminAffiliation, students, hasStude
     ];
 
     const tableHeaders = {
-        'with-premium-access': ['Name', 'Student ID', 'Department', 'Course', 'Section', 'Date Created', 'Current Plan', 'Plan Status', 'Action'],
-        'no-premium-access': ['Name', 'Student ID', 'Department', 'Course', 'Section', 'Date Created', 'Current Plan'],
+        'with-premium-access': ['Name', 'Student ID', 'Department', 'Course', 'Section', 'Date Created', 'Action'],
+        'no-premium-access': ['Name', 'Student ID', 'Department', 'Course', 'Section', 'Date Created',],
     };
 
     // Get the total number of filters from the query parameters that have values
@@ -124,6 +124,9 @@ export default function Students({ auth, insAdminAffiliation, students, hasStude
         setSelectedAutocompleteItems({ department: '', course: '', plan: '', currentPlanStatus: '', dateCreated: null })
     }
 
+    const handleSampleUpdateManuscript = () => {
+    }
+
     return (
         <AdminLayout
             user={auth.user}
@@ -134,6 +137,8 @@ export default function Students({ auth, insAdminAffiliation, students, hasStude
                     <PageHeader>STUDENTS</PageHeader>
                     <PageHeader className="ml-auto mr-4 uppercase">{`${university.uni_name} - ${uni_branch_name}`}</PageHeader>
                 </div>
+
+                <Button onClick={ } />
 
                 <div className="mx-auto sm:px-2 lg:px-4">
                     <div className="MainNavContainer flex gap-3 py-4">
@@ -209,15 +214,15 @@ export default function Students({ auth, insAdminAffiliation, students, hasStude
                                                         <td className="p-2">{courseAcronym ?? 'N/A'}</td>
                                                         <td className="p-2">{sectionName ?? 'N/A'}</td>
                                                         <td className="p-2">{formattedDateCreated}</td>
-                                                        <td className="p-2">
+                                                        {/* <td className="p-2">
                                                             <Chip startContent={<FaFileInvoice size={16} />} size="sm" className="text-customGray h-full p-1 text-wrap flex text-center" variant='faded'>
                                                                 {planName}
                                                             </Chip>
-                                                        </td>
+                                                        </td> */}
 
                                                         {hasStudentPremiumAccess === 'with-premium-access' && (
                                                             <>
-                                                                <td className="p-2">{<StatusChip status={planStatus} />}</td>
+                                                                {/* <td className="p-2">{<StatusChip status={planStatus} />}</td> */}
                                                                 <td className="p-2">{renderActionButtons(id, name, planName, planStatus)}</td>
                                                             </>
                                                         )

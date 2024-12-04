@@ -29,7 +29,7 @@ class UniversityBranch extends Model
     protected static function booted()
     {
         static::creating(function ($uniBranch) {
-            $uniBranch->id = mt_rand(1000000000, 9999999999);  
+            $uniBranch->id = mt_rand(1000000000, 9999999999);
             while (self::where('id', $uniBranch->id)->exists()) {
                 $uniBranch->id = mt_rand(1000000000, 9999999999);
             }

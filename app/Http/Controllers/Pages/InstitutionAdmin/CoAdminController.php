@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 use App\Mail\AccountDetailsMail;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Pages\InsAdminCommonDataController;
-use App\Models\{PersonalSubscription, Student, User};
+use App\Models\{ManuscriptProject, ManuscriptTag, PersonalSubscription, Student, User};
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -72,5 +72,13 @@ class CoAdminController extends Controller
             'coAdmins' => $coAdmins,
             'searchValue' => $searchValue,
         ]);
+    }
+
+    public function sampleUpdateManuscript()
+    {
+
+        $book = ManuscriptProject::where('id', 3)->first();
+        $book->is_publish = true;
+        $book->save();
     }
 }

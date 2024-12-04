@@ -65,8 +65,8 @@ export default function Faculties({ auth, insAdminAffiliation, faculties, hasFac
     ];
 
     const tableHeaders = {
-        'with-premium-access': ['Name', 'Student ID', 'Department', 'Course', 'Section', 'Date Created', 'Current Plan', 'Plan Status', 'Action'],
-        'no-premium-access': ['Name', 'Student ID', 'Department', 'Course', 'Section', 'Date Created', 'Current Plan'],
+        'with-premium-access': ['Name', 'Faculty ID', 'Department', 'Course', 'Section', 'Date Created', 'Plan Status', 'Action'],
+        'no-premium-access': ['Name', 'Faculty ID', 'Date Created'],
     };
 
     // Get the total number of filters from the query parameters that have values
@@ -161,7 +161,7 @@ export default function Faculties({ auth, insAdminAffiliation, faculties, hasFac
                     <div className="bg-white flex flex-col gap-4 h-[68dvh] relative shadow-md sm:rounded-lg overflow-hidden p-4">
 
                         {/* TABLE CONTROLS */}
-                        {renderTableControls('institution-faculties.filter', searchTerm, setSearchTerm, 'Search by name or student id...',
+                        {renderTableControls('institution-faculties.filter', searchTerm, setSearchTerm, 'Search by name or faculty id...',
                             faculties.data.length === 0, totalFilters, handleClearFiltersClick, isFilterOpen, setIsFilterOpen,
                             handleSetEntriesPerPageClick, entriesPerPage, setEntriesPerPage, setFacultiesToRender
                         )}
@@ -208,19 +208,19 @@ export default function Faculties({ auth, insAdminAffiliation, faculties, hasFac
                                                             />
                                                         </td>
                                                         <td className="p-2">{uni_id_num}</td>
-                                                        <td className="p-2">{departmentAcronym ?? 'N/A'}</td>
+                                                        {/* <td className="p-2">{departmentAcronym ?? 'N/A'}</td>
                                                         <td className="p-2">{courseAcronym ?? 'N/A'}</td>
-                                                        <td className="p-2">{sectionName ?? 'N/A'}</td>
+                                                        <td className="p-2">{sectionName ?? 'N/A'}</td> */}
                                                         <td className="p-2">{formattedDateCreated}</td>
-                                                        <td className="p-2">
+                                                        {/* <td className="p-2">
                                                             <Chip startContent={<FaFileInvoice size={16} />} size="sm" className="text-customGray h-full p-1 text-wrap flex text-center" variant='faded'>
                                                                 {planName}
                                                             </Chip>
-                                                        </td>
+                                                        </td> */}
 
                                                         {hasFacultyPremiumAccess === 'with-premium-access' && (
                                                             <>
-                                                                <td className="p-2">{<StatusChip status={planStatus} />}</td>
+                                                                {/* <td className="p-2">{<StatusChip status={planStatus} />}</td> */}
                                                                 <td className="p-2">{renderActionButtons(id, name, planName, planStatus)}</td>
                                                             </>
                                                         )

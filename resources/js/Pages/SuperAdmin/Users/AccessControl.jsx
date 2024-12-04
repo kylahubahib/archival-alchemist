@@ -50,7 +50,9 @@ export const handleClearAll = (setter, hasUseFormSetter = false, field = '') => 
     }
 }
 
-export default function AccessControl({ userType, userId, username, isOpen, onClose }) {
+export default function AccessControl({ fetchAdminAccessRouteName = 'users.admin-access', updateAdminAccessRouteName = 'users.update-admin-access',
+    userType, userId, username, isOpen, onClose }) {
+
     const [isDataLoading, setIsDataLoading] = useState(false);
     const [isUpdating, setIsUpdating] = useState(false);
     const [adminAccess, setAdminAccess] = useState([]);
@@ -75,7 +77,7 @@ export default function AccessControl({ userType, userId, username, isOpen, onCl
         setIsDataLoading(true);
 
         try {
-            const response = await axios.get(route('users.admin-access', userId));
+            const response = await axios.get(route(fetchAdminAccessRouteName, userId));
             const currentAccess = [];
 
             // Store the keys with true values in the adminAccess
@@ -100,7 +102,7 @@ export default function AccessControl({ userType, userId, username, isOpen, onCl
         setIsUpdating(true);
 
         try {
-            await axios.patch(route('users.update-admin-access'), {
+            await axios.patch(route(updateAdminAccessRouteName), {
                 user_id: userId,
                 updated_access_columns: adminAccess
             });
