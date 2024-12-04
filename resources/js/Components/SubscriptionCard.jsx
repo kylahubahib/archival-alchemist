@@ -6,10 +6,13 @@ import { formatPrice } from "@/utils";
 const SubscriptionCard = () => {
   const [error, setError] = useState(null);
   const [plans, setPlans] = useState([]);
+  const [loading, isLoading] = useState(true);
 
   useEffect(() => {
+    isLoading(true);
         axios.get('/get-plans').then(response => {
           setPlans(response.data.personalPlans);
+          isLoading(false);
       });
   }, []);
 
@@ -29,7 +32,12 @@ const SubscriptionCard = () => {
         setError("Failed to create checkout session. Please try again.");
     }};
 
+    if(loading) return <div className="transparent"></div>
+
   return (
+
+
+
     <div className="relative text-gray-300 w-full h-full m-0 top-0 bottom-0 right-0 left-0 overflow-hidden" id="pricing">
       {/* Background Blurs */}
       <div
@@ -95,6 +103,9 @@ const SubscriptionCard = () => {
         </div>
       </div>
     </div>
+
+
+
   );
 };
 

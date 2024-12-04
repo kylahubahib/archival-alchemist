@@ -73,6 +73,7 @@ export default function Library({ auth }) {
                         description="A list of all available capstone manuscripts."
                         manuscripts={manuscripts} // Pass manuscripts to Manuscript
                         user={auth.user} // Pass the user to Manuscript
+                        auth={auth}
                     //choice={choice} // Pass choice to Manuscript
                     />
                 );
@@ -85,6 +86,7 @@ export default function Library({ auth }) {
                         description="A selection of manuscripts recommended for you."
                         manuscripts={manuscripts} // Update this with actual data as needed
                         user={auth.user} // Pass the user to Manuscript
+                        auth={auth}
                     //choice={choice} // Pass choice to Manuscript
                     />
                 );
@@ -97,6 +99,7 @@ export default function Library({ auth }) {
                         description="Manuscripts categorized by university."
                         manuscripts={manuscripts} // Update this with actual data as needed
                         user={auth.user} // Pass the user to Manuscript
+                        auth={auth}
                     //choice={choice} // Pass choice to Manuscript
                     />
                 );
@@ -135,7 +138,7 @@ export default function Library({ auth }) {
             <Head title="Library" />
 
             <div className="bg-white m-4 min-h-screen rounded-xl">
-                <div className="mx-auto sm:px-6 lg:px-8 bg-gray-100 min-poh-screen pt-6">
+                <div className="mx-auto sm:px-6 lg:px-8 bg-gray-100 min-h-screen pt-6">
                     <div className="flex flex-col">
                         <div className="flex justify-between items-center mb-4">
                             <div className="flex">

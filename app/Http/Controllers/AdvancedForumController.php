@@ -81,6 +81,8 @@ class AdvancedForumController extends Controller
     {
         $comments = ForumComment::with('user:id,user_pic,email,name')->where('forum_post_id', $id)->get();
 
+        \Log::info($comments);
+
         return response()->json([
             'comments' => $comments
         ]);
