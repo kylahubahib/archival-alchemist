@@ -11,12 +11,12 @@ return new class extends Migration
         Schema::create('forum_comments', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('forum_post_id'); // Singular form
-            $table->unsignedBigInteger('parent_id')->nullable()->after('comment');
-            $table->foreign('parent_id')->references('id')->on('forum_comments')->onDelete('cascade');
             $table->foreign('forum_post_id')->references('id')->on('forum_posts')->onDelete('cascade'); // References forum_posts
             $table->unsignedBigInteger('user_id');
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->text('comment');
+            $table->unsignedBigInteger('parent_id')->nullable(); 
+            $table->string('status')->nullable()->default('Visible');
             $table->timestamps();
         });
         

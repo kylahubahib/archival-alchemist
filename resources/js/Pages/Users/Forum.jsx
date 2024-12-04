@@ -11,7 +11,7 @@ import SearchBar from '@/Components/SearchBar';
 import { Inertia } from "@inertiajs/inertia";
 import { toast } from 'react-toastify';
 import axios from 'axios';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import PostDetailModal from '@/Components/PostDetailModal';
 import { formatDistanceToNow } from 'date-fns';
 import Echo from 'laravel-echo'; 
@@ -21,7 +21,7 @@ import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 import relativeTime from "dayjs/plugin/relativeTime";
 import ReportModal from '@/Components/ReportModal';
-import { FaSearch } from "react-icons/fa"; // For the search icon
+import { FaSearch } from "react-icons/fa"; 
 
 
 dayjs.extend(utc);
@@ -48,277 +48,287 @@ export default function Forum({ auth }) {
   const [filteredPosts, setFilteredPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [searchQuery, setSearchQuery] = useState('');  // Search query state
+  const [searchQuery, setSearchQuery] = useState(''); 
+  const [comments, setComments] = useState([]);
+  const [commentCounts, setCommentCounts] = useState({});
+
 
   // Set up Axios CSRF token configuration globally
   axios.defaults.headers.common['X-CSRF-TOKEN'] = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
   axios.defaults.withCredentials = true;
 
+
   const formatPostDate = (dateString) => {
     const date = dayjs.utc(dateString).tz(dayjs.tz.guess()); // Adjust to local timezone
     return date.fromNow(); // Display as relative time, e.g., "5 minutes ago"
-  };
+};
 
-  useEffect(() => {
-    if (!searchQuery) {
-      setFilteredPosts(posts);
-    }
-  }, [posts, searchQuery]);
-  
+useEffect(() => {
+  if (!searchQuery) {
+    setFilteredPosts(posts);
+  }
+}, [posts, searchQuery]);
 
-  const handleSearchChange = (e) => {
-    const query = e.target.value.toLowerCase();
-    setSearchQuery(query);
-  
-    if (query) {
-      const filtered = posts.filter((post) => {
-        const author = post.user?.name?.toLowerCase() || '';
-        const title = post.title?.toLowerCase() || '';
-        const tags = post.tags?.map((tag) => tag.name.toLowerCase()).join(' ') || '';
-  
-        return author.includes(query) || title.includes(query) || tags.includes(query);
-      });
-  
-      setFilteredPosts(filtered);
-    } else {
-      setFilteredPosts(posts); // Reset to all posts when search query is cleared
-    }
-  };
-  
+const handleUpdateCommentCount = (postId, count) => {
+  setCommentCounts((prevCounts) => ({
+      ...prevCounts,
+      [postId]: count,
+  }));
+};
 
-  // Fetch posts with sorting option
-  const fetchPosts = async (sortType = 'latest') => {
-    setLoading(true); // Start loading
-    try {
-      console.log(`Fetching posts with sort type: ${sortType}`);
-      const response = await axios.get(`/forum-posts?sort=${sortType}`);
-      console.log('Fetched posts:', response.data);
-      setPosts(Array.isArray(response.data) ? response.data : []);
-      setFilteredPosts(Array.isArray(response.data) ? response.data : []);  // Initially set all posts to filteredPosts
-    } catch (error) {
-      console.error('Error fetching posts:', error.response || error.message);
-      setError(error.message || 'Something went wrong');
-    } finally {
-      setLoading(false);
-    }
-  };
+const handleSearchChange = (e) => {
+  const query = e.target.value.toLowerCase();
+  setSearchQuery(query);
 
-  // useEffect for fetching posts and setting up Pusher
-  useEffect(() => {
-    fetchPosts(selectedSort); // Fetch posts with the selected sort option
+  if (query) {
+    const filtered = posts.filter((post) => {
+      const author = post.user?.name?.toLowerCase() || '';
+      const title = post.title?.toLowerCase() || '';
+      const tags = post.tags?.map((tag) => tag.name.toLowerCase()).join(' ') || '';
 
-    const echo = new Echo({
-      broadcaster: 'pusher',
-      key: 'ed777339e9944a0f909f',
+      return author.includes(query) || title.includes(query) || tags.includes(query);
+    });
+
+    setFilteredPosts(filtered);
+  } else {
+    setFilteredPosts(posts); // Reset to all posts when search query is cleared
+  }
+};
+
+
+// Fetch posts with sorting option
+const fetchPosts = async (sortType = 'latest') => {
+  setLoading(true); // Start loading
+  try {
+    console.log(`Fetching posts with sort type: ${sortType}`);
+    const response = await axios.get(`/forum-posts?sort=${sortType}`);
+    console.log('Fetched posts:', response.data);
+    setPosts(Array.isArray(response.data) ? response.data : []);
+    setFilteredPosts(Array.isArray(response.data) ? response.data : []);  // Initially set all posts to filteredPosts
+  } catch (error) {
+    console.error('Error fetching posts:', error.response || error.message);
+    setError(error.message || 'Something went wrong');
+  } finally {
+    setLoading(false);
+  }
+};
+
+// useEffect for fetching posts and setting up Pusher
+useEffect(() => {
+  fetchPosts(selectedSort); // Fetch posts with the selected sort option
+
+  const echo = new Echo({
+    broadcaster: 'pusher',
+    key: 'ed777339e9944a0f909f',
+    cluster: 'ap1',
+    forceTLS: true,
+    client: new Pusher('ed777339e9944a0f909f', {
       cluster: 'ap1',
-      forceTLS: true,
-      client: new Pusher('ed777339e9944a0f909f', {
-        cluster: 'ap1',
-        encrypted: true,
-      }),
+      encrypted: true,
+    }),
+  });
+
+  echo.channel('forum-posts').listen('NewPostCreated', (event) => {
+    setPosts((prevPosts) => [event.post, ...prevPosts]);
+  });
+
+  return () => {
+    echo.disconnect();
+  };
+}, [selectedSort]); // Re-fetch when the selectedSort changes
+
+// Handle sorting option change
+const handleSortChange = (sortType) => {
+  setSelectedSort(sortType); // Update sort option and trigger refetch
+  fetchPosts(sortType); // Re-fetch posts based on selected sort option
+};
+
+// Handle post submission
+const handlePostSubmit = async () => {
+  // Validate fields
+  if (!title.trim() || !body.trim() || tags.length === 0 || tags.every(tag => tag.trim() === "")) {
+    toast.warn("All fields are required!", {
+      position: "top-right",
+      autoClose: 3000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
     });
+    return; // Stop the submission process if validation fails
+  }
 
-    echo.channel('forum-posts').listen('NewPostCreated', (event) => {
-      setPosts((prevPosts) => [event.post, ...prevPosts]);
-    });
-
-    return () => {
-      echo.disconnect();
-    };
-  }, [selectedSort]); // Re-fetch when the selectedSort changes
-
-  // Handle sorting option change
-  const handleSortChange = (sortType) => {
-    setSelectedSort(sortType); // Update sort option and trigger refetch
-    fetchPosts(sortType); // Re-fetch posts based on selected sort option
+  const newPost = {
+    title: title.trim(),
+    body: body.trim(),
+    tags: tags.map(tag => tag.trim()).filter(tag => tag !== ""),
   };
 
-  // Handle post submission
-  const handlePostSubmit = async () => {
-    // Validate fields
-    if (!title.trim() || !body.trim() || tags.length === 0 || tags.every(tag => tag.trim() === "")) {
-      toast.warn("All fields are required!", {
-        position: "top-right",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-      });
-      return; // Stop the submission process if validation fails
+  try {
+    const response = await axios.post('/forum-posts', newPost);
+    if (response.status === 201) {
+      const postWithUserData = {
+        ...response.data,
+        user: auth.user,
+      };
+
+      // Add the new post to both posts and filteredPosts
+      setPosts((prevPosts) => [postWithUserData, ...prevPosts]);
+      setFilteredPosts((prevFiltered) => [postWithUserData, ...prevFiltered]);
+
+      resetForm(); // Clear the form fields
+      onOpenChange(); // Close the modal
+      toast.success("Post created successfully!");
     }
-  
-    const newPost = {
-      title: title.trim(),
-      body: body.trim(),
-      tags: tags.map(tag => tag.trim()).filter(tag => tag !== ""),
-    };
-  
+  } catch (error) {
+    handlePostError(error, newPost);
+  }
+};
+
+
+
+// Render loading or error states
+if (loading) return <div>Loading posts...</div>;
+if (error) return <div>Error: {error}</div>;
+
+const handleTitleClick = async (postId) => {
+  try {
+    const response = await fetch(`http://127.0.0.1:8000/posts/${postId}`);
+
+    if (!response.ok) {
+      throw new Error('Network response was not ok');
+    }
+
+    const postDetails = await response.json(); // Parse JSON from response
+    const updatedViewCount = postDetails.viewCount;
+
+    // Update the view count in the posts array
+    setPosts(posts.map(post =>
+      post.id === postId ? { ...post, viewCount: updatedViewCount } : post
+    ));
+
+    showModal(postDetails); // Show modal with post details
+  } catch (error) {
+    console.error("Error fetching post details:", error);
+  }
+};
+
+// Open the modal with post details
+const showModal = (postDetails) => {
+  setSelectedPost(postDetails); // Set the selected post details
+  setIsModalOpen(true); // Open the modal
+};
+
+// Close the modal
+const closeModal = () => {
+  setIsModalOpen(false); // Close the modal
+  setSelectedPost(null); // Clear the selected post
+  setIsReportModalOpen(false);
+};
+
+const handlePostError = async (error, newPost) => {
+  if (error.response?.status === 419) {
+    console.warn("CSRF token error. Refreshing token and retrying...");
+    await axios.get('/sanctum/csrf-cookie'); // Refresh CSRF token
     try {
-      const response = await axios.post('/forum-posts', newPost);
-      if (response.status === 201) {
+      const retryResponse = await axios.post('/forum-posts', newPost);
+      if (retryResponse.status === 201) {
         const postWithUserData = {
-          ...response.data,
+          ...retryResponse.data,
           user: auth.user,
         };
-  
-        // Add the new post to both posts and filteredPosts
-        setPosts((prevPosts) => [postWithUserData, ...prevPosts]);
-        setFilteredPosts((prevFiltered) => [postWithUserData, ...prevFiltered]);
-  
-        resetForm(); // Clear the form fields
-        onOpenChange(); // Close the modal
+        setPosts([postWithUserData, ...posts]);
+        resetForm();
+        onOpenChange();
         toast.success("Post created successfully!");
       }
-    } catch (error) {
-      handlePostError(error, newPost);
-    }
-  };
-  
-  
-
-  // Render loading or error states
-  if (loading) return <div>Loading posts...</div>;
-  if (error) return <div>Error: {error}</div>;
-
-  const handleTitleClick = async (postId) => {
-    try {
-      const response = await fetch(`http://127.0.0.1:8000/posts/${postId}`);
-
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-
-      const postDetails = await response.json(); // Parse JSON from response
-      const updatedViewCount = postDetails.viewCount;
-
-      // Update the view count in the posts array
-      setPosts(posts.map(post =>
-        post.id === postId ? { ...post, viewCount: updatedViewCount } : post
-      ));
-
-      showModal(postDetails); // Show modal with post details
-    } catch (error) {
-      console.error("Error fetching post details:", error);
-    }
-  };
-
-  // Open the modal with post details
-  const showModal = (postDetails) => {
-    setSelectedPost(postDetails); // Set the selected post details
-    setIsModalOpen(true); // Open the modal
-  };
-
-  // Close the modal
-  const closeModal = () => {
-    setIsModalOpen(false); // Close the modal
-    setSelectedPost(null); // Clear the selected post
-    setIsReportModalOpen(false);
-  };
-
-  const handlePostError = async (error, newPost) => {
-    if (error.response?.status === 419) {
-      console.warn("CSRF token error. Refreshing token and retrying...");
-      await axios.get('/sanctum/csrf-cookie'); // Refresh CSRF token
-      try {
-        const retryResponse = await axios.post('/forum-posts', newPost);
-        if (retryResponse.status === 201) {
-          const postWithUserData = {
-            ...retryResponse.data,
-            user: auth.user,
-          };
-          setPosts([postWithUserData, ...posts]);
-          resetForm();
-          onOpenChange();
-          toast.success("Post created successfully!");
-        }
-      } catch (retryError) {
-        console.error("Retry failed:", retryError);
-        toast.error("Error creating post. Please try again.");
-      }
-    } else {
-      console.error("Error creating forum post:", error);
+    } catch (retryError) {
+      console.error("Retry failed:", retryError);
       toast.error("Error creating post. Please try again.");
     }
-  };
+  } else {
+    console.error("Error creating forum post:", error);
+    toast.error("Error creating post. Please try again.");
+  }
+};
 
-  const resetForm = () => {
-    setTitle('');
-    setBody('');
-    setTags([]);
+const resetForm = () => {
+  setTitle('');
+  setBody('');
+  setTags([]);
+  setTagInput('');
+};
+
+const handleTagKeyDown = (e) => {
+  if (e.key === 'Enter' && tagInput.trim()) {
+    e.preventDefault();
+    if (!tags.includes(tagInput.trim())) {
+      setTags([...tags, tagInput.trim()]);
+    }
     setTagInput('');
-  };
+  }
+};
 
-  const handleTagKeyDown = (e) => {
-    if (e.key === 'Enter' && tagInput.trim()) {
-      e.preventDefault();
-      if (!tags.includes(tagInput.trim())) {
-        setTags([...tags, tagInput.trim()]);
+const removeTag = (tagToRemove) => {
+  setTags(tags.filter(tag => tag !== tagToRemove));
+};
+
+const handleDeleteConfirmation = (postId) => {
+  setPostToDelete(postId);
+  onConfirmOpen();
+};
+
+const handleDeletePost = async () => {
+  if (postToDelete !== null) {
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+    try {
+      const response = await axios.delete(`/forum-posts/${postToDelete}`, {
+        headers: {
+          'X-CSRF-TOKEN': csrfToken,
+        },
+      });
+
+      if (response.status === 200) {
+        setPosts(posts.filter(post => post.id !== postToDelete));
+        toast.success('Post deleted successfully.');
+      } else {
+        throw new Error('Failed to delete post.');
       }
-      setTagInput('');
+    } catch (error) {
+      console.error('Error deleting post:', error);
+      toast.error('Error deleting post.');
+    } finally {
+      setPostToDelete(null);
+      onConfirmOpenChange();
     }
-  };
+  }
+};
 
-  const removeTag = (tagToRemove) => {
-    setTags(tags.filter(tag => tag !== tagToRemove));
-  };
+const handleSearchResults = (filteredPosts) => {
+  setFilteredPosts(filteredPosts);  // Update the filtered posts based on search results
+};
 
-  const handleDeleteConfirmation = (postId) => {
-    setPostToDelete(postId);
-    onConfirmOpen();
-  };
+const handleReportPost = (postId) => {
+  setSelectedPost(postId);
+  setIsReportModalOpen(true);
+};
 
-  const handleDeletePost = async () => {
-    if (postToDelete !== null) {
-      const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-
-      try {
-        const response = await axios.delete(`/forum-posts/${postToDelete}`, {
-          headers: {
-            'X-CSRF-TOKEN': csrfToken,
-          },
-        });
-
-        if (response.status === 200) {
-          setPosts(posts.filter(post => post.id !== postToDelete));
-          toast.success('Post deleted successfully.');
-        } else {
-          throw new Error('Failed to delete post.');
-        }
-      } catch (error) {
-        console.error('Error deleting post:', error);
-        toast.error('Error deleting post.');
-      } finally {
-        setPostToDelete(null);
-        onConfirmOpenChange();
-      }
+const handleStartDiscussion = () => {
+  if (!isAuthenticated) {
+    const proceed = window.confirm(
+      "You need to log in or register to start a discussion. Would you like to log in now?"
+    );
+    if (proceed) {
+      Inertia.visit('/login'); // Redirect to login
     }
-  };
+    return;
+  }
 
-  const handleSearchResults = (filteredPosts) => {
-    setFilteredPosts(filteredPosts);  // Update the filtered posts based on search results
-  };
+  // If authenticated, open the modal
+  onOpenChange();
+};
 
-  const handleReportPost = (postId) => {
-    setSelectedPost(postId);
-    setIsReportModalOpen(true);
-  };
-
-  const handleStartDiscussion = () => {
-    if (!isAuthenticated) {
-      const proceed = window.confirm(
-        "You need to log in or register to start a discussion. Would you like to log in now?"
-      );
-      if (proceed) {
-        Inertia.visit('/login'); // Redirect to login
-      }
-      return;
-    }
-  
-    // If authenticated, open the modal
-    onOpenChange();
-  };
-  
   
   
   return (
@@ -333,6 +343,7 @@ export default function Forum({ auth }) {
         { !isModalOpen ? (
           <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg  min-h-screen">
               <div className="p-8 font-bold text-xl text-black overflow-auto">
+
                 {/* Sort Dropdown and Search Bar */}
                 <div className="flex space-x-10 justify-between  items-start">
                 
@@ -348,7 +359,7 @@ export default function Forum({ auth }) {
                     <DropdownItem key="popular" onClick={() => handleSortChange('popular')}>Most Popular</DropdownItem>
                   </DropdownMenu>
                 </Dropdown>
-        
+
                 {/* Search Bar */}
                 <div className="flex justify-between mb-6">
                   <div className="relative w-full max-w-lg">
@@ -356,7 +367,12 @@ export default function Forum({ auth }) {
                       value={searchQuery}
                       onChange={handleSearchChange}
                       placeholder="Search by title, author, or tags"
-                      className="w-full px-5 py-3 rounded-lg shadow-md focus:ring-2 focus:ring-blue-500 transition-all duration-300"
+                      classNames={{
+                        base: "max-w-full h-10",
+                        mainWrapper: "h-full",
+                        input: "text-small focus:outline-none border-transparent focus:border-transparent focus:ring-0",
+                        inputWrapper: "h-full font-normal text-default-500",
+                    }}
                       startContent={<FaSearch className="text-gray-500" />}
                       endContent={searchQuery && (
                         <button
@@ -397,6 +413,9 @@ export default function Forum({ auth }) {
                   }
 
                   console.log(post.tags); // Check structure and values of post.tags
+
+
+
 
 
           return (
@@ -444,7 +463,7 @@ export default function Forum({ auth }) {
                       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-4 w-4 mr-1">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 0 1 .865-.501 48.172 48.172 0 0 0 3.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018Z" />
                       </svg>
-                      {post.comments || 0}
+                      {commentCounts[post.id] || 0}
                     </span>
                   </div>
 
@@ -495,23 +514,36 @@ export default function Forum({ auth }) {
                 <Spinner className=" mt-44"/>
               )
               }
-    </div>
-              
-              
+              </div>
+
+              {/* Modal for displaying post details
+              <PostDetailModal
+                isOpen={isModalOpen}
+                onClose={closeModal}
+                post={selectedPost}
+                loggedInUser={auth.user}
+              /> */}
+
+            </div>
+          </div>
+        ) : (
+          <div className="bg-white shadow-sm rounded-lg px-5">
+              <PostDetailModal
+                isOpen={isModalOpen}
+                onClose={closeModal}
+                post={selectedPost}
+                loggedInUser={auth.user}
+                onUpdateCommentCount={handleUpdateCommentCount}
+
+              />
+          </div>
+        )
+        }
+
+        </div>
 
 
-                    {/* Modal for displaying post details */}
-                    <PostDetailModal
-                                isOpen={isModalOpen}
-                                onClose={closeModal}
-                                post={selectedPost}
-                
-                     />
-                          </div>
-                        </div>
-                        </div>
 
-                        
           {/* Create Post Modal */}
           <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
             <ModalContent>
