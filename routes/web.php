@@ -637,7 +637,19 @@ Route::post('/manuscripts/{id}/increment-view', [StudentClassController::class, 
 
 Route::get('/api/check-group', [StudentClassController::class, 'checkGroup']);
 Route::get('/fetch-userType', [TeacherClassController::class, 'fetchUserType']);
- Route::get('/fetch-affiliation', [TeacherClassController::class, 'fetchAffiliation']);
+Route::get('/fetch-affiliation', [TeacherClassController::class, 'fetchAffiliation']);
+
+
+
+Route::get('/pdf-viewer/{filename}', function ($filename) {
+    $path = storage_path('app/private/' . $filename);
+
+    if (!file_exists($path)) {
+        abort(404);
+    }
+
+    return response()->file($path);
+})->name('pdf.viewer');
 
 
 require __DIR__.'/auth.php';

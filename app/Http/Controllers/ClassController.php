@@ -22,6 +22,8 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
+use Illuminate\Support\Facades\Storage;
+
 
 use Google\Client as GoogleClient;
 use Google\Service\Drive as GoogleDrive;
@@ -827,7 +829,6 @@ class ClassController extends Controller
             throw $e;
         }
     }
-
 
 
 }
