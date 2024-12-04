@@ -20,7 +20,7 @@ class GoogleController extends Controller
     /**
      * Redirect to Google authentication page
      */
-    public function redirectToGoogle() 
+    public function redirectToGoogle()
     {
 
         $user = Auth::user();
@@ -87,9 +87,9 @@ class GoogleController extends Controller
     //             return redirect()->route('institution-students');
 
     //         } else {
-    //             return redirect()->route('library'); 
+    //             return redirect()->route('library');
     //         }
-           
+
     //     } catch (\Exception $e) {
     //         \Log::error('Google 0Auth Callback Error: ' . $e->getMessage());
     //         return redirect('login')->withErrors(['error' => 'Failed to authenticate with Google.']);
@@ -148,7 +148,7 @@ class GoogleController extends Controller
     public function promptGoogleConnection()
     {
         return Inertia::render('Auth/ConnectToGoogle');
-    } 
+    }
 
 
 }

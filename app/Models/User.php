@@ -233,4 +233,10 @@ class User extends Authenticatable
         return 'name';
     } 
     
+
+    public function user()
+{
+    return $this->belongsTo(User::class, 'stud_id');
+}
+
 }

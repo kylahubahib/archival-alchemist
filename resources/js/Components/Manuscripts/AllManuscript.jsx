@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import NavLink from '@/Components/NavLink';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { FaEye, FaComment, FaBookmark, FaFileDownload, FaFilter, FaStar, FaQuoteLeft } from 'react-icons/fa';
@@ -45,9 +44,58 @@ const Manuscript = ({auth, user, choice}) => {
     const [isMaximized, setIsMaximized] = useState(false); // State to track if maximized or not
     const [isSidebarOpen, setIsSidebarOpen] = useState(false); // State to track sidebar visibility
     const [maximizedId, setMaximizedId] = useState(null); // Tracks which manuscript is maximized
+    const [manuscriptId, setManuscriptId] = useState(null);
+
+
+  // State to store the message or any relevant data from the backend
+  const [viewMessage, setViewMessage] = useState("");
+  const [viewCount, setViewCount] = useState(0);
+
+
+
+
+  // Function to trigger the book view request
+  const handleBookView = async () => {
+    console.log(`Attempting to track view for book with ID: ${bookId}`);
+
+    try {
+      // Make the request to the backend to track the view
+      const response = await axios.post(`/api/view-book/${bookId}`);
+
+      // Log the successful response from the backend
+      console.log('Response from backend:', response.data);
+
+      // Assuming the backend sends a message upon successful view tracking
+      setViewMessage(response.data.message);
+
+      // Optionally, you can update the view count here if returned by the backend
+      // setViewCount(response.data.view_count);  // If view count is returned by backend
+    } catch (error) {
+      console.error("Error tracking the book view", error);
+      setViewMessage("An error occurred while tracking the view.");
+    }
+  };
+
+
+//   useEffect(() => {
+//     // Set manuscript ID when the component loads
+//     if (manuscript?.id) {
+//       setManuscriptId(manuscript.id);
+//     }
+//   }, [manuscript]);
 
     const handleMaximize = (id) => {
+        console.log("This is the mannuscripts ID: ", id)
       setMaximizedId((prevId) => (prevId === id ? null : id)); // Toggle maximization
+      axios
+      .post(`/manuscripts/${id}/increment-view`)
+      .then((response) => {
+          console.log('View count incremented:', response.data);
+      })
+      .catch((error) => {
+          console.error('Error incrementing view count:', error);
+      });
+
     };
 
     const toggleSidebar = () => {
@@ -107,10 +155,45 @@ const Manuscript = ({auth, user, choice}) => {
       };
 
 
+  // Function to handle the view increment
+  const handlePdfLoad = (id) => {
+    setIsLoading(false); // Set loading to false once PDF is loaded
+    // When the PDF is loaded, increment the view count
+    axios
+    .post(`/manuscripts/${id}/increment-view`)
+    .then((response) => {
+        console.log('View count incremented:', response.data);
+    })
+    .catch((error) => {
+        console.error('Error incrementing view count:', error);
+    });
 
-    const handlePdfLoad = () => {
-      setIsLoading(false); // Set loading to false once PDF is loaded
-    };
+  };
+
+  const handleClick = (id) => {
+    // When the PDF is loaded, increment the view count
+    axios
+    .post(`/manuscripts/${id}/increment-view`)
+    .then((response) => {
+        console.log('View count incremented:', response.data);
+    })
+    .catch((error) => {
+        console.error('Error incrementing view count:', error);
+    });
+};
+    // const handlePdfLoad = () => {
+    //   setIsLoading(false); // Set loading to false once PDF is loaded
+    //     // Call the API to increment view count
+
+    // axios
+    // .post(`/manuscripts/${manuscripts.id}/increment-view`)
+    // .then((response) => {
+    //     console.log('View count incremented:', response.data);
+    // })
+    // .catch((error) => {
+    //     console.error('Error incrementing view count:', error);
+    // });
+    // };
 
       // Reset loading state when the modal is opened again
   useEffect(() => {
@@ -211,15 +294,15 @@ const Manuscript = ({auth, user, choice}) => {
     };
 
 
-    // Handle opening the modal and setting the title
-    const handleRatings = (manuscript) => {
+     // Handle opening the modal and setting the title
+     const handleRatings = (manuscript) => {
         setSelectedManuscript(manuscript); // Store the manuscript for later use
         setIsModalOpen(true);
     };
 
 
-    // Handle opening the modal and setting the title
-    const handleCitation = (manuscript) => {
+     // Handle opening the modal and setting the title
+     const handleCitation = (manuscript) => {
         setSelectedManuscript(manuscript); // Store the manuscript for later use
         setIsCiteModalOpen(true);
     };
@@ -338,14 +421,14 @@ const Manuscript = ({auth, user, choice}) => {
     const [selectedKeys, setSelectedKeys] = React.useState(new Set(["Search By: Title"]));
 
     const selectedValue = React.useMemo(
-        () => Array.from(selectedKeys).join(", ").replaceAll("_", " "),
-        [selectedKeys]
+      () => Array.from(selectedKeys).join(", ").replaceAll("_", " "),
+      [selectedKeys]
     );
 
 
     // Log user to see if it's being passed correctdownloadly
-    // Fetch user favorites and store them in state
-    useEffect(() => {
+     // Fetch user favorites and store them in state
+     useEffect(() => {
         const fetchFavorites = async () => {
             if (!user) {
                 console.log('No user available');
@@ -371,30 +454,83 @@ const Manuscript = ({auth, user, choice}) => {
         fetchFavorites();
     }, [user]);
 
+    const [bookmarkedManuscripts, setBookmarkedManuscripts] = useState(new Set());
 
-    const handleBookmark = async (manuscriptId) => {
-        if (!user) {
-            alert('You need to be logged in to bookmark.');
-            return;
+    // Check if the manuscript is bookmarked
+    const isBookmarked = bookmarkedManuscripts.has(manuscriptId);
+
+
+    useEffect(() => {
+        const fetchBookmarkedManuscripts = async () => {
+            try {
+                const response = await axios.get('/api/my-favorite-manuscripts');
+                const data = response.data;
+
+                // Create a set of bookmarked manuscript IDs
+                const bookmarksSet = new Set(data.map((item) => item.id));
+                setBookmarkedManuscripts(bookmarksSet);
+
+                // Remove duplicates and set manuscripts
+                const uniqueManuscripts = Array.from(bookmarksSet).map((id) =>
+                    data.find((item) => item.id === id)
+                );
+                setManuscripts(uniqueManuscripts);
+            } catch (error) {
+                console.error('Error fetching manuscripts:', error);
+                setError('An error occurred while fetching the data.');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        if (isAuthenticated) {
+            fetchBookmarkedManuscripts();
         }
+    }, [isAuthenticated]);
 
-        // Log user and favorite set for debugging
-        console.log("User:", user);
-        console.log("Favorites:", favorites);
+    // const handleBookmark = async (manuscriptId) => {
+    //     if (!user) {
+    //         alert('You need to be logged in to bookmark.');
+    //         return;
+    //     }
 
-        const favoriteKey = `${user.id}-${manuscriptId}`;
+    //     // Log user and favorite set for debugging
+    //     console.log("User:", user);
+    //     console.log("Favorites:", favorites);
 
-        // Check if the manuscript is already bookmarked
-        if (favorites.has(favoriteKey)) {
-            console.log("Removing favorite:", favoriteKey);
-            // Manuscript is already favorited by the current user, remove it
-            await handleRemoveFavorite(manuscriptId);
-        } else {
-            console.log("Adding favorite:", favoriteKey);
-            // Manuscript is not favorited by the current user, add it
-            await handleAddFavorite(manuscriptId);
-        }
-    };
+    //     const favoriteKey = `${user.id}-${manuscriptId}`;
+
+    //     // Check if the manuscript is already bookmarked
+    //     if (favorites.has(favoriteKey)) {
+    //         console.log("Removing favorite:", favoriteKey);
+    //         // Manuscript is already favorited by the current user, remove it
+    //         await handleRemoveFavorite(manuscriptId);
+    //     } else {
+    //         console.log("Adding favorite:", favoriteKey);
+    //         // Manuscript is not favorited by the current user, add it
+    //         await handleAddFavorite(manuscriptId);
+    //     }
+    // };
+
+
+        // Add or remove a favorite
+        const handleBookmark = async (manuscriptId) => {
+            const favoriteKey = `${user.id}-${manuscriptId}`;
+
+            if (isBookmarked) {
+                // Remove bookmark
+                await handleRemoveFavorite(manuscriptId);
+                setBookmarkedManuscripts((prev) => {
+                    const updated = new Set(prev);
+                    updated.delete(manuscriptId);
+                    return updated;
+                });
+            } else {
+                // Add bookmark
+                await handleAddFavorite(manuscriptId);
+                setBookmarkedManuscripts((prev) => new Set(prev).add(manuscriptId));
+            }
+        };
 
     const handleRemoveFavorite = async (manuscriptId) => {
         try {
@@ -483,10 +619,10 @@ const Manuscript = ({auth, user, choice}) => {
         }
     };
 
-    // Update the dropdown selection handler
-    const handleDropdownChange = (selectedKey) => {
-        setSelectedSearchField(selectedKey); // Set the selected key directly as a string
-    };
+// Update the dropdown selection handler
+const handleDropdownChange = (selectedKey) => {
+    setSelectedSearchField(selectedKey); // Set the selected key directly as a string
+};
 
 
     const toggleComments = () => {
@@ -498,7 +634,7 @@ const Manuscript = ({auth, user, choice}) => {
 
     if (loading) {
         return (
-            <section className="w-full mx-auto my-4 mt-8 ml-50">
+<section className="w-full mx-auto my-4 mt-8 ml-50">
 
                 {[...Array(3)].map((_, index) => (
                     <div key={index} className="w-full bg-white shadow-lg flex mb-4">
@@ -525,22 +661,22 @@ const Manuscript = ({auth, user, choice}) => {
     const manuscriptsToDisplay = searchResults.length > 0 ? searchResults : manuscripts; // Use search results if available
 
     if (manuscriptsToDisplay.length === 0) {
-        return <div>No manuscripts available.</div>;
+        return <div className="flex justify-center items-center text-gray-400">No manuscripts available.</div>;
     }
 
     return (
-        <section className="w-full mx-auto my-4 mt-8 ml-50">
+        <section className="w-full mx-auto my-4">
             <div className="mb-6 w-full flex items-center gap-4"> {/* Adjusted to use flex and gap */}
-            <div className="flex-grow  h-full">
+            <div className="flex-grow">
             <SearchBar onSearch={handleSearch} selectedSearchField={selectedSearchField} titleInputValue={titleInputValue} // Maintain the value here
     setTitleInputValue={setTitleInputValue} // Optionally, for managing the input state
 />
 
-                    {loading && <div>Loading...</div>}
+                {loading && <div>Loading...</div>}
                     {error && <div>{error}</div>}
                     <div>
                         {manuscriptsToDisplay.length === 0 ? (
-                            <div>No manuscripts available.</div>
+                            <div className="flex justify-center items-center text-gray-400">No manuscripts available.</div>
                         ) : (
                             manuscriptsToDisplay.map(manuscript => (
                                 <div key={manuscript.id}>
@@ -551,7 +687,7 @@ const Manuscript = ({auth, user, choice}) => {
                         )}
                     </div>
             </div>
-                <div className="w-[200px] relative z-[0]"> {/* Set dropdown button width to 50px */}
+                <div className="w-[200px]"> {/* Set dropdown button width to 50px */}
                 <Dropdown>
                     <DropdownTrigger className="w-full">
                         <Button variant="bordered" className="capitalize w-full flex justify-between items-center">
@@ -574,9 +710,10 @@ const Manuscript = ({auth, user, choice}) => {
                         <DropdownItem key="Authors">Authors</DropdownItem>
                     </DropdownMenu>
 
-                    </Dropdown>
+                </Dropdown>
                 </div>
             </div>
+
 
             {manuscriptsToDisplay.map((manuscript) => (
                 <div key={manuscript.id} className="w-full bg-white shadow-lg flex mb-4 text-sm">
@@ -584,6 +721,25 @@ const Manuscript = ({auth, user, choice}) => {
         <div
             className={`rounded ${maximizedId === manuscript.id ? 'w-full h-full' : 'w-40 h-48'} bg-gray-200 flex items-center justify-center relative transition-all duration-300 ease-in-out y-4 m-5`}
         >
+{!isAuthenticated && (
+  <div className="flex flex-col h-full w-full items-center justify-center text-center text-gray-800 text-xxxs p-2 bg-white border-2 mb-1 leading-tight">
+    <div>{manuscript.man_doc_title}</div>
+    <p className="block pt-12">By:</p>
+    <p className="block">
+      {manuscript.authors?.length > 0 ? (
+        <div>
+          {manuscript.authors.map((author, index) => (
+            <p key={index} className="text-xxxs text-gray-800 mb-1 leading-tight">{author.name}</p>
+          ))}
+        </div>
+      ) : (
+        <p>Unknown Authors</p>
+      )}
+    </p>
+    <p className="block pt-5">{new Date(manuscript.updated_at).getFullYear()}</p>
+  </div>
+)}
+
 
                    {isPremium ? (
                      // If the user is premium, show the link directly
@@ -598,40 +754,40 @@ const Manuscript = ({auth, user, choice}) => {
       </div>
     )
   ) : (
-    <img
-      className="rounded w-25 h-30"
-      src="/images/pdf2.png"
-      alt="PDF Thumbnail"
-    />
+    <div className="flex flex-col h-full w-full items-center justify-center text-center text-gray-800 text-xxxs p-2 bg-white border-2 mb-1 leading-tight">
+        {manuscript.man_doc_title}
+        <p className="block pt-12">By:</p> {/* This "By:" will now be on a new line */}
+        <p className="block">{manuscript.authors?.length > 0 ? (
+            <div>
+                {manuscript.authors.map((author, index) => (
+                    <p key={index} className="text-xxxs text-gray-800 mb-1 leading-tight">{author.name}</p>))}
+            </div>) : ( <p >Unknown Authors</p>)}
+        </p>
+        <p className="block pt-5">{new Date(manuscript.updated_at).getFullYear()}</p>
+    </div>
   )}
 
-                    {/* Maximize / Minimize Button */}
-                    <button
-                        onClick={() => handleMaximize(manuscript.id)}
-                        className="absolute top-2 right-2 bg-gray-500 text-white p-2 rounded-full shadow-lg hover:bg-gray-600 transition-colors duration-200 z-40"
-                    >
-                        {maximizedId === manuscript.id ? 'X' : 'Preview'}
-                    </button>
-                    </div>
+  {/* Maximize / Minimize Button */}
+  <button
+    onClick={() => handleMaximize(manuscript.id)}
+    className="text-xxxss absolute top-2 right-2 bg-gray-500 text-white p-2 rounded-full shadow-lg hover:bg-gray-600 transition-colors duration-200 z-40"
+  >
+    {maximizedId === manuscript.id ? 'X' : 'Preview'}
+  </button>
+</div>
                    ) : isAuthenticated ? (
-                    <div className="relative">
-                      {/* Static Thumbnail for Authenticated User */}
-                      <div className="flex items-center justify-center h-full w-full text-gray-500">
-                        <img
-                          className="rounded w-25 h-30"
-      src="/images/pdf2.png"
-                          alt="PDF Thumbnail"
-                        />
-                      </div>
-
-                      {/* Preview Button at bottom */}
-                      <button
-                        onClick={openModal}
-                        className="absolute bottom-6 w-max bg-white opacity-75 border-2 border-gray-600 text-gray-800 px-12 py-2 rounded transition duration-300 ease-in-out hover:bg-blue-500 hover:text-white hover:text-opacity-100 focus:outline-none"
-                      >
-                        Preview
-                      </button>
-                    </div>
+// Authenticated User
+    <div className="flex flex-col h-full w-full items-center justify-center text-center text-gray-800 text-xxxs p-2 bg-white border-2 mb-1 leading-tight">
+    {manuscript.man_doc_title}
+    <p className="block pt-12">By:</p>
+    <p className="block">{manuscript.authors?.length > 0 ? (
+        <div>
+            {manuscript.authors.map((author, index) => (
+                <p key={index} className="text-xxxs text-gray-800 mb-1 leading-tight">{author.name}</p>))}
+        </div>) : ( <p >Unknown Authors</p>)}
+    </p>
+    <p className="block pt-5">{new Date(manuscript.updated_at).getFullYear()}</p>
+</div>
                    ):null}
 
                     {/* Modal for non-premium authenticated users */}
@@ -659,15 +815,17 @@ const Manuscript = ({auth, user, choice}) => {
                                  </button>
 
                                  {/* PDF Viewer Container */}
-                                 <div className="relative h-[90vh] w-full bg-gray-200 shadow-2xl rounded-lg">
+                                 <div className="relative h-[80vh] w-full bg-gray-200 shadow-2xl rounded-lg overflow-hidden">
                                      <div
-                                         className={`relative w-full h-full  rounded-lg ${pageCount > 10 ? 'blur-sm' : ''}`}
+                                         className={`relative w-full h-full overflow-hidden rounded-lg ${pageCount > 10 ? 'blur-sm' : ''}`}
                                     >
                                          {isLoading && (
                                              <div className="absolute inset-0 flex justify-center items-center">
                                                  <div className="w-16 h-16 border-t-4 border-blue-600 border-solid rounded-full animate-spin"></div>
                                              </div>
                                          )}
+
+
                                          <iframe
                                              src={`http://127.0.0.1:8000/pdfViewer.html?pdfUrl=http://127.0.0.1:8000/${selectedManuscript}`}
                                              className="w-full h-full border-0 rounded-lg shadow-md"
@@ -695,13 +853,13 @@ const Manuscript = ({auth, user, choice}) => {
 
 
 
-
 <div className="flex-1 p-4">
         <div>
              {isPremium ? (
                 // If the user is premium, show the link directly
                 <h2 className="text-base font-bold text-gray-900">
                 <a
+                  onClick={() => handleClick(manuscript.id)} // Trigger the increment logic before opening the link
                     href={`http://127.0.0.1:8000/${manuscript.man_doc_content}`}
                     target="_blank"
                     rel="noopener noreferrer"
@@ -829,14 +987,6 @@ const Manuscript = ({auth, user, choice}) => {
         </button>
     </Tooltip>
 
-{/*
-                    <div
-                    key={manuscript.id}
-                    className="flex items-center text-blue-500 hover:text-blue-700 cursor-pointer"
-                    onClick={() => handleComments(manuscript.id, manuscript.man_doc_title)}  // Pass id and title to handleComments
-                    >
-                    <FaComment size={20} />
-                    </div> */}
 
 
 <div
@@ -894,7 +1044,7 @@ const Manuscript = ({auth, user, choice}) => {
 
 
 
-{/* 
+{/*
                 <Tooltip content="Bookmark">
                     <button
                         className="text-gray-600 hover:text-blue-500"
@@ -1120,83 +1270,83 @@ const Manuscript = ({auth, user, choice}) => {
                             <CommentSections
                             />
 
-                                        {/* Submit button */}
-                                        <button
-                                            className="mt-4 bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition duration-200"
-                                            onClick={handleSubmit}
-                                        >
-                                            Submit
-                                        </button>
-                                    </div>
-                                </Modal>
-                            )}
-
-
-                            {/* Rendering the citation modal */}
-                            {isCiteModalOpen && (
-                                <Modal
-                                    show={isCiteModalOpen}
-                                    onClose={() => setIsCiteModalOpen(false)}
-                                    className="w-full bg-black bg-opacity-50"
-                                >
-                                    <div className="rounded shadow-2xl p-8 w-full transform transition-all ease-in-out duration-300">
-                                        <h2 className="text-2xl font-semibold text-gray-800 mb-4">Cite This Manuscript</h2>
-                                        <div className="flex flex-col items-start p-6 bg-gray-50 border-l-4 border-blue-500 rounded-lg shadow-md">
-                                            <div className="w-full">
-                                                <div className="bg-blue-100 p-4 rounded-md w-full relative">
-                                                    <p className="text-gray-800 text-sm">
-                                                        <strong>APA Citation:</strong>
-                                                    </p>
-                                                    <p className="text-gray-700 mt-1 text-sm italic">
-                                                        {selectedManuscript ? (() => {
-                                                            const authors = selectedManuscript.authors.map(author => author.name);
-                                                            const year = new Date(selectedManuscript.created_at).getFullYear();
-                                                            const title = selectedManuscript.man_doc_title;
-
-                                                            // Constructing the citation
-                                                            if (authors.length === 1) {
-                                                                return `${authors[0]} (${year}). ${title}.`;
-                                                            } else if (authors.length === 2) {
-                                                                return `${authors[0]} & ${authors[1]} (${year}). ${title}.`;
-                                                            } else if (authors.length >= 3) {
-                                                                return `${authors[0]} et al. (${year}). ${title}.`;
-                                                            }
-                                                        })() : ''}
-                                                    </p>
-
-                                                    <Tooltip content="Copy Citation">
-                                                        <button
-                                                            className="absolute top-2 right-2 p-1 text-blue-600 rounded-full hover:bg-blue-200 transition-colors"
-                                                            onClick={() => {
-                                                                const authors = selectedManuscript.authors.map(author => author.name).join(', ');
-                                                                const citationText = `${authors}. (${new Date(selectedManuscript.created_at).getFullYear()}). ${selectedManuscript.man_doc_title}.`;
-                                                                navigator.clipboard.writeText(citationText);
-                                                            }}
-                                                        >
-                                                            <svg
-                                                                xmlns="http://www.w3.org/2000/svg"
-                                                                className="h-5 w-5"
-                                                                viewBox="0 0 24 24"
-                                                                fill="currentColor"
-                                                            >
-                                                                <path d="M16 1H8C6.9 1 6 1.9 6 3v2H5C3.9 5 3 5.9 3 7v13c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2v-1h1c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3V3c0-1.1-.9-2-2-2zm-8 2h8v2H8V3zm8 17H6V7h10v13zm2-3h-1V8h1v9z" />
-                                                            </svg>
-                                                        </button>
-                                                    </Tooltip>
-                                                </div>
-                                            </div>
-
-                                            <div className="mt-4 w-full">
-                                                <p className="text-gray-700 mt-2 text-sm">
-                                                    <strong>Abstract:</strong> {selectedManuscript ? selectedManuscript.man_doc_description : 'Not available'}
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </Modal>
-                            )}
-
+                            {/* Submit button */}
+                            <button
+                                className="mt-4 bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition duration-200"
+                                onClick={handleSubmit}
+                            >
+                                Submit
+                            </button>
                         </div>
+                    </Modal>
+                )}
+
+
+                {/* Rendering the citation modal */}
+                {isCiteModalOpen && (
+                    <Modal
+                        show={isCiteModalOpen}
+                        onClose={() => setIsCiteModalOpen(false)}
+                        className="w-full bg-black bg-opacity-50"
+                    >
+                        <div className="rounded shadow-2xl p-8 w-full transform transition-all ease-in-out duration-300">
+                            <h2 className="text-2xl font-semibold text-gray-800 mb-4">Cite This Manuscript</h2>
+                            <div className="flex flex-col items-start p-6 bg-gray-50 border-l-4 border-blue-500 rounded-lg shadow-md">
+                                <div className="w-full">
+                                    <div className="bg-blue-100 p-4 rounded-md w-full relative">
+                                        <p className="text-gray-800 text-sm">
+                                            <strong>APA Citation:</strong>
+                                        </p>
+                                        <p className="text-gray-700 mt-1 text-sm italic">
+                                            {selectedManuscript ? (() => {
+                                                const authors = selectedManuscript.authors.map(author => author.name);
+                                                const year = new Date(selectedManuscript.created_at).getFullYear();
+                                                const title = selectedManuscript.man_doc_title;
+
+                                                // Constructing the citation
+                                                if (authors.length === 1) {
+                                                    return `${authors[0]} (${year}). ${title}.`;
+                                                } else if (authors.length === 2) {
+                                                    return `${authors[0]} & ${authors[1]} (${year}). ${title}.`;
+                                                } else if (authors.length >= 3) {
+                                                    return `${authors[0]} et al. (${year}). ${title}.`;
+                                                }
+                                            })() : ''}
+                                        </p>
+
+                                        <Tooltip content="Copy Citation">
+                                            <button
+                                                className="absolute top-2 right-2 p-1 text-blue-600 rounded-full hover:bg-blue-200 transition-colors"
+                                                onClick={() => {
+                                                    const authors = selectedManuscript.authors.map(author => author.name).join(', ');
+                                                    const citationText = `${authors}. (${new Date(selectedManuscript.created_at).getFullYear()}). ${selectedManuscript.man_doc_title}.`;
+                                                    navigator.clipboard.writeText(citationText);
+                                                }}
+                                            >
+                                                <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    className="h-5 w-5"
+                                                    viewBox="0 0 24 24"
+                                                    fill="currentColor"
+                                                >
+                                                    <path d="M16 1H8C6.9 1 6 1.9 6 3v2H5C3.9 5 3 5.9 3 7v13c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2v-1h1c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3V3c0-1.1-.9-2-2-2zm-8 2h8v2H8V3zm8 17H6V7h10v13zm2-3h-1V8h1v9z" />
+                                                </svg>
+                                            </button>
+                                        </Tooltip>
+                                    </div>
+                                </div>
+
+                                <div className="mt-4 w-full">
+                                    <p className="text-gray-700 mt-2 text-sm">
+                                        <strong>Abstract:</strong> {selectedManuscript ? selectedManuscript.man_doc_description : 'Not available'}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </Modal>
+                )}
+
+            </div>
 
                 {showComments && (
                     <div className="mt-4 space-y-4">

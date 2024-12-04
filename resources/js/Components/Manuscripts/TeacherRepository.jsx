@@ -14,6 +14,8 @@ import AskUserToLogin from '@/Components/AskUserToLogin';
 import PdfViewer from '@/Components/PdfViewer';
 import ToggleComments from '@/Components/ToggleComments';
 
+
+
 const TeacherRepository = ({auth, user}) => {
     const [manuscripts, setManuscripts] = useState([]);
     const [searchResults, setSearchResults] = useState([]);
@@ -456,14 +458,11 @@ const TeacherRepository = ({auth, user}) => {
 
             {manuscriptsToDisplay.map((manuscript) => (
                 <div key={manuscript.id} className="w-full bg-white shadow-lg flex mb-4 text-sm">
-{console.log("Mao ni:", manuscriptsToDisplay)}
+
         <div
             className={`rounded ${maximizedId === manuscript.id ? 'w-full h-full' : 'w-40 h-48'} bg-gray-200 flex items-center justify-center relative transition-all duration-300 ease-in-out y-4 m-5`}
         >
 
-                   {isPremium ? (
-                     // If the user is premium, show the link directly
-                      // If the user is premium, show the link directly
   <div className="flex items-center justify-center h-full w-full text-gray-500">
   {maximizedId === manuscript.id ? (
     manuscript.man_doc_content ? (
@@ -475,19 +474,19 @@ const TeacherRepository = ({auth, user}) => {
     )
   ) : (
     <div className="flex flex-col h-full w-full items-center justify-center text-center text-gray-800 text-xxxs p-2 bg-white border-2 mb-1 leading-tight">
-    {manuscript.man_doc_title}
-    <p className="block pt-12">By:</p> {/* This "By:" will now be on a new line */}
-    <p className="block">{manuscript.authors?.length > 0 ? (
-        <div>
-            {manuscript.authors.map((author, index) => (
-                <p key={index} className="text-xxxs text-gray-800 mb-1 leading-tight">{author.name}</p>))}
-        </div>) : ( <p >Unknown Authors</p>)}
-    </p>
-    <p className="block pt-5">{new Date(manuscript.updated_at).getFullYear()}</p>
-</div>
+        {manuscript.man_doc_title}
+        <p className="block pt-12">By:</p> {/* This "By:" will now be on a new line */}
+        <p className="block">{manuscript.authors?.length > 0 ? (
+            <div>
+                {manuscript.authors.map((author, index) => (
+                    <p key={index} className="text-xxxs text-gray-800 mb-1 leading-tight">{author.name}</p>))}
+            </div>) : ( <p >Unknown Authors</p>)}
+        </p>
+        <p className="block pt-5">{new Date(manuscript.updated_at).getFullYear()}</p>
+    </div>
   )}
 
-  {/* Maximize / Minimize ButthandleMaximizeon */}
+  {/* Maximize / Minimize Button */}
   <button
     onClick={() => handleMaximize(manuscript.id)}
     className="text-xxxss absolute top-2 right-2 bg-gray-500 text-white p-2 rounded-full shadow-lg hover:bg-gray-600 transition-colors duration-200 z-40"
@@ -495,30 +494,7 @@ const TeacherRepository = ({auth, user}) => {
     {maximizedId === manuscript.id ? 'X' : 'Preview'}
   </button>
 </div>
-                   ) : isAuthenticated ? (
-                    <div className="relative">
-                      {/* Static Thumbnail for Authenticated User */}
-                      <div className="flex items-center justify-center h-full w-full text-gray-500">
-                        <img
-                          className="rounded w-25 h-30"
-      src="/images/pdf2.png"
-                          alt="PDF Thumbnail"
-                        />
-                      </div>
-
-                      {/* Preview Button at bottom */}
-                      <button
-                        onClick={openModal}
-                        className="absolute bottom-6 w-max bg-white opacity-75 border-2 border-gray-600 text-gray-800 px-12 py-2 rounded transition duration-300 ease-in-out hover:bg-blue-500 hover:text-white hover:text-opacity-100 focus:outline-none"
-                      >
-                        Preview
-                      </button>
-                    </div>
-                   ):null}
-
-
              </div>
-
 
 
 
@@ -588,7 +564,7 @@ const TeacherRepository = ({auth, user}) => {
 
 
 
-<Tooltip content="Bookmark">
+                {/* <Tooltip content="Bookmark">
                     <button
                         className="text-gray-600 hover:text-blue-500"
                         onClick={() => {
@@ -606,7 +582,7 @@ const TeacherRepository = ({auth, user}) => {
                     >
                         <FaBookmark size={20} />
                     </button>
-                </Tooltip>
+                </Tooltip> */}
 
                 {/* <Tooltip content="Download">
                     <button
@@ -653,14 +629,14 @@ const TeacherRepository = ({auth, user}) => {
                     </Modal>
                 )}
 
-<Tooltip content="Ratings">
+                            {/* <Tooltip content="Ratings">
                                 <button
                                     className="text-gray-600 hover:text-blue-500"
                                     onClick={() => handleRatings(manuscript)}
                                 >
                                     <FaStar size={20} />
                                 </button>
-                            </Tooltip>
+                            </Tooltip> */}
 
 
 

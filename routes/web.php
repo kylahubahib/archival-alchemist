@@ -652,4 +652,6 @@ Route::get('/pdf-viewer/{filename}', function ($filename) {
 })->name('pdf.viewer');
 
 
+
+ Route::get('/export-csv', [ClassController::class, 'exportCSV']);
 require __DIR__.'/auth.php';
