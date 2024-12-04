@@ -91,38 +91,38 @@ useEffect(() => {
   }, [selectedSemester]);
 
 
-// Fetch members whenever hoveredClass changes
-useEffect(() => {
-    const fetchMembers = async () => {
-        setIsMembersLoading(true); // Set loading state to true before fetching
-        try {
-            const response = await axios.get(`/groupmembers/${hoveredClass.id}`);
-            setMembers(response.data);
-            // setError(''); // Clear any previous error
-        } catch (err) {
-            // setError('Failed to load members.'); // Handle error
-        } finally {
-            setIsMembersLoading(false); // Set loading state to false after fetching
-        }
-    };
+    // Fetch members whenever hoveredClass changes
+    useEffect(() => {
+        const fetchMembers = async () => {
+            setIsMembersLoading(true); // Set loading state to true before fetching
+            try {
+                const response = await axios.get(`/groupmembers/${hoveredClass.id}`);
+                setMembers(response.data);
+                // setError(''); // Clear any previous error
+            } catch (err) {
+                // setError('Failed to load members.'); // Handle error
+            } finally {
+                setIsMembersLoading(false); // Set loading state to false after fetching
+            }
+        };
 
     if (hoveredClass) {
         fetchMembers();
     }
 }, [hoveredClass]); // Only depend on hoveredClass
 
-useEffect(() => {
-    // Fetch students from the database to display suggestions when typing
-    if (authorInputValue.length > 2) {
-        axios.get(`/students/search?name=${authorInputValue}`)
-            .then((response) => {
-                setAuthorSuggestions(response.data);
-            })
-            .catch((error) => {
-                console.error("Error fetching students:", error);
-            });
-    }
-}, [authorInputValue]);
+    useEffect(() => {
+        // Fetch students from the database to display suggestions when typing
+        if (authorInputValue.length > 2) {
+            axios.get(`/students/search?name=${authorInputValue}`)
+                .then((response) => {
+                    setAuthorSuggestions(response.data);
+                })
+                .catch((error) => {
+                    console.error("Error fetching students:", error);
+                });
+        }
+    }, [authorInputValue]);
 
 
 
@@ -217,13 +217,13 @@ useEffect(() => {
                     ins_id: selectedClass.ins_id // Ensure this matches your class's property
                 }
             })
-            .then(response => {
-                console.log(response.data); // Log the response to check its structure
-                setClasses(response.data); // Store the manuscripts data
-            })
-            .catch(error => {
-                console.error("Error fetching manuscripts:", error);
-            });
+                .then(response => {
+                    console.log(response.data); // Log the response to check its structure
+                    setClasses(response.data); // Store the manuscripts data
+                })
+                .catch(error => {
+                    console.error("Error fetching manuscripts:", error);
+                });
         } else {
             console.warn('selectedClass is undefined or null'); // Debugging line
         }

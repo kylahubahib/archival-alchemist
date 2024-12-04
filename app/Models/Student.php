@@ -49,6 +49,15 @@ class Student extends Model
         return $this->hasMany(ManuscriptProject::class, 'student_id');
     }
 
+    public function group_member(): HasOne
+    {
+        return $this->hasOne(GroupMember::class, 'student_id');
+    }
+
+    public function section(): HasOne
+    {
+        return $this->hasOne(Section::class, 'id', 'section_id');
+    }
     // Define the relationship with TrackedActivity
     // public function trackedActivities(): HasMany
     // {

@@ -15,7 +15,7 @@ const currentYear = new Date().getFullYear(); // Get the current year
 const yearOptions = Array.from(
     { length: currentYear - 2024 + 1 },
     (_, i) => currentYear - i
-  ); // Generates years from current year down to 2024
+); // Generates years from current year down to 2024
 
 export default function Library({ auth }) {
     const isAuthenticated = !!auth.user; // Check if user is authenticated
@@ -63,72 +63,68 @@ export default function Library({ auth }) {
 
     const buttonStyle = (tab) => `px-4 py-2 font-semibold rounded-t-lg border ${activeTab === tab ? 'bg-gray-200 border-b-2 border-b-blue-500 text-blue-500' : 'border-transparent text-gray-700 hover:text-blue-500'}`;
 
-const renderActiveTabContent = () => {
-    switch (activeTab) {
-        case 'AllBooks': {
-            const choice = 'A';
-            return (
-                <AllManuscript
-                    auth={auth}
-                    title="All Capstone Manuscripts"
-                    description="A list of all available capstone manuscripts."
-                    manuscripts={manuscripts} // Pass manuscripts to Manuscript
-                    user={auth.user} // Pass the user to Manuscript
+    const renderActiveTabContent = () => {
+        switch (activeTab) {
+            case 'AllBooks': {
+                const choice = 'A';
+                return (
+                    <AllManuscript
+                        title="All Capstone Manuscripts"
+                        description="A list of all available capstone manuscripts."
+                        manuscripts={manuscripts} // Pass manuscripts to Manuscript
+                        user={auth.user} // Pass the user to Manuscript
                     //choice={choice} // Pass choice to Manuscript
-                />
-            );
-        }
-        case 'Recommended': {
-            const choice = 'R';
-            return (
-                <RecManuscript
-                auth={auth}
-                title="All Capstone Manuscripts"
-                description="A list of all available capstone manuscripts."
-                manuscripts={manuscripts} // Pass manuscripts to Manuscript
-                user={auth.user} // Pass the user to Manuscript
-                //choice={choice} // Pass choice to Manuscript
-                />
-            );
-         }
-        case 'ByUniversity': {
-            const choice = 'U';
-            return (
-                <MyUniBooks
-                auth={auth}
-                title="My Uni-Books"
-                description="A list of all available capstone manuscripts of their universrity."
-                manuscripts={manuscripts} // Pass manuscripts to Manuscript
-                user={auth.user} // Pass the user to Manuscript
-                //choice={choice} // Pass choice to Manuscript
-                />
-            );
-        }
-
-        default: {
-            const choice = 'Default';
-            return (
-                <Manuscript
-                    title="Welcome"
-                    description="Select a tab to view manuscripts."
-                    user={auth.user} // Pass the user to Manuscript
+                    />
+                );
+            }
+            case 'Recommended': {
+                const choice = 'R';
+                return (
+                    <RecManuscript
+                        title="Recommended Manuscripts"
+                        description="A selection of manuscripts recommended for you."
+                        manuscripts={manuscripts} // Update this with actual data as needed
+                        user={auth.user} // Pass the user to Manuscript
                     //choice={choice} // Pass choice to Manuscript
-                />
-            );
+                    />
+                );
+            }
+            case 'ByUniversity': {
+                const choice = 'U';
+                return (
+                    <Manuscript
+                        title="Manuscripts by University"
+                        description="Manuscripts categorized by university."
+                        manuscripts={manuscripts} // Update this with actual data as needed
+                        user={auth.user} // Pass the user to Manuscript
+                    //choice={choice} // Pass choice to Manuscript
+                    />
+                );
+            }
+            default: {
+                const choice = 'Default';
+                return (
+                    <Manuscript
+                        title="Welcome"
+                        description="Select a tab to view manuscripts."
+                        user={auth.user} // Pass the user to Manuscript
+                    //choice={choice} // Pass choice to Manuscript
+                    />
+                );
+            }
         }
-    }
-};
+    };
 
-const handleEndYearChange = (e) => {
-    const selectedYear = parseInt(e.target.value, 10);
+    const handleEndYearChange = (e) => {
+        const selectedYear = parseInt(e.target.value, 10);
 
-    // Check if the selected end year is less than or equal to the start year
-    if (selectedYear <= startYear) {
-      alert("End Year must be greater than Start Year");
-    } else {
-      setEndYear(selectedYear); // Update end year only if it's valid
-    }
-  };
+        // Check if the selected end year is less than or equal to the start year
+        if (selectedYear <= startYear) {
+            alert("End Year must be greater than Start Year");
+        } else {
+            setEndYear(selectedYear); // Update end year only if it's valid
+        }
+    };
 
 
     return (

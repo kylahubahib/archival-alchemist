@@ -48,4 +48,9 @@ class Section extends Model
     {
         return $this->hasMany(ManuscriptProject::class, 'section_id');
     }
+
+    public function student(): BelongsTo
+    {
+        return $this->belongsTo(Student::class, 'id', 'section_id');
+    }
 }

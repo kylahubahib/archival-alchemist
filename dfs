@@ -1,0 +1,207 @@
+*   [33md1fb510[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mbackup-branch[m[33m, [m[1;32mbasnillo[m[33m)[m Merge branch 'carotest' of https://github.com/kylahubahib/archival-alchemist into basnillo
+[31m|[m[32m\[m  
+[31m|[m * [33m809d821[m ok
+[31m|[m * [33mc0ab02a[m ok
+[31m|[m * [33mb83c2ca[m ok
+[31m|[m * [33m7e9f2f8[m ok
+[31m|[m * [33m1142635[m[33m ([m[1;31morigin/caro[m[33m)[m ok
+[31m|[m * [33mcfd6af0[m ok
+[31m|[m * [33me6f9c46[m ok
+* [32m|[m [33m5585a63[m[33m ([m[1;31morigin/basnillo[m[33m)[m ok
+* [32m|[m [33m6a770d8[m ok
+* [32m|[m   [33m050f1d3[m Merge remote-tracking branch 'origin/main' into basnillo
+[33m|[m[34m\[m [32m\[m  
+[33m|[m * [32m|[m [33mcf99e8e[m[33m ([m[1;31morigin/main[m[33m)[m ok
+[33m|[m * [32m|[m [33m769b068[m[33m ([m[1;31morigin/hubahib[m[33m)[m ok
+[33m|[m * [32m|[m [33m8569203[m ok
+[33m|[m * [32m|[m [33m1aae89c[m ok
+[33m|[m * [32m|[m   [33ma7beb8c[m Merge branch 'basnillo' of https://github.com/kylahubahib/archival-alchemist into hubahib
+[33m|[m [35m|[m[36m\[m [32m\[m  
+[33m|[m * [36m|[m [32m|[m [33mc293fbd[m ok
+[33m|[m * [36m|[m [32m|[m   [33m953052e[m Merge branch 'carmel' of https://github.com/kylahubahib/archival-alchemist into hubahib
+[33m|[m [1;31m|[m[1;32m\[m [36m\[m [32m\[m  
+[33m|[m [1;31m|[m * [36m|[m [32m|[m [33m773155a[m latest
+[33m|[m [1;31m|[m * [36m|[m [32m|[m [33m0704628[m ok
+[33m|[m [1;31m|[m * [36m|[m [32m|[m [33mba52e7c[m ok
+[33m|[m [1;31m|[m * [36m|[m [32m|[m [33mf5de5c3[m ok
+[33m|[m * [1;32m|[m [36m|[m [32m|[m [33m6760337[m ok
+[33m|[m * [1;32m|[m [36m|[m [32m|[m [33m70767f9[m ok
+[33m|[m * [1;32m|[m [36m|[m [32m|[m [33m168252f[m ok
+[33m|[m * [1;32m|[m [36m|[m [32m|[m [33m969568b[m ok
+[33m|[m * [1;32m|[m [36m|[m [32m|[m [33m464ba1e[m fix google docs permission
+[33m|[m * [1;32m|[m [36m|[m [32m|[m [33m9200755[m ok
+[33m|[m * [1;32m|[m [36m|[m [32m|[m [33m2f460b2[m ok
+[33m|[m * [1;32m|[m [36m|[m [32m|[m [33m62ea0c5[m ok
+[33m|[m * [1;32m|[m [36m|[m [32m|[m [33mc606f67[m ok
+[33m|[m * [1;32m|[m [36m|[m [32m|[m [33m04703d5[m ok
+[33m|[m * [1;32m|[m [36m|[m [32m|[m   [33m693aad5[m Merge branch 'caro' of https://github.com/kylahubahib/archival-alchemist into hubahib
+[33m|[m [1;33m|[m[32m\[m [1;32m\[m [36m\[m [32m\[m  
+[33m|[m [1;33m|[m [32m|[m [1;32m|[m[32m_[m[36m|[m[32m/[m  
+[33m|[m [1;33m|[m [32m|[m[32m/[m[1;32m|[m [36m|[m   
+[33m|[m [1;33m|[m * [1;32m|[m [36m|[m [33m3f96133[m ok
+[33m|[m [1;33m|[m * [1;32m|[m [36m|[m [33mdfb70da[m ok
+[33m|[m [1;33m|[m * [1;32m|[m [36m|[m [33m0df2878[m ok
+[33m|[m [1;33m|[m * [1;32m|[m [36m|[m [33m31de0d6[m ok
+[33m|[m [1;33m|[m * [1;32m|[m [36m|[m [33mead7e2b[m Merge branch 'carmel' of https://github.com/kylahubahib/archival-alchemist into caro
+[33m|[m [1;33m|[m [1;35m|[m[1;32m\[m[1;32m|[m [36m|[m 
+[33m|[m [1;33m|[m * [1;32m|[m [36m|[m [33m4273c61[m ok
+[33m|[m * [1;36m|[m [1;32m|[m [36m|[m [33m7777902[m ok
+[33m|[m * [1;36m|[m [1;32m|[m [36m|[m [33m3800de2[m ok
+[33m|[m * [1;36m|[m [1;32m|[m [36m|[m [33m9f70982[m ok
+[33m|[m * [1;36m|[m [1;32m|[m [36m|[m [33m84f69ab[m ok
+[33m|[m * [1;36m|[m [1;32m|[m [36m|[m   [33m1977bc8[m Merge branch 'test-branch' of https://github.com/kylahubahib/archival-alchemist into hubahib
+[33m|[m [31m|[m[32m\[m [1;36m\[m [1;32m\[m [36m\[m  
+[33m|[m [31m|[m * [1;36m|[m [1;32m|[m [36m|[m [33m4ae6430[m[33m ([m[1;31morigin/test-branch[m[33m)[m google config
+[33m|[m [31m|[m * [1;36m|[m [1;32m|[m [36m|[m [33m9008e2a[m ok
+[33m|[m * [32m|[m [1;36m|[m [1;32m|[m [36m|[m [33mf377fb1[m ok
+[33m|[m * [32m|[m [1;36m|[m [1;32m|[m [36m|[m [33m333f54a[m ok
+[33m|[m * [32m|[m [1;36m|[m [1;32m|[m [36m|[m [33mad7f9df[m ok
+[33m|[m * [32m|[m [1;36m|[m [1;32m|[m [36m|[m [33m7b35ece[m ok
+[33m|[m * [32m|[m [1;36m|[m [1;32m|[m [36m|[m   [33mc5aed65[m Merge branch 'carmel' of https://github.com/kylahubahib/archival-alchemist into hubahib
+[33m|[m [33m|[m[1;32m\[m [32m\[m [1;36m\[m [1;32m\[m [36m\[m  
+[33m|[m [33m|[m [1;32m|[m [32m|[m[1;32m_[m[1;36m|[m[1;32m/[m [36m/[m  
+[33m|[m [33m|[m [1;32m|[m[1;32m/[m[32m|[m [1;36m|[m [36m|[m   
+[33m|[m [33m|[m * [32m|[m [1;36m|[m [36m|[m [33m8c4eb8a[m ok
+[33m|[m [33m|[m * [32m|[m [1;36m|[m [36m|[m   [33m0b3df91[m Merge branch 'hubahib' of https://github.com/kylahubahib/archival-alchemist into carmel
+[33m|[m [33m|[m [35m|[m[36m\[m [32m\[m [1;36m\[m [36m\[m  
+[33m|[m [33m|[m * [36m|[m [32m|[m [1;36m|[m [36m|[m [33mb72bdfa[m ok
+[33m|[m * [36m|[m [36m|[m [32m|[m [1;36m|[m [36m|[m   [33mb13ecc7[m Merge branch 'caro' of https://github.com/kylahubahib/archival-alchemist into hubahib
+[33m|[m [1;31m|[m[1;36m\[m [36m\[m [36m\[m [32m\[m [1;36m\[m [36m\[m  
+[33m|[m [1;31m|[m [1;36m|[m [36m|[m[1;36m_[m[36m|[m[1;36m_[m[32m|[m[1;36m/[m [36m/[m  
+[33m|[m [1;31m|[m [1;36m|[m[1;36m/[m[36m|[m [36m|[m [32m|[m [36m|[m   
+[33m|[m [1;31m|[m * [36m|[m [36m|[m [32m|[m [36m|[m [33m0ac8e43[m ok
+[33m|[m [1;31m|[m * [36m|[m [36m|[m [32m|[m [36m|[m [33mddffacf[m ok
+[33m|[m [1;31m|[m * [36m|[m [36m|[m [32m|[m [36m|[m [33m1bccbd4[m ok
+[33m|[m [1;31m|[m * [36m|[m [36m|[m [32m|[m [36m|[m [33mfc405c7[m ok
+[33m|[m [1;31m|[m * [36m|[m [36m|[m [32m|[m [36m|[m [33m206e52e[m ok
+[33m|[m [1;31m|[m * [36m|[m [36m|[m [32m|[m [36m|[m [33mb5b1b26[m ok
+[33m|[m [1;31m|[m * [36m|[m [36m|[m [32m|[m [36m|[m [33mab2a0ea[m ok
+[33m|[m [1;31m|[m * [36m|[m [36m|[m [32m|[m [36m|[m [33mb441bd0[m ok
+[33m|[m [1;31m|[m * [36m|[m [36m|[m [32m|[m [36m|[m [33m3c18297[m ok
+[33m|[m [1;31m|[m * [36m|[m [36m|[m [32m|[m [36m|[m [33m8eebe9b[m ok
+[33m|[m [1;31m|[m * [36m|[m [36m|[m [32m|[m [36m|[m [33m92e159f[m ok
+[33m|[m [1;31m|[m * [36m|[m [36m|[m [32m|[m [36m|[m [33mef6910a[m ok
+[33m|[m [1;31m|[m * [36m|[m [36m|[m [32m|[m [36m|[m [33m1336e32[m ok
+[33m|[m [1;31m|[m * [36m|[m [36m|[m [32m|[m [36m|[m [33m4c79b2a[m ok
+[33m|[m [1;31m|[m * [36m|[m [36m|[m [32m|[m [36m|[m [33m59d7d14[m ok
+[33m|[m [1;31m|[m * [36m|[m [36m|[m [32m|[m [36m|[m [33mcb75837[m ok
+[33m|[m * [1;32m|[m [36m|[m [36m|[m [32m|[m [36m|[m [33m76c4236[m fix codes, user report(pending), scheduled subscript notif
+[33m|[m * [1;32m|[m [36m|[m [36m|[m [32m|[m [36m|[m [33mc556dba[m dashboard, notification(pending)
+[33m|[m [36m|[m [1;32m|[m[36m_[m[36m|[m[36m/[m [32m/[m [36m/[m  
+[33m|[m [36m|[m[36m/[m[1;32m|[m [36m|[m [32m|[m [36m|[m   
+[33m|[m * [1;32m|[m [36m|[m [32m|[m [36m|[m [33m82ca71d[m ok
+[33m|[m [32m|[m [1;32m|[m[32m_[m[36m|[m[32m/[m [36m/[m  
+[33m|[m [32m|[m[32m/[m[1;32m|[m [36m|[m [36m|[m   
+[33m|[m * [1;32m|[m [36m|[m [36m|[m [33mb45d25b[m ok
+[33m|[m * [1;32m|[m [36m|[m [36m|[m [33ma74a66f[m Merge branch 'caro' of https://github.com/kylahubahib/archival-alchemist into hubahib
+[33m|[m [1;33m|[m[1;32m\[m[1;32m|[m [36m|[m [36m|[m 
+[33m|[m [1;33m|[m * [36m|[m [36m|[m [33me024f69[m ok
+[33m|[m [1;33m|[m * [36m|[m [36m|[m [33m0115c2c[m Your empty commit message
+[33m|[m * [1;34m|[m [36m|[m [36m|[m [33m598bb36[m OK
+[33m|[m * [1;34m|[m [36m|[m [36m|[m [33mc57115d[m Merge branch 'caro' of https://github.com/kylahubahib/archival-alchemist into hubahib
+[33m|[m [1;35m|[m[1;34m\[m[1;34m|[m [36m|[m [36m|[m 
+[33m|[m [1;35m|[m * [36m|[m [36m|[m [33mbe7baf9[m ok
+[33m|[m [1;35m|[m * [36m|[m [36m|[m [33m51f9d93[m Merge branch 'main' of https://github.com/kylahubahib/archival-alchemist into caro
+[33m|[m [1;35m|[m [31m|[m[36m\[m[36m|[m [36m|[m 
+[33m|[m [1;35m|[m [31m|[m * [36m|[m   [33m6e79755[m Merge pull request #3 from kylahubahib/hubahib
+[33m|[m [1;35m|[m [31m|[m [33m|[m[34m\[m [36m\[m  
+[33m|[m [1;35m|[m [31m|[m * [34m|[m [36m|[m [33m391748d[m ok
+[33m|[m [1;35m|[m * [34m|[m [34m|[m [36m|[m [33m8cda5c6[m ok
+[33m|[m [1;35m|[m * [34m|[m [34m|[m [36m|[m   [33mee6c237[m Merge branch 'hubahib' of https://github.com/kylahubahib/archival-alchemist into caro
+[33m|[m [1;35m|[m [35m|[m[36m\[m [34m\[m [34m\[m [36m\[m  
+[33m|[m [1;35m|[m * [36m|[m [34m|[m [34m|[m [36m|[m [33m3f22ac9[m ok
+[33m|[m * [36m|[m [36m|[m [34m|[m [34m|[m [36m|[m [33m99f8f0a[m ok
+[33m|[m [36m|[m [36m|[m[36m/[m [34m/[m [34m/[m [36m/[m  
+[33m|[m [36m|[m[36m/[m[36m|[m [34m|[m [34m|[m [36m|[m   
+[33m|[m * [36m|[m [34m|[m [34m|[m [36m|[m [33m8656929[m ok
+[33m|[m [34m|[m [36m|[m[34m_[m[34m|[m[34m/[m [36m/[m  
+[33m|[m [34m|[m[34m/[m[36m|[m [34m|[m [36m|[m   
+[33m|[m * [36m|[m [34m|[m [36m|[m [33mbb67fa6[m added create function for revision history when uploading manuscript
+[33m|[m * [36m|[m [34m|[m [36m|[m [33m3b85750[m ok
+[33m|[m * [36m|[m [34m|[m [36m|[m [33mbe6df14[m Merge branch 'caro' of https://github.com/kylahubahib/archival-alchemist into hubahib
+[33m|[m [1;31m|[m[36m\[m[36m|[m [34m|[m [36m|[m 
+[33m|[m [1;31m|[m * [34m|[m [36m|[m [33m6b289e9[m ok
+[33m|[m [1;31m|[m * [34m|[m [36m|[m [33m5920a18[m ok
+[33m|[m [1;31m|[m * [34m|[m [36m|[m [33m13658a6[m ok
+[33m|[m [1;31m|[m * [34m|[m [36m|[m [33m96a3339[m ok
+[33m|[m [1;31m|[m * [34m|[m [36m|[m [33m0e81843[m ok
+[33m|[m [1;31m|[m * [34m|[m [36m|[m [33mc00fafe[m ok
+[33m|[m * [1;32m|[m [34m|[m [36m|[m [33m84706b7[m track, revision history, class
+[33m|[m * [1;32m|[m [34m|[m [36m|[m [33m03c12c6[m Merge branch 'caro' of https://github.com/kylahubahib/archival-alchemist into hubahib
+[33m|[m [1;33m|[m[1;32m\[m[1;32m|[m [34m|[m [36m|[m 
+[33m|[m [1;33m|[m * [34m|[m [36m|[m [33mcc759e6[m ok
+[33m|[m [1;33m|[m * [34m|[m [36m|[m [33m5997e32[m ok
+[33m|[m [1;33m|[m * [34m|[m [36m|[m [33m8687e76[m ok
+[33m|[m [1;33m|[m * [34m|[m [36m|[m [33m377209d[m Merge branch 'main' of https://github.com/kylahubahib/archival-alchemist into caro
+[33m|[m [1;33m|[m [1;35m|[m[34m\[m[34m|[m [36m|[m 
+[33m|[m [1;33m|[m * [34m|[m [36m|[m [33ma8df74f[m ok
+[33m|[m [1;33m|[m * [34m|[m [36m|[m [33m0e46a28[m ok
+[33m|[m [1;33m|[m * [34m|[m [36m|[m [33ma4f9db7[m ok
+[33m|[m [1;33m|[m * [34m|[m [36m|[m [33m03cd9c2[m ok
+[33m|[m [1;33m|[m * [34m|[m [36m|[m [33m3645d69[m ok
+[33m|[m [1;33m|[m * [34m|[m [36m|[m [33mcf76071[m ok
+[33m|[m [1;33m|[m * [34m|[m [36m|[m   [33m5378e67[m Merge branch 'main' of https://github.com/kylahubahib/archival-alchemist into caro
+[33m|[m [1;33m|[m [31m|[m[32m\[m [34m\[m [36m\[m  
+[33m|[m [1;33m|[m * [32m|[m [34m|[m [36m|[m [33me9a27d7[m ok
+[33m|[m * [32m|[m [32m|[m [34m|[m [36m|[m [33mcd901b5[m report reason
+[33m|[m * [32m|[m [32m|[m [34m|[m [36m|[m [33m5a8eb6e[m storage
+[33m|[m * [32m|[m [32m|[m [34m|[m [36m|[m [33m0d75278[m storage
+[33m|[m * [32m|[m [32m|[m [34m|[m [36m|[m [33m3fc42aa[m gitignore
+[33m|[m * [32m|[m [32m|[m [34m|[m [36m|[m [33m21fb71b[m dynamic landing page
+[33m|[m [34m|[m [32m|[m[34m_[m[32m|[m[34m/[m [36m/[m  
+[33m|[m [34m|[m[34m/[m[32m|[m [32m|[m [36m|[m   
+[33m|[m * [32m|[m [32m|[m [36m|[m [33me7456f7[m ok
+[33m|[m * [32m|[m [32m|[m [36m|[m [33m00b7141[m home, billing agreement, subscription info for user
+[33m|[m [32m|[m [32m|[m[32m/[m [36m/[m  
+[33m|[m [32m|[m[32m/[m[32m|[m [36m|[m   
+[33m|[m * [32m|[m [36m|[m [33m84d0c6a[m excel.php
+[33m|[m [32m|[m[32m/[m [36m/[m  
+[33m|[m * [36m|[m   [33m37890b5[m Merge branch 'caro' of https://github.com/kylahubahib/archival-alchemist into hubahib
+[33m|[m [33m|[m[34m\[m [36m\[m  
+[33m|[m [33m|[m * [36m|[m [33m51ccd36[m ok
+[33m|[m [33m|[m * [36m|[m [33me2eed75[m ok
+[33m|[m [33m|[m * [36m|[m [33m43501ba[m ok
+[33m|[m [33m|[m * [36m|[m   [33mb8faac0[m Merge branch 'hubahib' of https://github.com/kylahubahib/archival-alchemist into caro
+[33m|[m [33m|[m [35m|[m[36m\[m [36m\[m  
+[33m|[m [33m|[m * [36m|[m [36m|[m [33mc9ff7ad[m ok
+[33m|[m [33m|[m * [36m|[m [36m|[m [33m2b1874d[m ok
+[33m|[m [33m|[m * [36m|[m [36m|[m [33m963f0b5[m ok
+[33m|[m [33m|[m * [36m|[m [36m|[m [33mda68cdc[m ok
+[33m|[m [33m|[m * [36m|[m [36m|[m [33m0333200[m ok
+[33m|[m * [36m|[m [36m|[m [36m|[m [33m583bca4[m integrate payment for institution, debugging etc
+[33m|[m [36m|[m [36m|[m[36m/[m [36m/[m  
+[33m|[m [36m|[m[36m/[m[36m|[m [36m|[m   
+[33m|[m * [36m|[m [36m|[m [33m2e550af[m Install laravel excel (Check laravel notes for installation guide), read and upload csv, check csv when log in, connect backend for institution subscription, add user_dob
+[33m|[m * [36m|[m [36m|[m [33mb2cefee[m ok
+[33m|[m * [36m|[m [36m|[m [33m13d2fe4[m ok
+[33m|[m * [36m|[m [36m|[m   [33mc7fc808[m Merge branch 'carmel' of https://github.com/kylahubahib/archival-alchemist into hubahib
+[33m|[m [1;31m|[m[1;32m\[m [36m\[m [36m\[m  
+[33m|[m [1;31m|[m * [36m|[m [36m|[m [33m78a1bff[m forum changes
+[33m|[m * [1;32m|[m [36m|[m [36m|[m [33m3ee4ae1[m ok
+[33m|[m * [1;32m|[m [36m|[m [36m|[m   [33m1167ca1[m Merge branch 'caro' of https://github.com/kylahubahib/archival-alchemist into hubahib
+[33m|[m [1;33m|[m[36m\[m [1;32m\[m [36m\[m [36m\[m  
+[33m|[m [1;33m|[m [36m|[m [1;32m|[m[36m/[m [36m/[m  
+[33m|[m [1;33m|[m [36m|[m[36m/[m[1;32m|[m [36m|[m   
+[33m|[m [1;33m|[m * [1;32m|[m [36m|[m [33m58da410[m ok
+[33m|[m [1;33m|[m [1;35m|[m[1;32m\[m[1;32m|[m [36m|[m 
+[33m|[m [1;33m|[m [1;35m|[m * [36m|[m   [33m04d06db[m Merge branch 'caro' of https://github.com/kylahubahib/archival-alchemist into carmel
+[33m|[m [1;33m|[m [1;35m|[m [31m|[m[32m\[m [36m\[m  
+[33m|[m [1;33m|[m [1;35m|[m * [32m|[m [36m|[m [33medf938b[m OK
+[33m|[m [1;33m|[m * [32m|[m [32m|[m [36m|[m [33mfa49a1a[m ok
+[33m|[m [1;33m|[m [32m|[m [32m|[m[32m/[m [36m/[m  
+[33m|[m [1;33m|[m [32m|[m[32m/[m[32m|[m [36m|[m   
+[33m|[m [1;33m|[m * [32m|[m [36m|[m [33mf76321b[m ok
+[33m|[m [1;33m|[m * [32m|[m [36m|[m [33m35325ef[m ok
+[33m|[m [1;33m|[m * [32m|[m [36m|[m   [33mc765f58[m Merge branch 'main' of https://github.com/kylahubahib/archival-alchemist into caro
+[33m|[m [1;33m|[m [33m|[m[34m\[m [32m\[m [36m\[m  
+[33m|[m [1;33m|[m * [34m|[m [32m|[m [36m|[m [33m4c8926c[m ok
+[33m|[m [1;33m|[m * [34m|[m [32m|[m [36m|[m [33mc5ecb61[m okk
+[33m|[m * [34m|[m [34m|[m [32m|[m [36m|[m [33mf4996f2[m login, register
+[33m|[m * [34m|[m [34m|[m [32m|[m [36m|[m   [33m51dc404[m Merge branch 'main' of https://github.com/kylahubahib/archival-alchemist into hubahib
+[33m|[m [35m|[m[32m\[m [34m\[m [34m\[m [32m\[m [36m\[m  
+[33m|[m [35m|[m [32m|[m [34m|[m[32m_[m[34m|[m[32m/[m [36m/[m  
+[33m|[m [35m|[m [32m|[m[32m/[m[34m|[m [34m|[m [36m|[m   
+[33m|[m [35m|[m * [34m|[m [34m|[m [36m|[m   [33ma4c6945[m Merge branch 'main' of https://github.com/kylahubahib/archival-alchemist
+[33m|[m [35m|[m [1;31m|[m[1;32m\[m [34m\[m [34m\[m [36m\[m  
+[33m|[m [35m|[m [1;31m|[m * [34m\[m [34m\[m [36m\[m   [33mab4086d[m Merge branch 'main' of https://github.com/kylahubahib/archival-alchemist
+[33m|[m [35m|[m [1;31m|[m [1;33m|[m[1;34m\[m [34m\[m [34m\[m [36m\[m  

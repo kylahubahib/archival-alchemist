@@ -5,8 +5,8 @@ import { useEffect, useState, useCallback } from 'react';
 import { Button, Chip, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger, Select, SelectItem } from '@nextui-org/react';
 import { TbDotsVertical } from 'react-icons/tb';
 import ViewPost from './ViewPost';
-import SearchBar from '@/Components/Admins/SearchBar';
 import axios from 'axios'; // Ensure axios is imported
+import SearchBar from '@/Components/Admin/SearchBar';
 
 export default function Forum({ auth, forumPost }) {
     const [filteredData, setFilteredData] = useState(forumPost);

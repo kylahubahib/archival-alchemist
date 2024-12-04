@@ -63,6 +63,7 @@ export default function ViewCSV({ isOpen, onClose, file, ins_sub }) {
             return;
         }
 
+
         const formData = new FormData();
         formData.append('file', selectedFile);
         formData.append('insubId', ins_sub.id);

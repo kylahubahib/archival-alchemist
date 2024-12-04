@@ -13,13 +13,13 @@ import ToastNotification from "@/Components/Toast";
 import { FiBell } from "react-icons/fi";
 import Echo from 'laravel-echo';
 
-import { encodeAllParams } from "@/Components/Admins/Functions";
+// import { encodeAllParams } from "@/Components/Admins/Functions";
 
 import SuperAdminNotification from "@/Components/Notifications/SuperAdminNotification";
 import InsAdminNotification from "@/Components/Notifications/InsAdminNotification";
 import { User } from "@nextui-org/react";
 import { useForm } from "@inertiajs/react";
-import PageHeader from "@/Components/Admins/PageHeader";
+import PageHeader from "@/Components/Admin/PageHeader";
 
 export default function AdminLayout({ user, header, children, university = '' }) {
     const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);

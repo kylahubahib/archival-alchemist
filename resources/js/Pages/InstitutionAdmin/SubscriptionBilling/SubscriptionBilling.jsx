@@ -14,9 +14,9 @@ import { formatDate, formatPrice } from '@/utils';
 import TextInput from '@/Components/TextInput';
 import InputLabel from '@/Components/InputLabel';
 import InputError from '@/Components/InputError';
-import PageHeader from '@/Components/Admins/PageHeader';
 import { Bounce, Slide, toast, ToastContainer } from 'react-toastify';
 import EditUniversityCourse from "./EditUniversityName";
+import PageHeader from "@/Components/Admin/PageHeader";
 
 export default function InsAdminSubscriptionBilling({ auth, ins_sub, transactionHistory, agreement }) {
     const [isModalOpen, setIsModalOpen] = useState(false);

@@ -27,15 +27,15 @@ class InstitutionSubscription extends Model
         'notify_renewal'
     ];
 
-    
+
     public function getUpdatedAtAttribute($value)
     {
-        return Carbon::parse($value)->format('m/d/Y'); 
+        return Carbon::parse($value)->format('m/d/Y');
     }
-    
+
     public function getCreatedAtAttribute($value)
     {
-        return Carbon::parse($value)->format('m/d/Y'); 
+        return Carbon::parse($value)->format('m/d/Y');
     }
 
     public function plan(): BelongsTo
@@ -48,9 +48,13 @@ class InstitutionSubscription extends Model
         return $this->belongsTo(UniversityBranch::class, 'uni_branch_id');
     }
 
+    // public function subscription_history(): HasMany
+    // {
+    //     return $this->hasMany(SubscriptionHistory::class, 'insub_id');
+    // }
+
     public function institution_admin(): HasMany
     {
         return $this->hasMany(InstitutionAdmin::class, 'insub_id');
     }
 }
- 

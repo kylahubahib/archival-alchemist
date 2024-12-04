@@ -211,15 +211,15 @@ const Manuscript = ({auth, user, choice}) => {
     };
 
 
-     // Handle opening the modal and setting the title
-     const handleRatings = (manuscript) => {
+    // Handle opening the modal and setting the title
+    const handleRatings = (manuscript) => {
         setSelectedManuscript(manuscript); // Store the manuscript for later use
         setIsModalOpen(true);
     };
 
 
-     // Handle opening the modal and setting the title
-     const handleCitation = (manuscript) => {
+    // Handle opening the modal and setting the title
+    const handleCitation = (manuscript) => {
         setSelectedManuscript(manuscript); // Store the manuscript for later use
         setIsCiteModalOpen(true);
     };
@@ -338,14 +338,14 @@ const Manuscript = ({auth, user, choice}) => {
     const [selectedKeys, setSelectedKeys] = React.useState(new Set(["Search By: Title"]));
 
     const selectedValue = React.useMemo(
-      () => Array.from(selectedKeys).join(", ").replaceAll("_", " "),
-      [selectedKeys]
+        () => Array.from(selectedKeys).join(", ").replaceAll("_", " "),
+        [selectedKeys]
     );
 
 
     // Log user to see if it's being passed correctdownloadly
-     // Fetch user favorites and store them in state
-     useEffect(() => {
+    // Fetch user favorites and store them in state
+    useEffect(() => {
         const fetchFavorites = async () => {
             if (!user) {
                 console.log('No user available');
@@ -483,10 +483,10 @@ const Manuscript = ({auth, user, choice}) => {
         }
     };
 
-// Update the dropdown selection handler
-const handleDropdownChange = (selectedKey) => {
-    setSelectedSearchField(selectedKey); // Set the selected key directly as a string
-};
+    // Update the dropdown selection handler
+    const handleDropdownChange = (selectedKey) => {
+        setSelectedSearchField(selectedKey); // Set the selected key directly as a string
+    };
 
 
     const toggleComments = () => {
@@ -498,7 +498,7 @@ const handleDropdownChange = (selectedKey) => {
 
     if (loading) {
         return (
-<section className="w-full mx-auto my-4 mt-8 ml-50">
+            <section className="w-full mx-auto my-4 mt-8 ml-50">
 
                 {[...Array(3)].map((_, index) => (
                     <div key={index} className="w-full bg-white shadow-lg flex mb-4">
@@ -536,7 +536,7 @@ const handleDropdownChange = (selectedKey) => {
     setTitleInputValue={setTitleInputValue} // Optionally, for managing the input state
 />
 
-{loading && <div>Loading...</div>}
+                    {loading && <div>Loading...</div>}
                     {error && <div>{error}</div>}
                     <div>
                         {manuscriptsToDisplay.length === 0 ? (
@@ -574,7 +574,7 @@ const handleDropdownChange = (selectedKey) => {
                         <DropdownItem key="Authors">Authors</DropdownItem>
                     </DropdownMenu>
 
-                </Dropdown>
+                    </Dropdown>
                 </div>
             </div>
 
@@ -1120,83 +1120,83 @@ const handleDropdownChange = (selectedKey) => {
                             <CommentSections
                             />
 
-                            {/* Submit button */}
-                            <button
-                                className="mt-4 bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition duration-200"
-                                onClick={handleSubmit}
-                            >
-                                Submit
-                            </button>
-                        </div>
-                    </Modal>
-                )}
-
-
-                {/* Rendering the citation modal */}
-                {isCiteModalOpen && (
-                    <Modal
-                        show={isCiteModalOpen}
-                        onClose={() => setIsCiteModalOpen(false)}
-                        className="w-full bg-black bg-opacity-50"
-                    >
-                        <div className="rounded shadow-2xl p-8 w-full transform transition-all ease-in-out duration-300">
-                            <h2 className="text-2xl font-semibold text-gray-800 mb-4">Cite This Manuscript</h2>
-                            <div className="flex flex-col items-start p-6 bg-gray-50 border-l-4 border-blue-500 rounded-lg shadow-md">
-                                <div className="w-full">
-                                    <div className="bg-blue-100 p-4 rounded-md w-full relative">
-                                        <p className="text-gray-800 text-sm">
-                                            <strong>APA Citation:</strong>
-                                        </p>
-                                        <p className="text-gray-700 mt-1 text-sm italic">
-                                            {selectedManuscript ? (() => {
-                                                const authors = selectedManuscript.authors.map(author => author.name);
-                                                const year = new Date(selectedManuscript.created_at).getFullYear();
-                                                const title = selectedManuscript.man_doc_title;
-
-                                                // Constructing the citation
-                                                if (authors.length === 1) {
-                                                    return `${authors[0]} (${year}). ${title}.`;
-                                                } else if (authors.length === 2) {
-                                                    return `${authors[0]} & ${authors[1]} (${year}). ${title}.`;
-                                                } else if (authors.length >= 3) {
-                                                    return `${authors[0]} et al. (${year}). ${title}.`;
-                                                }
-                                            })() : ''}
-                                        </p>
-
-                                        <Tooltip content="Copy Citation">
-                                            <button
-                                                className="absolute top-2 right-2 p-1 text-blue-600 rounded-full hover:bg-blue-200 transition-colors"
-                                                onClick={() => {
-                                                    const authors = selectedManuscript.authors.map(author => author.name).join(', ');
-                                                    const citationText = `${authors}. (${new Date(selectedManuscript.created_at).getFullYear()}). ${selectedManuscript.man_doc_title}.`;
-                                                    navigator.clipboard.writeText(citationText);
-                                                }}
-                                            >
-                                                <svg
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    className="h-5 w-5"
-                                                    viewBox="0 0 24 24"
-                                                    fill="currentColor"
-                                                >
-                                                    <path d="M16 1H8C6.9 1 6 1.9 6 3v2H5C3.9 5 3 5.9 3 7v13c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2v-1h1c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3V3c0-1.1-.9-2-2-2zm-8 2h8v2H8V3zm8 17H6V7h10v13zm2-3h-1V8h1v9z" />
-                                                </svg>
-                                            </button>
-                                        </Tooltip>
+                                        {/* Submit button */}
+                                        <button
+                                            className="mt-4 bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition duration-200"
+                                            onClick={handleSubmit}
+                                        >
+                                            Submit
+                                        </button>
                                     </div>
-                                </div>
+                                </Modal>
+                            )}
 
-                                <div className="mt-4 w-full">
-                                    <p className="text-gray-700 mt-2 text-sm">
-                                        <strong>Abstract:</strong> {selectedManuscript ? selectedManuscript.man_doc_description : 'Not available'}
-                                    </p>
-                                </div>
-                            </div>
+
+                            {/* Rendering the citation modal */}
+                            {isCiteModalOpen && (
+                                <Modal
+                                    show={isCiteModalOpen}
+                                    onClose={() => setIsCiteModalOpen(false)}
+                                    className="w-full bg-black bg-opacity-50"
+                                >
+                                    <div className="rounded shadow-2xl p-8 w-full transform transition-all ease-in-out duration-300">
+                                        <h2 className="text-2xl font-semibold text-gray-800 mb-4">Cite This Manuscript</h2>
+                                        <div className="flex flex-col items-start p-6 bg-gray-50 border-l-4 border-blue-500 rounded-lg shadow-md">
+                                            <div className="w-full">
+                                                <div className="bg-blue-100 p-4 rounded-md w-full relative">
+                                                    <p className="text-gray-800 text-sm">
+                                                        <strong>APA Citation:</strong>
+                                                    </p>
+                                                    <p className="text-gray-700 mt-1 text-sm italic">
+                                                        {selectedManuscript ? (() => {
+                                                            const authors = selectedManuscript.authors.map(author => author.name);
+                                                            const year = new Date(selectedManuscript.created_at).getFullYear();
+                                                            const title = selectedManuscript.man_doc_title;
+
+                                                            // Constructing the citation
+                                                            if (authors.length === 1) {
+                                                                return `${authors[0]} (${year}). ${title}.`;
+                                                            } else if (authors.length === 2) {
+                                                                return `${authors[0]} & ${authors[1]} (${year}). ${title}.`;
+                                                            } else if (authors.length >= 3) {
+                                                                return `${authors[0]} et al. (${year}). ${title}.`;
+                                                            }
+                                                        })() : ''}
+                                                    </p>
+
+                                                    <Tooltip content="Copy Citation">
+                                                        <button
+                                                            className="absolute top-2 right-2 p-1 text-blue-600 rounded-full hover:bg-blue-200 transition-colors"
+                                                            onClick={() => {
+                                                                const authors = selectedManuscript.authors.map(author => author.name).join(', ');
+                                                                const citationText = `${authors}. (${new Date(selectedManuscript.created_at).getFullYear()}). ${selectedManuscript.man_doc_title}.`;
+                                                                navigator.clipboard.writeText(citationText);
+                                                            }}
+                                                        >
+                                                            <svg
+                                                                xmlns="http://www.w3.org/2000/svg"
+                                                                className="h-5 w-5"
+                                                                viewBox="0 0 24 24"
+                                                                fill="currentColor"
+                                                            >
+                                                                <path d="M16 1H8C6.9 1 6 1.9 6 3v2H5C3.9 5 3 5.9 3 7v13c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2v-1h1c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3V3c0-1.1-.9-2-2-2zm-8 2h8v2H8V3zm8 17H6V7h10v13zm2-3h-1V8h1v9z" />
+                                                            </svg>
+                                                        </button>
+                                                    </Tooltip>
+                                                </div>
+                                            </div>
+
+                                            <div className="mt-4 w-full">
+                                                <p className="text-gray-700 mt-2 text-sm">
+                                                    <strong>Abstract:</strong> {selectedManuscript ? selectedManuscript.man_doc_description : 'Not available'}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </Modal>
+                            )}
+
                         </div>
-                    </Modal>
-                )}
-
-            </div>
 
                 {showComments && (
                     <div className="mt-4 space-y-4">
