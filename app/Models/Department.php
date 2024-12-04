@@ -42,6 +42,11 @@ class Department extends Model
         return $this->belongsTo(UniversityBranch::class, 'uni_branch_id');
     }
 
+    public function faculty()
+    {
+        return $this->hasMany(Faculty::class, 'dept_id');
+    }
+
     
    
 

@@ -67,12 +67,12 @@ class UserController extends Controller
                     'student.section.course.department:id,dept_name,dept_acronym,uni_branch_id',
                 ]);
                 break;
-            case 'faculty':
+            case 'teacher':
                 $query->with([
                     'faculty:id,user_id,course_id,uni_branch_id,faculty_position',
                     'faculty.university_branch:id,uni_id,uni_branch_name',
-                    'faculty.university_branch.university:id,uni_name',
-                    // 'faculty.department:id,dept_name,dept_acronym',
+                    'faculty.university_branch.university:id,uni_name,uni_acronym',
+                    'faculty.department:id,dept_name,dept_acronym',
                 ]);
                 break;
             case 'admin':
@@ -122,6 +122,8 @@ class UserController extends Controller
         }
 
         $users = $query->latest()->paginate($entries);
+
+        Log::info($users->toArray());
 
         if (request()->expectsJson()) {
             return response()->json($users);

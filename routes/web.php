@@ -413,9 +413,11 @@ Route::get('/pricing', [SubscriptionPlanController::class, 'pricing'])->name('pr
 
 Route::get('/terms-and-conditions', [TermsAndConditionController::class, 'terms_and_conditions'])->name('terms-and-conditions');
 
-Route::inertia('/privacy-policy', 'PrivacyPolicy')->name('privacy-policy');
+// Route::inertia('/privacy-policy', 'PrivacyPolicy')->name('privacy-policy');
 
-Route::get('/faq', [ForumPostController::class, 'faq'])->name('faq');
+Route::get('/faq', [FAQController::class, 'faq'])->name('faq');
+
+Route::get('/privacy-policy', [TermsAndConditionController::class, 'privacyPolicy'])->name('privacy-policy');
 
 
 Route::get('profile-pic/{filename}', [ProfileController::class, 'showProfilePic'])->name('profile.pic');

@@ -7,6 +7,7 @@ import Create from './Create';
 import Show from './Show';
 import Edit from './Edit';
 import Pagination from '@/Components/Pagination';
+import PageHeader from '@/Components/Admin/PageHeader';
 
 export default function SubscriptionPlans({ auth, subscriptionPlans = [], features, planFeatures }) {
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -98,7 +99,8 @@ export default function SubscriptionPlans({ auth, subscriptionPlans = [], featur
 
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
                     <div className="flex flex-row justify-between my-5">
-                        <div className="text-gray-800 text-3xl font-bold">Subscription Plans</div>
+                        <PageHeader>SUBSCRIPTION PLANS</PageHeader>
+                        {/* <div className="text-gray-800 text-3xl font-bold">Subscription Plans</div> */}
 
                         <div>
                             <AddButton onClick={openCreateModal} className="text-customBlue hover:text-white space-x-1">

@@ -11,6 +11,7 @@ use Illuminate\Validation\Rules;
 use Inertia\Inertia;
 use Inertia\Response;
 use Illuminate\Support\Facades\Auth;
+use Carbon\Carbon;
 
 use App\Notifications\InstitutionAdminNotification;
 use App\Notifications\UserNotification;
@@ -290,7 +291,30 @@ class TermsAndConditionController extends Controller
 
     public function terms_and_conditions()
     {
-        return Inertia::render('TermsandConditions');
+        $termsConditions = CustomContent::where('content_type', 'terms and conditions')
+        ->where('content_status', 'available')
+        ->get();
+
+        // Get the latest updated item from the collection
+        $latest = $termsConditions->sortByDesc('updated_at')->first();
+
+        // Format the updated_at field
+        $lastUpdated = $latest ? Carbon::parse($latest->updated_at)->format('F d, Y') : null;
+
+        return Inertia::render('TermsandConditions', [
+            'termsConditions' => $termsConditions,
+            'lastUpdated' => $lastUpdated,
+        ]);
+    }
+
+    public function privacyPolicy()
+    {
+        $privacyPolicy = CustomContent::where('content_type', 'privacy policy')
+                        ->first();
+
+        return Inertia::render('PrivacyPolicy', [
+            'privacyPolicy' => $privacyPolicy,
+        ]);
     }
 
 

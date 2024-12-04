@@ -193,9 +193,6 @@ export default function UserReports({ auth, userReports, pendingCount, solvedCou
                                                 <a onClick={() => {viewDetails(up)}} className="bg-customBlue text-white rounded p-1 hover:bg-transparent hover:text-customBlue cursor-pointer" title="View Details">
                                                     <FaEye/>
                                                 </a>
-                                                <a onClick={() => {}} className="bg-customBlue text-white rounded p-1 hover:bg-transparent hover:text-customBlue cursor-pointer" title="Remove">
-                                                    <FaTrash />
-                                                </a>
                                             </td>
                                         </tr>
                                     ))) : (

@@ -18,7 +18,7 @@ export default function InstitutionSubscriptionForm({ plan }) {
         name: '',
         pnum: '',
         email: '',
-        ins_admin_proof: '',
+        // ins_admin_proof: '',
         uni_branch_id: '',
         plan: plan,
         number_of_users: '',
@@ -317,7 +317,7 @@ export default function InstitutionSubscriptionForm({ plan }) {
                         <p className="text-red-500 text-sm mt-2">{validationError}</p>
                     )}
 
-                    <div>
+                    {/* <div>
                         <InputLabel value="Proof of University Connection" />
                         <div className="flex items-center justify-center w-full">
                             <label
@@ -343,7 +343,7 @@ export default function InstitutionSubscriptionForm({ plan }) {
                                 />
                             </label>
                         </div>
-                    </div>
+                    </div> */}
                     </div>
 
                   

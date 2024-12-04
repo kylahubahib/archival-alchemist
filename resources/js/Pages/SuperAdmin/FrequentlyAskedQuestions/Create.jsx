@@ -4,6 +4,7 @@ import LongTextInput from '@/Components/LongTextInput';
 import Modal from '@/Components/Modal';
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
+import { showToast } from '@/Components/Toast';
 import { Head, useForm } from '@inertiajs/react';
 import { useState } from 'react'; 
 
@@ -18,7 +19,7 @@ export default function Create({ isOpen, onClose }) {
         post(route('manage-faqs.store'), {
             onSuccess: () => {
                 onClose();
-                alert('Success!');
+                showToast('Successfully created!');
                 reset();
             },
         });
@@ -34,26 +35,26 @@ export default function Create({ isOpen, onClose }) {
                 <form onSubmit={submit}>
                 <div className='space-y-5'>
                     <div className="flex flex-col">
-                        <InputLabel htmlFor="content_title" value="Title" />
+                        <InputLabel htmlFor="content_title" value="Question" />
                         <TextInput
                             id="content_title"
                             value={data.content_title}
                             onChange={(e) => setData('content_title', e.target.value)}
                             type="text"
                             className="mt-1 block w-full"
-                            placeholder="Title"
+                            placeholder="Type the question..."
                         />
                         <InputError message={errors.content_title} className="mt-2" />
                     </div>
 
                     <div className="flex flex-col">
-                        <InputLabel htmlFor="content_text" value="Content" />
+                        <InputLabel htmlFor="content_text" value="Answer" />
                         <LongTextInput
                             id="content_text"
                             value={data.content_text}
                             onChange={(e) => setData('content_text', e.target.value)}
                             className="mt-1 block w-full"
-                            placeholder="Content"
+                            placeholder="Answer..."
                         />
                         <InputError message={errors.content_text} className="mt-2" />
                     </div>

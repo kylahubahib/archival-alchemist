@@ -187,13 +187,13 @@ export default function Users({ auth, users, userType, searchValue }) {
     const navigations = [
         // The param values here are the same as the userType values
         { text: 'Students', icon: <FaUserGraduate />, param: 'student' },
-        { text: 'Faculties', icon: <FaUserTie />, param: 'faculty' },
+        { text: 'Faculties', icon: <FaUserTie />, param: 'teacher' },
         { text: 'Institution Admins', icon: <RiShieldUserFill />, param: 'admin' },
         { text: 'Super Admins', icon: <FaUserSecret />, param: 'superadmin' }
     ];
     const tableHeaders = {
-        'student': ['Name', 'User ID', 'University', 'Department', 'Course', 'Section', 'Current Plan', 'Date Created', 'Status', 'Actions'],
-        'faculty': ['Name', 'User ID', 'University', 'Department', 'Current Plan', 'Position', 'Date Created', 'Status', 'Actions'],
+        'student': ['Name', 'User ID', 'University', 'Current Plan', 'Date Created', 'Status', 'Actions'],
+        'teacher': ['Name', 'User ID', 'University', 'Department', 'Current Plan', 'Position', 'Date Created', 'Status', 'Actions'],
         'admin': ['Name', 'User ID', 'Affiliated University', 'Role', 'Date Created', 'Status', 'Actions'],
         'superadmin': ['Name', 'User ID', 'Date Created', 'Role', 'Status', 'Actions']
     };
@@ -368,7 +368,7 @@ export default function Users({ auth, users, userType, searchValue }) {
                         {/* Handles the visibility and text of the add button*/}
                         {userType === 'superadmin' && (
                             <AddButton onClick={() => setIsCreateModalOpen(true)} icon={<FaPlus />}>
-                                {userType === "institution_admin" ? "Add co-ins admin" : "Add co-super admin"}
+                                {userType === "admin" ? "Add co-ins admin" : "Add co-super admin"}
                             </AddButton>
                         )}
 
@@ -396,6 +396,7 @@ export default function Users({ auth, users, userType, searchValue }) {
                                                     ?? institution_admin?.institution_subscription?.university_branch?.university?.uni_acronym
                                                     ?? 'N/A';
 
+                                
                                                 const studentId = student?.id;
 
                                                 const facultyId = faculty?.id;
@@ -408,8 +409,10 @@ export default function Users({ auth, users, userType, searchValue }) {
                                                 const combinedUniAndBranch = universityAcronym + " - " + branch;
 
                                                 const departmentAcronym = student?.section?.course?.department?.dept_acronym
-                                                    ?? faculty?.section?.course?.department?.dept_acronym
+                                                    ?? faculty?.department?.dept_acronym
                                                     ?? 'N/A';
+
+                                                    console.log('Faculty: ', faculty?.department);
 
                                                 const courseAcronym = student?.section?.course.course_acronym
                                                     ?? 'N/A';
@@ -417,7 +420,7 @@ export default function Users({ auth, users, userType, searchValue }) {
                                                 const sectionName = student?.section?.section_name
                                                     ?? 'N/A';
 
-                                                const facultyPosition = faculty?.fac_position ?? 'N/A';
+                                                const facultyPosition = faculty?.faculty_position ?? 'N/A';
 
                                                 const adminRole = access_control?.role ?? 'N/A';
 
@@ -444,9 +447,6 @@ export default function Users({ auth, users, userType, searchValue }) {
                                                             <>
                                                                 {/* <td className="p-2">{studentId}</td> */}
                                                                 <td className="p-2">{combinedUniAndBranch}</td>
-                                                                <td className="p-2">{departmentAcronym}</td>
-                                                                <td className="p-2">{courseAcronym}</td>
-                                                                <td className="p-2">{sectionName}</td>
                                                                 <td className="p-2">{is_premium ? 'Premium' : 'Basic'}</td>
                                                                 <td className="p-2">{formattedDateCreated}</td>
                                                                 <td className="p-2"><StatusChip status={user_status} /></td>
@@ -454,7 +454,7 @@ export default function Users({ auth, users, userType, searchValue }) {
                                                             </>
                                                         )}
 
-                                                        {userType === 'faculty' && (
+                                                        {userType === 'teacher' && (
                                                             <>
                                                                 {/* <td className="p-2">{facultyId}</td> */}
                                                                 <td className="p-2">{combinedUniAndBranch}</td>
