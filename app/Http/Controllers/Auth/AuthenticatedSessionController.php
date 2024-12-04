@@ -76,6 +76,8 @@ class AuthenticatedSessionController extends Controller
             if (!$request->expectsJson()) {
                 $request->session()->regenerate();
 
+                Log::info(['userType' => $user->user_type]);
+
                 // Redirect based on user_type
                 switch ($user->user_type) {
                     case 'student':

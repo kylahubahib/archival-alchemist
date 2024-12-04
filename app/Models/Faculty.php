@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Faculty extends Model
 {
@@ -20,7 +21,7 @@ class Faculty extends Model
     protected static function booted()
     {
         static::creating(function ($faculty) {
-            $faculty->id = mt_rand(1000000000, 9999999999);  
+            $faculty->id = mt_rand(1000000000, 9999999999);
             while (self::where('id', $faculty->id)->exists()) {
                 $faculty->id = mt_rand(1000000000, 9999999999);
             }
@@ -37,5 +38,9 @@ class Faculty extends Model
         return $this->belongsTo(UniversityBranch::class, 'uni_branch_id');
     }
 
+    public function course(): HasOne
+    {
 
+        return $this->hasOne(Course::class, 'id', 'course_id');
+    }
 }

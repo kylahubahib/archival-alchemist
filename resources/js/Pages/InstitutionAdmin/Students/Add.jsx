@@ -49,9 +49,9 @@ export default function Add({ isOpen, onClose }) {
         console.log('data.date_of_birth', data.date_of_birth);
     }, [dateOfBirth]);
 
-    useEffect(() => {
-        fetchData();
-    }, [])
+    // useEffect(() => {
+    //     fetchData();
+    // }, [])
 
     // useEffect(() => {
     //     console.log('departmentId', data.department_id);
@@ -73,28 +73,28 @@ export default function Add({ isOpen, onClose }) {
 
     }, [onClose])
 
-    const fetchData = async () => {
-        try {
-            setIsAutocompleteItemsLoading(true);
-            const response = await axios.get(route('institution.get-departments-with-courses'));
-            console.log('deptcourses', response);
+    // const fetchData = async () => {
+    //     try {
+    //         setIsAutocompleteItemsLoading(true);
+    //         const response = await axios.get(route('institution.get-departments-with-courses'));
+    //         console.log('deptcourses', response);
 
-            // Extracting department names only
-            const departmentAcronyms = response.data.map(department => department.dept_acronym);
+    //         // Extracting department names only
+    //         const departmentAcronyms = response.data.map(department => department.dept_acronym);
 
-            setDepartmentsWithCoursesResponse(response.data);
+    //         setDepartmentsWithCoursesResponse(response.data);
 
-            setAutocomplete({
-                ...autocomplete,
-                department: departmentAcronyms,
-            });
-        }
-        catch (error) {
-            console.error("There was an error fetching the data!", error);
-        } finally {
-            setIsAutocompleteItemsLoading(false);
-        }
-    };
+    //         setAutocomplete({
+    //             ...autocomplete,
+    //             department: departmentAcronyms,
+    //         });
+    //     }
+    //     catch (error) {
+    //         console.error("There was an error fetching the data!", error);
+    //     } finally {
+    //         setIsAutocompleteItemsLoading(false);
+    //     }
+    // };
 
     const handleAddStudent = (e) => {
         e.preventDefault();
@@ -139,6 +139,7 @@ export default function Add({ isOpen, onClose }) {
     }
 
     const handleClearFields = () => {
+        setDateOfBirth(null);
         reset();
         clearErrors();
     }
@@ -195,18 +196,18 @@ export default function Add({ isOpen, onClose }) {
                 <div className="text-customGray flex gap-9 p-6 overflow-auto tracking-wide">
 
                     {/* Single Add */}
-                    <div className="flex flex-col w-[70%] gap-4">
-                        <div className="pb-1">
+                    <div className="flex flex-col w-full gap-4">
+                        {/* <div className="pb-1">
                             <label className="font-bold text-md">Single Add</label>
                             <hr />
-                        </div>
+                        </div> */}
                         <div className="grid grid-cols-2 gap-x-10 gap-y-3">
                             <Input
                                 type="number"
                                 min={1}
                                 radius="sm"
                                 labelPlacement="outside"
-                                label="Student University ID"
+                                label="University ID"
                                 startContent={<FaHashtag />}
                                 isInvalid={errors.uni_id_num}
                                 errorMessage={errors.uni_id_num}
@@ -291,7 +292,7 @@ export default function Add({ isOpen, onClose }) {
                     </div>
 
                     {/* Bulk Add */}
-                    <div className="w-[25%] flex flex-col gap-4">
+                    {/* <div className="w-[25%] flex flex-col gap-4">
                         <div className="flex flex-col h-full gap-2">
                             <div className="pb-2">
                                 <label className="font-bold text-md">Bulk Add</label>
@@ -319,7 +320,7 @@ export default function Add({ isOpen, onClose }) {
                                 Remove
                             </Button>
                         </div>
-                    </div>
+                    </div> */}
 
                 </div>
 

@@ -14,6 +14,7 @@ class AccessControl extends Model
 
     protected $fillable = [
         'user_id',
+        'uni_branch_id',
         'role',
         'dashboard_access',
         'users_access',

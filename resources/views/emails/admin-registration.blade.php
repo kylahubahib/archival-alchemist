@@ -27,7 +27,7 @@
         <p style="margin-top: 0.5rem; line-height: 1.625; color: #718096;">
             We are excited to invite you to join our team as a
             <span style="font-weight: bold;">
-                {{ $userType === 'institution_admin' ? 'Co-Institution Admin' : 'Co-Super Admin' }}
+                {{ $userType === 'admin' ? 'Co-Institution Admin' : 'Co-Super Admin' }}
             </span>
             on <span style="font-weight: bold;">Archival Alchemist</span>.
             Your role will be essential in shaping the platform and contributing to its success.

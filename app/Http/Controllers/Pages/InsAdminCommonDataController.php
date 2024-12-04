@@ -24,7 +24,7 @@ class InsAdminCommonDataController extends Controller
     public function getInsAdminAffiliation()
     {
         $affiliation = UniversityBranch::where('id', $this->insAdminUniBranchId)
-            ->select('uni_id', 'uni_branch_name') // Add the fields you want to select
+            ->select('uni_id', 'uni_branch_name', 'id') // Add the fields you want to select
             ->with(['university:id,uni_name', 'institution_subscription']) // Eager load related data
             ->get(); // Execute the query and fetch results
 

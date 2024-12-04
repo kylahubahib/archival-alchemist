@@ -18,8 +18,9 @@ class AccountDetailsMail extends Mailable
     /**
      * Create a new message instance.
      */
-    public function __construct($name, $email, $password, $loginPageLink)
+    public function __construct($userType, $name, $email, $password, $loginPageLink)
     {
+        $this->userType = $userType;
         $this->name = $name;
         $this->email = $email;
         $this->password = $password;
@@ -46,6 +47,7 @@ class AccountDetailsMail extends Mailable
         return new Content(
             view: 'emails.account-details',
             with: [
+                'userType' => $this->userType,
                 'name' => $this->name,
                 'email' => $this->email,
                 'password' => $this->password,

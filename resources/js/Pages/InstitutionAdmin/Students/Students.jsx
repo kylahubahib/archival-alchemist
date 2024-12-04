@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from "react";
-import { User, Chip, } from "@nextui-org/react";
+import { User, Chip, user, } from "@nextui-org/react";
 import { FaPlus, FaFileCircleCheck, FaFileCircleMinus, FaFileInvoice } from "react-icons/fa6";
 import { HiDocumentCheck, HiDocumentMinus } from "react-icons/hi2";
 import { decodeURLParam, formatDateTime } from "@/Utils/common-utils";
@@ -29,6 +29,7 @@ export default function Students({ auth, insAdminAffiliation, students, hasStude
     const [searchTerm, setSearchTerm] = useState(search ? decodeURLParam(search) : '');
     const [currentPlanName, setCurrentPlanName] = useState('');
     const [currentPlanStatus, setCurrentPlanStatus] = useState('');
+    const [action, setAction] = useState(null);
     const [entriesPerPage, setEntriesPerPage] = useState(entries || 10);
     const [totalFilters, setTotalFilters] = useState(null);
     const [isAddStudentModalOpen, setIsAddStudentModalOpen] = useState(false);
@@ -80,7 +81,7 @@ export default function Students({ auth, insAdminAffiliation, students, hasStude
         setIsDataLoading(true);
 
         const debounce = setTimeout(() => {
-            fetchSearchFilteredData('institution-students.filter', params, searchTerm,
+            fetchSearchFilteredData('institution-students.filter', { hasStudentPremiumAccess: hasStudentPremiumAccess }, params, searchTerm,
                 setIsDataLoading, setStudentsToRender, setHasFilteredData);
         }, 300);
 
@@ -88,31 +89,35 @@ export default function Students({ auth, insAdminAffiliation, students, hasStude
 
     }, [searchTerm.trim()]);
 
-    const renderActionButtons = (userId, name, currentPlanName, currentPlanStatus) => (
-        <div className="p-2 flex gap-2">
-            {currentPlanStatus && (
-                <ActionButton
-                    icon={currentPlanStatus === 'Active' ? <FaFileCircleMinus /> : <FaFileCircleCheck />}
-                    tooltipContent={currentPlanStatus === 'Active' ? 'Deactivate plan' : 'Activate plan'}
-                    onClick={() =>
-                        handleUpdatePlanStatusModalClick(
-                            userId,
-                            name,
-                            currentPlanName,
-                            currentPlanStatus,
-                        )
-                    }
-                />
-            )}
-        </div>
-    );
+    const renderActionButtons = (userId, name, currentPlanName, currentPlanStatus) => {
+        const actionText = currentPlanStatus.toLowerCase() === 'active' ? "Deactivate" : "Activate";
 
-    const handleUpdatePlanStatusModalClick = (id, name, currentPlanName, currentPlanType, currentPlanStatus) => {
+        return (
+            <div className="p-2 flex gap-2">
+                {currentPlanStatus && (
+                    <ActionButton
+                        icon={currentPlanStatus.toLowerCase() === 'active' ? <FaFileCircleMinus /> : <FaFileCircleCheck />}
+                        tooltipContent={currentPlanStatus === 'Active' ? 'Deactivate plan' : 'Activate plan'}
+                        onClick={() =>
+                            handleUpdatePlanStatusModalClick(
+                                userId,
+                                name,
+                                currentPlanName,
+                                actionText,
+                            )
+                        }
+                    />
+                )}
+            </div>
+        )
+    };
+
+    const handleUpdatePlanStatusModalClick = (id, name, currentPlanName, actionText) => {
         setIsUpdatePlanStatusModalOpen(true);
         setUserId(id);
         setName(name);
         setCurrentPlanName(currentPlanName);
-        setCurrentPlanStatus(currentPlanStatus);
+        setAction(actionText);
     }
 
     const handleClearFiltersClick = () => {
@@ -199,7 +204,7 @@ export default function Students({ auth, insAdminAffiliation, students, hasStude
                                                                 }}
                                                             />
                                                         </td>
-                                                        <td className="p-2">{studentId}</td>
+                                                        <td className="p-2">{uni_id_num}</td>
                                                         <td className="p-2">{departmentAcronym ?? 'N/A'}</td>
                                                         <td className="p-2">{courseAcronym ?? 'N/A'}</td>
                                                         <td className="p-2">{sectionName ?? 'N/A'}</td>
@@ -212,7 +217,7 @@ export default function Students({ auth, insAdminAffiliation, students, hasStude
 
                                                         {hasStudentPremiumAccess === 'with-premium-access' && (
                                                             <>
-                                                                <td className="p-2">{<StatusChip status={currentPlanStatus} />}</td>
+                                                                <td className="p-2">{<StatusChip status={planStatus} />}</td>
                                                                 <td className="p-2">{renderActionButtons(id, name, planName, planStatus)}</td>
                                                             </>
                                                         )
@@ -256,7 +261,7 @@ export default function Students({ auth, insAdminAffiliation, students, hasStude
                 userId={userId}
                 name={name}
                 currentPlanName={currentPlanName}
-                currentPlanStatus={currentPlanStatus}
+                action={action}
                 setStudentsToRender={setStudentsToRender}
                 isOpen={isUpdatePlanStatusModalOpen}
                 onClose={() => setIsUpdatePlanStatusModalOpen(false)}

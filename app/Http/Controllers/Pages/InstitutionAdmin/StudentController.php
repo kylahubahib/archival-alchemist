@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Maatwebsite\Excel\Concerns\ToArray;
 
@@ -78,12 +79,11 @@ class StudentController extends Controller
         // Search by user name or student ID
         if ($search) {
             $query->where(function ($q) use ($search) {
-                $q->where('name', 'LIKE', '%' . $search . '%')
-                    ->orWhereHas('student', function ($q) use ($search) {
-                        $q->where('id', 'LIKE', '%' . $search . '%');
-                    });
+                $q->where('name', 'LIKE', '%' . $search . '%');
+                $q->orWhere('uni_id_num', 'LIKE', '%' . $search . '%');
             });
         }
+
 
         // Filter by department
         if ($department) {
@@ -138,61 +138,36 @@ class StudentController extends Controller
         ]);
     }
 
-    public function updatePlanStatus($hasStudentPremiumAccess)
+    public function updatePlanStatus(Request $request, $hasStudentPremiumAccess)
     {
-        $userId = request('user_id');
+        $userId = $request->input('user_id');
+        $action = $request->input('action');
 
-        Log::info('user_Id', ['userID' => $userId]);
         $personalPlan = PersonalSubscription::firstWhere('user_id', $userId);
-        $personalPlan->persub_status = $personalPlan->persub_status === 'Active' ? 'Inactive' : 'Active';
+
+        Log::info(['action' => $action]);
+
+
+        switch ($action) {
+            case 'Activate':
+                $personalPlan->persub_status = 'Active';
+                break;
+
+            case 'Deactivate':
+                $personalPlan->persub_status = 'Deactivated';
+                break;
+
+            default:
+                return response()->json(['error' => 'Invalid action'], 400);
+        }
 
         $personalPlan->save();
 
         return  $this->filter($hasStudentPremiumAccess);
     }
 
-    public function uploadCSV($fileName)
-    {
-        // Validate the request
-        $request->validate([
-            'file' => 'required|file|mimes:csv,txt|max:2048',
-            'university' => 'required|string|max:255',
-        ]);
-
-        $file = $request->file('file');
-        $university = $request->input('university');
-
-        // Generate a unique filename
-        $fileName = $university . '_' . time() . '.' . $file->getClientOriginalExtension();
-
-        try {
-            // Process the uploaded file directly without saving it
-            Excel::import(new UsersImport, $file->getRealPath());
-            \Log::info('Import user successfully!');
-        } catch (\Exception $e) {
-            \Log::error('Error during user import: ' . $e->getMessage());
-
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to process the file.',
-            ], 500);
-        }
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Successfully uploaded and processed.',
-        ]);
-    }
-
     public function addStudent(Request $request)
     {
-        $csvFile = $request->file('file');
-
-        if ($csvFile) {
-            // Handle CSV upload and processing
-            return $this->uploadCSV($request);
-        }
-
         // Validate the student data
         $validatedData = $request->validate(
             [
@@ -209,7 +184,7 @@ class StudentController extends Controller
                             ->exists();
 
                         if ($exists) {
-                            $fail('The student university ID is already in use.');
+                            $fail('The university ID is already in use.');
                         }
                     },
                 ],
@@ -219,7 +194,7 @@ class StudentController extends Controller
             ],
             [],
             [
-                'uni_id_num' => 'student university ID',
+                'uni_id_num' => 'university ID',
             ]
         );
 
@@ -232,6 +207,7 @@ class StudentController extends Controller
         try {
             // Create the user
             $user = User::create([
+                'user_pic' => 'storage/profile_pics/default_pic.png',
                 'user_type' => 'student',
                 'name' => $validatedData['name'],
                 'uni_id_num' => $validatedData['uni_id_num'],
@@ -250,6 +226,7 @@ class StudentController extends Controller
 
             // Send the student account details via email
             Mail::to($validatedData['email'])->send(new AccountDetailsMail(
+                'student',
                 $validatedData['name'],
                 $validatedData['email'],
                 $password,

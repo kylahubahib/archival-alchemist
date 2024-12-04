@@ -25,9 +25,8 @@
         <h2 style="color: #898282;">Hello {{ $name }},</h2>
 
         <p style="margin-top: 0.5rem; line-height: 1.625; color: #718096;">
-            Welcome to Archival Alchemist! We're excited to have you on board. You can now log in and start exploring
-            the
-            platform.
+            Welcome to Archival Alchemist, future <strong>{{ strtolower($userType) }}</strong>! We're excited to have
+            you on board. You can now log in and start exploring the platform.
         </p>
 
         <p style="margin-top: 0.5rem; line-height: 1.625; color: #718096;">

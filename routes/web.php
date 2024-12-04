@@ -96,7 +96,7 @@ Route::get('/payment/success', [PaymentSessionController::class, "paymentSuccess
 Route::get('/payment/cancel', [PaymentSessionController::class, "paymentCancel"])->name('payment.cancel');
 Route::post('/payment', [PaymentSessionController::class, 'PaymentSession'])->name('payment');
 Route::post('/register-institution', [PaymentSessionController::class, 'registerInstitution'])->name('register.institution');
-Route::post('/cancel-subscription',[InstitutionSubscriptionController::class, 'cancelSubscription']);
+Route::post('/cancel-subscription', [InstitutionSubscriptionController::class, 'cancelSubscription']);
 
 use Illuminate\Support\Facades\Crypt;
 
@@ -203,6 +203,7 @@ Route::post('/remove-affiliation', [ProfileController::class, 'removeAffiliation
 
 use App\Events\MessageSent;
 use App\Http\Controllers\Pages\InstitutionAdmin\ArchiveController;
+use App\Http\Controllers\Pages\InstitutionAdmin\CoAdminController;
 use App\Http\Controllers\Pages\InstitutionAdmin\InsAdminArchiveController;
 use App\Http\Controllers\Pages\SuperAdmin\SubscriptionBillingController;
 use App\Http\Controllers\Pages\SuperAdmin\SuperAdminArchiveController;
@@ -258,7 +259,9 @@ Route::middleware(['auth', 'verified', 'user-type:superadmin'])->group(function 
     });
 
     Route::middleware('access:subscriptions_and_billings_access')->group(function () {
+        Route::redirect('/subscription-billing', '/subscription-billing/personal');
         Route::get('/subscription-billing', [SubscriptionBillingController::class, 'index'])->name('subscription-billing');
+        Route::get('/subscription-billing/{subscriptionType}', [SubscriptionBillingController::class, 'filter'])->name('subscription-billing.filter');
     });
 
     Route::middleware('access:subscription_plans_access')->group(function () {
@@ -268,81 +271,75 @@ Route::middleware(['auth', 'verified', 'user-type:superadmin'])->group(function 
     });
 
     Route::middleware('access:user_feedbacks_access')->group(function () {
-           Route::resource('user-feedbacks', UserFeedbacksController::class)->names('user-feedbacks')->except(['store']);
-           Route::get('filter-feedbacks', [UserFeedbacksController::class, 'filterFeedbacks'])->name('filter-feedbacks');
+        Route::resource('user-feedbacks', UserFeedbacksController::class)->names('user-feedbacks')->except(['store']);
+        Route::get('filter-feedbacks', [UserFeedbacksController::class, 'filterFeedbacks'])->name('filter-feedbacks');
+    });
 
-       });
-
-   Route::middleware('access:user_reports_access')->group(function () {
-       Route::resource('user-reports', UserReportController::class)->names('user-reports')->except(['store']);
+    Route::middleware('access:user_reports_access')->group(function () {
+        Route::resource('user-reports', UserReportController::class)->names('user-reports')->except(['store']);
         Route::post('warn-user/{id}', [UserReportController::class, 'warnUser'])->name('user-reports.warning');
-       Route::get('filter-user-reports', [UserReportController::class, 'filterReports'])->name('filter-user-reports');
+        Route::get('filter-user-reports', [UserReportController::class, 'filterReports'])->name('filter-user-reports');
+    });
 
-   });
+    Route::middleware('access:terms_and_conditions_access')->group(function () {
+        Route::resource('manage-terms-and-conditions', TermsAndConditionController::class);
+        Route::put('manage-terms-and-conditions/{id}/change-status', [TermsAndConditionController::class, 'change_status'])
+            ->name('manage-terms-and-conditions.change_status');
+    });
 
-     Route::middleware('access:terms_and_conditions_access')->group(function () {
-            Route::resource('manage-terms-and-conditions', TermsAndConditionController::class);
-           Route::put('manage-terms-and-conditions/{id}/change-status', [TermsAndConditionController::class, 'change_status'])
-               ->name('manage-terms-and-conditions.change_status');
-       });
+    Route::middleware('access:faqs_access')->group(function () {
+        Route::resource('manage-faqs', FAQController::class);
+        //Route::inertia('/faq', 'SuperAdmin/Faq')->name('faq');
 
-        Route::middleware('access:faqs_access')->group(function () {
-         Route::resource('manage-faqs', FAQController::class);
-           //Route::inertia('/faq', 'SuperAdmin/Faq')->name('faq');
+        // You can use put or patch. Put is used to update a resource entirely
+        // while patch is used to update a single fields
 
-       // You can use put or patch. Put is used to update a resource entirely
-       // while patch is used to update a single fields
+        Route::put('manage-faqs/{id}/change-status', [FAQController::class, 'change_status'])
+            ->name('manage-faqs.change_status');
+    });
 
-              Route::put('manage-faqs/{id}/change-status', [FAQController::class, 'change_status'])
-       ->name('manage-faqs.change_status');
-
-
-       });
-
-        Route::middleware('access:advanced_access')->group(function () {    
-
-            
-            Route::get('advanced/forum/filter-post', [AdvancedForumController::class, 'filterPost'])->name('filter-post');
-            Route::resource('advanced/forum', AdvancedForumController::class)->names('manage-forum-posts');
-
-            Route::resource('advanced/custom-messages', CustomMessagesController::class)->names('manage-custom-messages');
-
-            Route::resource('advanced/universities', UniversityController::class)->names('manage-universities');
-
-            Route::resource('advanced/tags', AdvancedTagsController::class)->names('manage-tags');
-
-            Route::resource('advanced/report-reason', ReportReasonController::class)->names('manage-report-reason');
-
-            Route::post('store-service', [CustomMessagesController::class, 'storeService'])->name('store-service');
-            Route::post('store-team', [CustomMessagesController::class, 'storeTeam'])->name('store-team');
-            Route::post('update-icon', [CustomMessagesController::class, 'updateIcon'])->name('update-icon');
-
-       });
+    Route::middleware('access:advanced_access')->group(function () {
 
 
-       Route::get('get-branches', [UniversityController::class, 'getBranches'])->name('get-branches');
+        Route::get('advanced/forum/filter-post', [AdvancedForumController::class, 'filterPost'])->name('filter-post');
+        Route::resource('advanced/forum', AdvancedForumController::class)->names('manage-forum-posts');
 
-        Route::middleware('access:dashboard_access')->group(function () {
-            //Route::inertia('/dashboard', 'SuperAdmin/Dashboard')->name('dashboard');
-            //DASHBOARD ROUTES
-       Route::resource('dashboard', DashboardController::class)->names('dashboard');
-       Route::get('get-weekly-manuscript', [DashboardController::class, 'getWeeklyManuscript']);
-       Route::get('get-monthly-manuscript', [DashboardController::class, 'getMonthlyManuscript']);
-       Route::get('get-yearly-manuscript', [DashboardController::class, 'getYearlyManuscript']);
-       Route::get('get-monthly-revenue', [DashboardController::class, 'getMonthlyRevenue']);
-       Route::get('get-yearly-revenue', [DashboardController::class, 'getYearlyRevenue']);
-       //END OF DASHBOARD ROUTES
+        Route::resource('advanced/custom-messages', CustomMessagesController::class)->names('manage-custom-messages');
+
+        Route::resource('advanced/universities', UniversityController::class)->names('manage-universities');
+
+        Route::resource('advanced/tags', AdvancedTagsController::class)->names('manage-tags');
+
+        Route::resource('advanced/report-reason', ReportReasonController::class)->names('manage-report-reason');
+
+        Route::post('store-service', [CustomMessagesController::class, 'storeService'])->name('store-service');
+        Route::post('store-team', [CustomMessagesController::class, 'storeTeam'])->name('store-team');
+        Route::post('update-icon', [CustomMessagesController::class, 'updateIcon'])->name('update-icon');
+    });
 
 
-       });
+    Route::get('get-branches', [UniversityController::class, 'getBranches'])->name('get-branches');
 
-   });
+    Route::middleware('access:dashboard_access')->group(function () {
+        //Route::inertia('/dashboard', 'SuperAdmin/Dashboard')->name('dashboard');
+        //DASHBOARD ROUTES
+        Route::resource('dashboard', DashboardController::class)->names('dashboard');
+        Route::get('get-weekly-manuscript', [DashboardController::class, 'getWeeklyManuscript']);
+        Route::get('get-monthly-manuscript', [DashboardController::class, 'getMonthlyManuscript']);
+        Route::get('get-yearly-manuscript', [DashboardController::class, 'getYearlyManuscript']);
+        Route::get('get-monthly-revenue', [DashboardController::class, 'getMonthlyRevenue']);
+        Route::get('get-yearly-revenue', [DashboardController::class, 'getYearlyRevenue']);
+        //END OF DASHBOARD ROUTES
+
+
+    });
+});
 
 
 
 
 //institution admin
-Route::middleware(['auth', 'verified', 'user-type:institution_admin'])->prefix('institution')->group(function () {
+Route::middleware(['auth', 'verified', 'user-type:admin'])->prefix('institution')->group(function () {
 
     // Common data for all pages
     Route::get('/get-departments-with-courses', [InsAdminCommonDataController::class, 'getDepartmentsWithCourses'])
@@ -351,21 +348,23 @@ Route::middleware(['auth', 'verified', 'user-type:institution_admin'])->prefix('
         ->name('institution.get-plans-with-plan-status');
 
     // Pages
-
-    Route::inertia('/coadmins', 'InstitutionAdmin/CoAdmin/CoAdmin')->name('institution-coadmins');
+    // CoAdmins Page
+    Route::get('/coadmins', [CoAdminController::class, 'index'])->name('institution-coadmins');
+    Route::post('/co-admin/send-registration', [UserController::class, 'sendAdminRegistration'])->name('institution-coadmins.send-registration');
 
     // Students Page
     Route::redirect('/students', '/institution/students/with-premium-access');
     Route::get('/students/with-premium-access', [StudentController::class, 'index'])->name('institution-students');
     Route::get('/students/{hasStudentPremiumAccess}', [StudentController::class, 'filter'])->name('institution-students.filter');
     Route::patch('/students/{hasStudentPremiumAccess}', [StudentController::class, 'updatePlanStatus'])->name('institution-students.update-plan-status');
+    /////////////
     Route::post('/students/add', [StudentController::class, 'addStudent'])->name('institution-students.add');
 
     // Faculties Page
     Route::redirect('/faculties', '/institution/faculties/with-premium-access');
     Route::get('/faculties/with-premium-access', [FacultyController::class, 'index'])->name('institution-faculties');
     Route::get('/faculties/{hasFacultyPremiumAccess}', [FacultyController::class, 'filter'])->name('institution-faculties.filter');
-    Route::patch('/faculties/{hasFacultyPremiumAccess}', [FacultyController::class, 'setPlanStatus'])->name('institution-faculties.set-plan-status');
+    Route::patch('/faculties/{hasFacultyPremiumAccess}', [FacultyController::class, 'updatePlanStatus'])->name('institution-faculties.update-plan-status');
     Route::post('/faculties/add', [FacultyController::class, 'addFaculty'])->name('institution-faculties.add');
 
     // Archives Page
@@ -430,7 +429,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/assign-user-role', [ProfileController::class, 'assignUserRole']);
     Route::get('/get-plans', [SubscriptionPlanController::class, 'getPlans'])->name('get-plans');
     Route::get('/get-semesters', [SemesterController::class, 'getSemester'])->name('get-semester');
-    Route::get('/profile/{id}',[ProfileController::class, 'viewProfile'])->name('profile.view');
+    Route::get('/profile/{id}', [ProfileController::class, 'viewProfile'])->name('profile.view');
 });
 
 //Universities Controller Route
@@ -440,96 +439,96 @@ Route::get('api/universities-branches', [UniversityController::class, 'getUniver
 
 
 
-    //manuscript project
-    Route::middleware(['auth'])->group(function () {
-        // Route for storing a new manuscript project
-        Route::post('/api/capstone/upload', [StudentClassController::class, 'storeManuscriptProject'])->name('api.capstone.upload');
+//manuscript project
+Route::middleware(['auth'])->group(function () {
+    // Route for storing a new manuscript project
+    Route::post('/api/capstone/upload', [StudentClassController::class, 'storeManuscriptProject'])->name('api.capstone.upload');
 
-        // Route for tracking a student's activity
-        Route::post('/student/track-activity', [StudentClassController::class, 'trackActivity'])
-            ->name('student.trackActivity.store');
+    // Route for tracking a student's activity
+    Route::post('/student/track-activity', [StudentClassController::class, 'trackActivity'])
+        ->name('student.trackActivity.store');
 
-        // Route for approving a student's project
-        Route::post('/student/approve-project', [StudentClassController::class, 'approveProject'])
-            ->name('student.approveProject.store');
+    // Route for approving a student's project
+    Route::post('/student/approve-project', [StudentClassController::class, 'approveProject'])
+        ->name('student.approveProject.store');
 
-        Route::post('/api/check-title', [StudentClassController::class, 'checkTitle'])->name('capstone.checkTitle');
-    });
+    Route::post('/api/check-title', [StudentClassController::class, 'checkTitle'])->name('capstone.checkTitle');
+});
 
-    //Add a route for fetching tag suggestions:
-    // In api.php or web.php
-    Route::get('/api/tags/suggestions', [TagController::class, 'suggestions']);
+//Add a route for fetching tag suggestions:
+// In api.php or web.php
+Route::get('/api/tags/suggestions', [TagController::class, 'suggestions']);
 
-    Route::get('tags/existing', [TagController::class, 'existingTags']);
+Route::get('tags/existing', [TagController::class, 'existingTags']);
 
-    Route::post('/api/tags/store', [TagController::class, 'storeTags']);
-    Route::post('/tags/get-tag-ids', [TagController::class, 'getTagIds']);
-    Route::get('/api/tags/get-tags', [TagController::class, 'index']);
+Route::post('/api/tags/store', [TagController::class, 'storeTags']);
+Route::post('/tags/get-tag-ids', [TagController::class, 'getTagIds']);
+Route::get('/api/tags/get-tags', [TagController::class, 'index']);
 
 
 Route::get('/api/tags', [TagController::class, 'index']);
 
 
-    //Add a route for fetching tag suggestions:
-    // In api.php or web.php
-    Route::get('/api/authors/suggestions', [TagController::class, 'Authorsuggestions']);
-    Route::get('/api/title/suggestions', [TagController::class, 'Titlesuggestions']);
+//Add a route for fetching tag suggestions:
+// In api.php or web.php
+Route::get('/api/authors/suggestions', [TagController::class, 'Authorsuggestions']);
+Route::get('/api/title/suggestions', [TagController::class, 'Titlesuggestions']);
 
-    //route for checking the class code
-    Route::post('/check-class-code', [StudentClassController::class, 'checkClassCode']);
-    // routes for storing student in class table
-    Route::post('/store-student-class', [StudentClassController::class, 'storeStudentClass']);
-    // routes for checking the user premium subscription
-    Route::post('/check-user-premium-status', [CheckSubscriptionController::class, 'is_premium']);
-    Route::get('/check-student-in-class', [StudentClassController::class, 'checkStudentInClass']);
-    Route::get('/api/publishedRec-manuscripts', [StudentClassController::class, 'getPublishedRecManuscripts']);
-    Route::get('/api/publishedMyUniBooks-manuscripts', [StudentClassController::class, 'getMyUniBooks']);
-    Route::get('/api/my-approved-manuscripts', [StudentClassController::class, 'myApprovedManuscripts']);
-    Route::get('/api/my-favorite-manuscripts', [StudentClassController::class, 'myfavoriteManuscripts']);
-    Route::post('/api/addfavorites', [StudentClassController::class, 'storefavorites'])->name('storefavorites');
-    Route::get('/manuscript/{id}/download', [StudentClassController::class, 'downloadPdf'])->name('manuscript.download');
-
-
-    // Route::middleware(['auth', 'verified', 'user-type:student,teacher'])->group(function () {
-        // Route for getting user favorites
-        Route::get('/user/{id}/favorites', [StudentClassController::class, 'getUserFavorites'])
-            ->name('getUserFavorites');
+//route for checking the class code
+Route::post('/check-class-code', [StudentClassController::class, 'checkClassCode']);
+// routes for storing student in class table
+Route::post('/store-student-class', [StudentClassController::class, 'storeStudentClass']);
+// routes for checking the user premium subscription
+Route::post('/check-user-premium-status', [CheckSubscriptionController::class, 'is_premium']);
+Route::get('/check-student-in-class', [StudentClassController::class, 'checkStudentInClass']);
+Route::get('/api/publishedRec-manuscripts', [StudentClassController::class, 'getPublishedRecManuscripts']);
+Route::get('/api/publishedMyUniBooks-manuscripts', [StudentClassController::class, 'getMyUniBooks']);
+Route::get('/api/my-approved-manuscripts', [StudentClassController::class, 'myApprovedManuscripts']);
+Route::get('/api/my-favorite-manuscripts', [StudentClassController::class, 'myfavoriteManuscripts']);
+Route::post('/api/addfavorites', [StudentClassController::class, 'storefavorites'])->name('storefavorites');
+Route::get('/manuscript/{id}/download', [StudentClassController::class, 'downloadPdf'])->name('manuscript.download');
 
 
-    // Route for removing a favorite
-    Route::delete('/api/removefavorites', [StudentClassController::class, 'removeFavorite'])
-        ->middleware(['auth', 'verified', 'user-type:student,teacher'])
-        ->name('removeFavorite');
-
-        // Route to handle tracking of book views
-    Route::post('/view-book/{bookId}', [TeacherClassController::class, 'viewBook'])->name('book.view');
+// Route::middleware(['auth', 'verified', 'user-type:student,teacher'])->group(function () {
+// Route for getting user favorites
+Route::get('/user/{id}/favorites', [StudentClassController::class, 'getUserFavorites'])
+    ->name('getUserFavorites');
 
 
-    //check user in csv file
-    Route::post('/check-user-in-spreadsheet', [CheckSubscriptionController::class, 'checkUserInSpreadsheet']);
+// Route for removing a favorite
+Route::delete('/api/removefavorites', [StudentClassController::class, 'removeFavorite'])
+    ->middleware(['auth', 'verified', 'user-type:student,teacher'])
+    ->name('removeFavorite');
+
+// Route to handle tracking of book views
+Route::post('/view-book/{bookId}', [TeacherClassController::class, 'viewBook'])->name('book.view');
 
 
-    //Search and filter
-    Route::get('/search', [SearchController::class, 'search']);
-    Route::get('/searchlib', [SearchController::class, 'searchlib']);
-
-    // });
+//check user in csv file
+Route::post('/check-user-in-spreadsheet', [CheckSubscriptionController::class, 'checkUserInSpreadsheet']);
 
 
-        
-    Route::get('/api/published-manuscripts', [StudentClassController::class, 'getPublishedManuscripts']);
+//Search and filter
+Route::get('/search', [SearchController::class, 'search']);
+Route::get('/searchlib', [SearchController::class, 'searchlib']);
 
-    Route::get('/api/publishedRec-manuscripts', [StudentClassController::class, 'getPublishedRecManuscripts']);
+// });
+
+
+
+Route::get('/api/published-manuscripts', [StudentClassController::class, 'getPublishedManuscripts']);
+
+Route::get('/api/publishedRec-manuscripts', [StudentClassController::class, 'getPublishedRecManuscripts']);
 
 
 
 //TEACHER ROUTES
 Route::middleware('auth')->group(function () {
- //   Route::get('/student/class', [StudentClassController::class, 'index'])->name('student.class');
+    //   Route::get('/student/class', [StudentClassController::class, 'index'])->name('student.class');
 
- Route::get('/get-groupID', [ClassController::class, 'getgroupID'])->name('group.id');
-   Route::get('/teacher/class', [TeacherClassController::class, 'index'])->name('teacher.class');
-   //Teacher Activity API routes
+    Route::get('/get-groupID', [ClassController::class, 'getgroupID'])->name('group.id');
+    Route::get('/teacher/class', [TeacherClassController::class, 'index'])->name('teacher.class');
+    //Teacher Activity API routes
     Route::post('/store-newGroupClass', [TeacherClassController::class, 'newGroupClass']);
     Route::get('/manuscripts/class', [TeacherClassController::class, 'getManuscriptsByClass']);
     // Route for updating manuscript status
@@ -631,4 +630,4 @@ Route::post('/manuscripts/{id}/increment-view', [StudentClassController::class, 
 
 
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';

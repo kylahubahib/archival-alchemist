@@ -9,10 +9,12 @@ import { MdRemoveDone } from "react-icons/md";
 import { adminAccessOptions, handleCheckAll, handleClearAll } from './AccessControl';
 import { showToast } from '@/Components/Toast';
 import Modal from '@/Components/Modal';
-export default function Add({ userType, isOpen, onClose }) {
+
+export default function Add({ routeName = 'users.send-admin-registration', uniBranchId, userType, isOpen, onClose }) {
 
     const { data, setData, post, processing, errors, clearErrors, reset } = useForm({
         user_type: userType,
+        uni_branch_id: uniBranchId,
         name: '',
         email: '',
         access: [],
@@ -49,12 +51,12 @@ export default function Add({ userType, isOpen, onClose }) {
         e.preventDefault();
 
         // The `processing` state will automatically be true during the request
-        post(route('users.send-admin-registration'), {
+        post(route(routeName), {
             onSuccess: () => {
                 setTimeout(() => {
                     showToast('success',
                         <div>
-                            The <strong>{userType === 'institution_admin' ? 'Co-Institution Admin' : 'Co-Super Admin'} registration link</strong>
+                            The <strong>{userType === 'admin' ? 'Co-Institution Admin' : 'Co-Super Admin'} registration link</strong>
                             &nbsp;has been successfully sent to <strong className="underline min-w-28 text-blue-600">{data.email}</strong>!
                         </div>,
                         {
@@ -76,17 +78,17 @@ export default function Add({ userType, isOpen, onClose }) {
             ...prevData,
             user_type: userType, // Make sure to reset the userType as well
             access:
-                userType === "institution_admin"
+                userType === "admin"
                     ? adminAccessOptions.institution_admin.map(option => option.value)
                     : adminAccessOptions.super_admin.map(option => option.value)
         }));
     }
 
     return (
-        <Modal show={isOpen} onClose={onClose} maxWidth={userType === "institution_admin" ? "xl" : "3xl"}>
+        <Modal show={isOpen} onClose={onClose} maxWidth={userType === "admin" ? "xl" : "3xl"}>
             <div className="bg-customBlue p-3">
                 <h2 className="text-xl text-white inline-block font-bold tracking-widest">
-                    {userType === "institution_admin" ? "Add co-institution admin" : "Add co-super admin"}
+                    {userType === "admin" ? "Add co-institution admin" : "Add co-super admin"}
                 </h2>
             </div>
 
@@ -94,7 +96,7 @@ export default function Add({ userType, isOpen, onClose }) {
                 <div className="text-customGray flex gap-9 p-6 overflow-auto tracking-wide">
 
                     {/* Details */}
-                    <div className={`flex-grow 1 flex flex-col ${userType === "institution_admin" ? "w-[50%]" : "w-[35%]"} gap-2`}>
+                    <div className={`flex-grow 1 flex flex-col ${userType === "admin" ? "w-[50%]" : "w-[35%]"} gap-2`}>
                         <div className="pb-2">
                             <label className="font-bold text-md">Details</label>
                             <hr />
@@ -126,7 +128,7 @@ export default function Add({ userType, isOpen, onClose }) {
                     </div>
 
                     {/* Access Control */}
-                    <div className={`flex-grow-2 ${userType === "institution_admin" ? "w-[50%]" : "w-[65%]"} flex flex-col gap-4`}>
+                    <div className={`flex-grow-2 ${userType === "admin" ? "w-[50%]" : "w-[65%]"} flex flex-col gap-4`}>
                         <div className="flex flex-col gap-2">
                             <div className="pb-2">
                                 <label className="font-bold text-md">Access</label>
@@ -138,7 +140,7 @@ export default function Add({ userType, isOpen, onClose }) {
                                         value={data.access}
                                         onChange={(value) => setData('access', value)}
                                     >
-                                        {userType === "institution_admin" ? (
+                                        {userType === "admin" ? (
                                             adminAccessOptions.institution_admin.map((option) => (
                                                 <Checkbox key={option.value} value={option.value}>
                                                     {option.label}
@@ -174,7 +176,7 @@ export default function Add({ userType, isOpen, onClose }) {
                                 radius="sm"
                                 className="p-2"
                                 isDisabled={
-                                    userType === 'institution_admin'
+                                    userType === 'admin'
                                         ? data.access.length === adminAccessOptions.institution_admin.length
                                         : data.access.length === adminAccessOptions.super_admin.length
                                 }

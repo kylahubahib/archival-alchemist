@@ -213,19 +213,21 @@ class UserController extends Controller
         $name = $validatedData['name'];
         $email = $validatedData['email'];
         $access = json_encode($request->input('access')); // Encode the access array to JSON
-        // Log::info("access", $access);
 
         $registrationLink = route('admin.registration-form', ['token' => $token]);
 
-        // Insert the fields into this token table for temporary use
+
         DB::table('admin_registration_tokens')->insert([
             'token' => $token,
+            'uni_branch_id' => $request->input('uni_branch_id') ?? null,
             'name' => $name,
             'email' => $email,
             'user_type' => $userType,
             'access' => $access,
             'expires_at' => Carbon::now()->addDay(),
         ]);
+
+        // Insert the fields into this token table for temporary use
 
         // Send the email
         Mail::to($email)->send(new AdminRegistrationMail($userType, $name, $email, $access, $registrationLink));
@@ -304,7 +306,15 @@ class UserController extends Controller
                     }
                 }
 
-                AccessControl::create($accessControlData);
+                $accessControl = AccessControl::create($accessControlData);
+
+
+                if ($request->input('uni_branch_id')) {
+                    DB::table('access_controls')
+                        ->where('id', $accessControl->id)
+                        ->update(['uni_branch_id' => $request->input('uni_branch_id')]);
+                }
+
 
                 // Mark token as used
                 DB::table('admin_registration_tokens')->where('token', $validatedData['token'])->update(['used' => true]);
@@ -315,7 +325,7 @@ class UserController extends Controller
 
             DB::commit();
 
-            return redirect()->back()->with('message', 'User registered successfully.');
+            return redirect('/login')->with('message', 'User registered successfully.');
         } catch (Exception $e) {
             DB::rollBack();
 

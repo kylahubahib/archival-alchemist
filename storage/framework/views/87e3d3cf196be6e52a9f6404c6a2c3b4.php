@@ -13,7 +13,7 @@
         <p style="margin-top: 0.5rem; line-height: 1.625; color: #718096;">
             We are excited to invite you to join our team as a
             <span style="font-weight: bold;">
-                <?php echo e($userType === 'institution_admin' ? 'Co-Institution Admin' : 'Co-Super Admin'); ?>
+                <?php echo e($userType === 'admin' ? 'Co-Institution Admin' : 'Co-Super Admin'); ?>
 
             </span>
             on <span style="font-weight: bold;">Archival Alchemist</span>.

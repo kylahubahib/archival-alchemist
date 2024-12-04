@@ -19,8 +19,6 @@ export const renderAutocompleteList = (items, onClick = null) => {
     ));
 };
 
-
-
 export default function Filter({ userType, selected, setSelected, autocomplete, setAutocomplete, isFilterOpen }) {
     const [isAutocompleteDataLoading, setIsAutocompleteDataLoading] = useState(false);
     const params = route().params;

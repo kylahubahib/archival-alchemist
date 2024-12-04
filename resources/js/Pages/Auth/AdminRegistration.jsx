@@ -5,8 +5,9 @@ import React, { useState } from 'react';
 import { FaLock, FaEye, FaEyeSlash } from 'react-icons/fa6';
 
 export default function AdminRegistration({ tokenData }) {
-    const { data, setData, post, processing, errors, clearErrors, reset } = useForm({
+    const { data, setData, post, processing, errors } = useForm({
         token: tokenData.token,
+        uni_branch_id: tokenData.uni_branch_id,
         user_type: tokenData.user_type,
         name: tokenData.name,
         email: tokenData.email,

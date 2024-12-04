@@ -7,10 +7,11 @@ import axios from 'axios';
 import Modal from '@/Components/Modal';
 
 export default function SetPlanStatus({ isOpen, onClose, hasStudentPremiumAccess,
-    name, userId, currentPlanName, currentPlanStatus, setStudentsToRender }) {
+    name, userId, currentPlanName, action, setStudentsToRender }) {
+
+    console.log('action', action);
 
     const [isLoading, setIsLoading] = useState(false);
-    const actionText = currentPlanStatus === 'Active' ? 'deactivate' : 'activate';
     const params = route().params;
     console.log('hasStudentPremiumAccess', hasStudentPremiumAccess);
 
@@ -20,13 +21,14 @@ export default function SetPlanStatus({ isOpen, onClose, hasStudentPremiumAccess
         try {
             const response = await axios.patch(route('institution-students.update-plan-status', { ...params, hasStudentPremiumAccess }), {
                 user_id: userId,
+                action: action,
             });
 
             setTimeout(() => {
                 showToast('success',
                     <div>
                         <strong>{name}'s</strong>
-                        &nbsp;{currentPlanName} has been successfully {actionText.concat('d')}!
+                        &nbsp;{currentPlanName} has been successfully {action?.toLowerCase()?.concat('d')}!
                     </div>,
                     {
                         className: 'max-w-sm'
@@ -48,13 +50,13 @@ export default function SetPlanStatus({ isOpen, onClose, hasStudentPremiumAccess
         <Modal show={isOpen} maxWidth="md" onClose={onClose} >
 
             <div className="bg-customBlue p-3 tracking-widest" >
-                <h2 className="text-xl text-white font-bold capitalize t">{actionText}</h2>
+                <h2 className="text-xl text-white font-bold">{action}</h2>
             </div>
 
             <div className="text-customGray p-6 flex flex-col justify-center items-center space-y-5 tracking-wide">
                 <FaCircleExclamation size={80} color='orange' />
                 <p className='text-xl text-center'>
-                    Are you sure you want to {actionText} the <span className="underline">{currentPlanName}</span> for <span className='font-bold'>{name}</span>?
+                    Are you sure you want to {action?.toLowerCase()} the <span className="underline">{currentPlanName}</span> for <span className='font-bold'>{name}</span>?
                 </p>
             </div >
 
@@ -66,7 +68,7 @@ export default function SetPlanStatus({ isOpen, onClose, hasStudentPremiumAccess
                     className="capitalize"
                     onClick={handleSetPlanStatus}
                 >
-                    {isLoading ? `${actionText.slice(0, -1).concat('ing...')}` : 'Yes'}
+                    {isLoading ? `${action?.slice(0, -1)?.concat('ing...')}` : 'Yes'}
                 </Button>
                 <Button
                     color="danger"
