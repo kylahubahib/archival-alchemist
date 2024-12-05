@@ -1,6 +1,5 @@
-
 import React, { useState, useEffect } from "react";
-import { User, Chip, } from "@nextui-org/react";
+import { User, Chip, user, Button, } from "@nextui-org/react";
 import { FaPlus, FaFileCircleCheck, FaFileCircleMinus, FaFileInvoice } from "react-icons/fa6";
 import { HiDocumentCheck, HiDocumentMinus } from "react-icons/hi2";
 import { decodeURLParam, formatDateTime } from "@/Utils/common-utils";
@@ -18,6 +17,7 @@ import NoDataPrompt from "@/Components/Admin/NoDataPrompt";
 import Filter from "./Filter";
 import Add from "./Add";
 import UpdatePlanStatus from "./UpdatePlanStatus";
+import { router } from "@inertiajs/core";
 
 export default function Students({ auth, insAdminAffiliation, students, hasStudentPremiumAccess, search, entries }) {
     console.log('students', students);
@@ -29,6 +29,7 @@ export default function Students({ auth, insAdminAffiliation, students, hasStude
     const [searchTerm, setSearchTerm] = useState(search ? decodeURLParam(search) : '');
     const [currentPlanName, setCurrentPlanName] = useState('');
     const [currentPlanStatus, setCurrentPlanStatus] = useState('');
+    const [action, setAction] = useState(null);
     const [entriesPerPage, setEntriesPerPage] = useState(entries || 10);
     const [totalFilters, setTotalFilters] = useState(null);
     const [isAddStudentModalOpen, setIsAddStudentModalOpen] = useState(false);
@@ -53,7 +54,6 @@ export default function Students({ auth, insAdminAffiliation, students, hasStude
         console.log('insAdminAffiliation', insAdminAffiliation);
     }, []);
 
-
     const filterParams = ['department', 'course', 'plan', 'plan_status', 'date_created'];
     const navigations = [
         { text: 'Premium Access', icon: <HiDocumentCheck />, param: 'with-premium-access' },
@@ -61,9 +61,15 @@ export default function Students({ auth, insAdminAffiliation, students, hasStude
     ];
 
     const tableHeaders = {
-        'with-premium-access': ['Name', 'Student ID', 'Department', 'Course', 'Section', 'Date Created', 'Current Plan', 'Plan Status', 'Action'],
-        'no-premium-access': ['Name', 'Student ID', 'Department', 'Course', 'Section', 'Date Created', 'Current Plan'],
+        'with-premium-access': ['Name', 'Student ID', 'Department', 'Course', 'Section', 'Date Created',],
+        'no-premium-access': ['Name', 'Student ID', 'Department', 'Course', 'Section', 'Date Created',],
     };
+
+
+    // const tableHeaders = {
+    //     'with-premium-access': ['Name', 'Student ID', 'Department', 'Course', 'Section', 'Date Created', 'Action'],
+    //     'no-premium-access': ['Name', 'Student ID', 'Department', 'Course', 'Section', 'Date Created',],
+    // };
 
     // Get the total number of filters from the query parameters that have values
     useEffect(() => {
@@ -80,7 +86,7 @@ export default function Students({ auth, insAdminAffiliation, students, hasStude
         setIsDataLoading(true);
 
         const debounce = setTimeout(() => {
-            fetchSearchFilteredData('institution-students.filter', params, searchTerm,
+            fetchSearchFilteredData('institution-students.filter', { hasStudentPremiumAccess: hasStudentPremiumAccess }, params, searchTerm,
                 setIsDataLoading, setStudentsToRender, setHasFilteredData);
         }, 300);
 
@@ -88,35 +94,42 @@ export default function Students({ auth, insAdminAffiliation, students, hasStude
 
     }, [searchTerm.trim()]);
 
-    const renderActionButtons = (userId, name, currentPlanName, currentPlanStatus) => (
-        <div className="p-2 flex gap-2">
-            {currentPlanStatus && (
-                <ActionButton
-                    icon={currentPlanStatus === 'Active' ? <FaFileCircleMinus /> : <FaFileCircleCheck />}
-                    tooltipContent={currentPlanStatus === 'Active' ? 'Deactivate plan' : 'Activate plan'}
-                    onClick={() =>
-                        handleUpdatePlanStatusModalClick(
-                            userId,
-                            name,
-                            currentPlanName,
-                            currentPlanStatus,
-                        )
-                    }
-                />
-            )}
-        </div>
-    );
+    const renderActionButtons = (userId, name, currentPlanName, currentPlanStatus) => {
+        const actionText = currentPlanStatus.toLowerCase() === 'active' ? "Deactivate" : "Activate";
 
-    const handleUpdatePlanStatusModalClick = (id, name, currentPlanName, currentPlanType, currentPlanStatus) => {
+        return (
+            <div className="p-2 flex gap-2">
+                {currentPlanStatus && (
+                    <ActionButton
+                        icon={currentPlanStatus.toLowerCase() === 'active' ? <FaFileCircleMinus /> : <FaFileCircleCheck />}
+                        tooltipContent={currentPlanStatus === 'Active' ? 'Deactivate plan' : 'Activate plan'}
+                        onClick={() =>
+                            handleUpdatePlanStatusModalClick(
+                                userId,
+                                name,
+                                currentPlanName,
+                                actionText,
+                            )
+                        }
+                    />
+                )}
+            </div>
+        )
+    };
+
+    const handleUpdatePlanStatusModalClick = (id, name, currentPlanName, actionText) => {
         setIsUpdatePlanStatusModalOpen(true);
         setUserId(id);
         setName(name);
         setCurrentPlanName(currentPlanName);
-        setCurrentPlanStatus(currentPlanStatus);
+        setAction(actionText);
     }
 
     const handleClearFiltersClick = () => {
         setSelectedAutocompleteItems({ department: '', course: '', plan: '', currentPlanStatus: '', dateCreated: null })
+    }
+
+    const handleSampleUpdateManuscript = () => {
     }
 
     return (
@@ -127,8 +140,9 @@ export default function Students({ auth, insAdminAffiliation, students, hasStude
             <div className="p-4">
                 <div className="flex">
                     <PageHeader>STUDENTS</PageHeader>
-                    <PageHeader className="ml-auto mr-4 uppercase">{`${university.uni_name} - ${uni_branch_name}`}</PageHeader>
                 </div>
+
+                {/* <Button onClick={ } /> */}
 
                 <div className="mx-auto sm:px-2 lg:px-4">
                     <div className="MainNavContainer flex gap-3 py-4">
@@ -199,25 +213,23 @@ export default function Students({ auth, insAdminAffiliation, students, hasStude
                                                                 }}
                                                             />
                                                         </td>
-                                                        <td className="p-2">{studentId}</td>
+                                                        <td className="p-2">{uni_id_num}</td>
                                                         <td className="p-2">{departmentAcronym ?? 'N/A'}</td>
                                                         <td className="p-2">{courseAcronym ?? 'N/A'}</td>
                                                         <td className="p-2">{sectionName ?? 'N/A'}</td>
                                                         <td className="p-2">{formattedDateCreated}</td>
-                                                        <td className="p-2">
+                                                        {/* <td className="p-2">
                                                             <Chip startContent={<FaFileInvoice size={16} />} size="sm" className="text-customGray h-full p-1 text-wrap flex text-center" variant='faded'>
                                                                 {planName}
                                                             </Chip>
-                                                        </td>
+                                                        </td> */}
+                                                        {/* <td className="p-2">{<StatusChip status={planStatus} />}</td> */}
 
-                                                        {hasStudentPremiumAccess === 'with-premium-access' && (
+                                                        {/* {hasStudentPremiumAccess === 'with-premium-access' && (
                                                             <>
-                                                                <td className="p-2">{<StatusChip status={currentPlanStatus} />}</td>
                                                                 <td className="p-2">{renderActionButtons(id, name, planName, planStatus)}</td>
                                                             </>
-                                                        )
-
-                                                        }
+                                                        )} */}
 
                                                     </tr>
                                                 )
@@ -256,7 +268,7 @@ export default function Students({ auth, insAdminAffiliation, students, hasStude
                 userId={userId}
                 name={name}
                 currentPlanName={currentPlanName}
-                currentPlanStatus={currentPlanStatus}
+                action={action}
                 setStudentsToRender={setStudentsToRender}
                 isOpen={isUpdatePlanStatusModalOpen}
                 onClose={() => setIsUpdatePlanStatusModalOpen(false)}

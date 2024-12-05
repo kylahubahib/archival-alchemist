@@ -28,21 +28,25 @@ const PostDetailModal = ({ isOpen, onClose, post, loggedInUser, onUpdateCommentC
           comment.user?.user_pic ||
           `https://ui-avatars.com/api/?name=${encodeURIComponent(comment.user?.name || 'Anonymous')}&background=random`,
         text: comment.comment?.toString() || '',
-        replies:
-          comment.replies?.map((reply) => ({
-            comId: reply.id.toString(),
-            userId: reply.user?.id || 'unknown',
-            fullName: reply.user?.name || 'Anonymous',
-            avatarUrl:
-              reply.user?.user_pic ||
-              `https://ui-avatars.com/api/?name=${encodeURIComponent(reply.user?.name || 'Anonymous')}&background=random`,
-            text: reply.comment?.toString() || '',
-          })) || [],
+        replies: Array.isArray(comment.replies)
+          ? comment.replies.map((reply) => ({
+              comId: reply.id.toString(),
+              userId: reply.user?.id || 'unknown',
+              fullName: reply.user?.name || 'Anonymous',
+              avatarUrl:
+                reply.user?.user_pic ||
+                `https://ui-avatars.com/api/?name=${encodeURIComponent(reply.user?.name || 'Anonymous')}&background=random`,
+              text: reply.comment?.toString() || '',
+            }))
+          : [], // Ensure replies is always an array
       }));
+
+      setComments(fetchedComments);
+
+      // Notify parent of comment count
       if (onUpdateCommentCount) {
         onUpdateCommentCount(postId, fetchedComments.length);
       }
-      setComments(fetchedComments);
     } catch (error) {
       console.error('Error fetching comments:', error);
     } finally {
@@ -74,8 +78,6 @@ const PostDetailModal = ({ isOpen, onClose, post, loggedInUser, onUpdateCommentC
       alert('Failed to delete comment. Please try again.');
     }
   };
-  
-  
 
 
   const handleEditComment = async (data) => {
@@ -113,15 +115,22 @@ const PostDetailModal = ({ isOpen, onClose, post, loggedInUser, onUpdateCommentC
   };
 
   const handleCommentSubmit = async (newComment) => {
-    // Existing logic to submit a comment
     try {
       const response = await axios.post('/forum-comments', {
         forum_post_id: post.id,
         comment: newComment.text,
       });
-  
-      // Update state with new comment count
-      setComments((prevComments) => [...prevComments, response.data.comment]);
+
+      const newCommentData = {
+        comId: response.data.comment.id.toString(),
+        userId: response.data.comment.user_id,
+        fullName: response.data.comment.user?.name || loggedInUser.name,
+        avatarUrl: response.data.comment.user?.user_pic || loggedInUser.user_pic,
+        text: response.data.comment.comment,
+        replies: [],
+      };
+
+      setComments((prev) => [...prev, newCommentData]);
 
       if (onUpdateCommentCount) {
         onUpdateCommentCount(post.id, comments.length + 1);
@@ -130,6 +139,12 @@ const PostDetailModal = ({ isOpen, onClose, post, loggedInUser, onUpdateCommentC
       console.error('Error adding comment:', error);
     }
   };
+
+  const redirectToLogin = () => {
+    alert('Redirect to login');
+    window.location.href = '/login';
+  }
+
 
   const handleReplySubmit = async (data) => {
     // Existing implementation
@@ -162,6 +177,8 @@ const PostDetailModal = ({ isOpen, onClose, post, loggedInUser, onUpdateCommentC
     </div>
   );
   if (!isOpen || !post) return null;
+
+  
 
   return (
     <div className="inset-0 z-50 flex items-center justify-center">
@@ -210,21 +227,28 @@ const PostDetailModal = ({ isOpen, onClose, post, loggedInUser, onUpdateCommentC
         </div>
 
         <div>
-          <CommentSection
-            currentUser={{
-              currentUserId: loggedInUser?.id || '01a',
-              currentUserImg:
-                loggedInUser?.user_pic || 'https://ui-avatars.com/api/?name=User&background=random',
-              currentUserProfile: 'Current User',
-              currentUserFullName: loggedInUser?.name || 'Current User',
-            }}
-            commentData={comments}
-            onSubmitAction={handleCommentSubmit}
-            onReplyAction={handleReplySubmit}
-            onDeleteAction={handleDeleteComment}
-            onEditAction={handleEditComment}
-            customNoComment={() => <div>No comments yet. Be the first to comment!</div>}
-          />
+          
+        <CommentSection
+  currentUser={loggedInUser?.id ? {
+    currentUserId: loggedInUser?.id || '01a',
+    currentUserImg:
+      loggedInUser?.user_pic || 'https://ui-avatars.com/api/?name=User&background=random',
+    currentUserProfile: 'Current User',
+    currentUserFullName: loggedInUser?.name || 'Current User',
+  } : null}
+  logIn={{
+    onLogin: () => { window.location.href = '/login'; },
+    onSignUp: () => { window.location.href = '/register'; } // Add this to handle sign-up redirection
+  }}
+  commentData={comments}
+  onSubmitAction={handleCommentSubmit}
+  onReplyAction={handleReplySubmit}
+  onDeleteAction={handleDeleteComment}
+  onEditAction={handleEditComment}
+  customNoComment={() => <div>No comments yet. Be the first to comment!</div>}
+/>
+
+
         </div>
       </div>
     </div>

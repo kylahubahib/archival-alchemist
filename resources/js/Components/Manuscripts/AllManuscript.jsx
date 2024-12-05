@@ -14,6 +14,7 @@ import SubscriptionCard from '@/Components/SubscriptionCard';
 import AskUserToLogin from '@/Components/AskUserToLogin';
 import PdfViewer from '@/Components/PdfViewer';
 import ToggleComments from '@/Components/ToggleComments';
+import NavLink from '@/Components/NavLink';
 
 const Manuscript = ({auth, user, choice}) => {
     const [isPdfOpen, setPdfOpen] = useState(false);
@@ -40,13 +41,16 @@ const Manuscript = ({auth, user, choice}) => {
     const [pdfUrl, setPdfUrl] = useState("");
     const [isLoading, setIsLoading] = useState(true); // Track loading state
     const [isPremium, setIsPremium] = useState(null); // State to store premium status
-    const [isLoginModalOpen, setIsLoginModalOpen] = useState(false); // For the login modal
     const [isMaximized, setIsMaximized] = useState(false); // State to track if maximized or not
     const [isSidebarOpen, setIsSidebarOpen] = useState(false); // State to track sidebar visibility
     const [maximizedId, setMaximizedId] = useState(null); // Tracks which manuscript is maximized
     const [manuscriptId, setManuscriptId] = useState(null);
-
-
+    const [isLoginModalOpen, setIsLoginModalOpen] = useState(false); // For the login modal
+    // const closeLoginModal = () => setIsLoginModalOpen(false);
+    const closeLoginModal = () => {
+        console.log("Closing modal...");
+        setIsLoginModalOpen(false);
+      };
   // State to store the message or any relevant data from the backend
   const [viewMessage, setViewMessage] = useState("");
   const [viewCount, setViewCount] = useState(0);
@@ -141,13 +145,6 @@ const Manuscript = ({auth, user, choice}) => {
     }, []);
 
 
-      const openLoginModal = () => {
-        setIsLoginModalOpen(true);
-      };
-
-      const closeLoginModal = () => {
-        setIsLoginModalOpen(false);
-      };
 
       const goToLoginPage = () => {
         // Implement your login redirection logic here
@@ -235,11 +232,6 @@ const Manuscript = ({auth, user, choice}) => {
         window.removeEventListener('message', handleIframeMessage);
       };
     }, []);
-
-    const openLogInModal = () => {
-        setIsLoginModalOpen(true);
-        console.log("Log in MOdal is open");
-    };
 
     const openSubsModal = () => {
         setIsSubsModal(true);
@@ -489,7 +481,7 @@ const Manuscript = ({auth, user, choice}) => {
     //     }
     // }, [isAuthenticated]);
 
-    
+
     // const handleBookmark = async (manuscriptId) => {
     //     if (!user) {
     //         alert('You need to be logged in to bookmark.');
@@ -689,7 +681,7 @@ const handleDropdownChange = (selectedKey) => {
                         )}
                     </div>
             </div>
-                <div className="w-[200px]"> {/* Set dropdown button width to 50px */}
+            <div className="w-[200px] relative z-[0]">{/* Set dropdown button width to 50px */}
                 <Dropdown>
                     <DropdownTrigger className="w-full">
                         <Button variant="bordered" className="capitalize w-full flex justify-between items-center">
@@ -730,23 +722,27 @@ const handleDropdownChange = (selectedKey) => {
 
         {/* Display this if user is not authenticated */}
         {!isAuthenticated && (
-        <div className="flex flex-col h-full w-full items-center justify-center text-center text-gray-800 text-xxxs p-2 bg-white border-2 mb-1 leading-tight">
-            <div>{manuscript.man_doc_title}</div>
-            <p className="block pt-12">By:</p>
-            <p className="block">
-            {manuscript.authors?.length > 0 ? (
-                <div>
-                {manuscript.authors.map((author, index) => (
-                    <p key={index} className="text-xxxs text-gray-800 mb-1 leading-tight">{author.name}</p>
-                ))}
-                </div>
-            ) : (
-                <p>Unknown Authors</p>
-            )}
-            </p>
-            <p className="block pt-5">{new Date(manuscript.updated_at).getFullYear()}</p>
-        </div>
+            <div
+                className="flex flex-col h-full w-full items-center justify-center text-center text-gray-800 text-xxxs p-2 bg-white border-2 mb-1 leading-tight"
+                onClick={() => setIsLoginModalOpen(true)} // Add onClick here
+            >
+                <div>{manuscript.man_doc_title}</div>
+                <p className="block pt-12">By:</p>
+                <p className="block">
+                    {manuscript.authors?.length > 0 ? (
+                        <div>
+                            {manuscript.authors.map((author, index) => (
+                                <p key={index} className="text-xxxs text-gray-800 mb-1 leading-tight">{author.name}</p>
+                            ))}
+                        </div>
+                    ) : (
+                        <p>Unknown Authors</p>
+                    )}
+                </p>
+                <p className="block pt-5">{new Date(manuscript.updated_at).getFullYear()}</p>
+            </div>
         )}
+
 
 
         {isPremium ? (
@@ -796,6 +792,7 @@ const handleDropdownChange = (selectedKey) => {
             <p className="block pt-5">{new Date(manuscript.updated_at).getFullYear()}</p>
         </div>
                    ):null}
+                   <div>
 
                     {/* Modal for non-premium authenticated users */}
                    {isModalOpen &&  (
@@ -845,114 +842,190 @@ const handleDropdownChange = (selectedKey) => {
                                  </div>
                              </div>
                          </Modal>
-                   )}
+                   )}</div>
 
                    {/* Modal for non-authenticated users */}
-                   { isLoginModalOpen && !isAuthenticated &&(
-                     <Modal
-                       show={isLoginModalOpen}
-                       onClose={closeLoginModal}
-                     >
-                <AskUserToLogin />
-                     </Modal>
-                   )}
+                   {isLoginModalOpen && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+  <div
+    className="bg-gray-800 text-white rounded-lg w-[45%] p-6 relative"
+    id="pricing"
+  >
+            {/* Close Button */}
+            <button
+              onClick={closeLoginModal}
+              className="absolute top-2 right-5 text-gray-400 hover:text-white text-3xl"
+            >
+              &#x2715; {/* Close Icon */}
+            </button>
+
+            {/* Modal Content */}
+      {/* Background Blurs */}
+      <div
+        aria-hidden="true"
+        className="absolute w-full h-full inset-0 m-0 opacity-5"
+      >
+        <div className="blur-[70px] h-32 bg-gradient-to-r from-cyan-400 to-indigo-600"></div>
+      </div>
+
+      {/* Main Content */}
+      <div className="w-full h-full sm:flex-row gap-4">
+        <div className="flex flex-col items-center aspect-auto sm:p-8 mx-10 bg-gray-800 border-gray-700 flex-1">
+          {/* Icon Circle Above */}
+          <div className="flex justify-center items-center w-16 h-16 bg-white-600 rounded-full mb-4">
+          <h2 className="text-3xl font-serif text-white mb-4 text-shadow-lg tracking-widest uppercase">
+            Archival
+          </h2> {/* <FaStar className="text-white text-2xl" /> */}
+            <img
+    src='/images/sad-owl.png'
+    alt="PDF Thumbnail"
+  />  <h2 className="text-3xl font-serif text-white mb-4 text-shadow-lg tracking-widest uppercase">
+  Alchemist
+</h2>
+<div className="w-full h-[1px] bg-gray-500 mb-6"></div>
+          </div>
+
+          <h2 className="text-lg sm:text-xl font-medium text-white mb-2">Oooops!</h2>
+          <p className="text-lg sm:text-xl text-center mb-6 mt-4">
+            <span className="text-1xl sm:text-2xl font-bold text-white">Authentication Required</span>
+          </p>
+          <p className="text-center mb-6">
+          Action cannot be completed at this time. Please log in first to proceed.
+          </p>
+
+          {/* Underline (Thin Horizontal Line) */}
+          <div className="w-full h-[1px] bg-gray-500 mb-6"></div>
+
+          <NavLink
+            href={route('login')}
+            className="relative flex h-9 w-full items-center justify-center px-4 before:absolute before:inset-0 before:rounded-full before:bg-white before:transition before:duration-300 hover:before:scale-105 active:duration-75 active:before:scale-95 sm:w-max"
+            active={route().current('login')}
+          >
+            <span className="relative text-sm font-semibold text-black hover:bg:blue-500">
+              Sign In Now!
+            </span>
+          </NavLink>
+
+
+      </div>
+    </div>
+
+          </div>
+        </div>
+      )}
              </div>
 
 
 
-<div className="flex-1 p-4">
-        <div>
-             {isPremium ? (
-                // If the user is premium, show the link directly
-                <h2 className="text-base font-bold text-gray-900">
-                <a
-                  onClick={() => handleClick(manuscript.id)} // Trigger the increment logic before opening the link
-                    href={`http://127.0.0.1:8000/${manuscript.man_doc_content}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-gray-700 hover:text-blue-600 hover:underline cursor-pointer transition-all duration-300 ease-in-out"
-                >
-                    {manuscript.man_doc_title}
-                </a>
-            </h2>
-            ) : (
-                // If the user is not premium, open modal on click (only for non-premium users)
-                <h2 className="text-base font-bold text-gray-900">
+             <div className="flex-1 p-4">
+    <div>
+        {isPremium ? (
+            // If the user is premium, check if authenticated
+            <h2 className="text-base font-bold text-gray-900">
+                {isAuthenticated ? (
+                    <a
+                        onClick={() => handleClick(manuscript.id)} // Trigger the increment logic before opening the link
+                        href={`http://127.0.0.1:8000/${manuscript.man_doc_content}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-gray-700 hover:text-blue-600 hover:underline cursor-pointer transition-all duration-300 ease-in-out"
+                    >
+                        {manuscript.man_doc_title}
+                    </a>
+                ) : (
                     <span
-                        onClick={() => openModal(manuscript)} // Open modal when clicked
+                    onClick={() => setIsLoginModalOpen(true)} // Open login modal if unauthenticated
                         className="text-gray-700 hover:text-blue-600 hover:underline cursor-pointer transition-all duration-300 ease-in-out"
                     >
                         {manuscript.man_doc_title}
                     </span>
-                </h2>
-            )}
+                )}
+            </h2>
+        ) : (
+            // If the user is not premium
+            <h2 className="text-base font-bold text-gray-900">
+                <span
+                    onClick={() =>
+                        isAuthenticated ? openModal(manuscript) : setIsLoginModalOpen(true)
+                    } // Open modal for authenticated users, login modal otherwise
+                    className="text-gray-700 hover:text-blue-600 hover:underline cursor-pointer transition-all duration-300 ease-in-out"
+                >
+                    {manuscript.man_doc_title}
+                </span>
+            </h2>
+        )}
 
-            {/* Show modal for non-premium users */}
-            {ismodalOpen && (
-                 <Modal
-                 show={ismodalOpen}
-                 onClose={closeModal}
-                 maxWidth="50%" // Percentage-based for responsiveness
-                 maxHeight="80vh" // Set max height relative to viewport
-                 className="relative overflow-hidden rounded-lg shadow-2xl"
-             >
-                 {/* Modal Overlay with smooth fade */}
-                 <div
-                     className="absolute inset-0 bg-black opacity-60"
-                     onClick={closeModal}
-                 ></div>
+        {/* Show modal for non-premium users */}
+        {ismodalOpen && (
+            <Modal
+                show={ismodalOpen}
+                onClose={closeModal}
+                maxWidth="50%" // Percentage-based for responsiveness
+                maxHeight="80vh" // Set max height relative to viewport
+                className="relative overflow-hidden rounded-lg shadow-2xl"
+            >
+                {/* Modal Overlay with smooth fade */}
+                <div
+                    className="absolute inset-0 bg-black opacity-60"
+                    onClick={closeModal}
+                ></div>
 
-                 {/* Modal Content */}
-                 <div className="relative p-6 bg-white rounded-lg z-10 overflow-hidden shadow-xl">
-                     {/* Close Button */}
-                     <button
-                         onClick={closeModal}
-                         className="absolute top-4 right-4 text-white bg-gray-800 hover:bg-gray-700 rounded-full p-2 focus:outline-none z-20"
-                         style={{ fontSize: '1.5rem' }}
-                     >
-                         <span className="font-bold">&times;</span>
-                     </button>
+                {/* Modal Content */}
+                <div className="relative p-6 bg-white rounded-lg z-10 overflow-hidden shadow-xl">
+                    {/* Close Button */}
+                    <button
+                        onClick={closeModal}
+                        className="absolute top-4 right-4 text-white bg-gray-800 hover:bg-gray-700 rounded-full p-2 focus:outline-none z-20"
+                        style={{ fontSize: '1.5rem' }}
+                    >
+                        <span className="font-bold">&times;</span>
+                    </button>
 
-                     {/* PDF Viewer Container */}
-                     <div className="relative h-[80vh] w-full bg-gray-200 shadow-2xl rounded-lg overflow-hidden">
-                         <div
-                             className={`relative w-full h-full overflow-hidden rounded-lg ${pageCount > 10 ? 'blur-sm' : ''}`}
-                         >
-                             {isLoading && (
-                                 <div className="absolute inset-0 flex justify-center items-center">
-                                     <div className="w-16 h-16 border-t-4 border-blue-600 border-solid rounded-full animate-spin"></div>
-                                 </div>
-                             )}
-                             <iframe
-                                 src={`http://127.0.0.1:8000/pdfViewer.html?pdfUrl=http://127.0.0.1:8000/${selectedManuscript}`}
-                                 className="w-full h-full border-0 rounded-lg shadow-md"
-                                 title="PDF Viewer"
-                                 onLoad={handlePdfLoad}
-                             ></iframe>
-                         </div>
+                    {/* PDF Viewer Container */}
+                    <div className="relative h-[80vh] w-full bg-gray-200 shadow-2xl rounded-lg overflow-hidden">
+                        <div
+                            className={`relative w-full h-full overflow-hidden rounded-lg ${
+                                pageCount > 10 ? 'blur-sm' : ''
+                            }`}
+                        >
+                            {isLoading && (
+                                <div className="absolute inset-0 flex justify-center items-center">
+                                    <div className="w-16 h-16 border-t-4 border-blue-600 border-solid rounded-full animate-spin"></div>
+                                </div>
+                            )}
+                            <iframe
+                                src={`http://127.0.0.1:8000/pdfViewer.html?pdfUrl=http://127.0.0.1:8000/${selectedManuscript}`}
+                                className="w-full h-full border-0 rounded-lg shadow-md"
+                                title="PDF Viewer"
+                                onLoad={handlePdfLoad}
+                            ></iframe>
+                        </div>
 
-                         {/* Message when page count exceeds 10 */}
-                         {pageCount > 10 && (
-                             <div className="absolute inset-0 flex justify-center items-center bg-black bg-opacity-50 text-white font-semibold text-xl p-6 rounded-lg shadow-lg max-w-lg mx-auto">
-                                 <div className="text-center">
-                                     <h2 className="text-2xl mb-4 font-extrabold">You've Reached the Page Limit</h2>
-                                     <p className="text-lg mb-6">
-                                         To access the full document, please subscribe to unlock more pages.
-                                     </p>
-                                     <button
-                                         onClick={() => alert('Redirecting to subscription page...')}
-                                         className="bg-blue-600 hover:bg-blue-700 text-white py-3 px-8 rounded-lg shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-100"
-                                     >
-                                         Subscribe Now
-                                     </button>
-                                 </div>
-                             </div>
-                         )}
-                     </div>
-                 </div>
-             </Modal>
-            )}
-        </div>
+                        {/* Message when page count exceeds 10 */}
+                        {pageCount > 10 && (
+                            <div className="absolute inset-0 flex justify-center items-center bg-black bg-opacity-50 text-white font-semibold text-xl p-6 rounded-lg shadow-lg max-w-lg mx-auto">
+                                <div className="text-center">
+                                    <h2 className="text-2xl mb-4 font-extrabold">You've Reached the Page Limit</h2>
+                                    <p className="text-lg mb-6">
+                                        To access the full document, please subscribe to unlock more pages.
+                                    </p>
+                                    <button
+                                        onClick={() =>
+                                            alert('Redirecting to subscription page...')
+                                        }
+                                        className="bg-blue-600 hover:bg-blue-700 text-white py-3 px-8 rounded-lg shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-100"
+                                    >
+                                        Subscribe Now
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </Modal>
+        )}
+    </div>
+
 
 
                 {/* <p className="text-gray-700 mt-1">Author: {user.name}</p> */}
@@ -987,112 +1060,83 @@ const handleDropdownChange = (selectedKey) => {
 
 
                 <div className="mt-4 flex items-center gap-4">
-                <Tooltip content="Views">
-        <button className={`text-gray-600 hover:text-blue-500 ${manuscript.man_doc_content ? 'text-blue-500' : ''} flex items-center`}>
-            <FaEye size={20} />
-            <span className="ml-2">{manuscript.man_doc_view_count}</span> {/* Adjusted margin to 2 for better spacing */}
-        </button>
-    </Tooltip>
-
-
-
-<div
-                    key={manuscript.id}
-                    className="flex items-center text-blue-500 hover:text-blue-700 cursor-pointer"
-                    onClick={() => {
-                        if (!isAuthenticated) {
-                            // Show the login modal if the user is not authenticated
-                            openLogInModal();
-                        } else if (!isPremium) {
-                            // Show the subscription modal if the user is not premium
-                            openSubsModal();
-                        } else {
-                            // Proceed with the bookmark action if the user is premium and authenticated
-                            handleComments(manuscript.id, manuscript.man_doc_title)
-                        }
-                    }}
-                >
-                    <FaComment size={20} />
-                    </div>
+                    <Tooltip content="Views">
+                        <button className={`text-gray-600 hover:text-blue-500 ${manuscript.man_doc_content ? 'text-blue-500' : ''} flex items-center`}>
+                            <FaEye size={20} />
+                            <span className="ml-2">{manuscript.man_doc_view_count}</span> {/* Adjusted margin to 2 for better spacing */}
+                        </button>
+                    </Tooltip>
+                        <div
+                            key={manuscript.id}
+                            className="flex items-center text-blue-500 hover:text-blue-700 cursor-pointer"
+                            onClick={() => {
+                                if (!isAuthenticated) {
+                                    // Show the login modal if the user is not authenticated
+                                    setIsLoginModalOpen(true)
+                                } else if (!isPremium) {
+                                    // Show the subscription modal if the user is not premium
+                                    openSubsModal();
+                                } else {
+                                    // Proceed with the bookmark action if the user is premium and authenticated
+                                    handleComments(manuscript.id, manuscript.man_doc_title)
+                                }
+                            }}> <FaComment size={20} />
+                        </div>
 
 
                     <Tooltip content="Bookmark">
-                    <button
-                        className="text-gray-600 hover:text-blue-500"
-                        onClick={() => {
+                        <button
+                            className="text-gray-600 hover:text-blue-500"
+                            onClick={() => {
+                                if (!isAuthenticated) {
+                                    // Show the login modal if the user is not authenticated
+                                    setIsLoginModalOpen(true)
+                                } else if (!isPremium) {
+                                    // Show the subscription modal if the user is not premium
+                                    openSubsModal();
+                                } else {
+                                    // Proceed with the bookmark action if the user is premium and authenticated
+                                    handleBookmark(manuscript.id);
+                                }
+                            }}>
+                            <FaBookmark size={20} />
+                        </button>
+                    </Tooltip>
+
+
+                    {/* Render ToggleComments only if a manuscript is selected and the sidebar is open */}
+                    {selectedManuscript && (
+                        <ToggleComments
+                        auth={auth}
+                            manuscripts={selectedManuscript}  // Pass the selected manuscript to ToggleComments
+                            man_id={selectedManuscript.id}  // Pass additional properties if needed
+                            man_doc_title={selectedManuscript.title}
+                            isOpen={isSidebarOpen}
+                            toggleSidebar={() => setIsSidebarOpen((prevState) => !prevState)} // Toggle the sidebar
+                        />
+                    )}
+
+
+                    <Tooltip content="Download">
+                        <button
+                            className="text-gray-600 hover:text-blue-500"
+                            onClick={() => {
                             if (!isAuthenticated) {
                                 // Show the login modal if the user is not authenticated
-                                openLogInModal();
+                                setIsLoginModalOpen(true)
                             } else if (!isPremium) {
                                 // Show the subscription modal if the user is not premium
                                 openSubsModal();
+
                             } else {
-                                // Proceed with the bookmark action if the user is premium and authenticated
-                                handleBookmark(manuscript.id);
+                                // Proceed with the download if the user is premium and authenticated
+                                handleDownload(manuscript.id, manuscript.man_doc_title);
                             }
-                        }}
-                    >
-                        <FaBookmark size={20} />
-                    </button>
-                </Tooltip>
-
-
-                {/* Render ToggleComments only if a manuscript is selected and the sidebar is open */}
-                {selectedManuscript && (
-                    <ToggleComments
-                    auth={auth}
-                        manuscripts={selectedManuscript}  // Pass the selected manuscript to ToggleComments
-                        man_id={selectedManuscript.id}  // Pass additional properties if needed
-                        man_doc_title={selectedManuscript.title}
-                        isOpen={isSidebarOpen}
-                        toggleSidebar={() => setIsSidebarOpen((prevState) => !prevState)} // Toggle the sidebar
-                    />
-                )}
-
-
-
-{/*
-                <Tooltip content="Bookmark">
-                    <button
-                        className="text-gray-600 hover:text-blue-500"
-                        onClick={() => {
-                            if (!isAuthenticated) {
-                                // Show the login modal if the user is not authenticated
-                                openLogInModal();
-                            } else if (!isPremium) {
-                                // Show the subscription modal if the user is not premium
-                                openSubsModal();
-                            } else {
-                                // Proceed with the bookmark action if the user is premium and authenticated
-                                handleBookmark(manuscript.id);
-                            }
-                        }}
-                    >
-                        <FaBookmark size={20} />
-                    </button>
-                </Tooltip> */}
-
-
-                <Tooltip content="Download">
-                    <button
-                        className="text-gray-600 hover:text-blue-500"
-                        onClick={() => {
-                        if (!isAuthenticated) {
-                            // Show the login modal if the user is not authenticated
-                            openLogInModal();
-                        } else if (!isPremium) {
-                            // Show the subscription modal if the user is not premium
-                            openSubsModal();
-
-                        } else {
-                            // Proceed with the download if the user is premium and authenticated
-                            handleDownload(manuscript.id, manuscript.man_doc_title);
-                        }
-                        }}
-                    >
-                        <FaFileDownload size={20} />
-                    </button>
-                </Tooltip>
+                            }}
+                        >
+                            <FaFileDownload size={20} />
+                        </button>
+                    </Tooltip>
 
                 {/* Modal for Non-Premium Users */}
                 {isSubsModal && (
@@ -1102,10 +1146,10 @@ const handleDropdownChange = (selectedKey) => {
                 )}
 
                 {/* Modal for Non-Authenticated Users */}
-                {isLoginModalOpen && !isAuthenticated && (
+                {/* {isLoginModalOpen && !isAuthenticated && (
                     <Modal show={isLoginModalOpen} onClose={closeLoginModal}>
                     </Modal>
-                )}
+                )} */}
 
 
 
@@ -1141,7 +1185,7 @@ const handleDropdownChange = (selectedKey) => {
                         onClick={() => {
                             if (!isAuthenticated) {
                                 // Show the login modal if the user is not authenticated
-                                openLogInModal();
+                                setIsLoginModalOpen(true)
                             } else if (!isPremium) {
                                 // Show the subscription modal if the user is not premium
                                 openSubsModal();
@@ -1171,7 +1215,7 @@ const handleDropdownChange = (selectedKey) => {
                         onClick={() => {
                             if (!isAuthenticated) {
                                 // Show the login modal if the user is not authenticated
-                                openLogInModal();
+                                setIsLoginModalOpen(true)
                             } else if (!isPremium) {
                                 // Show the subscription modal if the user is not premium
                                 openSubsModal();

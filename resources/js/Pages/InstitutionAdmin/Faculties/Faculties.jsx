@@ -1,364 +1,232 @@
-
+ 
 import React, { useState, useEffect } from "react";
-import { motion, AnimatePresence } from 'framer-motion';
-import { GoDotFill } from "react-icons/go";
-import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, Button, User, Skeleton, Chip, Tooltip } from "@nextui-org/react";
-import { FaHandsHolding, FaPlus, FaRegCircleDot, FaTableList, FaFileCircleCheck, FaFileCircleMinus, FaEye, FaUser, FaFileInvoice, FaCircleXmark, FaXmark, FaFilterCircleXmark, } from "react-icons/fa6";
-import { FaChevronDown, FaFilter, FaHandHolding, FaHands } from "react-icons/fa";
+import { User, Chip, user, } from "@nextui-org/react";
+import { FaPlus, FaFileCircleCheck, FaFileCircleMinus, FaFileInvoice } from "react-icons/fa6";
+import { HiDocumentCheck, HiDocumentMinus } from "react-icons/hi2";
+import { decodeURLParam, formatDateTime } from "@/Utils/common-utils";
+import { renderTableControls, renderTableHeaders } from "@/Pages/SuperAdmin/Users/Users";
+import { fetchSearchFilteredData, getTotalFilters, handleSetEntriesPerPageClick } from "@/Utils/admin-utils";
 import PageHeader from '@/Components/Admin/PageHeader';
 import AdminLayout from '@/Layouts/AdminLayout';
-import SearchBar from "@/Components/Admin/SearchBar";
 import MainNav from "@/Components/MainNav";
-import { HiDocumentCheck, HiDocumentMinus } from "react-icons/hi2";
 import AddButton from "@/Components/Admin/AddButton";
-import { format } from "date-fns";
-import { MdOutlineMoneyOff } from "react-icons/md";
-import axios from "axios";
-import SetPlanStatus from "./SetPlanStatus";
 import ActionButton from "@/Components/Admin/ActionButton";
 import Pagination from "@/Components/Admin/Pagination";
-import { encodeURLParam, updateURLParams } from '@/Utils/admin-utils';
-// import NoDataPrompt from "@/Components/Admin/NoDataPrompt";
-import Filter from "./Filter";
-import { Link, router } from "@inertiajs/react";
-import autoprefixer from "autoprefixer";
-// import NoResultsFound from "@/Components/Admins/NoResultsFound";
-import Add from "./Add";
-// import FileUpload from "@/Components/FileUpload";
 import TableSkeleton from "@/Components/Admin/TableSkeleton";
 import StatusChip from "@/Components/Admin/StatusChip";
+import NoDataPrompt from "@/Components/Admin/NoDataPrompt";
+import Filter from "./Filter";
+import Add from "./Add";
+import UpdatePlanStatus from "./UpdatePlanStatus";
 
-export default function Faculties({ auth, insAdminAffiliation, retrievedFaculties, hasFacultyPremiumAccess, retrievedSearchName, retrievedEntriesPerPage }) {
-
-    const [facultiesToRender, setFacultiesToRender] = useState(retrievedFaculties);
+export default function Faculties({ auth, insAdminAffiliation, faculties, hasFacultyPremiumAccess, search, entries }) {
+    console.log('faculties', faculties);
+    const [facultiesToRender, setFacultiesToRender] = useState(faculties);
     const [userId, setUserId] = useState(null);
-    const [isLoading, setIsLoading] = useState(false);
+    const [isDataLoading, setIsDataLoading] = useState(false);
+    const [hasFilteredData, setHasFilteredData] = useState(false);
     const [name, setName] = useState('');
-    const [search, setSearch] = useState(retrievedSearchName ? decodeURIComponent(retrievedSearchName) : '');
-    const [currentPlan, setCurrentPlan] = useState('');
+    const [searchTerm, setSearchTerm] = useState(search ? decodeURLParam(search) : '');
+    const [currentPlanName, setCurrentPlanName] = useState('');
     const [currentPlanStatus, setCurrentPlanStatus] = useState('');
-    const [entriesPerPage, setEntriesPerPage] = useState(retrievedEntriesPerPage ?? 10);
+    const [action, setAction] = useState(null);
+    const [entriesPerPage, setEntriesPerPage] = useState(entries || 10);
     const [totalFilters, setTotalFilters] = useState(null);
     const [isAddStudentModalOpen, setIsAddStudentModalOpen] = useState(false);
-    const [isSetPlanStatusModalOpen, setIsSetPlanStatusModalOpen] = useState(false);
-    const [isFilterOpen, setIsFilterOpen] = useState(() => {
-        return localStorage.getItem('filterOpen') === 'true';
-    });
+    const [isUpdatePlanStatusModalOpen, setIsUpdatePlanStatusModalOpen] = useState(false);
+    const [isFilterOpen, setIsFilterOpen] = useState(false);
+
 
     // State variables to be passed to the Filter component
-    const [autocomplete, setAutocomplete] = useState({
+    const [autocompleteItems, setAutocompleteItems] = useState({
         department: [], plan: [], planStatus: []
     });
-    const [selected, setSelected] = useState({
+    const [selectedAutocompleteItems, setSelectedAutocompleteItems] = useState({
         department: '', plan: null, planStatus: null, dateCreated: { start: null, end: null, }
     });
 
     const [{ university, uni_branch_name }] = insAdminAffiliation;
     const params = route().params;
 
+    console.log('params', params);
+
+    useEffect(() => {
+        console.log('hasFilteredData', hasFilteredData);
+
+    }, [hasFilteredData]);
+
+    useEffect(() => {
+        console.log('insAdminAffiliation', insAdminAffiliation);
+    }, []);
+
     const filterParams = ['department', 'course', 'plan', 'plan_status', 'date_created'];
-    const facultiesNavigation = [
-        { text: 'Premium Access', icon: <HiDocumentCheck />, routeParam: 'with-premium-access' },
-        { text: 'No Premium Access', icon: <HiDocumentMinus />, routeParam: 'no-premium-access' },
+    const navigations = [
+        { text: 'Premium Access', icon: <HiDocumentCheck />, param: 'with-premium-access' },
+        { text: 'No Premium Access', icon: <HiDocumentMinus />, param: 'no-premium-access' },
     ];
-    const facultyTableHeaders = {
-        'with-premium-access': ['Name', 'Faculty ID', 'Department', 'Position', 'Date Created', 'Current Plan', 'Plan Status', 'Action'],
-        'no-premium-access': ['Name', 'Faculty ID', 'Department', 'Position', 'Date Created', 'Current Plan'],
+
+    const tableHeaders = {
+        'with-premium-access': ['Name', 'Faculty ID', 'Department', 'Course', 'Section', 'Date Created'],
+        'no-premium-access': ['Name', 'Faculty ID', 'Department', 'Course', 'Section', 'Date Created'],
     };
+    // const tableHeaders = {
+    //     'with-premium-access': ['Name', 'Faculty ID', 'Department', 'Course', 'Section', 'Date Created', 'Plan Status', 'Action'],
+    //     'no-premium-access': ['Name', 'Faculty ID', 'Date Created'],
+    // };
 
+    // Get the total number of filters from the query parameters that have values
     useEffect(() => {
-        localStorage.setItem('filterOpen', isFilterOpen);
-    }, [isFilterOpen]);
-
-    // Get the total filters
-    useEffect(() => {
-        let count = 0;
-
-        filterParams.filter(param => param in params)
-            .forEach(_ => count++)
-
-        setTotalFilters(count);
+        setTotalFilters(getTotalFilters(params, filterParams));
     }, [params])
 
-    // For inertia responses
+    // For inertia responses, it updates automatically when the page is refreshed
     useEffect(() => {
-        setFacultiesToRender(retrievedFaculties);
-    }, [retrievedFaculties])
+        setFacultiesToRender(faculties);
+    }, [faculties])
 
-    // For json responses
+    // For responses that receive JSON, like search filters
     useEffect(() => {
-        setIsLoading(true);
-
-        // Remove the search parameter if there is no search input
-        if (search.trim() === '') {
-            setIsLoading(false);
-            updateURLParams('search', null);
-            router.reload({ preserveState: true, preserveScroll: true })
-            return;
-        }
+        setIsDataLoading(true);
 
         const debounce = setTimeout(() => {
-            updateURLParams('search', encodeURLParam(search));
-            updateURLParams('page', null);
-            handleSearchFilter();
-
+            fetchSearchFilteredData('institution-faculties.filter', { hasFacultyPremiumAccess: hasFacultyPremiumAccess }, params, searchTerm,
+                setIsDataLoading, setFacultiesToRender, setHasFilteredData);
         }, 300);
 
         return () => clearTimeout(debounce);
 
-    }, [search.trim()]);
+    }, [searchTerm.trim()]);
 
-    const handleSearchFilter = async () => {
-        setIsLoading(true);
+    const renderActionButtons = (userId, name, currentPlanName, currentPlanStatus) => {
+        const actionText = currentPlanStatus.toLowerCase() === 'active' ? "Deactivate" : "Activate";
 
-        try {
-            const response = await axios.get(route('institution-faculties.filter', { hasFacultyPremiumAccess }), {
-                params: {
-                    search: search.trim(),
-                    // Include entries param to retain the current entries state upon page reload.
-                    entries: params.entries,
-                },
-            });
-            setFacultiesToRender(response.data);
-            // // Remove the page parameter whenever search changes
-            updateURLParams('page', null);
-
-        } catch (error) {
-            console.error("Error fetching students:", error);
-        }
-        finally {
-            setIsLoading(false);
-        }
+        return (
+            <div className="p-2 flex gap-2">
+                {currentPlanStatus && (
+                    <ActionButton
+                        icon={currentPlanStatus.toLowerCase() === 'active' ? <FaFileCircleMinus /> : <FaFileCircleCheck />}
+                        tooltipContent={currentPlanStatus === 'Active' ? 'Deactivate plan' : 'Activate plan'}
+                        onClick={() =>
+                            handleUpdatePlanStatusModalClick(
+                                userId,
+                                name,
+                                currentPlanName,
+                                actionText,
+                            )
+                        }
+                    />
+                )}
+            </div>
+        )
     };
 
-    const handleSetEntriesPerPage = async (entries) => {
-        setEntriesPerPage(entries);
-
-        try {
-            const response = await axios.get(route('institution-faculties.filter', { hasFacultyPremiumAccess }), {
-                params: {
-                    entries: entries,
-                    search: params.search,
-                }
-            });
-            setFacultiesToRender(response.data);
-            updateURLParams('entries', entries);
-            updateURLParams('page', null);
-
-        } catch (error) {
-            console.error("Error fetching entries:", error);
-        }
-    };
-
-    const handleSetStatusModal = (id, name, currentPlan, planStatus) => {
-        setIsSetPlanStatusModalOpen(true);
+    const handleUpdatePlanStatusModalClick = (id, name, currentPlanName, actionText) => {
+        setIsUpdatePlanStatusModalOpen(true);
         setUserId(id);
         setName(name);
-        setCurrentPlan(currentPlan);
-        setCurrentPlanStatus(planStatus);
+        setCurrentPlanName(currentPlanName);
+        setAction(actionText);
     }
 
-    const handleClearFilters = () => {
-        setSelected({ department: '', course: '', plan: null, planStatus: null, dateCreated: null })
+    const handleClearFiltersClick = () => {
+        setSelectedAutocompleteItems({ department: '', course: '', plan: '', currentPlanStatus: '', dateCreated: null })
     }
 
     return (
         <AdminLayout
             user={auth.user}
+            university={`${university.uni_name} - ${uni_branch_name}`}
         >
             <div className="p-4">
                 <div className="flex">
                     <PageHeader>FACULTIES</PageHeader>
-                    <PageHeader className="ml-auto mr-4 uppercase">{`${university.uni_name} - ${uni_branch_name}`}</PageHeader>
                 </div>
 
                 <div className="mx-auto sm:px-2 lg:px-4">
-                    {/* Main Filter Navigation */}
                     <div className="MainNavContainer flex gap-3 py-4">
-                        {facultiesNavigation.map(nav => (
+                        {navigations.map(nav => (
                             <MainNav
                                 key={nav.text}
                                 icon={nav.icon}
-                                href={route('institution-faculties.filter', { ...params, hasFacultyPremiumAccess: nav.routeParam })}
+                                href={route('institution-faculties.filter', { ...params, hasFacultyPremiumAccess: nav.param })}
                                 active={
-                                    (route().current('institution-faculties') && nav.routeParam === 'with-premium-access')
-                                    || route().current('institution-faculties.filter', nav.routeParam)
-                                }
-                            >
+                                    (route().current('institution-faculties') && nav.param === 'with-premium-access')
+                                    || route().current('institution-faculties.filter', nav.param)
+                                }>
                                 {nav.text}
                             </MainNav>))
+
                         }
                         <AddButton onClick={() => setIsAddStudentModalOpen(true)} icon={<FaPlus />}>
                             Add Faculty
                         </AddButton>
                     </div>
 
-                    <div className="bg-white flex flex-col gap-4 relative shadow-md sm:rounded-lg overflow-hidden p-4">
-                        {/* Table Controls */}
-                        <div className="flex flex-col gap-3 min-[480px]:flex-row md:gap-20 w-full">
-                            <SearchBar
-                                name='search'
-                                value={search}
-                                variant="bordered"
-                                onChange={(e) => setSearch(e.target.value)}
-                                placeholder="Search by name, faculty id..."
-                                className="min-w-sm flex-1"
-                            />
+                    <div className="bg-white flex flex-col gap-4 h-[68dvh] relative shadow-md sm:rounded-lg overflow-hidden p-4">
 
-                            <div className="flex w-full flex-1 gap-2 ml-auto min-h-[35px]">
-                                {/* Filter */}
-                                <div className="flex flex-1 gap-1 justify-end">
-                                    {/* Clear filters */}
-                                    <AnimatePresence>
-                                        {totalFilters > 0 && (
-                                            <motion.div
-                                                key="close-button" // Ensure a unique key for AnimatePresence to track
-                                                initial={{ opacity: 0, scale: 0.8 }}
-                                                animate={{ opacity: 1, scale: 1 }}
-                                                exit={{ opacity: 0, scale: 0.8 }} // Exit animation when it disappears
-                                                transition={{ duration: 0.3 }}
-                                            >
-                                                <Tooltip
-                                                    color="danger"
-                                                    size="sm"
-                                                    closeDelay={180}
-                                                    content="Clear filters"
-                                                >
-                                                    <Button
-                                                        preserveScroll
-                                                        preserveState
-                                                        isIconOnly
-                                                        radius="sm"
-                                                        variant="bordered"
-                                                        onClick={handleClearFilters}
-                                                        className="border ml-auto flex border-red-500 bg-white"
-                                                    >
-                                                        <FaFilterCircleXmark size={19} className="text-red-500" />
-                                                    </Button>
-                                                </Tooltip>
-                                            </motion.div>
-                                        )}
-                                    </AnimatePresence>
+                        {/* TABLE CONTROLS */}
+                        {renderTableControls('institution-faculties.filter', searchTerm, setSearchTerm, 'Search by name or faculty id...',
+                            faculties.data.length === 0, totalFilters, handleClearFiltersClick, isFilterOpen, setIsFilterOpen,
+                            handleSetEntriesPerPageClick, entriesPerPage, setEntriesPerPage, setFacultiesToRender
+                        )}
 
-                                    <div>
-                                        <Button
-                                            className="text-customGray border min-w-[100px] border-customLightGray bg-white"
-                                            radius="sm"
-                                            disableRipple
-                                            startContent={<FaFilter size={16} />}
-                                            onClick={() => setIsFilterOpen(prev => !prev)}
-                                        >
-                                            <span className='tracking-wide'>
-                                                {!isFilterOpen ? 'Filters' : 'Hide Filters'}
-                                                {totalFilters > 0 && <strong>: {totalFilters}</strong>}
-                                            </span>
-                                        </Button>
-                                    </div>
-                                </div>
-
-                                {/* Entries per page */}
-                                <Dropdown>
-                                    <DropdownTrigger>
-                                        <Button
-                                            radius="sm"
-                                            disableRipple
-                                            endContent={<FaChevronDown size={14} className="text-customGray" />}
-                                            className="border w-[190px] max-sm:w-full border-customLightGray bg-white"
-                                        >
-                                            <span className='text-gray-500 tracking-wide'>Entries per page
-                                                <strong>: {entriesPerPage}</strong>
-                                            </span>
-                                        </Button>
-                                    </DropdownTrigger>
-
-                                    <DropdownMenu
-                                        disabledKeys={[entriesPerPage.toString()]}
-                                    >
-                                        {[1, 5, 10, 15, 20, 25, 30, 50].map((entry) => (
-                                            <DropdownItem
-                                                key={entry}
-                                                className="!text-customGray"
-                                                onClick={() => handleSetEntriesPerPage(entry)}
-                                            >
-                                                {entry}
-                                            </DropdownItem>
-                                        ))}
-                                    </DropdownMenu>
-                                </Dropdown>
-                            </div>
-                        </div>
-
-                        {/* Filters shows here */}
+                        {/* FILTER COMPONENT PLACEMENT */}
                         <Filter
                             hasFacultyPremiumAccess={hasFacultyPremiumAccess}
-                            autocomplete={autocomplete}
-                            setAutocomplete={setAutocomplete}
-                            selected={selected}
-                            setSelected={setSelected}
+                            autocompleteItems={autocompleteItems}
+                            setAutocompleteItems={setAutocompleteItems}
+                            selectedAutocompleteItems={selectedAutocompleteItems}
+                            setSelectedAutocompleteItems={setSelectedAutocompleteItems}
                             isFilterOpen={isFilterOpen}
                         />
 
-                        {/* Table */}
+                        {/* STUDENT DATA */}
                         <div className="TableContainer border overflow-y-auto  max-h-[50vh] ">
-                            {!isLoading ?
+                            {!isDataLoading ?
                                 (facultiesToRender.data.length > 0 ? (
                                     <table className="w-full table-auto relative text-xs text-left text-customGray tracking-wide">
-                                        {renderTableHeaders(facultyTableHeaders, hasFacultyPremiumAccess)}
+                                        {renderTableHeaders(tableHeaders, hasFacultyPremiumAccess)}
                                         <tbody>
-                                            {facultiesToRender.data.map((faculty, index) => {
-                                                const formattedDateCreated = format(new Date(faculty.created_at), 'MM/dd/yyyy HH:mm aa');
+                                            {facultiesToRender.data.map((fac, index) => {
+                                                const { id, uni_id_num, name, email, created_at, user_pic, student, personal_subscription } = fac;
 
-                                                const actionButtons = () => {
-                                                    return (
-                                                        <div className="p-2 flex gap-2">
-                                                            {faculty.persub_status &&
-                                                                (<ActionButton
-                                                                    icon={faculty.persub_status === 'active' ? <FaFileCircleMinus /> : <FaFileCircleCheck />}
-                                                                    tooltipContent={faculty.persub_status === 'active' ? 'Deactivate plan' : 'Acitvate plan'}
-                                                                    onClick={() =>
-                                                                        handleSetStatusModal(
-                                                                            faculty.user_id,
-                                                                            faculty.name,
-                                                                            faculty.plan_type,
-                                                                            faculty.persub_status
-                                                                        )}
-                                                                />)
-                                                            }
-
-                                                        </div>
-                                                    );
-
-                                                }
+                                                const studentId = student?.id || 'N/A';
+                                                const departmentAcronym = student?.section?.course?.department?.dept_acronym || 'N/A';
+                                                const courseAcronym = student?.section?.course?.course_acronym || 'N/A';
+                                                const sectionName = student?.section?.section_name || 'N/A';
+                                                const planName = personal_subscription?.plan?.plan_name || 'Basic Plan';
+                                                const planStatus = personal_subscription?.persub_status || 'N/A';
+                                                const formattedDateCreated = formatDateTime(created_at) || 'N/A';
 
                                                 return (
                                                     <tr key={index} className="border-b border-customLightGray hover:bg-gray-100">
                                                         <td className="flex items-center content-center pl-3 p-2">
                                                             <User
-                                                                name={faculty.name}
-                                                                description={faculty.email}
+                                                                name={name}
+                                                                description={email}
                                                                 avatarProps={{
-                                                                    src: faculty.user_pic ? `/storage/${faculty.user_pic}` : '/images/default-profile.png',
-                                                                    alt: "profile-pic",
+                                                                    src: user_pic ? `/${user_pic}` : '/images/default-profile.png',
+                                                                    alt: "Profile Picture",
                                                                     isBordered: true
                                                                 }}
                                                             />
                                                         </td>
-                                                        <td className="p-2">{faculty.fac_id}</td>
-                                                        <td className="p-2">{faculty.dept_acronym}</td>
-                                                        <td className="p-2">{faculty.fac_position}</td>
+                                                        <td className="p-2">{uni_id_num}</td>
+                                                        <td className="p-2">{departmentAcronym ?? 'N/A'}</td>
+                                                        <td className="p-2">{courseAcronym ?? 'N/A'}</td>
+                                                        <td className="p-2">{sectionName ?? 'N/A'}</td>
                                                         <td className="p-2">{formattedDateCreated}</td>
-                                                        <td className="p-2">
-                                                            <Chip startContent={<FaFileInvoice size={16} />} size="sm" className="text-customGray h-full p-1 text-wrap flex" variant='faded'>
-                                                                {faculty.plan_name ?? 'Free Plan'}
+                                                        {/* <td className="p-2">
+                                                            <Chip startContent={<FaFileInvoice size={16} />} size="sm" className="text-customGray h-full p-1 text-wrap flex text-center" variant='faded'>
+                                                                {planName}
                                                             </Chip>
-                                                        </td>
+                                                        </td> */}
 
-                                                        {hasFacultyPremiumAccess === 'with-premium-access' &&
+                                                        {/* {hasFacultyPremiumAccess === 'with-premium-access' && (
                                                             <>
-                                                                <td className="p-2">{<StatusChip status={faculty.persub_status} />}</td>
-                                                                <td className="p-2">{actionButtons()}</td>
+                                                                <td className="p-2">{renderActionButtons(id, name, planName, planStatus)}</td>
                                                             </>
-                                                        }
+                                                        )} */}
 
                                                     </tr>
                                                 )
@@ -368,16 +236,17 @@ export default function Faculties({ auth, insAdminAffiliation, retrievedFacultie
                                 )
                                     : <>
                                         <table className="w-full table-auto relative text-xs text-left border-current text-customGray tracking-wide">
-                                            {renderTableHeaders(facultyTableHeaders, hasFacultyPremiumAccess)}
+                                            {renderTableHeaders(tableHeaders, hasFacultyPremiumAccess)}
                                         </table>
-                                        {/* <NoResultsFound /> */}
+                                        <NoDataPrompt type={hasFilteredData ? '' : 'filter'} />
                                     </>
                                 )
-                                : <TableSkeleton headers={facultyTableHeaders} headerType={hasFacultyPremiumAccess} />
+                                : <TableSkeleton tableHeaders={tableHeaders} tableHeaderType={hasFacultyPremiumAccess} />
                             }
 
                         </div>
-                        {(!isLoading && facultiesToRender.data.length > 0) &&
+
+                        {(!isDataLoading && facultiesToRender.data.length > 0) &&
                             <Pagination
                                 tableData={facultiesToRender}
                             />
@@ -391,15 +260,15 @@ export default function Faculties({ auth, insAdminAffiliation, retrievedFacultie
                 isOpen={isAddStudentModalOpen}
                 onClose={() => setIsAddStudentModalOpen(false)}
             />
-            <SetPlanStatus
+            <UpdatePlanStatus
                 hasFacultyPremiumAccess={hasFacultyPremiumAccess}
                 userId={userId}
                 name={name}
-                currentPlan={currentPlan}
-                currentPlanStatus={currentPlanStatus}
+                currentPlanName={currentPlanName}
+                action={action}
                 setFacultiesToRender={setFacultiesToRender}
-                isOpen={isSetPlanStatusModalOpen}
-                onClose={() => setIsSetPlanStatusModalOpen(false)}
+                isOpen={isUpdatePlanStatusModalOpen}
+                onClose={() => setIsUpdatePlanStatusModalOpen(false)}
             />
         </AdminLayout >
     );

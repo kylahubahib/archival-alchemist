@@ -94,7 +94,7 @@ export default function Library({ auth }) {
             case 'ByUniversity': {
                 const choice = 'U';
                 return (
-                    <Manuscript
+                    <MyUniBooks
                         title="Manuscripts by University"
                         description="Manuscripts categorized by university."
                         manuscripts={manuscripts} // Update this with actual data as needed

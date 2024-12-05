@@ -40,8 +40,12 @@ console.log("This is the Task ID:", taskID);
         // Fetch data from your Laravel API endpoint
         const checkGroupMembership = async () => {
             try {
-                const response = await fetch('/api/check-group'); // Endpoint to check group membership
-                const data = await response.json();
+                const response = await axios.get('/api/check-group', {
+                    params: {
+                        section_id: folders?.id
+                    }
+                }); // Endpoint to check group membership
+                const data = response.data;
                 setHasGroup(data.hasGroup); // Assuming the API returns { hasGroup: true/false }
             } catch (error) {
                 console.error("Error fetching group membership:", error);
@@ -49,7 +53,7 @@ console.log("This is the Task ID:", taskID);
         };
 
         checkGroupMembership();
-    }, []);
+    }, [hasGroup]);
 console.log("This user has a group already.", hasGroup)
 
   const resetForm = () => {

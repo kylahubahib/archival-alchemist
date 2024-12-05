@@ -29,7 +29,7 @@ export default function PrivacyPolicy({ auth, privacyPolicy }) {
                             &larr; Back
                         </Link>
                         <h1 className="text-4xl font-bold text-gray-900 mt-4 mb-2">Privacy Policy</h1>
-                        <p className="text-sm text-gray-500 mb-8">Last Updated: {formatDate(privacyPolicy.updated_at)}</p>
+                        <p className="text-sm text-gray-500 mb-8">Last Updated: {formatDate(privacyPolicy.updated_at) || 'N/A'}</p>
                     </div>
                 </div>
 
@@ -52,7 +52,7 @@ export default function PrivacyPolicy({ auth, privacyPolicy }) {
                             </ul>
 
                             <div
-                            dangerouslySetInnerHTML={{ __html: privacyPolicy.content_text }}
+                            dangerouslySetInnerHTML={{ __html: privacyPolicy.content_text || '' }}
                             className="prose prose-lg mx-auto text-gray-800 space-y-3"
                             ></div>
                         </div>

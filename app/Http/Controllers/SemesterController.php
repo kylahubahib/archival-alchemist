@@ -16,6 +16,14 @@ use carbon\Carbon;
 class SemesterController extends Controller
 {
 
+    public function __construct()
+    {
+        // Apply 'can_add' access to 'create' and 'store' actions.
+        $this->middleware('access:can_add')->only(['create', 'store']);
+        // Apply 'can_edit' access to 'edit', 'update', and 'destroy' actions.
+        $this->middleware('access:can_edit')->only(['edit', 'update', 'destroy']);
+    }
+
     public function getSemesters()
     {
         $user = Auth::user();

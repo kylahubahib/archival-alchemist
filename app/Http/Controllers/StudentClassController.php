@@ -935,13 +935,20 @@ public function myfavoriteManuscripts()
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function checkGroup()
+    public function checkGroup(Request $request)
     {
+        Log::info('hi');
+
+        $section_id = $request->get('section_id');
+
+        Log::info($section_id);
+
         // Get the authenticated user's ID
         $userId = Auth::id();
 
         // Check if the user has a non-null group_id
         $hasGroup = GroupMember::where('stud_id', $userId)
+            ->where('section_id', $section_id)
             ->whereNotNull('group_id')
             ->exists();
 
@@ -1296,18 +1303,6 @@ public function sendForRevision(Request $request)
         // Initialize Google Client
         $client = new GoogleClient();
         $client->setAuthConfig($keyFilePath);
-        // $client->setAuthConfig([
-        //     'type' => env('GOOGLE_SERVICE_TYPE'),
-        //     'project_id' => env('GOOGLE_SERVICE_PROJECT_ID'),
-        //     'private_key_id' => env('GOOGLE_SERVICE_PRIVATE_KEY_ID'),
-        //     'private_key' => env('GOOGLE_SERVICE_PRIVATE_KEY'),
-        //     'client_email' => env('GOOGLE_SERVICE_CLIENT_EMAIL'),
-        //     'client_id' => env('GOOGLE_SERVICE_CLIENT_ID'),
-        //     'auth_uri' => env('GOOGLE_SERVICE_AUTH_URI'),
-        //     'token_uri' => env('GOOGLE_SERVICE_TOKEN_URI'),
-        //     'auth_provider_x509_cert_url' => env('GOOGLE_SERVICE_AUTH_PROVIDER_CERT_URL'),
-        //     'client_x509_cert_url' => env('GOOGLE_SERVICE_CLIENT_CERT_URL'),
-        // ]);
         $client->addScope(GoogleDrive::DRIVE_FILE);
         $client->setSubject('file-manager@document-management-438910.iam.gserviceaccount.com');
 
@@ -1382,6 +1377,15 @@ public function sendForRevision(Request $request)
         } else {
             Log::warning("Teacher ID not found for section ID: {$manuscript->section_id}");
         }
+
+        RevisionHistory::create([
+            'ins_comment' => null,
+            'man_doc_id' => $manuscript->id,
+            'ins_id' => $teacherId,
+            'man_doc_status' => 'T',
+            'group_id' => $manuscript->group_id,
+            'section_id' =>$manuscript->section_id,
+        ]);
 
         return response()->json(['success' => 'Document updated successfully.']);
     }

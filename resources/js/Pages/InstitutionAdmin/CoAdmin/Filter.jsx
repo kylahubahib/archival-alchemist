@@ -11,7 +11,7 @@ import { customAutocompleteInputProps, parseNextUIDateTime, sanitizeURLParam } f
 import { autocompleteOnChangeHandler } from "@/Utils/admin-utils";
 import { renderAutocompleteList } from "@/Pages/SuperAdmin/Users/Filter";
 
-export default function Filter({ hasFacultyPremiumAccess, selectedAutocompleteItems, setSelectedAutocompleteItems,
+export default function Filter({ selectedAutocompleteItems, setSelectedAutocompleteItems,
     autocompleteItems, setAutocompleteItems, isFilterOpen }) {
 
     const [isAutocompleteDataLoading, setIsAutocompleteDataLoading] = useState(false);
@@ -66,9 +66,8 @@ export default function Filter({ hasFacultyPremiumAccess, selectedAutocompleteIt
 
     const setFilters = () => {
         router.get(
-            route('institution-faculties.filter', {
+            route('institution-coadmins', {
                 ...params,
-                hasFacultyPremiumAccess,
                 page: null,
                 department: sanitizeURLParam(selectedAutocompleteItems.department),
                 course: sanitizeURLParam(selectedAutocompleteItems.course),
@@ -109,15 +108,7 @@ export default function Filter({ hasFacultyPremiumAccess, selectedAutocompleteIt
             className={`${isFilterOpen ? 'flex' : 'hidden'} justify-between gap-2 text-sm items-center text-customGray -my-2`}
         >
             {
-                ['Department', 'Current Plan', 'Plan Status', 'Date Created']
-                    .filter(item => {
-                        switch (hasFacultyPremiumAccess) {
-                            case 'with-premium-access':
-                                return !['Role'].includes(item);
-                            case 'no-premium-access':
-                                return !['Current Plan', 'Plan Status'].includes(item);
-                        }
-                    })
+                ['Department', 'Course', 'Current Plan', 'Plan Status', 'Date Created']
                     .map((category, index) => (
                         <div key={index} >
                             {category === 'Date Created'
@@ -160,7 +151,7 @@ export default function Filter({ hasFacultyPremiumAccess, selectedAutocompleteIt
                                         inputValue={handleInputValue(category)}
                                         defaultSelectedKey={
                                             category === 'Department' && params.department ||
-                                            // category === 'Course' && params.course ||
+                                            category === 'Course' && params.course ||
                                             category === 'Current Plan' && params.plan ||
                                             category === 'Plan Status' && params.plan_status ||
                                             category === 'Date Created' && params.date_created
@@ -170,7 +161,7 @@ export default function Filter({ hasFacultyPremiumAccess, selectedAutocompleteIt
                                         className="min-w-1"
                                     >
                                         {category === 'Department' && renderAutocompleteList(autocompleteItems.department)}
-                                        {/* {category === 'Course' && renderAutocompleteList(autocompleteItems.course)} */}
+                                        {category === 'Course' && renderAutocompleteList(autocompleteItems.course)}
                                         {category === 'Current Plan' && renderAutocompleteList(autocompleteItems.plan)}
                                         {category === 'Plan Status' && renderAutocompleteList(autocompleteItems.planStatus)}
                                         {category === 'Date Created' && renderAutocompleteList(autocompleteItems.dateCreated)}
@@ -183,3 +174,4 @@ export default function Filter({ hasFacultyPremiumAccess, selectedAutocompleteIt
         </motion.div>
     )
 }
+            

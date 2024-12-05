@@ -751,14 +751,14 @@ const handleDropdownChange = (selectedKey) => {
                 {/* // If the user is premium, show the link directly */}
                 <h2 className="text-base font-bold text-gray-900">
                 <a
-                  onClick={() => handleClick(manuscript.id)} // Trigger the increment logic before opening the link
-                    href={`http://127.0.0.1:8000/${manuscript.man_doc_content}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-gray-700 hover:text-blue-600 hover:underline cursor-pointer transition-all duration-300 ease-in-out"
-                >
-                    {manuscript.man_doc_title}
-                </a>
+                        onClick={() => handleClick(manuscript.id)} // Trigger the increment logic before opening the link
+                        href={`http://127.0.0.1:8000/${manuscript.man_doc_content}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-gray-700 hover:text-blue-600 hover:underline cursor-pointer transition-all duration-300 ease-in-out"
+                    >
+                        {manuscript.man_doc_title}
+                    </a>
             </h2>
 
         </div>
@@ -1219,3 +1219,4 @@ toggleSidebar={() => setIsSidebarOpen((prevState) => !prevState)} // Toggle the 
 }
 
 export default MyUniBooks;
+                                                    

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Faculty extends Model
 {
@@ -42,5 +43,8 @@ class Faculty extends Model
         return $this->belongsTo(Department::class, 'dept_id');
     }
 
+    public function course(): HasOne {
+return $this->hasOne(Course::class, 'id', 'course_id');
+    }
 
 }

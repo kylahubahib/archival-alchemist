@@ -11,7 +11,9 @@ import { customAutocompleteInputProps, parseNextUIDateTime, sanitizeURLParam } f
 import { autocompleteOnChangeHandler } from "@/Utils/admin-utils";
 import { renderAutocompleteList } from "@/Pages/SuperAdmin/Users/Filter";
 
-export default function Filter({ hasStudentPremiumAccess, selectedAutocompleteItems, setSelectedAutocompleteItems, autocompleteItems, setAutocompleteItems, isFilterOpen }) {
+export default function Filter({ hasStudentPremiumAccess, selectedAutocompleteItems, setSelectedAutocompleteItems,
+    autocompleteItems, setAutocompleteItems, isFilterOpen }) {
+
     const [isAutocompleteDataLoading, setIsAutocompleteDataLoading] = useState(false);
     const params = route().params;
 
@@ -51,7 +53,7 @@ export default function Filter({ hasStudentPremiumAccess, selectedAutocompleteIt
                 ...autocompleteItems,
                 department: departmentAcronyms,
                 course: courseAcronyms,
-                plan: plansWithPlanStatus.data.plans,
+                plan: plansWithPlanStatus.data.plans.filter((plan) => plan !== 'Basic Plan'),
                 planStatus: plansWithPlanStatus.data.planStatus,
             });
         }

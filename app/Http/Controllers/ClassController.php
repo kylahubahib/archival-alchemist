@@ -301,12 +301,14 @@ class ClassController extends Controller
     }
 
 
-    public function getGroupMembers(Request $request)
+    public function getGroupMembers(string $id)
     {
         Log::info('Route accessed with GET method');
 
         // Retrieve all group members with their associated user information
-        $groupMembers = GroupMember::with('user')->get();
+        $groupMembers = GroupMember::with('user')
+            ->where('section_id', $id)
+            ->get();
 
         // Log the retrieved group members with their users
         Log::info('Retrieved group members', ['groupMembers' => $groupMembers->toArray()]);
@@ -438,6 +440,8 @@ class ClassController extends Controller
 
             $this->returnStudentWork($request->manuscript_id, $validatedData['status'], $validatedData['comment']);
 
+            
+            
             return response()->json(['success' => true, 'message' => 'Feedback stored successfully']);
 
 
@@ -823,10 +827,14 @@ class ClassController extends Controller
     }
 
 
-    public function getgroupID()
+    public function getgroupID(Request $request)
     {
+        $section_id = $request->query('section_id');
+
         // Fetch Group associated with the users ID
-        $grouprecord = GroupMember::where('stud_id', Auth::id())->get();
+        $grouprecord = GroupMember::where('stud_id', Auth::id())
+            ->where('section_id', $section_id)
+            ->get();
 
         // Return the students record in group table as JSON
         return response()->json($grouprecord);

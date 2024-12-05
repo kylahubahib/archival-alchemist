@@ -354,4 +354,20 @@ class ProfileController extends Controller
 
     }
 
+    public function getForumPosts() 
+{
+    // Get the authenticated user
+    $user = Auth::user();
+
+    $user->load([
+        'forum_post' => function ($query) {
+            $query->where('status', 'Visible')
+                ->with(['tags']);            
+}]);
+
+    Log::info($user->toArray());
+
+    return response()->json($user);
+}
+
 }

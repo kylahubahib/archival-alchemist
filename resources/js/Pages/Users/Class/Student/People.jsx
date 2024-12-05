@@ -31,7 +31,7 @@ useEffect(() => {
         try {
             // Fetch group members and teacher data concurrently
             const [groupResponse, userResponse] = await Promise.all([
-                axios.get("/fetch-groupmembers"),
+                axios.get(`/fetch-groupmembers/${folders.id}`),
                 axios.get("/fetch-currentuser")
             ]);
 

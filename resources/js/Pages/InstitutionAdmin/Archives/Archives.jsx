@@ -69,8 +69,9 @@ export default function InsAdminArchives({ auth, folders, manuscripts, search })
     useEffect(() => {
         setIsDataLoading(true);
 
+
         const debounce = setTimeout(() => {
-            fetchSearchFilteredData('institution-archives.filter', params, searchTerm, setIsDataLoading,
+            fetchSearchFilteredData('institution-archives.filter', null, params, searchTerm, setIsDataLoading,
                 setFilesToDisplay, setHasFilteredData);
         }, 300);
 
@@ -125,4 +126,4 @@ export default function InsAdminArchives({ auth, folders, manuscripts, search })
             />
         </AdminLayout >
     );
-}
+}               

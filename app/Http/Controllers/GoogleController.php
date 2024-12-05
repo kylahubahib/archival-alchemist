@@ -13,6 +13,7 @@ use Carbon\Carbon;
 use Inertia\Inertia;
 use Inertia\Response;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 
 class GoogleController extends Controller
 {
@@ -121,6 +122,7 @@ class GoogleController extends Controller
                 $user = User::create([
                     'name' => $googleUser->getName(),
                     'email' => $googleUser->getEmail(),
+                    'user_type' => 'general_user',
                     'google_user_id' => $googleUser->id,
                     'google_access_token' => $googleUser->token,
                     'google_refresh_token' => $googleUser->refreshToken,

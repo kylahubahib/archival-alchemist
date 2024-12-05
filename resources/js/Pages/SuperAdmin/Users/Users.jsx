@@ -48,7 +48,7 @@ export const renderTableHeaders = (headers, headerType) => {
 
 
 export const renderTableControls = (routeName, searchVal, searchValSetter, searchBarPlaceholder, isDisabled, totalFilters,
-    clearFiltersOnClick, isFilterOpen, isFilterOpenSetter, entriesPerPageOnClick, entriesPerPage, setEntriesPerPage, setEntriesResponseData) => {
+    clearFiltersOnClick, isFilterOpen, isFilterOpenSetter, isShowToggleFilter = true, entriesPerPageOnClick, entriesPerPage, setEntriesPerPage, setEntriesResponseData) => {
 
     return (
         <div className="flex flex-col gap-3 min-[480px]:flex-row md:gap-20 w-full">
@@ -68,7 +68,7 @@ export const renderTableControls = (routeName, searchVal, searchValSetter, searc
                 <div className="flex flex-1 gap-1 justify-end">
 
                     {/* CLEAR FILTERS */}
-                    <AnimatePresence>
+                    {/* <AnimatePresence>
                         {totalFilters > 0 && (
                             <motion.div
                                 key="close-button"
@@ -97,10 +97,12 @@ export const renderTableControls = (routeName, searchVal, searchValSetter, searc
                                 </Tooltip>
                             </motion.div>
                         )}
-                    </AnimatePresence>
+                    </AnimatePresence> */}
 
                     {/* TOGGLE FILTER */}
-                    <div>
+
+                    {isShowToggleFilter && (
+                        <div>
                         <Button
                             className="text-customGray border min-w-[100px] border-customLightGray bg-white"
                             radius="sm"
@@ -114,10 +116,12 @@ export const renderTableControls = (routeName, searchVal, searchValSetter, searc
                             </span>
                         </Button>
                     </div>
+                    )}
+                  
                 </div>
 
                 {/* ENTRIES PER PAGE */}
-                <Dropdown>
+                {/* <Dropdown>
                     <DropdownTrigger>
                         <Button
                             radius="sm"
@@ -143,7 +147,7 @@ export const renderTableControls = (routeName, searchVal, searchValSetter, searc
                             </DropdownItem>
                         ))}
                     </DropdownMenu>
-                </Dropdown>
+                </Dropdown> */}
             </div>
         </div >
     )

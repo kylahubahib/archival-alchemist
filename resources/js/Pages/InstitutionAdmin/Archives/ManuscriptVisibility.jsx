@@ -103,3 +103,4 @@ export default function ManuscriptVisibility({ isOpen, onClose, id, title, visib
         </Modal>
     );
 }
+        

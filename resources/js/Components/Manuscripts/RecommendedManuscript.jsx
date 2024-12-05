@@ -15,16 +15,20 @@ import SubscriptionCard from '@/Components/SubscriptionCard';
 import AskUserToLogin from '@/Components/AskUserToLogin';
 import PdfViewer from '@/Components/PdfViewer';
 import ToggleComments from '@/Components/ToggleComments';
+import NavLink from '@/Components/NavLink';
 
 const Manuscript = ({auth, user, choice}) => {
+    const [isPdfOpen, setPdfOpen] = useState(false);
     const [favorites, setFavorites] = useState(new Set());
-     const [userId, setUserId] = useState(null); // Store the current logged-in user ID
+    const [userId, setUserId] = useState(null); // Store the current logged-in user ID
     const [manuscripts, setManuscripts] = useState([]);
+    const [Manuscripts, setmanuscripts] = useState([]);
     const [searchResults, setSearchResults] = useState([]); // State to hold search results
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [showComments, setShowComments] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isCommentOpen, setisCommentOpen] = useState(false);
     const [isCiteModalOpen, setIsCiteModalOpen] = useState(false);
     const [selectedRating, setSelectedRating] = useState(0); // Store the rating value
     const [selectedManuscript, setSelectedManuscript] = useState(null); // Track selected manuscript
@@ -38,10 +42,89 @@ const Manuscript = ({auth, user, choice}) => {
     const [pdfUrl, setPdfUrl] = useState("");
     const [isLoading, setIsLoading] = useState(true); // Track loading state
     const [isPremium, setIsPremium] = useState(null); // State to store premium status
-    const [isLoginModalOpen, setIsLoginModalOpen] = useState(false); // For the login modal
     const [isMaximized, setIsMaximized] = useState(false); // State to track if maximized or not
     const [isSidebarOpen, setIsSidebarOpen] = useState(false); // State to track sidebar visibility
     const [maximizedId, setMaximizedId] = useState(null); // Tracks which manuscript is maximized
+    const [manuscriptId, setManuscriptId] = useState(null);
+    const [isLoginModalOpen, setIsLoginModalOpen] = useState(false); // For the login modal
+    // const closeLoginModal = () => setIsLoginModalOpen(false);
+    const closeLoginModal = () => {
+        console.log("Closing modal...");
+        setIsLoginModalOpen(false);
+      };
+  // State to store the message or any relevant data from the backend
+  const [viewMessage, setViewMessage] = useState("");
+  const [viewCount, setViewCount] = useState(0);
+
+
+
+
+  // Function to trigger the book view request
+  const handleBookView = async () => {
+    console.log(`Attempting to track view for book with ID: ${bookId}`);
+
+    try {
+      // Make the request to the backend to track the view
+      const response = await axios.post(`/api/view-book/${bookId}`);
+
+      // Log the successful response from the backend
+      console.log('Response from backend:', response.data);
+
+      // Assuming the backend sends a message upon successful view tracking
+      setViewMessage(response.data.message);
+
+      // Optionally, you can update the view count here if returned by the backend
+      // setViewCount(response.data.view_count);  // If view count is returned by backend
+    } catch (error) {
+      console.error("Error tracking the book view", error);
+      setViewMessage("An error occurred while tracking the view.");
+    }
+  };
+
+
+//   useEffect(() => {
+//     // Set manuscript ID when the component loads
+//     if (manuscript?.id) {
+//       setManuscriptId(manuscript.id);
+//     }
+//   }, [manuscript]);
+
+    const handleMaximize = (id) => {
+        console.log("This is the mannuscripts ID: ", id)
+      setMaximizedId((prevId) => (prevId === id ? null : id)); // Toggle maximization
+      axios
+      .post(`/manuscripts/${id}/increment-view`)
+      .then((response) => {
+          console.log('View count incremented:', response.data);
+      })
+      .catch((error) => {
+          console.error('Error incrementing view count:', error);
+      });
+
+    };
+
+    const toggleSidebar = () => {
+        setIsSidebarOpen((prevState) => !prevState); // Toggle sidebar visibility
+    };
+
+    // Handle manuscript selection and opening the sidebar
+    const handleComments = (id, title) => {
+        // Store the selected manuscript's id and title in an object
+        setSelectedManuscript({ id, title });
+        setIsSidebarOpen(true);  // Open the sidebar
+    };
+
+    // Function to toggle maximized state
+    const toggleMaximize = () => {
+        setIsMaximized((prevState) => !prevState);
+    };
+
+    // Dynamic class for maximizing and minimizing
+    const manuscriptClass = isMaximized
+        ? "w-full h-screen"  // Maximize: Full width and height (or full screen)
+        : "w-full h-[400px]"; // Minimize: Set to a smaller size
+
+
 
     // Fetch premium status and authentication info from the backend
     useEffect(() => {
@@ -63,71 +146,12 @@ const Manuscript = ({auth, user, choice}) => {
     }, []);
 
 
-          // Reset loading state when the modal is opened again
-    useEffect(() => {
-        if (ismodalOpen) {
-        setIsLoading(true); // Reset loading state when modal is opened
-        }
-    }, [ismodalOpen]); // Depend on modal open state
-
-
-
-    const [pageCount, setPageCount] = useState(0);
-
-    // Function to handle messages from iframe (i.e., page number changes)
-    const handleIframeMessage = (event) => {
-      // Ensure the message is coming from a trusted source
-      if (event.origin === 'http://127.0.0.1:8000' || event.origin === 'https://mozilla.github.io') {
-        const data = event.data;
-        if (data.pageNumber) {
-          setPageCount(data.pageNumber);
-        }
-      }
-    };
-
-
-       // Set up the event listener for receiving messages
-       useEffect(() => {
-        window.addEventListener('message', handleIframeMessage);
-
-        return () => {
-          window.removeEventListener('message', handleIframeMessage);
-        };
-      }, []);
-
-      const openLogInModal = () => {
-          setIsLoginModalOpen(true);
-          console.log("Log in MOdal is open");
-      };
-
-      const openSubsModal = () => {
-          setIsSubsModal(true);
-          console.log("MOdal is open");
-      };
-
-      const openModal = (pdfUrl) => {
-          setIsmodalOpen(true);
-          // Pass the pdfUrl to the PDFViewer
-      };
-
-      const closeModal = () => {
-          setIsmodalOpen(false);  // Assuming you're using useState to manage modal state
-          setIsSubsModal(false);
-        };
-
-
-    const openLoginModal = () => {
-        setIsLoginModalOpen(true);
-      };
-
-      const closeLoginModal = () => {
-        setIsLoginModalOpen(false);
-      };
 
       const goToLoginPage = () => {
         // Implement your login redirection logic here
         window.location.href = '/login'; // or use react-router if it's a single-page app
       };
+
 
   // Function to handle the view increment
   const handlePdfLoad = (id) => {
@@ -155,35 +179,100 @@ const Manuscript = ({auth, user, choice}) => {
         console.error('Error incrementing view count:', error);
     });
 };
+    // const handlePdfLoad = () => {
+    //   setIsLoading(false); // Set loading to false once PDF is loaded
+    //     // Call the API to increment view count
 
-    // const handleMaximize = (id) => {
-    //     setMaximizedId((prevId) => (prevId === id ? null : id)); // Toggle maximization
-    //   };
-      const handleMaximize = (id) => {
-        console.log("This is the mannuscripts ID: ", id)
-      setMaximizedId((prevId) => (prevId === id ? null : id)); // Toggle maximization
-      axios
-      .post(`/manuscripts/${id}/increment-view`)
-      .then((response) => {
-          console.log('View count incremented:', response.data);
-      })
-      .catch((error) => {
-          console.error('Error incrementing view count:', error);
-      });
+    // axios
+    // .post(`/manuscripts/${manuscripts.id}/increment-view`)
+    // .then((response) => {
+    //     console.log('View count incremented:', response.data);
+    // })
+    // .catch((error) => {
+    //     console.error('Error incrementing view count:', error);
+    // });
+    // };
 
+      // Reset loading state when the modal is opened again
+  useEffect(() => {
+    if (ismodalOpen) {
+      setIsLoading(true); // Reset loading state when modal is opened
+    }
+  }, [ismodalOpen]); // Depend on modal open state
+
+
+    // const openModal = (url) => {
+    //     console.log("It is now open");
+    //     setPdfUrl(url);
+    //     setIsmodalOpen(true);
+    // };
+
+    // const closeModal = () => {
+    //     setPdfUrl("");
+    //     setIsmodalOpen(false);
+    // };
+
+    const [pageCount, setPageCount] = useState(0);
+
+    // Function to handle messages from iframe (i.e., page number changes)
+    const handleIframeMessage = (event) => {
+      // Ensure the message is coming from a trusted source
+      if (event.origin === 'http://127.0.0.1:8000' || event.origin === 'https://mozilla.github.io') {
+        const data = event.data;
+        if (data.pageNumber) {
+          setPageCount(data.pageNumber);
+        }
+      }
+    };
+
+    // Set up the event listener for receiving messages
+    useEffect(() => {
+      window.addEventListener('message', handleIframeMessage);
+
+      return () => {
+        window.removeEventListener('message', handleIframeMessage);
+      };
+    }, []);
+
+    const openSubsModal = () => {
+        setIsSubsModal(true);
+        console.log("MOdal is open");
+    };
+
+    const openModal = (manuscript) => {
+        setSelectedManuscript(manuscript.man_doc_content)
+        setIsmodalOpen(true);
+
+        // Pass the pdfUrl to the PDFViewer
+    };
+
+    const closeModal = () => {
+        setIsmodalOpen(false);  // Assuming you're using useState to manage modal state
+        setIsSubsModal(false);
+        setSelectedManuscript(null);
+      };
+
+
+    // const handleCommentClick = (id) => {
+    //     setCommentStates(prevState => ({
+    //         ...prevState,
+    //         [id]: !prevState[id], // Toggle the comment visibility for the specific manuscript
+    //     }));
+    // };
+
+
+    // Handle opening the modal and setting the title
+    const handleViewPdf = (manuscript) => {
+        if (manuscript && manuscript.man_doc_content) {
+            console.log("Viewing PDF for manuscript:", manuscript);
+            setSelectedManuscript(manuscript); // Set the selected manuscript
+            setPdfOpen(true); // Open the modal
+        } else {
+            console.error("Manuscript or PDF URL is missing.");
+        }
     };
 
 
-      const toggleSidebar = () => {
-          setIsSidebarOpen((prevState) => !prevState); // Toggle sidebar visibility
-      };
-
-      // Handle manuscript selection and opening the sidebar
-      const handleComments = (id, title) => {
-          // Store the selected manuscript's id and title in an object
-          setSelectedManuscript({ id, title });
-          setIsSidebarOpen(true);  // Open the sidebar
-      };
 
     // Function to update search results
     // Handler to receive the search input value
@@ -191,6 +280,7 @@ const Manuscript = ({auth, user, choice}) => {
         setTitleInputValue(inputValue); // Update the input value for display
         fetchManuscripts(inputValue, selectedSearchField); // Perform the search
     };
+
 
     const resetRating = () => {
         setSelectedRating(0); // Reset the rating to 0 (or whatever your default is)
@@ -202,7 +292,6 @@ const Manuscript = ({auth, user, choice}) => {
         setSelectedManuscript(manuscript); // Store the manuscript for later use
         setIsModalOpen(true);
     };
-
 
 
      // Handle opening the modal and setting the title
@@ -270,6 +359,30 @@ const Manuscript = ({auth, user, choice}) => {
     };
 
 
+
+    // const handleDownload = async (manuscriptId, title) => {
+    //     console.log("Attempting to download manuscript ID:", manuscriptId);
+    //     try {
+    //         const response = await axios.get(`/manuscript/${manuscriptId}/download`, {
+    //             responseType: 'blob',
+    //         });
+    //         const url = window.URL.createObjectURL(new Blob([response.data]));
+    //         const link = document.createElement('a');
+    //         const fileName = title ? `${title}.pdf` : 'file.pdf';
+
+    //         link.href = url;
+    //         link.setAttribute('download', fileName);
+    //         document.body.appendChild(link);
+    //         link.click();
+    //         document.body.removeChild(link);
+    //         window.URL.revokeObjectURL(url);
+    //     } catch (error) {
+    //         console.error('Error downloading the PDF:', error);
+    //         alert('Error downloading the file. Please try again.');
+    //     }
+    // };
+
+
     const handleDownload = async (manuscriptId, title) => {
         console.log("Attempting to download manuscript ID:", manuscriptId); // Log manuscript ID
         try {
@@ -294,9 +407,6 @@ const Manuscript = ({auth, user, choice}) => {
     };
 
 
-
-
-
     // Log the updated favorites whenever it changes
     useEffect(() => {
         console.log('Updated Favorites:', favorites);
@@ -318,11 +428,15 @@ const Manuscript = ({auth, user, choice}) => {
                 return;
             }
 
-            console.log(`Fetching favorites for user: ${user.id}`);
+            //console.log(`Fetching favorites for user: ${user.id}`);
 
             try {
                 const response = await axios.get(`/user/${user.id}/favorites`);
-                const favoritesData = response.data.map((favorite) => `${user.id}-${favorite.man_doc_id}`);
+                //console.log('Response: ', response.data.favorites);
+                const favoritesData = [];
+                if(response.data.favorites) {
+                    const favoritesData = response.data.favorites.map((favorite) => `${user.id}-${favorite.man_doc_id}`);
+                }
                 setFavorites(new Set(favoritesData));
                 console.log(`Fetched favorites for user ${user.id}:`, favoritesData);
             } catch (error) {
@@ -333,31 +447,85 @@ const Manuscript = ({auth, user, choice}) => {
         fetchFavorites();
     }, [user]);
 
+    const [bookmarkedManuscripts, setBookmarkedManuscripts] = useState(new Set());
 
-    const handleBookmark = async (manuscriptId) => {
-        if (!user) {
-            alert('You need to be logged in to bookmark.');
-            return;
-        }
+    // Check if the manuscript is bookmarked
+    const isBookmarked = bookmarkedManuscripts.has(manuscriptId);
 
-        // Log user and favorite set for debugging
-        console.log("User:", user);
-        console.log("Favorites:", favorites);
 
-        const favoriteKey = `${user.id}-${manuscriptId}`;
+    //THIS CAUSES THE SUDDEN CHANGES OF THE DISPLAY
+    // useEffect(() => {
+    //     const fetchBookmarkedManuscripts = async () => {
+    //         try {
+    //             const response = await axios.get('/api/my-favorite-manuscripts');
+    //             const data = response.data;
 
-        // Check if the manuscript is already bookmarked
-        if (favorites.has(favoriteKey)) {
-            console.log("Removing favorite:", favoriteKey);
-            // Manuscript is already favorited by the current user, remove it
-            await handleRemoveFavorite(manuscriptId);
-        } else {
-            console.log("Adding favorite:", favoriteKey);
-            // Manuscript is not favorited by the current user, add it
-            await handleAddFavorite(manuscriptId);
-        }
-    };
+    //             // Create a set of bookmarked manuscript IDs
+    //             const bookmarksSet = new Set(data.map((item) => item.id));
+    //             setBookmarkedManuscripts(bookmarksSet);
 
+    //             // Remove duplicates and set manuscripts
+    //             const uniqueManuscripts = Array.from(bookmarksSet).map((id) =>
+    //                 data.find((item) => item.id === id)
+    //             );
+    //             setManuscripts(uniqueManuscripts);
+    //         } catch (error) {
+    //             console.error('Error fetching manuscripts:', error);
+    //             setError('An error occurred while fetching the data.');
+    //         } finally {
+    //             setLoading(false);
+    //         }
+    //     };
+
+    //     if (isAuthenticated) {
+    //         fetchBookmarkedManuscripts();
+    //     }
+    // }, [isAuthenticated]);
+
+
+    // const handleBookmark = async (manuscriptId) => {
+    //     if (!user) {
+    //         alert('You need to be logged in to bookmark.');
+    //         return;
+    //     }
+
+    //     // Log user and favorite set for debugging
+    //     console.log("User:", user);
+    //     console.log("Favorites:", favorites);
+
+    //     const favoriteKey = `${user.id}-${manuscriptId}`;
+
+    //     // Check if the manuscript is already bookmarked
+    //     if (favorites.has(favoriteKey)) {
+    //         console.log("Removing favorite:", favoriteKey);
+    //         // Manuscript is already favorited by the current user, remove it
+    //         await handleRemoveFavorite(manuscriptId);
+    //     } else {
+    //         console.log("Adding favorite:", favoriteKey);
+    //         // Manuscript is not favorited by the current user, add it
+    //         await handleAddFavorite(manuscriptId);
+    //     }
+    // };
+
+
+        // Add or remove a favorite
+        const handleBookmark = async (manuscriptId) => {
+            const favoriteKey = `${user.id}-${manuscriptId}`;
+
+            if (isBookmarked) {
+                // Remove bookmark
+                await handleRemoveFavorite(manuscriptId);
+                setBookmarkedManuscripts((prev) => {
+                    const updated = new Set(prev);
+                    updated.delete(manuscriptId);
+                    return updated;
+                });
+            } else {
+                // Add bookmark
+                await handleAddFavorite(manuscriptId);
+                setBookmarkedManuscripts((prev) => new Set(prev).add(manuscriptId));
+            }
+        };
 
     const handleRemoveFavorite = async (manuscriptId) => {
         try {
@@ -392,39 +560,40 @@ const Manuscript = ({auth, user, choice}) => {
     };
 
 
+    // useEffect to fetch manuscripts based on titleInputValue
+    // useEffect to fetch all manuscripts on mount
+    // Effect to fetch all manuscripts on component mount
     useEffect(() => {
-        console.log('Fetching manuscripts...');
-         axios.get(`/api/publishedRec-manuscripts?choice=${choice}`)
-        //axios.get('/api/published-manuscripts')
-        .then(response => {
-            console.log('Fetched manuscripts with tags:', response.data);
-            const data = response.data;
+        let isMounted = true; // flag to track if the component is mounted
 
-            response.data.forEach(manuscript => {
-                console.log('Manuscript Tags:', manuscript.tags); // Log tags for each manuscript
-            });
+        const fetchAllManuscripts = async () => {
+            setLoading(true);
+            try {
+                const response = await axios.get('api/publishedRec-manuscripts');
 
+                if (isMounted) {
+                    // Only set state if the component is still mounted
+                    setManuscripts(response.data);
 
-            response.data.forEach(manuscript => {
-                console.log('Manuscript Author:', manuscript.authors); // Log users for each manuscript
-            });
+                }
+            } catch (error) {
+                if (isMounted) {
+                    toast.error('Error fetching manuscripts.'); // Show toast on error
+                    setError('An error occurred while fetching the data.');
+                }
+            } finally {
+                if (isMounted) {
+                    setLoading(false);
+                }
+            }
+        };
 
-            // Remove duplicates
-            const uniqueManuscripts = Array.from(new Set(data.map(item => item.id)))
-                .map(id => data.find(item => item.id === id));
+        fetchAllManuscripts();
 
-            console.log('Unique Manuscripts:', uniqueManuscripts);
-            setManuscripts(uniqueManuscripts);
-            setLoading(false);
-        })
-        .catch(error => {
-            console.error('Error fetching manuscripts:', error);
-            setError('An error occurred while fetching the data.');
-            setLoading(false);
-        });
-
-    }, []); // Empty dependency array ensures this runs only once
-
+        return () => {
+            isMounted = false; // Cleanup flag when component unmounts
+        };
+    }, []);
 
 
     const fetchManuscripts = async (keyword, searchField) => {
@@ -432,7 +601,7 @@ const Manuscript = ({auth, user, choice}) => {
         setLoading(true);
         try {
             // Construct the query with the selected search field
-            const response = await axios.get(`/api/published-manuscripts`, {
+            const response = await axios.get(`api/publishedRec-manuscripts`, {
                 params: { keyword, searchField }
             });
             setManuscripts(response.data);
@@ -444,23 +613,15 @@ const Manuscript = ({auth, user, choice}) => {
         }
     };
 
-
-    // Update the dropdown selection handler
+// Update the dropdown selection handler
 const handleDropdownChange = (selectedKey) => {
     setSelectedSearchField(selectedKey); // Set the selected key directly as a string
 };
 
 
-
-    // Function to update search results
-    const handleSearchResults = (results) => {
-        setSearchResults(results);
-    };
-
     const toggleComments = () => {
         setShowComments(!showComments);
     };
-
 
 
 
@@ -518,7 +679,7 @@ const handleDropdownChange = (selectedKey) => {
                         )}
                     </div>
             </div>
-                <div className="w-[200px]"> {/* Set dropdown button width to 50px */}
+            <div className="w-[200px] relative z-[0]"> {/* Set dropdown button width to 50px */}
                 <Dropdown>
                     <DropdownTrigger className="w-full">
                         <Button variant="bordered" className="capitalize w-full flex justify-between items-center">
@@ -672,112 +833,186 @@ const handleDropdownChange = (selectedKey) => {
                    )}
 
                    {/* Modal for non-authenticated users */}
-                   { isLoginModalOpen && !isAuthenticated &&(
-                     <Modal
-                       show={isLoginModalOpen}
-                       onClose={closeLoginModal}
-                     >
-                <AskUserToLogin />
-                     </Modal>
-                   )}
+                   {isLoginModalOpen && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+  <div
+    className="bg-gray-800 text-white rounded-lg w-[45%] p-6 relative"
+    id="pricing"
+  >
+            {/* Close Button */}
+            <button
+              onClick={closeLoginModal}
+              className="absolute top-2 right-5 text-gray-400 hover:text-white text-3xl"
+            >
+              &#x2715; {/* Close Icon */}
+            </button>
+
+            {/* Modal Content */}
+      {/* Background Blurs */}
+      <div
+        aria-hidden="true"
+        className="absolute w-full h-full inset-0 m-0 opacity-5"
+      >
+        <div className="blur-[70px] h-32 bg-gradient-to-r from-cyan-400 to-indigo-600"></div>
+      </div>
+
+      {/* Main Content */}
+      <div className="w-full h-full sm:flex-row gap-4">
+        <div className="flex flex-col items-center aspect-auto sm:p-8 mx-10 bg-gray-800 border-gray-700 flex-1">
+          {/* Icon Circle Above */}
+          <div className="flex justify-center items-center w-16 h-16 bg-white-600 rounded-full mb-4">
+          <h2 className="text-3xl font-serif text-white mb-4 text-shadow-lg tracking-widest uppercase">
+            Archival
+          </h2> {/* <FaStar className="text-white text-2xl" /> */}
+            <img
+    src='/images/sad-owl.png'
+    alt="PDF Thumbnail"
+  />  <h2 className="text-3xl font-serif text-white mb-4 text-shadow-lg tracking-widest uppercase">
+  Alchemist
+</h2>
+<div className="w-full h-[1px] bg-gray-500 mb-6"></div>
+          </div>
+
+          <h2 className="text-lg sm:text-xl font-medium text-white mb-2">Oooops!</h2>
+          <p className="text-lg sm:text-xl text-center mb-6 mt-4">
+            <span className="text-1xl sm:text-2xl font-bold text-white">Authentication Required</span>
+          </p>
+          <p className="text-center mb-6">
+          Action cannot be completed at this time. Please log in first to proceed.
+          </p>
+
+          {/* Underline (Thin Horizontal Line) */}
+          <div className="w-full h-[1px] bg-gray-500 mb-6"></div>
+
+          <NavLink
+            href={route('login')}
+            className="relative flex h-9 w-full items-center justify-center px-4 before:absolute before:inset-0 before:rounded-full before:bg-white before:transition before:duration-300 hover:before:scale-105 active:duration-75 active:before:scale-95 sm:w-max"
+            active={route().current('login')}
+          >
+            <span className="relative text-sm font-semibold text-black hover:bg:blue-500">
+              Sign In Now!
+            </span>
+          </NavLink>
+
+
+      </div>
+    </div>
+
+          </div>
+        </div>
+      )}
              </div>
 
 
 
-
-<div className="flex-1 p-4">
-        <div>
-             {isPremium ? (
-                // If the user is premium, show the link directly
-                <h2 className="text-base font-bold text-gray-900">
-                <a
-                  onClick={() => handleClick(manuscript.id)} // Trigger the increment logic before opening the link
-                    href={`http://127.0.0.1:8000/${manuscript.man_doc_content}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-gray-700 hover:text-blue-600 hover:underline cursor-pointer transition-all duration-300 ease-in-out"
-                >
-                    {manuscript.man_doc_title}
-                </a>
-            </h2>
-            ) : (
-                // If the user is not premium, open modal on click (only for non-premium users)
-                <h2 className="text-base font-bold text-gray-900">
+             <div className="flex-1 p-4">
+    <div>
+        {isPremium ? (
+            // If the user is premium, check if authenticated
+            <h2 className="text-base font-bold text-gray-900">
+                {isAuthenticated ? (
+                    <a
+                        onClick={() => handleClick(manuscript.id)} // Trigger the increment logic before opening the link
+                        href={`http://127.0.0.1:8000/${manuscript.man_doc_content}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-gray-700 hover:text-blue-600 hover:underline cursor-pointer transition-all duration-300 ease-in-out"
+                    >
+                        {manuscript.man_doc_title}
+                    </a>
+                ) : (
                     <span
-                        onClick={openModal} // Open modal when clicked
+                    onClick={() => setIsLoginModalOpen(true)} // Open login modal if unauthenticated
                         className="text-gray-700 hover:text-blue-600 hover:underline cursor-pointer transition-all duration-300 ease-in-out"
                     >
                         {manuscript.man_doc_title}
                     </span>
-                </h2>
-            )}
+                )}
+            </h2>
+        ) : (
+            // If the user is not premium
+            <h2 className="text-base font-bold text-gray-900">
+                <span
+                    onClick={() =>
+                        isAuthenticated ? openModal(manuscript) : setIsLoginModalOpen(true)
+                    } // Open modal for authenticated users, login modal otherwise
+                    className="text-gray-700 hover:text-blue-600 hover:underline cursor-pointer transition-all duration-300 ease-in-out"
+                >
+                    {manuscript.man_doc_title}
+                </span>
+            </h2>
+        )}
 
-            {/* Show modal for non-premium users */}
-            {ismodalOpen && (
-                 <Modal
-                 show={ismodalOpen}
-                 onClose={closeModal}
-                 maxWidth="50%" // Percentage-based for responsiveness
-                 maxHeight="80vh" // Set max height relative to viewport
-                 className="relative overflow-hidden rounded-lg shadow-2xl"
-             >
-                 {/* Modal Overlay with smooth fade */}
-                 <div
-                     className="absolute inset-0 bg-black opacity-60"
-                     onClick={closeModal}
-                 ></div>
+        {/* Show modal for non-premium users */}
+        {ismodalOpen && (
+            <Modal
+                show={ismodalOpen}
+                onClose={closeModal}
+                maxWidth="50%" // Percentage-based for responsiveness
+                maxHeight="80vh" // Set max height relative to viewport
+                className="relative overflow-hidden rounded-lg shadow-2xl"
+            >
+                {/* Modal Overlay with smooth fade */}
+                <div
+                    className="absolute inset-0 bg-black opacity-60"
+                    onClick={closeModal}
+                ></div>
 
-                 {/* Modal Content */}
-                 <div className="relative p-6 bg-white rounded-lg z-10 overflow-hidden shadow-xl">
-                     {/* Close Button */}
-                     <button
-                         onClick={closeModal}
-                         className="absolute top-4 right-4 text-white bg-gray-800 hover:bg-gray-700 rounded-full p-2 focus:outline-none z-20"
-                         style={{ fontSize: '1.5rem' }}
-                     >
-                         <span className="font-bold">&times;</span>
-                     </button>
+                {/* Modal Content */}
+                <div className="relative p-6 bg-white rounded-lg z-10 overflow-hidden shadow-xl">
+                    {/* Close Button */}
+                    <button
+                        onClick={closeModal}
+                        className="absolute top-4 right-4 text-white bg-gray-800 hover:bg-gray-700 rounded-full p-2 focus:outline-none z-20"
+                        style={{ fontSize: '1.5rem' }}
+                    >
+                        <span className="font-bold">&times;</span>
+                    </button>
 
-                     {/* PDF Viewer Container */}
-                     <div className="relative h-[80vh] w-full bg-gray-200 shadow-2xl rounded-lg overflow-hidden">
-                         <div
-                             className={`relative w-full h-full overflow-hidden rounded-lg ${pageCount > 10 ? 'blur-sm' : ''}`}
-                         >
-                             {isLoading && (
-                                 <div className="absolute inset-0 flex justify-center items-center">
-                                     <div className="w-16 h-16 border-t-4 border-blue-600 border-solid rounded-full animate-spin"></div>
-                                 </div>
-                             )}
-                             <iframe
-                                 src={`http://127.0.0.1:8000/pdfViewer.html?pdfUrl=http://127.0.0.1:8000/${selectedManuscript}`}
-                                 className="w-full h-full border-0 rounded-lg shadow-md"
-                                 title="PDF Viewer"
-                                 onLoad={handlePdfLoad}
-                             ></iframe>
-                         </div>
+                    {/* PDF Viewer Container */}
+                    <div className="relative h-[80vh] w-full bg-gray-200 shadow-2xl rounded-lg overflow-hidden">
+                        <div
+                            className={`relative w-full h-full overflow-hidden rounded-lg ${
+                                pageCount > 10 ? 'blur-sm' : ''
+                            }`}
+                        >
+                            {isLoading && (
+                                <div className="absolute inset-0 flex justify-center items-center">
+                                    <div className="w-16 h-16 border-t-4 border-blue-600 border-solid rounded-full animate-spin"></div>
+                                </div>
+                            )}
+                            <iframe
+                                src={`http://127.0.0.1:8000/pdfViewer.html?pdfUrl=http://127.0.0.1:8000/${selectedManuscript}`}
+                                className="w-full h-full border-0 rounded-lg shadow-md"
+                                title="PDF Viewer"
+                                onLoad={handlePdfLoad}
+                            ></iframe>
+                        </div>
 
-                         {/* Message when page count exceeds 10 */}
-                         {pageCount > 10 && (
-                             <div className="absolute inset-0 flex justify-center items-center bg-black bg-opacity-50 text-white font-semibold text-xl p-6 rounded-lg shadow-lg max-w-lg mx-auto">
-                                 <div className="text-center">
-                                     <h2 className="text-2xl mb-4 font-extrabold">You've Reached the Page Limit</h2>
-                                     <p className="text-lg mb-6">
-                                         To access the full document, please subscribe to unlock more pages.
-                                     </p>
-                                     <button
-                                         onClick={() => alert('Redirecting to subscription page...')}
-                                         className="bg-blue-600 hover:bg-blue-700 text-white py-3 px-8 rounded-lg shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-100"
-                                     >
-                                         Subscribe Now
-                                     </button>
-                                 </div>
-                             </div>
-                         )}
-                     </div>
-                 </div>
-             </Modal>
-            )}
-        </div>
+                        {/* Message when page count exceeds 10 */}
+                        {pageCount > 10 && (
+                            <div className="absolute inset-0 flex justify-center items-center bg-black bg-opacity-50 text-white font-semibold text-xl p-6 rounded-lg shadow-lg max-w-lg mx-auto">
+                                <div className="text-center">
+                                    <h2 className="text-2xl mb-4 font-extrabold">You've Reached the Page Limit</h2>
+                                    <p className="text-lg mb-6">
+                                        To access the full document, please subscribe to unlock more pages.
+                                    </p>
+                                    <button
+                                        onClick={() =>
+                                            alert('Redirecting to subscription page...')
+                                        }
+                                        className="bg-blue-600 hover:bg-blue-700 text-white py-3 px-8 rounded-lg shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-100"
+                                    >
+                                        Subscribe Now
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </Modal>
+        )}
+    </div>
 
 
                 {/* <p className="text-gray-700 mt-1">Author: {user.name}</p> */}
@@ -808,8 +1043,6 @@ const handleDropdownChange = (selectedKey) => {
                         <p>No tags available</p> // Display message if no tags are found
                     )}
                 </div>
-
-
 
 
 
@@ -905,10 +1138,10 @@ const handleDropdownChange = (selectedKey) => {
                 )}
 
                 {/* Modal for Non-Authenticated Users */}
-                {isLoginModalOpen && !isAuthenticated && (
+                {/* {isLoginModalOpen && !isAuthenticated && (
                     <Modal show={isLoginModalOpen} onClose={closeLoginModal}>
                     </Modal>
-                )}
+                )} */}
 
 <Tooltip content="Ratings">
                     <button

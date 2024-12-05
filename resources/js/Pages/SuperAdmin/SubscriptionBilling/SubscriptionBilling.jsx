@@ -1,7 +1,7 @@
 import React, { useEffect, useState, } from "react";
 import { Divider, User } from "@nextui-org/react";
 import { FaUserSlash, FaFileLines, FaShieldHalved, FaUserCheck } from "react-icons/fa6";
-import { FaHands, FaUniversity } from "react-icons/fa";
+import { FaFileInvoice, FaHands, FaUniversity } from "react-icons/fa";
 import { capitalize, formatDateTime, titleCase } from "@/Utils/common-utils";
 import { fetchSearchFilteredData, formatAdminRole, getTotalFilters, handleSetEntriesPerPageClick } from "@/Utils/admin-utils";
 import PageHeader from "@/Components/Admin/PageHeader";
@@ -14,28 +14,40 @@ import NoDataPrompt from "@/Components/Admin/NoDataPrompt";
 import TableSkeleton from "@/Components/Admin/TableSkeleton";
 import { renderTableControls, renderTableHeaders } from "../Users/Users";
 import StatisticCard from "@/Components/Admin/StatisticCard";
+import VIewTransAndReceipt from "./VIewTransAndReceipt";
 
-export default function SubscriptionBilling({ auth, subscriptions, subscriptionType, searchValue }) {
+export default function SubscriptionBilling({ auth, subscriptions, subscriptionType, stats, agreement, searchValue }) {
     console.log('subscriptions', subscriptions);
     console.log('auth', auth);
+    console.log('stats', stats);
+
+    // Extract the needed data
+    const { total, active, paused, expired } = stats;
+
+    console.log('total', total);
 
     const [userId, setUserId] = useState(null);
     const [name, setName] = useState(null);
     const [action, setAction] = useState(null);
     const [subscriptionsToRender, setSubscriptionsToRender] = useState(subscriptions);
+
+    const [subscriptonData, setSubscriptonData] = useState([]);
+    const [transactionData, setTransactionData] = useState(null);
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [totalFilters, setTotalFilters] = useState(0);
     const [searchTerm, setSearchTerm] = useState(searchValue || '');
+    const [insSubscriber, setInsSubscriber] = useState(null);
+    const [personalSubscriber, setPersonalSubscriber] = useState(null);
+    const [subPlanName, setSubPlanName] = useState(null);
+    const [subPlanTerm, setSubPlanTerm] = useState(null);
     const [hasFilteredData, setHasFilteredData] = useState(false);
     const [entriesPerPage, setEntriesPerPage] = useState(10);
     const [isDataLoading, setIsDataLoading] = useState(false);
 
+
     // For modals
-    // const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-    // const [isSetStatusModalOpen, setIsSetStatusModalOpen] = useState(false);
-    // const [isAccessControlModalOpen, setIsAccessControlModalOpen] = useState(false);
-    // const [isLogsModalOpen, setIsLogsModalOpen] = useState(false);
-    // const [isFilterOpen, setIsFilterOpen] = useState(false);
+    const [isViewSubscriptionModalOpen, setIsViewSubscriptionModalOpen] = useState(false);
+
 
     const [autocompleteItems, setAutocompleteItems] = useState(
         { university: [], branch: [], department: [], course: [], currentPlan: [], insAdminRole: [], superAdminRole: [], status: [] }
@@ -47,7 +59,7 @@ export default function SubscriptionBilling({ auth, subscriptions, subscriptionT
         });
 
     const params = route().params;
-    const authAdminRole = auth.user.access_control.role;
+    const authAdminRole = auth?.user?.access_control?.role;
 
     const filterParams = ['university', 'branch', 'department', 'course', 'currentPlan', 'role', 'dateCreated', 'status'];
 
@@ -62,6 +74,12 @@ export default function SubscriptionBilling({ auth, subscriptions, subscriptionT
         'institutional': ['Subscription ID', 'Plan Name', 'Institution Name', 'No. of Users', 'Start Date', 'End Date', 'Plan Term', 'Plan Status', 'Actions']
     };
 
+    const statistics = [
+        { header: "Subscriptions", icon: <FaFileInvoice />, stat: total },
+        { header: "Active", icon: <FaFileInvoice />, stat: active },
+        { header: "Paused", icon: <FaFileInvoice />, stat: paused },
+        { header: "Expired", icon: <FaFileInvoice />, stat: expired },
+    ];
 
     useEffect(() => {
         console.log('subscriptionsToRender', subscriptionsToRender);
@@ -116,54 +134,15 @@ export default function SubscriptionBilling({ auth, subscriptions, subscriptionT
         })
     }
 
-    const renderPersonalSubActionButtons = (authAdminRole, adminRole, userId, userStatus, name) => {
-        let disableBtn = { accessControl: null, viewLogs: null, setStatus: null };
+    const handleViewTransHistoryClick = (planName, planTerm, institution, transData) => {
+        setIsViewSubscriptionModalOpen(true);
+        setSubPlanName(planName);
+        setSubPlanTerm(planTerm);
+        setTransactionData(transData);
+        setPersonalSubscriber(name);
+        setInsSubscriber(institution);
+    }
 
-        // const actionText = userStatus.toLowerCase() === 'active' ? "Deactivate" : "Activate";
-
-        return (
-            <div className="p-2 flex gap-2">
-                <ActionButton
-                    icon={<FaShieldHalved />}
-                    tooltipContent="Access control"
-                    isDisabled={disableBtn.accessControl}
-                    onClick={() => handleAccessControlClick(userId, name)}
-                />
-                <ActionButton
-                    icon={<FaFileLines />}
-                    tooltipContent="View logs"
-                    isDisabled={disableBtn.viewLogs}
-                    onClick={() => handleLogsClick(userId, name)}
-                />
-                {/* <ActionButton
-                    icon={userStatus === 'active' ? <FaUserSlash /> : <FaUserCheck />}
-                    tooltipContent={actionText}
-                    isDisabled={disableBtn.setStatus}
-                    onClick={() => handleUpdateStatusClick(userId, name, actionText)}
-                /> */}
-            </div>
-        );
-    };
-
-    const renderInsSubActionButtons = (userId, userStatus, name) => {
-
-        // const actionText = userStatus.toLowerCase() === 'active' ? "Deactivate" : "Activate";
-
-        return (
-            <div className="p-2 flex gap-2">
-                <ActionButton
-                    icon={<FaFileLines />}
-                    tooltipContent="View logs"
-                    onClick={() => handleLogsClick(userId, name)}
-                />
-                {/* <ActionButton
-                    icon={userStatus === 'active' ? <FaUserSlash /> : <FaUserCheck />}
-                    tooltipContent={actionText}
-                    onClick={() => handleUpdateStatusClick(userId, name, actionText)}
-                /> */}
-            </div>
-        );
-    };
 
     return (
         <AdminLayout
@@ -179,10 +158,10 @@ export default function SubscriptionBilling({ auth, subscriptions, subscriptionT
                             <MainNav
                                 key={nav.text}
                                 icon={nav.icon}
-                                href={route('subscription-billing.filter', { ...params, subscriptionType: nav.param })}
+                                href={route('subscription-billing.filter', nav.param)}
                                 active={
                                     (route().current('subscription-billing') && nav.param === 'personal') ||
-                                    route().current('subscription-billing.filter') === nav.param
+                                    route().current('subscription-billing.filter', nav.param)
                                 }
                             >
                                 {nav.text}
@@ -190,10 +169,16 @@ export default function SubscriptionBilling({ auth, subscriptions, subscriptionT
                         ))}
                     </div>
 
-                    <div className="flex gap-5 pb-4">
-                        {/* <StatisticCard />
-                        <StatisticCard /> */}
-
+                    <div className="flex gap-5 pb-4 w-full">
+                        {statistics.map((statistic, index) =>
+                            <StatisticCard
+                                key={index}
+                                header={statistic.header}
+                                icon={statistic.icon}
+                                stat={statistic.stat}
+                                className="min-w-1/4 w-full"
+                            />
+                        )}
 
                     </div>
 
@@ -213,7 +198,7 @@ export default function SubscriptionBilling({ auth, subscriptions, subscriptionT
                                         <tbody>
                                             {subscriptionsToRender.data.map((user, index) => {
                                                 // Extract the needed value and rename some of the keys
-                                                const { id, name, email, is_premium, user_pic, created_at, user_status, personal_subscription, institution_admin } = user;
+                                                const { id, name, email, is_premium, user_pic, created_at, user_status, transaction, personal_subscription, institution_admin } = user;
 
                                                 const universityAcronym = institution_admin?.institution_subscription?.university_branch?.university.uni_acronym
                                                     ?? 'N/A';
@@ -248,8 +233,8 @@ export default function SubscriptionBilling({ auth, subscriptions, subscriptionT
                                                 const planStatus = personal_subscription?.persub_status
                                                     ?? institution_admin?.institution_subscription?.insub_status
                                                     ?? 'N/A';
-                                                    
-                                                    
+
+                                                // setSubscriptionData({})
 
                                                 return (
                                                     <tr key={index} className="border-b border-customLightGray hover:bg-gray-100">
@@ -263,7 +248,14 @@ export default function SubscriptionBilling({ auth, subscriptions, subscriptionT
                                                                 <td className="p-2">{planEndDate}</td>
                                                                 <td className="p-2">{capitalize(planTerm)}</td>
                                                                 <td className="p-2"><StatusChip status={planStatus} /></td>
-                                                                <td >{renderPersonalSubActionButtons(id, user_status, name)} </td>
+                                                                <td >
+                                                                    <ActionButton
+                                                                        icon={<FaFileLines />}
+                                                                        tooltipContent="View transaction history"
+                                                                        // isDisabled={disableBtn.viewLogs}
+                                                                        onClick={() => handleViewTransHistoryClick(planName, planTerm, institutionName, transaction)}
+                                                                    />
+                                                                </td>
                                                             </>
                                                         )}
 
@@ -275,7 +267,14 @@ export default function SubscriptionBilling({ auth, subscriptions, subscriptionT
                                                                 <td className="p-2">{planEndDate}</td>
                                                                 <td className="p-2">{capitalize(planTerm)}</td>
                                                                 <td className="p-2"><StatusChip status={planStatus} /></td>
-                                                                <td >{renderInsSubActionButtons(id, user_status, name)} </td>
+                                                                <td >
+                                                                    <ActionButton
+                                                                        icon={<FaFileLines />}
+                                                                        tooltipContent="View transaction history"
+                                                                        // isDisabled={disableBtn.viewLogs}
+                                                                        onClick={() => handleViewTransHistoryClick(planName, planTerm, institutionName, transaction)}
+                                                                    />
+                                                                </td>
                                                             </>
                                                         )}
                                                     </tr>
@@ -310,7 +309,17 @@ export default function SubscriptionBilling({ auth, subscriptions, subscriptionT
             </div >
 
             {/* MODALS */}
-
+            <VIewTransAndReceipt
+                isOpen={isViewSubscriptionModalOpen}
+                onClose={() => setIsViewSubscriptionModalOpen(false)}
+                subPlanName={subPlanName}
+                subPlanTerm={subPlanTerm}
+                personalSubscriber={personalSubscriber}
+                insSubscriber={insSubscriber}
+                transaction={transactionData}
+                agreement={agreement}
+                subscriptionType={subscriptionType}
+            />
         </AdminLayout >
     );
 }
