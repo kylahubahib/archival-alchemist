@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers; 
+namespace App\Http\Controllers;
 
 use App\Models\Department;
 use App\Models\UniversityBranch;
@@ -11,18 +11,25 @@ use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
-use Illuminate\Support\Facades\Auth; 
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 
 use App\Notifications\InstitutionAdminNotification;
 
 
-class DepartmentsController extends Controller 
+class DepartmentsController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index() 
+    public function __construct()
+    {
+        // Apply 'can_add' access to 'create' and 'store' actions.
+        $this->middleware('access:can_add')->only(['create', 'store']);
+        // Apply 'can_edit' access to 'edit', 'update', and 'destroy' actions.
+        $this->middleware('access:can_edit')->only(['edit', 'update', 'destroy']);
+    }
+    public function index()
     {
         // dd();
 
@@ -58,7 +65,7 @@ class DepartmentsController extends Controller
 
                     \Log::info('University Branch:', $branch->toArray());
 
-                   
+
                     // $departmentIds = $departments->pluck('id')->toArray();
                     // // Get courses where the department_id matches the department IDs
                     // $courses = Course::whereIn('dept_id', $departmentIds)->with(['department'])->paginate(100);
@@ -70,12 +77,12 @@ class DepartmentsController extends Controller
                     // $sections = Section::whereIn('course_id', $courseIds)->with(['course'])->paginate(100);
                 }
             }
-        } 
-
-      
+        }
 
 
-        
+
+
+
         \Log::info('Departments: ', $departments->toArray());
 
         return Inertia::render('InstitutionAdmin/Departments/Departments', [
@@ -101,7 +108,7 @@ class DepartmentsController extends Controller
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
-    {   
+    {
         \Log::info('ok');
 
         $request->validate([
@@ -183,36 +190,36 @@ class DepartmentsController extends Controller
         Department::find($id)->delete();
 
         return redirect(route('manage-departments.index'))->with('success', 'Department deleted successfully.');
-    }    
+    }
 
 
-     /**
+    /**
      * Reassign the courses
      */
     public function reassignCourses(Request $request, string $id)
     {
         $deptId = $request->get('dept_id');
-    
+
         Course::where('dept_id', $deptId)->update([
             'dept_id' => $id
         ]);
-    
+
         return response()->json([
             'message' => 'Successfully reassigned courses!'
         ]);
     }
-    
 
-     /**
+
+    /**
      * Unassign the courses
      */
     public function unassignCourses(string $id)
     {
-    
+
         Course::where('dept_id', $id)->update([
             'dept_id' => null
         ]);
-    
+
         return response()->json([
             'message' => 'Successfully unassigned courses! You can manually assign them in the courses tab.'
         ]);
@@ -225,8 +232,5 @@ class DepartmentsController extends Controller
         return response()->json([
             'departments' => $departments
         ]);
-
     }
-    
-    
 }

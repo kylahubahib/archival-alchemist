@@ -59,7 +59,7 @@ export default function SubscriptionBilling({ auth, subscriptions, subscriptionT
         });
 
     const params = route().params;
-    const authAdminRole = auth.user.access_control.role;
+    const authAdminRole = auth?.user?.access_control?.role;
 
     const filterParams = ['university', 'branch', 'department', 'course', 'currentPlan', 'role', 'dateCreated', 'status'];
 
@@ -169,7 +169,6 @@ export default function SubscriptionBilling({ auth, subscriptions, subscriptionT
                         ))}
                     </div>
 
-<<<<<<< HEAD
                     <div className="flex gap-5 pb-4 w-full">
                         {statistics.map((statistic, index) =>
                             <StatisticCard
@@ -179,13 +178,6 @@ export default function SubscriptionBilling({ auth, subscriptions, subscriptionT
                                 stat={statistic.stat}
                                 className="min-w-1/4 w-full"
                             />
-=======
-                        {/* Handles the visibility and text of the add button*/}
-                        {userType === 'superadmin' && (
-                            <AddButton onClick={() => setIsCreateModalOpen(true)} icon={<FaPlus />}>
-                                {userType === "admin" ? "Add co-ins admin" : "Add co-super admin"}
-                            </AddButton>
->>>>>>> 88fecf1c908b640408b91044b39934d26bd2844c
                         )}
 
                     </div>

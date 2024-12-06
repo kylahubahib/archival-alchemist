@@ -121,7 +121,7 @@ class UserController extends Controller
             });
         }
 
-        $users = $query->latest()->paginate($entries);
+        $users = $query->latest()->paginate(100);
 
         if (request()->expectsJson()) {
             return response()->json($users);
@@ -210,20 +210,20 @@ class UserController extends Controller
 
         $token = Str::random(50);
         $userType = $request->input('user_type');
+        $uniBranchId = $request->input('uni_branch_id');
         $name = $validatedData['name'];
         $email = $validatedData['email'];
         $access = json_encode($request->input('access')); // Encode the access array to JSON
         $registrationLink = route('admin.registration-form', ['token' => $token]);
 
-        Log::info(['uni_branch_id' => $request->input('uni_branch_id')]);
+        Log::info(['uni_branch_id' => $uniBranchId]);
 
         DB::beginTransaction();
 
         try {
-            // Attempt to insert the token into the database
             DB::table('admin_registration_tokens')->insert([
                 'token' => $token,
-                'uni_branch_id' => $request->input('uni_branch_id') ?? null,
+                'uni_branch_id' => $uniBranchId,
                 'name' => $name,
                 'email' => $email,
                 'user_type' => $userType,
@@ -249,8 +249,6 @@ class UserController extends Controller
         }
     }
 
-
-
     public function adminRegistrationForm($token)
     {
         // Retrieve the token data based on the provided token
@@ -273,7 +271,7 @@ class UserController extends Controller
         // Validate the incoming request data
         $validatedData = $request->validate([
             'email' => 'required|email|max:255',
-            'password' => 'required|string|min:8|confirmed', // Ensures password matches password_confirmation
+            'password' => 'required|string|min:8|confirmed',
             'password_confirmation' => 'required|string|min:8',
             'access' => 'nullable|json',
             'token' => 'required|string',
@@ -303,17 +301,21 @@ class UserController extends Controller
                 ->where('token', $validatedData['token'])
                 ->first();
 
+            $accessControlData = []; // Reset the data array
+
             if ($tokenTable) {
                 $accessControlData = [
-                    'user_id' => $user->id,
-                    'role' => $validatedData['user_type'] === 'institution_admin' ? "co_institution_admin" : "co_super_admin",
+                    'user_id' => $user->id, // Ensure the user_id is assigned here
+                    'role' => $validatedData['user_type'] === 'admin' ? "co_institution_admin" : "co_super_admin",
                 ];
 
                 $accessControlModel = new AccessControl();
 
+
+                // Loop through fillable fields and set the access control permissions
                 foreach ($accessControlModel->getFillable() as $fillableField) {
-                    if (in_array($fillableField, ['user_id', 'role'])) {
-                        continue;
+                    if (in_array($fillableField, ['user_id', 'role', 'uni_branch_id'])) {
+                        continue; // Skip the fields we don't want to fill here
                     }
 
                     if (Schema::hasColumn('access_controls', $fillableField)) {
@@ -321,15 +323,17 @@ class UserController extends Controller
                     }
                 }
 
-                $accessControl = AccessControl::create($accessControlData);
-
-
+                // Include uni_branch_id if available
                 if ($request->input('uni_branch_id')) {
-                    DB::table('access_controls')
-                        ->where('id', $accessControl->id)
-                        ->update(['uni_branch_id' => $request->input('uni_branch_id')]);
+                    $accessControlData['uni_branch_id'] = $request->input('uni_branch_id');
                 }
 
+                Log::info(['ACCESSCONTROL DATA' => $accessControlData]);
+
+                // Create the access control record with the user_id and other data
+                $accessControl = AccessControl::create($accessControlData);
+
+                // Now the access control record has been created, including the uni_branch_id and user_id
 
                 // Mark token as used
                 DB::table('admin_registration_tokens')->where('token', $validatedData['token'])->update(['used' => true]);
@@ -351,6 +355,7 @@ class UserController extends Controller
             return redirect()->back()->withErrors(['password_confirmation' => 'Register failed. Something went wrong.']);
         }
     }
+
 
 
     public function adminAccess($userId)

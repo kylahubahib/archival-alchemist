@@ -22,6 +22,9 @@ export default function Add({ routeName = 'users.send-admin-registration', uniBr
         access: [],
     });
 
+    // useEffect(() => {
+    //     setData('uni_branch_id', uniBranchId);
+    // },);
 
     const inputClassName = {
         base: "tracking-wide pb-2",
@@ -32,27 +35,31 @@ export default function Add({ routeName = 'users.send-admin-registration', uniBr
         },
     };
     // Check all access by default
-    useEffect(() => {
-        if (isOpen) {
-            return;
-        } else if (onClose) {
-            // Add a delay so that resetting the default values will not be visible when the modal closes
-            const counterModalCloseDelay = setTimeout(() => {
-                reset();
-                setDefaultAdminAccess();
-                clearErrors();
-            }, 300)
+    // useEffect(() => {
+    //     if (isOpen) {
+    //         return;
+    //     } else if (onClose) {
+    //         // Add a delay so that resetting the default values will not be visible when the modal closes
+    //         const counterModalCloseDelay = setTimeout(() => {
+    //             reset();
+    //             setDefaultAdminAccess();
+    //             clearErrors();
+    //         }, 300)
 
-            return () => clearTimeout(counterModalCloseDelay);
-        }
+    //         return () => clearTimeout(counterModalCloseDelay);
+    //     }
 
-    }, [onClose])
+    // }, [onClose])
 
     const handleSendRegistration = (e) => {
         e.preventDefault();
 
         // The `processing` state will automatically be true during the request
         post(route(routeName), {
+            data: {
+                ...data,  // This will spread the current form data
+                uni_branch_id: uniBranchId, // Add the uni_branch_id here
+            },
             onSuccess: () => {
                 setTimeout(() => {
                     showToast('success',
@@ -66,10 +73,6 @@ export default function Add({ routeName = 'users.send-admin-registration', uniBr
                         });
                 }, 300);
                 onClose();
-
-            },
-            onError: () => {
-                console.log('Error occurred while adding the admin.');
             },
         });
     };

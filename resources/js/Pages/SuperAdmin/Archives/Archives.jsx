@@ -1,14 +1,14 @@
 
 import React, { useState, useEffect } from "react";
-import { Breadcrumbs, BreadcrumbItem, Card, CardBody, Chip } from "@nextui-org/react";
-import { FaBookOpen, FaGear } from "react-icons/fa6";
+import { Breadcrumbs, BreadcrumbItem, Card, CardBody, Chip, Button, Dropdown, DropdownMenu, DropdownItem, DropdownTrigger } from "@nextui-org/react";
+import { FaBookOpen, FaChevronDown, FaGear } from "react-icons/fa6";
 import { MdPrivacyTip } from "react-icons/md";
 import { FaEye, FaTags } from "react-icons/fa";
 import { ImArrowDown } from "react-icons/im";
 import { AnimatePresence, motion } from 'framer-motion';
 import { getAnimationProps, updateURLParams } from "@/Utils/common-utils";
 import {
-    fetchSearchFilteredData, getLastFileCategory, handleDownloadPDFClick, handleFileCategoryClick, handleFileClick, handleOpenPDFClick,
+    fetchSearchFilteredData, getLastFileCategory, handleDownloadPDFClick, handleFileCategoryClick, handleFileClick, handleManDocVisibilityFilterClick, handleOpenPDFClick,
     loadFilesByCategory, loadPageSetup, loadSearchBarPlaceholder
 } from "@/Utils/admin-utils";
 import PageHeader from '@/Components/Admin/PageHeader';
@@ -22,6 +22,8 @@ import ManuscriptSkeleton from "@/Components/Admin/ManuscriptSkeleton";
 // Separate functions to be used in institution archives as well.
 export const renderTableControls = (routeName, params, fileCategoryCollections, fileCategories, setFileCategories,
     handleFileCategoryClick, lastFileCategory, searchTerm, setSearchTerm, searchBarPlaceholder, setIsDataLoading) => {
+
+    const [manDocVisibility, setManDocVisibility] = useState(null);
 
     return (
         <div className="w-full gap-10 content-start flex max-sm:flex-col max-sm:gap-3">
@@ -62,7 +64,34 @@ export const renderTableControls = (routeName, params, fileCategoryCollections, 
                     className="flex-1 min-w-[300px]"
                 />
             </div>
-        </div>
+            <div>
+                {/* <DropdownTrigger>
+                    <Button
+                        radius="sm"
+                        disableRipple
+                        endContent={<FaChevronDown size={14} className="text-customGray" />}
+                        className="border w-[190px] max-sm:w-full border-customLightGray bg-white"
+                    >
+                        <span className="text-gray-500 tracking-wide">
+                            Filter by
+                            <strong>: {manDocVisibility}</strong>
+                        </span>
+                    </Button>
+                </DropdownTrigger>
+
+                <DropdownMenu disabledKeys={[manDocVisibility?.toString()]}>
+                    {['Public, Private'].map((visibility) => (
+                        <DropdownItem
+                            key={visibility}
+                            className="!text-customGray"
+                            onClick={() => handleManDocVisibilityFilterClick('archives.filter-visibility', { ...params, manuscript_visibility: visibility })}
+                        >
+                            {visibility}
+                        </DropdownItem>
+                    ))}
+                </DropdownMenu> */}
+            </div>
+        </div >
     );
 };
 

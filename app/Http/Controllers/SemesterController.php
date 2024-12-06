@@ -9,30 +9,30 @@ use App\Models\Faculty;
 use App\Models\Student;
 
 
-use Illuminate\Support\Facades\Auth; 
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use carbon\Carbon;
 
 class SemesterController extends Controller
 {
-
+    public function __construct()
+    {
+        // Apply 'can_add' access to 'create' and 'store' actions.
+        $this->middleware('access:can_add')->only(['create', 'store']);
+        // Apply 'can_edit' access to 'edit', 'update', and 'destroy' actions.
+        $this->middleware('access:can_edit')->only(['edit', 'update', 'destroy']);
+    }
     public function getSemesters()
     {
         $user = Auth::user();
 
         $uniBranchId = null;
 
-        if($user->user_type === 'teacher')
-        {
+        if ($user->user_type === 'teacher') {
             $uniBranchId = $user->faculty->uniBranchId;
-        }
-        else if($user->user_type === 'institution_admin')
-        {
+        } else if ($user->user_type === 'institution_admin') {
             $uniBranchId = $user->institution_admin->uniBranchId;
-
-        }
-        else if($user->user_type === 'student')
-        {
+        } else if ($user->user_type === 'student') {
             $uniBranchId = $user->student->uniBranchId;
         }
 
@@ -47,8 +47,7 @@ class SemesterController extends Controller
 
         $uniBranchId = Auth::user()->institution_admin->institution_subscription->uni_branch_id;
 
-        if($uniBranchId)
-        {
+        if ($uniBranchId) {
             $semesters = Semester::where('uni_branch_id', $uniBranchId)->get();
             return response()->json($semesters);
         }
@@ -59,7 +58,7 @@ class SemesterController extends Controller
      */
     public function store(Request $request)
     {
-        
+
         $request->validate([
             'name' => 'required|string',
             'start_date' => 'required|date',
@@ -73,9 +72,8 @@ class SemesterController extends Controller
 
         $uniBranchId = Auth::user()->institution_admin->institution_subscription->uni_branch_id;
         $schoolYear = $request->input('start_sy') . '-' . $request->input('end_sy');
-      
-        if($uniBranchId)
-        {
+
+        if ($uniBranchId) {
             Semester::create([
                 'name' => $request->name,
                 'start_date' => Carbon::parse($request->start_date),
@@ -84,11 +82,9 @@ class SemesterController extends Controller
                 'school_year' => $schoolYear
             ]);
 
-            
+
             return back()->with('success', 'Semester created successfully.');
-
         }
-
     }
 
 
@@ -109,7 +105,7 @@ class SemesterController extends Controller
 
         $schoolYear = $request->input('start_sy') . '-' . $request->input('end_sy');
         $semester = Semester::find($id);
-  
+
         $semester->update([
             'name' => $request->name,
             'start_date' => Carbon::parse($request->start_date),
@@ -117,7 +113,7 @@ class SemesterController extends Controller
             'school_year' => $schoolYear
         ]);
 
-        
+
         return back()->with('success', 'Semester updated successfully.');
     }
 

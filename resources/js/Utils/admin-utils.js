@@ -278,3 +278,9 @@ export const handleSetEntriesPerPageClick = async (routeName, selectedEntries, s
         showToast('error', 'Failed to set entries');
     }
 };
+
+export const handleManDocVisibilityFilterClick = (routeName, params) => {
+    router.get(route(routeName, { ...params }), {}, {
+        preserveState: true, preserveScroll: true
+    })
+}

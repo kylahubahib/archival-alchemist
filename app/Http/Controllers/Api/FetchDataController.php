@@ -71,14 +71,14 @@ class FetchDataController extends Controller
         $uniName = $request->get('university');
 
         // Get the uni_id since this is the FK on the university_branches table
-        $uniId = University::where('uni_name', $uniName)->value('uni_id');
+        $uniId = University::where('uni_name', $uniName)->value('id');
 
         // Fetch related data
         $universityRelatedData = UniversityBranch::where('uni_id', $uniId)
             ->select(['uni_branch_id', 'uni_branch_name'])
             ->with([
-                'department:dept_id,dept_name,uni_branch_id',
-                'department.course:course_id,course_name,dept_id',
+                'department:id,dept_name,uni_branch_id',
+                'department.course:id,course_name,dept_id',
             ])
             ->get();
 
@@ -107,9 +107,9 @@ class FetchDataController extends Controller
     public function fetchSuperAdminRoles()
     {
         // Fetch user IDs of super admins
-        $ids = User::where('user_type', 'super_admin')->pluck('user_id');
+        $ids = User::where('user_type', 'superadmin')->pluck('id');
         // Fetch distinct roles associated with those user IDs
-        $roles = AccessControl::whereIn('user_id', $ids)->distinct()->pluck('role');
+        $roles = AccessControl::whereIn('id', $ids)->distinct()->pluck('role');
 
         // Format roles for the response
         $formattedRoles = [
@@ -127,8 +127,8 @@ class FetchDataController extends Controller
 
     public function fetchInstitutionAdminRoles()
     {
-        $ids = User::where('user_type', 'institution_admin')->pluck('user_id');
-        $roles = AccessControl::whereIn('user_id', $ids)->distinct()->pluck('role');
+        $ids = User::where('user_type', 'admin')->pluck('id');
+        $roles = AccessControl::whereIn('id', $ids)->distinct()->pluck('role');
 
         $formattedRoles = [
             'institution_admin' => 'Institution Admin',

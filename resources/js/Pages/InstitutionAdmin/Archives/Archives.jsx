@@ -101,7 +101,7 @@ export default function InsAdminArchives({ auth, folders, manuscripts, search })
                         {renderTableControls('institution-archives.filter', params, fileCategoryCollections, fileCategories, setFileCategories, handleFileCategoryClick,
                             lastFileCategory, searchTerm, setSearchTerm, searchBarPlaceholder, setIsDataLoading)}
 
-                        {/* FOLDERS */}
+                        {/* FOLDERS */}a
                         {lastFileCategory !== 'Manuscripts' && (
                             renderFolders('institution-archives.filter', params, filesToDisplay, setFilesToDisplay, handleFileClick, fileCategoryCollections, fileCategories,
                                 setFileCategories, setSearchTerm, hasFilteredData, getAnimationProps, isDataLoading, setIsDataLoading)

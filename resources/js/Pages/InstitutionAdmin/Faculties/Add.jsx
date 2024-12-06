@@ -323,9 +323,6 @@ export default function Add({ isOpen, onClose }) {
                     </div> */}
 
                 </div>
-
-
-
                 <div className="bg-customBlue p-2 gap-2 flex justify-end">
                     <Button color="primary" size="sm" type="submit" isLoading={processing}>
                         {processing ? 'Adding...' : 'Add'}

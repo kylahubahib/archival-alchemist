@@ -256,6 +256,7 @@ Route::middleware(['auth', 'verified', 'user-type:superadmin'])->group(function 
             ->name('archives.download-manuscript');
         Route::get('open/manuscript/{id}/{title?}', [SuperAdminArchiveController::class, 'openManuscript'])
             ->name('archives.open-manuscript');
+        Route::get('archives/manuscript-visibility', [SuperAdminArchiveController::class, 'filter'])->name('archives.filter-visibility');
     });
 
     Route::middleware('access:subscriptions_and_billings_access')->group(function () {
@@ -341,54 +342,76 @@ Route::middleware(['auth', 'verified', 'user-type:superadmin'])->group(function 
 //institution admin
 Route::middleware(['auth', 'verified', 'user-type:admin'])->prefix('institution')->group(function () {
 
+
     // Common data for all pages
     Route::get('/get-departments-with-courses', [InsAdminCommonDataController::class, 'getDepartmentsWithCourses'])
         ->name('institution.get-departments-with-courses');
     Route::get('/get-plans-with-plan-status', [InsAdminCommonDataController::class, 'getPlansWithPlanStatus'])
         ->name('institution.get-plans-with-plan-status');
 
-    // Pages
-    // CoAdmins Page
-    Route::get('/coadmins', [CoAdminController::class, 'index'])->name('institution-coadmins');
-    Route::post('/co-admin/send-registration', [UserController::class, 'sendAdminRegistration'])->name('institution-coadmins.send-registration');
-    Route::patch('/coadmins/update-status', [UserController::class, 'updateStatus'])->name('institution-coadmins.update-status');
-    Route::get('/coadmins/{userId}/admin-access', [UserController::class, 'adminAccess'])->name('institution-coadmins.admin-access');
-    Route::patch('/coadmins/update-admin-access', [UserController::class, 'updateAdminAccess'])->name('institution-coadmins.update-admin-access');
-    Route::patch('/sample-update', [CoAdminController::class, 'sampleUpdateManuscript'])->name('sample-update');
-
     // Students Page
+    Route::middleware(['access:can_add'])->group(function () {
+        Route::post('/students/add', [StudentController::class, 'addStudent'])->name('institution-students.add');
+    });
+    Route::middleware(['access:can_edit'])->group(function () {
+        Route::post('/students/add', [StudentController::class, 'addStudent'])->name('institution-students.add');
+        Route::patch('/students/{hasStudentPremiumAccess}', [StudentController::class, 'updatePlanStatus'])->name('institution-students.update-plan-status');
+        Route::patch('/students/{hasStudentPremiumAccess}', [StudentController::class, 'updateManuscript'])->name('update-manuscript');
+    });
     Route::redirect('/students', '/institution/students/with-premium-access');
     Route::get('/students/with-premium-access', [StudentController::class, 'index'])->name('institution-students');
     Route::get('/students/{hasStudentPremiumAccess}', [StudentController::class, 'filter'])->name('institution-students.filter');
-    Route::patch('/students/{hasStudentPremiumAccess}', [StudentController::class, 'updatePlanStatus'])->name('institution-students.update-plan-status');
-    Route::patch('/students/{hasStudentPremiumAccess}', [StudentController::class, 'updateManuscript'])->name('update-manuscript');
 
-    /////////////
-    Route::post('/students/add', [StudentController::class, 'addStudent'])->name('institution-students.add');
+
+    // CoAdmins Page
+    Route::middleware(['access:can_add'])->group(function () {
+        Route::post('/co-admin/send-registration', [UserController::class, 'sendAdminRegistration'])->name('institution-coadmins.send-registration');
+    });
+    Route::middleware(['access:can_edit'])->group(function () {
+        Route::post('/co-admin/send-registration', [UserController::class, 'sendAdminRegistration'])->name('institution-coadmins.send-registration');
+        Route::patch('/coadmins/update-status', [UserController::class, 'updateStatus'])->name('institution-coadmins.update-status');
+        Route::patch('/coadmins/update-admin-access', [UserController::class, 'updateAdminAccess'])->name('institution-coadmins.update-admin-access');
+    });
+    Route::get('/coadmins', [CoAdminController::class, 'index'])->name('institution-coadmins');
+    Route::get('/coadmins/{userId}/admin-access', [UserController::class, 'adminAccess'])->name('institution-coadmins.admin-access');
 
     // Faculties Page
+    Route::middleware(['access:can_add'])->group(function () {
+        Route::post('/faculties/add', [FacultyController::class, 'addFaculty'])->name('institution-faculties.add');
+    });
+    Route::middleware(['access:can_edit'])->group(function () {
+        Route::patch('/faculties/{hasFacultyPremiumAccess}', [FacultyController::class, 'updatePlanStatus'])->name('institution-faculties.update-plan-status');
+    });
     Route::redirect('/faculties', '/institution/faculties/with-premium-access');
     Route::get('/faculties/with-premium-access', [FacultyController::class, 'index'])->name('institution-faculties');
     Route::get('/faculties/{hasFacultyPremiumAccess}', [FacultyController::class, 'filter'])->name('institution-faculties.filter');
-    Route::patch('/faculties/{hasFacultyPremiumAccess}', [FacultyController::class, 'updatePlanStatus'])->name('institution-faculties.update-plan-status');
-    Route::post('/faculties/add', [FacultyController::class, 'addFaculty'])->name('institution-faculties.add');
 
     // Archives Page
+    Route::get('archives/manuscript-visibility', [SuperAdminArchiveController::class, 'filter'])->name('institution-archives.filter-visibility');
+    Route::middleware(['access:can_edit'])->group(function () {
+        Route::patch('/archives', [InsAdminArchiveController::class, 'setManuscriptVisibility'])->name('institution-archives.set-manuscript-visibility');
+    });
     Route::get('/archives', [InsAdminArchiveController::class, 'index'])->name('institution-archives');
     // Use '?' to make the parameters optional, so they can be omitted in the URL.
     Route::get('/archives/{department?}/{course?}/{section?}', [InsAdminArchiveController::class, 'filter'])->name('institution-archives.filter');
-    Route::patch('/archives', [InsAdminArchiveController::class, 'setManuscriptVisibility'])->name('institution-archives.set-manuscript-visibility');
     Route::get('download/manuscript/{id}/{title?}', [InsAdminArchiveController::class, 'downloadManuscript'])->name('institution-archives.download-manuscript');
     Route::get('open/manuscript/{id}/{title?}', [InsAdminArchiveController::class, 'openManuscript'])->name('institution-archives.open-manuscript');
 
+    Route::middleware(['access:can_edit'])->group(function () {
+        Route::post('/reassign-courses/{id}', [DepartmentsController::class, 'reassignCourses'])->name('reassign-courses');
+        Route::post('/unassign-courses/{id}', [DepartmentsController::class, 'unassignCourses'])->name('unassign-courses');
+    });
+
     Route::resource('/departments', DepartmentsController::class)->names('manage-departments');
-    Route::post('/reassign-courses/{id}', [DepartmentsController::class, 'reassignCourses'])->name('reassign-courses');
-    Route::post('/unassign-courses/{id}', [DepartmentsController::class, 'unassignCourses'])->name('unassign-courses');
+
+    Route::middleware(['access:can_edit'])->group(function () {
+        Route::post('/reassign-faculty/{id}', [CoursesController::class, 'reassignFaculty'])->name('reassign-faculty');
+        Route::post('/unassign-faculty/{id}', [CoursesController::class, 'unassignFaculty'])->name('unassign-faculty');
+    });
 
     Route::get('/get-courses', [CoursesController::class, 'getCourses'])->name('get-courses');
     Route::resource('/courses', CoursesController::class)->names('manage-courses');
-    Route::post('/reassign-faculty/{id}', [CoursesController::class, 'reassignFaculty'])->name('reassign-faculty');
-    Route::post('/unassign-faculty/{id}', [CoursesController::class, 'unassignFaculty'])->name('unassign-faculty');
+
     Route::get('/get-unassigned-courses', [CoursesController::class, 'getUnassignedCourses'])->name('get-unassigned-courses');
     Route::get('/get-unassigned-faculty', [CoursesController::class, 'getUnassignedFaculty'])->name('get-unassigned-faculty');
     Route::post('/assign-courses', [CoursesController::class, 'assignCourses'])->name('assign-courses');
@@ -399,10 +422,13 @@ Route::middleware(['auth', 'verified', 'user-type:admin'])->prefix('institution'
     Route::resource('/semester', SemesterController::class)->names('manage-semester');
 
     // Subscription and Billing Page
+
     Route::resource('/subscription-billing', InstitutionSubscriptionController::class)->names('institution-subscription-billing');
     Route::post('/upload-csv', [InstitutionSubscriptionController::class, 'uploadCSV'])->name('upload-csv');
     Route::get('/read-csv', [InstitutionSubscriptionController::class, 'readCSV'])->name('read-csv');
-    Route::post('/update-university', [InstitutionSubscriptionController::class, 'updateUniBranch'])->name('update-university');
+    Route::middleware(['access:can_edit'])->group(function () {
+        Route::post('/update-university', [InstitutionSubscriptionController::class, 'updateUniBranch'])->name('update-university');
+    });
 });
 
 //guest

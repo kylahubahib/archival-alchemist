@@ -46,7 +46,7 @@ class ForumPostController extends Controller
                 'title' => $post->title,
                 'body' => $post->body,
                 'viewCount' => $post->viewCount,
-                'comments' => $post->comments, 
+                'comments' => $post->comments,
                 'user' => $post->user,
                 'created_at' => $post->formatted_created_at,
                 'tags' => $post->tags->map(function ($tag) {
@@ -60,7 +60,6 @@ class ForumPostController extends Controller
 
         return response()->json($formattedPosts);
     }
-
 
     // Store a new forum post
     public function store(Request $request)
@@ -103,6 +102,13 @@ class ForumPostController extends Controller
                     'user_id' => $user->id,
                 ]);
 
+                UserLog::create([
+                    'user_id' => $user->id, // The ID of the user creating the post
+                    'log_activity' => 'Created a new forum post', // Type of activity
+                    'log_activity_content' => 'User created a post titled "' . $request->title . '" at ' . Carbon::now()->toDateTimeString(), // Content of the activity
+                    'created_at' => Carbon::now(), // Timestamp of the log
+                ]);
+
                 // Sync the tags with the post
                 if (!empty($request->tags)) {
                     $tagIds = [];
@@ -137,32 +143,29 @@ class ForumPostController extends Controller
         }
     }
 
-    
-
-
     // Show a specific forum post
     public function show($id)
-{
-    \Log::info("Fetching post with ID: $id");
+    {
+        \Log::info("Fetching post with ID: $id");
 
-    try {
-        // Fetch the post with user and tags relationships
-        $post = ForumPost::with(['user', 'tags'])->findOrFail($id);
+        try {
+            // Fetch the post with user and tags relationships
+            $post = ForumPost::with(['user', 'tags'])->findOrFail($id);
 
-        // Increment the view count
-        $post->increment('viewCount');
+            // Increment the view count
+            $post->increment('viewCount');
 
-        // Return the post as a JSON response
-        return response()->json($post);
-    } catch (ModelNotFoundException $e) {
-        // Handle the case where the post is not found
-        return response()->json(['message' => 'Post not found'], 404);
-    } catch (\Exception $e) {
-        // Handle other exceptions
-        \Log::error("An error occurred: " . $e->getMessage());
-        return response()->json(['message' => 'An error occurred'], 500);
+            // Return the post as a JSON response
+            return response()->json($post);
+        } catch (ModelNotFoundException $e) {
+            // Handle the case where the post is not found
+            return response()->json(['message' => 'Post not found'], 404);
+        } catch (\Exception $e) {
+            // Handle other exceptions
+            \Log::error("An error occurred: " . $e->getMessage());
+            return response()->json(['message' => 'An error occurred'], 500);
+        }
     }
-}
 
 
 
@@ -172,7 +175,7 @@ class ForumPostController extends Controller
     {
         // Find the post by ID
         $post = ForumPost::find($id);
-        
+
         // If the post doesn't exist, return a 404 error
         if (!$post) {
             return response()->json(['message' => 'Post not found'], 404);
@@ -185,19 +188,17 @@ class ForumPostController extends Controller
         return response()->json(['message' => 'Post deleted successfully'], 200);
     }
 
-    
-        public function incrementViewCount($id)
-        {
-            $post = ForumPost::findOrFail($id);
-            $post->increment('viewCount'); // Increment the view count
-            return response()->json(['views' => $post->viewCount]);
-        }
-        
 
-        public function faq()
-        {
-            return Inertia::render('FAQ'); // Assuming the file is located in resources/js/Pages/FAQ.jsx
-        }
+    public function incrementViewCount($id)
+    {
+        $post = ForumPost::findOrFail($id);
+        $post->increment('viewCount'); // Increment the view count
+        return response()->json(['views' => $post->viewCount]);
+    }
 
 
+    public function faq()
+    {
+        return Inertia::render('FAQ'); // Assuming the file is located in resources/js/Pages/FAQ.jsx
+    }
 }

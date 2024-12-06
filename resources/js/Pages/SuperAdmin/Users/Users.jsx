@@ -48,7 +48,7 @@ export const renderTableHeaders = (headers, headerType) => {
 
 
 export const renderTableControls = (routeName, searchVal, searchValSetter, searchBarPlaceholder, isDisabled, totalFilters,
-    clearFiltersOnClick, isFilterOpen, isFilterOpenSetter, entriesPerPageOnClick, entriesPerPage, setEntriesPerPage, setEntriesResponseData) => {
+    clearFiltersOnClick, isFilterOpen, isFilterOpenSetter) => {
 
     return (
         <div className="flex flex-col gap-3 min-[480px]:flex-row md:gap-20 w-full">
@@ -117,7 +117,8 @@ export const renderTableControls = (routeName, searchVal, searchValSetter, searc
                 </div>
 
                 {/* ENTRIES PER PAGE */}
-                <Dropdown>
+
+                {/* <Dropdown>
                     <DropdownTrigger>
                         <Button
                             radius="sm"
@@ -143,7 +144,7 @@ export const renderTableControls = (routeName, searchVal, searchValSetter, searc
                             </DropdownItem>
                         ))}
                     </DropdownMenu>
-                </Dropdown>
+                </Dropdown> */}
             </div>
         </div >
     )
@@ -173,14 +174,14 @@ export default function Users({ auth, users, userType, searchValue }) {
     const [autocompleteItems, setAutocompleteItems] = useState(
         { university: [], branch: [], department: [], course: [], currentPlan: [], insAdminRole: [], superAdminRole: [], status: [] }
     );
-    const [selectedAutocompleteItem, setSelectedAutocompleteItem] = useState(
+    const [selectedAutocompleteItems, setSelectedAutocompleteItems] = useState(
         { // Set the default value of dateCreated to null to avoid date format errors, and keep the other default values as empty strings to prevent input null errors.
-            university: '', branch: '', department: '', course: '', currentPlan: '', insAdminRole: '',
-            superAdminRole: '', dateCreated: { start: null, end: null, }, status: ''
+            university: '', branch: '', department: '', course: '',
+            currentPlan: '', insAdminRole: '', superAdminRole: '', dateCreated: null, status: ''
         });
 
     const params = route().params;
-    const authAdminRole = auth.user.access_control.role;
+    const authAdminRole = auth?.user?.access_control?.role || '';
 
     const filterParams = ['university', 'branch', 'department', 'course', 'currentPlan', 'role', 'dateCreated', 'status'];
 
@@ -376,8 +377,17 @@ export default function Users({ auth, users, userType, searchValue }) {
 
                     <div className="flex-col gap-3 max-h-[65dvh] relative bg-white flex shadow-md sm:rounded-lg overflow-hidden p-4">
                         {renderTableControls('entries route', searchTerm, setSearchTerm, 'Search by name or user id...', users.data.length === 0,
-                            totalFilters, handleClearFiltersClick, isFilterOpen, setIsFilterOpen, handleSetEntriesPerPageClick,
-                            entriesPerPage, setEntriesPerPage, setUsersToRender)}
+                            totalFilters, handleClearFiltersClick, isFilterOpen, setIsFilterOpen)}
+
+                        {/* FILTER COMPONENT PLACEMENT */}
+                        <Filter
+                            userType={userType}
+                            autocompleteItems={autocompleteItems}
+                            setAutocompleteItems={setAutocompleteItems}
+                            selectedAutocompleteItems={selectedAutocompleteItems}
+                            setSelectedAutocompleteItems={setSelectedAutocompleteItems}
+                            isFilterOpen={isFilterOpen}
+                        />
 
                         {/* STUDENT DATA */}
                         <div className="TableContainer border overflow-y-auto  max-h-[50vh] ">

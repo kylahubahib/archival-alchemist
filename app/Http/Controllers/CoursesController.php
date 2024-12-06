@@ -20,6 +20,16 @@ class CoursesController extends Controller
     /**
      * Display the courses under a specific department
      */
+
+
+    public function __construct()
+    {
+        // Apply 'can_add' access to 'create' and 'store' actions.
+        $this->middleware('access:can_add')->only(['create', 'store']);
+        // Apply 'can_edit' access to 'edit', 'update', and 'destroy' actions.
+        $this->middleware('access:can_edit')->only(['edit', 'update', 'destroy']);
+    }
+
     public function getCourses(Request $request)
     {
         $id = $request->get('id');
@@ -52,7 +62,7 @@ class CoursesController extends Controller
                 Rule::unique('courses')->where(function ($query) use ($request) {
                     // Find the department associated with the given dept_id
                     $department = Department::find($request->dept_id);
-        
+
                     // If the department exists, add conditions to the query
                     if ($department) {
                         return $query->where('dept_id', $request->dept_id)
@@ -63,13 +73,13 @@ class CoursesController extends Controller
                                     ->where('departments.uni_branch_id', $department->uni_branch_id);
                             });
                     }
-        
+
                     // If the department doesn't exist, just return the query
                     return $query;
                 }),
             ],
         ]);
-        
+
 
 
         \Log::info('New Course: ', $request->all());
@@ -119,34 +129,34 @@ class CoursesController extends Controller
         return redirect()->back()->with(['success' => true]);
     }
 
-    
+
     /**
      * Reassign the courses
      */
     public function reassignFaculty(Request $request, string $id)
     {
         $courseId = $request->get('course_id');
-    
+
         Faculty::where('course_id', $courseId)->update([
             'course_id' => $id
         ]);
-    
+
         return response()->json([
             'message' => 'Successfully reassigned teacher!'
         ]);
     }
-    
-     /**
+
+    /**
      * Unassign the courses
      */
     public function unassignFaculty(Request $request, string $id)
     {
         $courseId = $request->get('course_id');
-    
+
         Faculty::where('course_id', $courseId)->update([
             'course_id' => null
         ]);
-    
+
         return response()->json([
             'message' => 'Successfully unassigned courses! You can manually assign them in the courses tab.'
         ]);

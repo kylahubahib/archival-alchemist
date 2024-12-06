@@ -15,6 +15,8 @@ use App\Traits\CheckSubscriptionTrait;
 use App\Models\InstitutionSubscription;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\UsersImport;
+use App\Models\UserLog;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 
@@ -41,10 +43,18 @@ class AuthenticatedSessionController extends Controller
      */
     public function store(LoginRequest $request)
     {
+
         \Log::info("hello");
 
         $request->authenticate();
         $authenticatedUser = Auth::user();
+
+        UserLog::create([
+            'user_id' =>  $authenticatedUser->id, // The authenticated user's ID
+            'log_activity' =>  'User logged in', // The type of activity
+            'log_activity_content' =>  'User logged in successfully at ' . Carbon::now()->toDateTimeString(), // Content explaining the activity
+            'created_at' =>  Carbon::now(), // Timestamp of the log
+        ]);
 
         if ($authenticatedUser->user_type !== 'general_user') {
             // Get the data of the user and student table
@@ -87,7 +97,32 @@ class AuthenticatedSessionController extends Controller
                     case 'admin':
                         return redirect()->route('institution-students');
                     case 'superadmin':
-                        return redirect()->route('dashboard.index');
+                        $accessRoutes = [
+                            'dashboard_access' => 'dashboard',
+                            'users_access' => 'users',
+                            'archives_access' => 'archives',
+                            'subscriptions_and_billings_access' => 'subscription-billing',
+                            'user_reports_access' => 'user-reports',
+                            'user_feedbacks_access' => 'user-feedbacks',
+                            'terms_and_conditions_access' => 'terms-condition',
+                            'subscription_plans_access' => 'subscription-plans',
+                            'faqs_access' => 'faq',
+                            'advanced_access' => 'advanced',
+                        ];
+
+                        // Automatically sets the default route redirection if one of the pages can't be accessed.
+                        foreach ($accessRoutes as $access => $route) {
+                            if ($user->access_control->$access) {
+                                return redirect()->route($route);
+                            }
+                        }
+
+                        // If no access granted for all pages, log out the user and show error
+                        Auth::logout();
+                        return redirect()->route('login')->withErrors([
+                            'password' => "Can't log in. All page access has been blocked. Please contact support for more information.",
+                        ]);
+
                     default:
                         return redirect('/');
                 }

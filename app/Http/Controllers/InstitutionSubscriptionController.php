@@ -25,13 +25,21 @@ class InstitutionSubscriptionController extends Controller
     /**
      * Display a listing of the resource.
      */
+
+    public function __construct()
+    {
+        // Apply 'can_add' access to 'create' and 'store' actions.
+        $this->middleware('access:can_add')->only(['create', 'store']);
+        // Apply 'can_edit' access to 'edit', 'update', and 'destroy' actions.
+        $this->middleware('access:can_edit')->only(['edit', 'update', 'destroy']);
+    }
     public function index()
     {
         $user = Auth::user();
 
-        $ins_admin = $user->institution_admin; 
+        $ins_admin = $user->institution_admin;
 
-        if($ins_admin){
+        if ($ins_admin) {
             $ins_sub = InstitutionSubscription::with(['plan', 'university_branch.university'])
                 ->where('id', $ins_admin->institution_subscription->id)
                 ->first();
@@ -41,7 +49,7 @@ class InstitutionSubscriptionController extends Controller
         $transactionHistory = Transaction::with(['user', 'plan'])
             ->where('user_id', $user->id)
             ->get();
-        
+
         \Log::info('Institution Subscription', $ins_sub->toArray());
 
         return Inertia::render('InstitutionAdmin/SubscriptionBilling/SubscriptionBilling', [
@@ -70,18 +78,18 @@ class InstitutionSubscriptionController extends Controller
     // }
 
 
-    public function uploadCSV(Request $request) 
+    public function uploadCSV(Request $request)
     {
         $request->validate([
             'file' => 'required|file|mimes:csv,txt|max:2048',
-            'insubId' => 'required|exists:institution_subscriptions,id', 
-            'university' => 'required|string|max:255', 
+            'insubId' => 'required|exists:institution_subscriptions,id',
+            'university' => 'required|string|max:255',
         ]);
 
-        $file = $request->file('file'); 
+        $file = $request->file('file');
         $insubId = $request->get('insubId');
         $university = $request->get('university');
-        
+
         $ins_sub = InstitutionSubscription::find($insubId);
         $limit = $ins_sub->insub_num_user;
 
@@ -97,7 +105,7 @@ class InstitutionSubscriptionController extends Controller
         }
 
         // Generate a unique filename and move the file
-        $fileName = $university . '_' . time() . '.' . $file->getClientOriginalExtension(); 
+        $fileName = $university . '_' . time() . '.' . $file->getClientOriginalExtension();
         $filePath = 'storage/csv_files/' . $fileName;
         $file->move(public_path('storage/csv_files'), $fileName);
 
@@ -147,7 +155,7 @@ class InstitutionSubscriptionController extends Controller
 
         return response()->json([
             'success' => true,
-            'csvData' => $csvData[0], 
+            'csvData' => $csvData[0],
         ]);
     }
 
@@ -161,26 +169,23 @@ class InstitutionSubscriptionController extends Controller
 
         $ins_sub = InstitutionSubscription::find($id);
 
-        if($ins_sub->notify_renewal === 1)
-        {
+        if ($ins_sub->notify_renewal === 1) {
             $ins_sub->update([
                 'notify_renewal' => 0
             ]);
 
             $message = "You have canceled your subscription.";
-        }
-        else 
-        {
+        } else {
             $message = "You've already canceled your subscription";
         }
 
-        
+
         return response()->json([
             'message' => $message
         ]);
     }
 
-    
+
     public function updateUniBranch(Request $request)
     {
         $id = $request->get('uniBranchId');
@@ -214,5 +219,4 @@ class InstitutionSubscriptionController extends Controller
 
         return response()->json(['success' => true]);
     }
-
 }

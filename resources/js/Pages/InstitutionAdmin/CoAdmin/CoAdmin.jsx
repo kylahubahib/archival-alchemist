@@ -56,7 +56,7 @@ export default function CoAdmins({ auth, insAdminAffiliation, coAdmins, search, 
     const [selectedAutocompleteItems, setSelectedAutocompleteItems] = useState({ department: '', course: '', plan: '', currentPlanStatus: '', dateCreated: { start: null, end: null, } });
 
     const [{ university, uni_branch_name, id: uni_branch_id }] = insAdminAffiliation;
-    console.log('uni_branch_id', uni_branch_id);
+    // console.log('uni_branch_id', uni_branch_id);
     const params = route().params;
 
     console.log('params', params);
@@ -218,12 +218,11 @@ export default function CoAdmins({ auth, insAdminAffiliation, coAdmins, search, 
                         <AddButton onClick={() => setIsAddInsAdminModalOpen(true)} icon={<FaPlus />}>
                             Add co-ins admin
                         </AddButton>
-                        <Button onClick={handleSampleUpdate} />
                     </div>
                     <div className="bg-white flex flex-col gap-4 h-[68dvh] relative shadow-md sm:rounded-lg overflow-hidden p-4">
 
                         {/* TABLE CONTROLS */}
-                        {renderTableControls('institution-coadmins.filter', searchTerm, setSearchTerm, 'Search by name or student id...',
+                        {renderTableControls('institution-coadmins.filter', searchTerm, setSearchTerm, 'Search by name or user id...',
                             coAdmins.data.length === 0, totalFilters, handleClearFiltersClick, isFilterOpen, setIsFilterOpen,
                             handleSetEntriesPerPageClick, entriesPerPage, setEntriesPerPage, setCoAdminsToRender
                         )}
@@ -304,7 +303,7 @@ export default function CoAdmins({ auth, insAdminAffiliation, coAdmins, search, 
                 onClose={() => setIsAddInsAdminModalOpen(false)}
                 routeName="institution-coadmins.send-registration"
                 userType='admin'
-                uniBranchId={affiliatedUniBranchId}
+                uniBranchId={uni_branch_id}
             />
             <AccessControl
                 fetchAdminAccessRouteName='institution-coadmins.admin-access'

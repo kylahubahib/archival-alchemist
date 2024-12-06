@@ -37,6 +37,7 @@ class SuperAdminArchiveController extends Controller
     public function filter($university = null, $branch = null, $department = null, $course = null, $section = null)
     {
         $search = request('search', null);
+        $manDocVisibility = request('manuscript_visibility', null);
         $universityFolders = [];
         $branchFolders = [];
         $departmentFolders = [];
@@ -65,6 +66,10 @@ class SuperAdminArchiveController extends Controller
 
         if ($section) {
             $searchResults = $manuscripts = $this->getManuscriptsFromSection($section, $search);
+        }
+
+        if ($manDocVisibility && $this->selectedSectionId) {
+            $searchResults = $manuscripts = $this->getFilteredManuscriptsByVisibility($manDocVisibility);
         }
 
         if (request()->expectsJson()) {
@@ -233,6 +238,21 @@ class SuperAdminArchiveController extends Controller
             // Remove unnecessary loaded relationships 
             unset($manuscript->tags, $manuscript->group);
         });
+
+        return $manuscripts;
+    }
+
+    public function getFilteredManuscriptsByVisibility($manDocVisibility)
+    {
+        if (!$this->selectedSectionId) {
+            return response()->json([
+                'error' => 'Section ID and visibility are required.'
+            ], 400);
+        }
+
+        $manuscripts = ManuscriptProject::where('section_id', $this->selectedSectionId)
+            ->where('man_doc_visibility', $manDocVisibility)
+            ->get();
 
         return $manuscripts;
     }

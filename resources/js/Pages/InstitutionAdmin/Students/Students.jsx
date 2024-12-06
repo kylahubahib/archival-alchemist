@@ -62,9 +62,15 @@ export default function Students({ auth, insAdminAffiliation, students, hasStude
     ];
 
     const tableHeaders = {
-        'with-premium-access': ['Name', 'Student ID', 'Department', 'Course', 'Section', 'Date Created', 'Action'],
+        'with-premium-access': ['Name', 'Student ID', 'Department', 'Course', 'Section', 'Date Created',],
         'no-premium-access': ['Name', 'Student ID', 'Department', 'Course', 'Section', 'Date Created',],
     };
+
+
+    // const tableHeaders = {
+    //     'with-premium-access': ['Name', 'Student ID', 'Department', 'Course', 'Section', 'Date Created', 'Action'],
+    //     'no-premium-access': ['Name', 'Student ID', 'Department', 'Course', 'Section', 'Date Created',],
+    // };
 
     // Get the total number of filters from the query parameters that have values
     useEffect(() => {
@@ -138,7 +144,7 @@ export default function Students({ auth, insAdminAffiliation, students, hasStude
                     <PageHeader className="ml-auto mr-4 uppercase">{`${university.uni_name} - ${uni_branch_name}`}</PageHeader>
                 </div>
 
-                <Button onClick={ } />
+                {/* <Button onClick={ } /> */}
 
                 <div className="mx-auto sm:px-2 lg:px-4">
                     <div className="MainNavContainer flex gap-3 py-4">
@@ -219,15 +225,13 @@ export default function Students({ auth, insAdminAffiliation, students, hasStude
                                                                 {planName}
                                                             </Chip>
                                                         </td> */}
+                                                        {/* <td className="p-2">{<StatusChip status={planStatus} />}</td> */}
 
-                                                        {hasStudentPremiumAccess === 'with-premium-access' && (
+                                                        {/* {hasStudentPremiumAccess === 'with-premium-access' && (
                                                             <>
-                                                                {/* <td className="p-2">{<StatusChip status={planStatus} />}</td> */}
                                                                 <td className="p-2">{renderActionButtons(id, name, planName, planStatus)}</td>
                                                             </>
-                                                        )
-
-                                                        }
+                                                        )} */}
 
                                                     </tr>
                                                 )
