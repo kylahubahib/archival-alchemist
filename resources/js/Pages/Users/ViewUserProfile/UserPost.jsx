@@ -29,7 +29,7 @@ export default function UserPost({ posts}) {
     };
 
     return (
-        <>
+        <div>
             <div className="flex flex-col items-center -mt-21 min-h-screen">
               {Array.isArray(posts) && posts.length > 0 ? (
                 posts.map(post => {
@@ -133,6 +133,6 @@ export default function UserPost({ posts}) {
                 <p className="text-gray-500 mt-20">No discussions found.</p>
               )}
               </div>
-        </>
+        </div>
     );
 }

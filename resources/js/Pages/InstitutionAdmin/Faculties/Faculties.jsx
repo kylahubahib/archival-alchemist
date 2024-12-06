@@ -1,4 +1,4 @@
-
+ 
 import React, { useState, useEffect } from "react";
 import { User, Chip, user, } from "@nextui-org/react";
 import { FaPlus, FaFileCircleCheck, FaFileCircleMinus, FaFileInvoice } from "react-icons/fa6";
@@ -36,6 +36,7 @@ export default function Faculties({ auth, insAdminAffiliation, faculties, hasFac
     const [isUpdatePlanStatusModalOpen, setIsUpdatePlanStatusModalOpen] = useState(false);
     const [isFilterOpen, setIsFilterOpen] = useState(false);
 
+
     // State variables to be passed to the Filter component
     const [autocompleteItems, setAutocompleteItems] = useState({
         department: [], plan: [], planStatus: []
@@ -65,9 +66,13 @@ export default function Faculties({ auth, insAdminAffiliation, faculties, hasFac
     ];
 
     const tableHeaders = {
-        'with-premium-access': ['Name', 'Faculty ID', 'Department', 'Course', 'Section', 'Date Created', 'Plan Status', 'Action'],
-        'no-premium-access': ['Name', 'Faculty ID', 'Date Created'],
+        'with-premium-access': ['Name', 'Faculty ID', 'Department', 'Course', 'Section', 'Date Created'],
+        'no-premium-access': ['Name', 'Faculty ID', 'Department', 'Course', 'Section', 'Date Created'],
     };
+    // const tableHeaders = {
+    //     'with-premium-access': ['Name', 'Faculty ID', 'Department', 'Course', 'Section', 'Date Created', 'Plan Status', 'Action'],
+    //     'no-premium-access': ['Name', 'Faculty ID', 'Date Created'],
+    // };
 
     // Get the total number of filters from the query parameters that have values
     useEffect(() => {
@@ -135,7 +140,6 @@ export default function Faculties({ auth, insAdminAffiliation, faculties, hasFac
             <div className="p-4">
                 <div className="flex">
                     <PageHeader>FACULTIES</PageHeader>
-                    <PageHeader className="ml-auto mr-4 uppercase">{`${university.uni_name} - ${uni_branch_name}`}</PageHeader>
                 </div>
 
                 <div className="mx-auto sm:px-2 lg:px-4">
@@ -208,9 +212,9 @@ export default function Faculties({ auth, insAdminAffiliation, faculties, hasFac
                                                             />
                                                         </td>
                                                         <td className="p-2">{uni_id_num}</td>
-                                                        {/* <td className="p-2">{departmentAcronym ?? 'N/A'}</td>
+                                                        <td className="p-2">{departmentAcronym ?? 'N/A'}</td>
                                                         <td className="p-2">{courseAcronym ?? 'N/A'}</td>
-                                                        <td className="p-2">{sectionName ?? 'N/A'}</td> */}
+                                                        <td className="p-2">{sectionName ?? 'N/A'}</td>
                                                         <td className="p-2">{formattedDateCreated}</td>
                                                         {/* <td className="p-2">
                                                             <Chip startContent={<FaFileInvoice size={16} />} size="sm" className="text-customGray h-full p-1 text-wrap flex text-center" variant='faded'>
@@ -218,14 +222,11 @@ export default function Faculties({ auth, insAdminAffiliation, faculties, hasFac
                                                             </Chip>
                                                         </td> */}
 
-                                                        {hasFacultyPremiumAccess === 'with-premium-access' && (
+                                                        {/* {hasFacultyPremiumAccess === 'with-premium-access' && (
                                                             <>
-                                                                {/* <td className="p-2">{<StatusChip status={planStatus} />}</td> */}
                                                                 <td className="p-2">{renderActionButtons(id, name, planName, planStatus)}</td>
                                                             </>
-                                                        )
-
-                                                        }
+                                                        )} */}
 
                                                     </tr>
                                                 )

@@ -50,6 +50,64 @@ const [reviewManuscriptProps, setReviewManuscriptProps] = useState(null);
 const [groupNames, setgroupNames] = useState(null);
 const [selectedGroupId, setSelectedGroupId] = useState(null); // Track selected group_id
 const [filteredClasses, setFilteredClasses] = useState([]);
+const [isDownloading, setIsDownloading] = useState(false);
+
+const handleDownload = () => {
+    if (!classes || classes.length === 0) {
+        alert("No data available for download.");
+        return;
+    }
+
+    // CSV headers
+    const headers = ["Group Name", "Title", "Created", "Updated", "Status"];
+
+    // Generate CSV rows from classes data
+    const rows = classes.map(classItem => [
+        classItem.group?.group_name || "No Name Available", // Group Name
+        classItem.man_doc_title || "", // Title
+        new Date(classItem.created_at).toLocaleDateString() || "", // Created Date
+        new Date(classItem.updated_at).toLocaleDateString() || "", // Updated Date
+        classItem.man_doc_status || "N/A", // Status
+    ]);
+
+    // Combine headers and rows into a single CSV string
+    const csvContent = [headers, ...rows]
+        .map(row => row.map(value => `"${value}"`).join(",")) // Escape values
+        .join("\n");
+
+    // Create a blob and trigger a download
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", "records.csv"); // Set file name
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+};
+
+// const handleDownload = async (section_id) => {
+//     setIsDownloading(true);
+//     try {
+//         const response = await axios.get('/export-csv', {
+//             params: { section_id }, // Add the section_id as a query parameter
+//             responseType: 'blob', // Ensure the response is treated as a blob
+//         });
+
+//         // Create a download link and trigger it
+//         const url = window.URL.createObjectURL(new Blob([response.data]));
+//         const link = document.createElement('a');
+//         link.href = url;
+//         link.setAttribute('download', 'records.csv'); // Name of the file to be downloaded
+//         document.body.appendChild(link);
+//         link.click();
+//         link.remove();
+//     } catch (error) {
+//         console.error('Error downloading the CSV:', error);
+//     } finally {
+//         setIsDownloading(false);
+//     }
+// };
 
 // Handler for dropdown change
   // Handler for dropdown change
@@ -316,7 +374,23 @@ const handleShowStudentWork = () => {
         >
             <header className="w-full bg-white text-gray-800 py-2 shadow-md border-t border-b border-gray-300">
                 <div className="flex justify-end space-x-4 mr-8">
-                    <ClassDropdown className="flex" />
+                    {/* <ClassDropdown className="flex" /> */}
+                    <div>
+                    {/* <button
+    onClick={() => handleDownload(1)} // Passing static value 1 as section_id
+    className="bg-blue-500 text-white py-2 px-4 rounded"
+    disabled={isDownloading}
+>
+    {isDownloading ? 'Downloading...' : 'Download CSV'}
+</button> */}<button
+    onClick={handleDownload}
+    className="bg-white border-2 text-sm border-blue-500 text-blue-500 my-1 py-1.5 px-4 rounded-full mr-6"
+>
+    Download CSV
+</button>
+
+
+        </div>
                 </div>
             </header>
 

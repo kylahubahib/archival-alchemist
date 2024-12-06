@@ -5,7 +5,7 @@ import PreviewTask from '@/Pages/Users/Class/Teacher/PreviewTask';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-const Stream = ({ folders, onBack }) => {
+const Stream = ({auth, user, folders, onBack }) => {
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -127,7 +127,7 @@ const courseAcronym = folder?.course?.course_acronym || 'Unknown Course'; // Saf
 const sectionName = folder?.section_name || 'Unknown Section'; // Safe access to section_name
 
   if (isPreviewMode) {
-    return <PreviewTask folders={folders} onBack={handleBackToStream} task={selectedTask} taskID={selectedTask?.id}/>;
+    return <PreviewTask auth={auth} user={user} folders={folders} onBack={handleBackToStream} task={selectedTask} taskID={selectedTask?.id}/>;
   }
 
   return (

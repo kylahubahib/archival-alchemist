@@ -288,6 +288,8 @@ useEffect(() => {
         </div>
             {isCreating ? (
                 <CreateClassSection
+                auth={auth}
+                user={auth.user}
                 setDropdownVisible={setDropdownVisible}
         visible={dropdownVisible} // Control visibility
                 selectedSemester={selectedSemester}

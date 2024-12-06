@@ -7,6 +7,7 @@ import { format } from 'date-fns';
 import Modal from '@/Components/Modal';
 import { MdMessage } from 'react-icons/md';
 import StudentRepository from '@/Pages/Users/Class/Student/Approved';
+import TeacherRepository from '@/Components/Manuscripts/TeacherRepository';
 import Posts from './Partials/Posts';
 import SubscriptionForm from './Partials/SubscriptionForm';
 import { Accordion, AccordionItem } from '@nextui-org/react';
@@ -24,7 +25,19 @@ export default function Edit({ auth, mustVerifyEmail, status }) {
     const [errorMessage, setErrorMessage] = useState('');
     const [showErrorModal, setShowErrorModal] = useState(false);
     const [showConfirmModal, setShowConfirmModal] = useState(false);
+    const [userType, setUserType] = useState(null); // Initialize as null or an appropriate value
 
+    useEffect(() => {
+      axios.get('/fetch-userType') // Replace with your actual API endpoint
+        .then(response => {
+          setUserType(response.data.userType); // Update the state with the userType value
+        })
+        .catch(error => {
+          console.error('Error fetching userType:', error);
+        });
+    }, []); // Empty dependency array means this runs only once after the component mounts
+
+    console.log("User Type: ", userType);
 
 
     const { data, setData, post, processing, recentlySuccessful, errors, reset } = useForm({
@@ -136,7 +149,7 @@ export default function Edit({ auth, mustVerifyEmail, status }) {
                             <p className="text-xs font-medium text-gray-800">Has been a member since {format(new Date(auth.user.created_at), 'yyyy')}</p>
                             <p className="text-sm text-gray-600 mt-2">{auth.user.user_aboutme}</p>
                             <div className="mt-4">
-                                <a href={route('inbox')} className="text-gray-600 hover:text-gray-800 flex items-center">
+                                <a href={route('chatify')} className="text-gray-600 hover:text-gray-800 flex items-center">
                                     <MdMessage size={32} className="mr-2" />
                                     <span>Message</span>
                                 </a>
@@ -210,7 +223,7 @@ export default function Edit({ auth, mustVerifyEmail, status }) {
 
 
                             <div className="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
-                                <Posts className="max-w-xl" />
+                                <Posts user={auth.user} className="max-w-xl" />
                             </div>
 
                         </div>
@@ -222,9 +235,14 @@ export default function Edit({ auth, mustVerifyEmail, status }) {
                         <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
 
 
-                            <div className="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
-                                <StudentRepository auth={auth} user={auth.user} className="max-w-xl" />
-                            </div>
+<div className="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
+  {userType === 'student' ? (
+    <StudentRepository auth={auth} user={auth.user} className="max-w-xl" />
+  ) : (
+    <TeacherRepository auth={auth} user={auth.user} className="max-w-xl" />
+  )}
+</div>
+
 
                         </div>
                     )}

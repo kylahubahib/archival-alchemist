@@ -337,7 +337,8 @@ class ProfileController extends Controller
         $user->load([
             'manuscripts' => function ($query) {
                 $query->where('is_publish', 1)
-                    ->where('man_doc_visibility', 'Y'); 
+                    ->where('man_doc_visibility', 'Y')
+                    ->with(['authors', 'tags']); 
             },
             'forum_post' => function ($query) {
                 $query->where('status', 'Visible')
@@ -352,5 +353,21 @@ class ProfileController extends Controller
         ]);
 
     }
+
+    public function getForumPosts() 
+{
+    // Get the authenticated user
+    $user = Auth::user();
+
+    $user->load([
+        'forum_post' => function ($query) {
+            $query->where('status', 'Visible')
+                ->with(['tags']);            
+}]);
+
+    Log::info($user->toArray());
+
+    return response()->json($user);
+}
 
 }

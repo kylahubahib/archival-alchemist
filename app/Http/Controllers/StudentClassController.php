@@ -52,6 +52,8 @@ class StudentClassController extends Controller
 
     public function storeManuscriptProject(Request $request)
     {
+
+        $uniBranchId = $this->fetchUniBranchId();
         Log::info('Request Data:', $request->all());
         try {
             $validatedData = $request->validate([
@@ -63,7 +65,8 @@ class StudentClassController extends Controller
                 'man_doc_author.*' => '.string|max:255',
                 'tags_name' => 'nullable|array', // Change this line to match your input key
                 'tags_name.*' => 'string|max:255', // Validate individual tag names
-                'man_doc_content' => 'required|file|mimes:pdf,docx|max:20480',
+                // 'man_doc_content' => 'required|file|mimes:pdf,docx|max:20480',
+                'man_doc_content' => 'required|file|mimes:docx',
 
             ]);
 
@@ -111,6 +114,7 @@ class StudentClassController extends Controller
                 'group_id' => $group->id, // The group ID from the saved manuscript
                 'section_id' => $section_id,
                 'man_doc_status' => 'P',
+                'uni_branch_id' => $uniBranchId,
             ]);
 
             Log::info('Manuscript Project Created:', ['id' => $manuscriptProject->id]);
@@ -579,6 +583,7 @@ public function getMyUniBooks(Request $request)
     try {
 
         $uniBranchId = $this->fetchUniBranchId();
+        // Log::info('Uni Branch Id: ', $uniBranchId);
         // Retrieve the 'keyword' and 'searchField' query parameters
         $keyword = $request->query('keyword');
         $searchField = $request->query('searchField', 'Title'); // Default to Title if not specified
@@ -652,9 +657,15 @@ public function getMyUniBooks(Request $request)
         // Find the student record where user_id matches Auth::id()
         $student = Student::where('user_id', $userId)->first();
 
+        // Log the student's details
+        Log::info('Users uni branch ID:', $student ? $student->toArray() : []);
+        Log::info('Users uni branch ID:', ['uni_branch_id' => $student?->uni_branch_id]);
+
+
         // Return the uni_branch_id if a student record exists
         return $student ? $student->uni_branch_id : null;
     }
+
 
 // SELECT *
 // FROM manuscripts mp
@@ -681,6 +692,46 @@ public function myApprovedManuscripts()
 
         // Log the manuscripts data (you can log only the specific data you need for debugging, like IDs or titles)
         Log::info('Fetched approved manuscripts for user ' . $userId, ['manuscripts' => $manuscripts]);
+
+        return response()->json($manuscripts, 200);
+    } catch (\Exception $e) {
+        // Log any errors that occur during the process
+        Log::error("Error fetching approved manuscripts for user {$userId}: " . $e->getMessage());
+
+        return response()->json(['error' => 'An error occurred while fetching the manuscripts.'], 500);
+    }
+}
+
+
+
+public function teachersRepository()
+{
+    $userId = Auth::id(); // Get the ID of the currently signed-in user
+
+    // Log the user ID to track which user is making the request
+    Log::info("User {$userId} is fetching approved manuscripts.");
+
+    try {
+        // Fetch approved manuscripts for the currently authenticated user, including tags and authors
+        // $manuscripts = ManuscriptProject::with(['tags', 'authors', 'section.faculty']) // Eager load tags and authors relationships
+        //     ->join('author', 'manuscripts.id', '=', 'author.man_doc_id')
+        //     ->where('manuscripts.man_doc_status', 'A') // Ensure only approved manuscripts are retrieved
+        //     ->where('section.faculty.id', $userId) // Filter by the current user
+        //     ->select('manuscripts.*') // Select fields from manuscripts table
+        //     ->get();
+
+
+        $manuscripts = ManuscriptProject::with(['tags', 'authors', 'section.user'])  // Eager load related models
+        ->where('manuscripts.man_doc_status', 'A') // Only approved manuscripts
+        ->whereHas('section.user', function($query) use ($userId) {
+            $query->where('id', $userId);  // Filter by the faculty's ID
+        })  // Select only manuscript fields
+        ->get();
+
+
+
+        // Log the manuscripts data (you can log only the specific data you need for debugging, like IDs or titles)
+        Log::info('Fetched approved manuscripts for user ' . $userId, ['manuscripts' => $manuscripts->toArray()]);
 
         return response()->json($manuscripts, 200);
     } catch (\Exception $e) {
@@ -879,6 +930,35 @@ public function myfavoriteManuscripts()
 
 
 
+  /**
+     * Check if the authenticated user is part of a group.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function checkGroup(Request $request)
+    {
+        Log::info('hi');
+
+        $section_id = $request->get('section_id');
+
+        Log::info($section_id);
+
+        // Get the authenticated user's ID
+        $userId = Auth::id();
+
+        // Check if the user has a non-null group_id
+        $hasGroup = GroupMember::where('stud_id', $userId)
+            ->where('section_id', $section_id)
+            ->whereNotNull('group_id')
+            ->exists();
+
+    // Log information about whether the user has a group
+    Log::info("This user has a group already", ['hasGroup' => $hasGroup]);
+        // Return the result as a JSON response
+        return response()->json([
+            'hasGroup' => $hasGroup,
+        ]);
+    }
 
 
 public function checkStudentInClass()
@@ -1078,8 +1158,8 @@ public function isPremium()
         $client->addScope(GoogleDrive::DRIVE_FILE);
 
 
-        // Initialize Google Drive Service
-        $driveService = new GoogleDrive($client);
+    // Initialize Google Drive Service
+    $driveService = new GoogleDrive($client);
 
         // Upload the file to Google Drive
         $driveFile = new GoogleDriveFile();
@@ -1094,124 +1174,124 @@ public function isPremium()
             'fields' => 'id'
         ];
 
-        try {
-             //Create the document in the google drive file
-            $uploadedFile = $driveService->files->create($driveFile, $uploadOptions);
+    try {
+         //Create the document in the google drive file
+        $uploadedFile = $driveService->files->create($driveFile, $uploadOptions);
 
-            //Set permissions for users
-            $this->setPermissions($driveService, $uploadedFile->id, $authorIds, $teacherId, $manuscriptId);
+        //Set permissions for users
+        $this->setPermissions($driveService, $uploadedFile->id, $authorIds, $teacherId, $manuscriptId);
 
-            return 'https://docs.google.com/document/d/' . $uploadedFile->id;
+        return 'https://docs.google.com/document/d/' . $uploadedFile->id;
 
-        } catch (Exception $e) {
-            Log::error('Error uploading file to Google Drive: ' . $e->getMessage());
-            return response()->json(['error' => 'Error uploading file: ' . $e->getMessage()], 500);
-        }
+    } catch (Exception $e) {
+        Log::error('Error uploading file to Google Drive: ' . $e->getMessage());
+        return response()->json(['error' => 'Error uploading file: ' . $e->getMessage()], 500);
     }
+}
 
 
-    private function setPermissions($driveService, $fileId, $authorIds, $teacherId, $manuscriptId)
-    {
-        Log::info('Drive Service Instance:', ['driveService' => $driveService]);
-        Log::info('File ID:', ['fileId' => $fileId]);
-        Log::info('Teacher ID:', ['teacherId' => $teacherId]);
+private function setPermissions($driveService, $fileId, $authorIds, $teacherId, $manuscriptId)
+{
+    Log::info('Drive Service Instance:', ['driveService' => $driveService]);
+    Log::info('File ID:', ['fileId' => $fileId]);
+    Log::info('Teacher ID:', ['teacherId' => $teacherId]);
 
-        // Get author emails from the Author table
-        $authorEmails = User::whereIn('id', $authorIds)->pluck('email')->toArray();
+    // Get author emails from the Author table
+    $authorEmails = User::whereIn('id', $authorIds)->pluck('email')->toArray();
 
-        //$authorEmails = User::whereIn('user_id', $authorIds)->pluck('email')->toArray();
-        Log::info('Fetched Author Emails:', ['authorEmails' => $authorEmails]);
+    //$authorEmails = User::whereIn('user_id', $authorIds)->pluck('email')->toArray();
+    Log::info('Fetched Author Emails:', ['authorEmails' => $authorEmails]);
 
-        // Retrieve the teacher's email
-        $teacherEmail = User::find($teacherId)->email;
-        Log::info('Teacher Email:', ['teacherEmail' => $teacherEmail]);
+    // Retrieve the teacher's email
+    $teacherEmail = User::find($teacherId)->email;
+    Log::info('Teacher Email:', ['teacherEmail' => $teacherEmail]);
 
-        // Combine author emails and teacher email
-        $emails = array_merge($authorEmails, [$teacherEmail]);
-        Log::info('Combined Emails:', ['emails' => $emails]);
+    // Combine author emails and teacher email
+    $emails = array_merge($authorEmails, [$teacherEmail]);
+    Log::info('Combined Emails:', ['emails' => $emails]);
 
-        // Set permissions for each user
-        foreach ($emails as $email) {
-            Log::info('Processing Email:', ['email' => $email]);
-            // Check if the email is valid
-            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-                Log::warning('Invalid Email Address:', ['email' => $email]);
-                continue;
-            }
+    // Set permissions for each user
+    foreach ($emails as $email) {
+        Log::info('Processing Email:', ['email' => $email]);
+        // Check if the email is valid
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            Log::warning('Invalid Email Address:', ['email' => $email]);
+            continue;
+        }
 
-            // Create permission for the user
-            $permission = new Permission();
-            $permission->setType('user');
-            $permission->setRole('writer');
-            $permission->setEmailAddress($email);
+        // Create permission for the user
+        $permission = new Permission();
+        $permission->setType('user');
+        $permission->setRole('writer');
+        $permission->setEmailAddress($email);
 
-            Log::info('Permission Object Created:', [
-                'type' => $permission->getType(),
-                'role' => $permission->getRole(),
-                'emailAddress' => $permission->getEmailAddress(),
+        Log::info('Permission Object Created:', [
+            'type' => $permission->getType(),
+            'role' => $permission->getRole(),
+            'emailAddress' => $permission->getEmailAddress(),
+        ]);
+
+        try {
+            $authorId = User::where('email', $email)->pluck('id')->first();
+            Log::info('Fetched This User:', ['User Id' => $authorId]);
+
+            // Log::info('Fetched This Author:', ['Author Id' => $fetchAuthor]);
+
+            // Set the permission
+            $createdPermission = $driveService->permissions->create(
+                $fileId,
+                $permission,
+                ['sendNotificationEmail' => false]
+            );
+
+            // Log the response after creating the permission
+            Log::info('Created Permission Response:', [
+                'id' => $createdPermission->getId(),
+                'email' => $createdPermission->getEmailAddress(),
+                'role' => $createdPermission->getRole(),
             ]);
 
-            try {
-                $authorId = User::where('email', $email)->pluck('id')->first();
-                Log::info('Fetched This User:', ['User Id' => $authorId]);
-
-                // Log::info('Fetched This Author:', ['Author Id' => $fetchAuthor]);
-
-                // Set the permission
-                $createdPermission = $driveService->permissions->create(
-                    $fileId,
-                    $permission,
-                    ['sendNotificationEmail' => false]
-                );
-
-                // Log the response after creating the permission
-                Log::info('Created Permission Response:', [
-                    'id' => $createdPermission->getId(),
-                    'email' => $createdPermission->getEmailAddress(),
-                    'role' => $createdPermission->getRole(),
-                ]);
-
-                Log::info('Fetched This Perm Id:', ['Perm Id' => $createdPermission->getId()]);
+            Log::info('Fetched This Perm Id:', ['Perm Id' => $createdPermission->getId()]);
 
 
-                $fetchAuthor = Author::where('user_id', $authorId)
-                        ->where('man_doc_id', $manuscriptId);
+            $fetchAuthor = Author::where('user_id', $authorId)
+                    ->where('man_doc_id', $manuscriptId);
 
-                if ($fetchAuthor) {
-                    $fetchAuthor->update([
-                        'permission_id' => $createdPermission->getId()
-                    ]);
-                }
-
-
-            } catch (Exception $e) {
-                Log::error('Error Setting Permissions:', [
-                    'email' => $email,
-                    'error' => $e->getMessage(),
+            if ($fetchAuthor) {
+                $fetchAuthor->update([
+                    'permission_id' => $createdPermission->getId()
                 ]);
             }
 
+
+        } catch (Exception $e) {
+            Log::error('Error Setting Permissions:', [
+                'email' => $email,
+                'error' => $e->getMessage(),
+            ]);
         }
 
-        return;
     }
 
-    public function sendForRevision(Request $request)
-    {
-        $manuscriptId = $request->get('manuscript_id');
-        Log::info("Starting 'sendForRevision' process for manuscript ID: $manuscriptId");
+    return;
+}
 
-        // Find the manuscript
-        $manuscript = ManuscriptProject::find($manuscriptId);
+public function sendForRevision(Request $request)
+{
+    $manuscriptId = $request->get('manuscript_id');
+    Log::info("Starting 'sendForRevision' process for manuscript ID: $manuscriptId");
 
-        if (!$manuscript || empty($manuscript->man_doc_adviser)) {
-            Log::warning("Manuscript not found or invalid data. Manuscript ID: $manuscriptId");
-            return response()->json(['error' => 'Manuscript not found or invalid data.'], 404);
-        }
+    // Find the manuscript
+    $manuscript = ManuscriptProject::find($manuscriptId);
 
-        $manuscript->update(['man_doc_status' => 'To Review']);
-        $googleDocUrl = $manuscript->man_doc_content;
-        $googleDocId = $this->extractGoogleDocId($googleDocUrl);
+    if (!$manuscript || empty($manuscript->man_doc_adviser)) {
+        Log::warning("Manuscript not found or invalid data. Manuscript ID: $manuscriptId");
+        return response()->json(['error' => 'Manuscript not found or invalid data.'], 404);
+    }
+
+    $manuscript->update(['man_doc_status' => 'To Review']);
+    $googleDocUrl = $manuscript->man_doc_content;
+    $googleDocId = $this->extractGoogleDocId($googleDocUrl);
 
         if (!$googleDocId) {
             Log::warning("Invalid Google Doc URL for manuscript ID: $manuscriptId");
@@ -1223,75 +1303,63 @@ public function isPremium()
         // Initialize Google Client
         $client = new GoogleClient();
         $client->setAuthConfig($keyFilePath);
-        // $client->setAuthConfig([
-        //     'type' => env('GOOGLE_SERVICE_TYPE'),
-        //     'project_id' => env('GOOGLE_SERVICE_PROJECT_ID'),
-        //     'private_key_id' => env('GOOGLE_SERVICE_PRIVATE_KEY_ID'),
-        //     'private_key' => env('GOOGLE_SERVICE_PRIVATE_KEY'),
-        //     'client_email' => env('GOOGLE_SERVICE_CLIENT_EMAIL'),
-        //     'client_id' => env('GOOGLE_SERVICE_CLIENT_ID'),
-        //     'auth_uri' => env('GOOGLE_SERVICE_AUTH_URI'),
-        //     'token_uri' => env('GOOGLE_SERVICE_TOKEN_URI'),
-        //     'auth_provider_x509_cert_url' => env('GOOGLE_SERVICE_AUTH_PROVIDER_CERT_URL'),
-        //     'client_x509_cert_url' => env('GOOGLE_SERVICE_CLIENT_CERT_URL'),
-        // ]);
         $client->addScope(GoogleDrive::DRIVE_FILE);
         $client->setSubject('file-manager@document-management-438910.iam.gserviceaccount.com');
 
-        $driveService = new GoogleDrive($client);
+    $driveService = new GoogleDrive($client);
 
 
         $authors = Author::with('user')->where('man_doc_id', $manuscriptId)->get();
         // $emails = $authors->pluck('user.email')->toArray();
 
-        foreach ($authors as $author) {
-            $email = $author->user->email;
-            $permId = $author->permission_id;
+    foreach ($authors as $author) {
+        $email = $author->user->email;
+        $permId = $author->permission_id;
 
-            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-                Log::warning('Invalid Email Address:', ['email' => $email]);
-                continue;
-            }
-
-
-            try {
-                // Fetch existing permissions
-                $permissions = $driveService->permissions->listPermissions($googleDocId);
-                Log::info("Existing Permissions: ", ['permissions' => $permissions]);
-
-                $permissionFound = false;
-
-                // Delete the existing permission if found
-                foreach ($permissions as $permission) {
-                    if ($permission->getId() === $permId) {
-                        $driveService->permissions->delete($googleDocId, $permission->getId());
-                        Log::info("Deleted existing permission for: $email");
-                        Log::info("Permission Id:", ['permissions' => $permission->getId()]);
-                        Log::info("Permission Id in Author Table:", ['permissions' => $permId]);
-
-                        $permissionFound = true;
-                        break;
-                    }
-                }
-
-                // Create a new permission for the user
-                $newPermission = new Permission();
-                $newPermission->setType('user');
-                $newPermission->setRole('reader');
-                $newPermission->setEmailAddress($email);
-                $driveService->permissions->create($googleDocId, $newPermission, ['sendNotificationEmail' => false]);
-                Log::info("Created new 'reader' permission for: $email");
-
-                // If no permission found, log the error
-                if (!$permissionFound) {
-                    Log::warning("Permission not found for: $email. Skipping permission creation.");
-                }
-
-            } catch (Exception $e) {
-                Log::error("Error deleting/creating permission for: $email", ['error' => $e->getMessage()]);
-                return response()->json(['error' => 'Error setting permission: ' . $e->getMessage()], 500);
-            }
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            Log::warning('Invalid Email Address:', ['email' => $email]);
+            continue;
         }
+
+
+        try {
+            // Fetch existing permissions
+            $permissions = $driveService->permissions->listPermissions($googleDocId);
+            Log::info("Existing Permissions: ", ['permissions' => $permissions]);
+
+            $permissionFound = false;
+
+            // Delete the existing permission if found
+            foreach ($permissions as $permission) {
+                if ($permission->getId() === $permId) {
+                    $driveService->permissions->delete($googleDocId, $permission->getId());
+                    Log::info("Deleted existing permission for: $email");
+                    Log::info("Permission Id:", ['permissions' => $permission->getId()]);
+                    Log::info("Permission Id in Author Table:", ['permissions' => $permId]);
+
+                    $permissionFound = true;
+                    break;
+                }
+            }
+
+            // Create a new permission for the user
+            $newPermission = new Permission();
+            $newPermission->setType('user');
+            $newPermission->setRole('reader');
+            $newPermission->setEmailAddress($email);
+            $driveService->permissions->create($googleDocId, $newPermission, ['sendNotificationEmail' => false]);
+            Log::info("Created new 'reader' permission for: $email");
+
+            // If no permission found, log the error
+            if (!$permissionFound) {
+                Log::warning("Permission not found for: $email. Skipping permission creation.");
+            }
+
+        } catch (Exception $e) {
+            Log::error("Error deleting/creating permission for: $email", ['error' => $e->getMessage()]);
+            return response()->json(['error' => 'Error setting permission: ' . $e->getMessage()], 500);
+        }
+    }
 
         $teacherId = Section::where('id', $manuscript->section_id)->value('ins_id');
 
@@ -1309,6 +1377,15 @@ public function isPremium()
         } else {
             Log::warning("Teacher ID not found for section ID: {$manuscript->section_id}");
         }
+
+        RevisionHistory::create([
+            'ins_comment' => null,
+            'man_doc_id' => $manuscript->id,
+            'ins_id' => $teacherId,
+            'man_doc_status' => 'T',
+            'group_id' => $manuscript->group_id,
+            'section_id' =>$manuscript->section_id,
+        ]);
 
         return response()->json(['success' => 'Document updated successfully.']);
     }

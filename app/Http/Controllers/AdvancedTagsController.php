@@ -20,7 +20,7 @@ class AdvancedTagsController extends Controller
      */
     public function index()
     {
-        $tags = Tags::paginate(10);
+        $tags = Tags::paginate(100);
 
         return Inertia::render('SuperAdmin/Advanced/Tags/Tags', [
             'tags' => $tags,

@@ -207,7 +207,7 @@ class PaymentSessionController extends Controller
                                 'plan_id' => $plan->id,
                                 'insub_status' => 'Active',
                                 'total_amount' => $finalAmount,
-                                'insub_content' => $institutionSubscription->insub_content,
+                                // 'insub_content' => $institutionSubscription->insub_content,
                                 'insub_num_user' => $num_user,
                                 'start_date' => $currentDate->toDateString(),
                                 'end_date' => $endDate,
@@ -422,7 +422,7 @@ class PaymentSessionController extends Controller
     
         \Log::info($request->all());
         
-        $file = $request->file('ins_admin_proof');
+        // $file = $request->file('ins_admin_proof');
         $plan = $request->plan;
     
         \Log::info('Plan:', $plan);
@@ -444,22 +444,22 @@ class PaymentSessionController extends Controller
         }
         
         
-        if ($file) {
-            \Log::info('File:', [
-                'name' => $file->getClientOriginalName(),
-                'mime_type' => $file->getClientMimeType(),
-                'size' => $file->getSize(),
-            ]);
+        // if ($file) {
+        //     \Log::info('File:', [
+        //         'name' => $file->getClientOriginalName(),
+        //         'mime_type' => $file->getClientMimeType(),
+        //         'size' => $file->getSize(),
+        //     ]);
         
-            // Generate a unique file name
-            $fileName = time() . '_' . $file->getClientOriginalName();
+        //     // Generate a unique file name
+        //     $fileName = time() . '_' . $file->getClientOriginalName();
             
-            // Store the file in the 'admin_proof_files' directory
-            //$file->storeAs('admin_proof_files', $fileName, 'public');
+        //     // Store the file in the 'admin_proof_files' directory
+        //     //$file->storeAs('admin_proof_files', $fileName, 'public');
             
-        } else {
-            \Log::info('No file uploaded for ins_admin_proof.');
-        }
+        // } else {
+        //     \Log::info('No file uploaded for ins_admin_proof.');
+        // }
 
         
         $price = $request->total_amount;
@@ -484,7 +484,7 @@ class PaymentSessionController extends Controller
                         'attributes' => [
                             'amount' => $finalAmount * 100,
                             'currency' => 'PHP',
-                            'description' => 'Payment for ' . $plan['plan_name'],
+                            'description' => $plan['plan_name'],
                             'billing' => [
                                 'name' => $request->name,
                                 'email' => $request->email,
@@ -518,7 +518,7 @@ class PaymentSessionController extends Controller
                     'email' => $request->email,
                     'uni_branch_id' => $uniBranchExist ? $uniBranchExist->id : $uniBranch->id,
                     'pnum' => $request->pnum,
-                    'fileName' => $fileName,
+                    // 'fileName' => $fileName,
                     'number_of_users' => $request->number_of_users,
                     'total_amount' => $price,
                 ]);
@@ -537,7 +537,7 @@ class PaymentSessionController extends Controller
                 $request->session()->put('finalAmount', $finalAmount);
 
                  // Store the file in the 'admin_proof_files' directory
-                 $file->storeAs('admin_proof_files', $fileName, 'public');
+                //  $file->storeAs('admin_proof_files', $fileName, 'public');
  
     
                 $checkoutUrl = $response->json('data.attributes.checkout_url');

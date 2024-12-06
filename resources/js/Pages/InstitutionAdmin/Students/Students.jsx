@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { User, Chip, user, Button, } from "@nextui-org/react";
 import { FaPlus, FaFileCircleCheck, FaFileCircleMinus, FaFileInvoice } from "react-icons/fa6";
@@ -141,7 +140,6 @@ export default function Students({ auth, insAdminAffiliation, students, hasStude
             <div className="p-4">
                 <div className="flex">
                     <PageHeader>STUDENTS</PageHeader>
-                    <PageHeader className="ml-auto mr-4 uppercase">{`${university.uni_name} - ${uni_branch_name}`}</PageHeader>
                 </div>
 
                 {/* <Button onClick={ } /> */}

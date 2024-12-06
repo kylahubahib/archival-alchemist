@@ -5,7 +5,7 @@ import Grades from '@/Pages/Users/Class/Teacher/Grades';
 import AssignedprojectForm from '@/Pages/Users/Class/Teacher/AssignedprojectForm';
 import Stream from '@/Pages/Users/Class/Teacher/Stream';
 
-const ViewClass = ({ onBack, folders }) => {
+const ViewClass = ({auth, user, onBack, folders }) => {
     const [showForm, setShowForm] = useState(false);
     const [activeSection, setActiveSection] = useState('assignedProject');
 
@@ -47,12 +47,12 @@ const ViewClass = ({ onBack, folders }) => {
                     >
                         People
                     </button>
-                    <button
+                    {/* <button
                         onClick={handleShowGrades}
                         className={`text-gray-600 font-semibold ${activeSection === 'grades' ? 'text-blue-500' : 'hover:text-blue-500'}`}
                     >
                         Grades
-                    </button>
+                    </button> */}
                 </div>
 
                 {/* Right side buttons: "+ Assign Project" and Back */}
@@ -82,9 +82,9 @@ const ViewClass = ({ onBack, folders }) => {
 
             {/* Content Section */}
             <div className="w-full bg-white">
-                {activeSection === 'people' && <People folders={folders} onBack={() => setActiveSection('')} />}
+                {activeSection === 'people' && <People auth={auth} user={user} folders={folders} onBack={() => setActiveSection('')} />}
                 {activeSection === 'grades' && <Grades  folders={folders}  onBack={() => setActiveSection('')} />}
-                {activeSection === 'assignedProject' && <Stream folders={folders} onBack={() => setActiveSection('')} />}
+                {activeSection === 'assignedProject' && <Stream auth={auth} user={user} folders={folders} onBack={() => setActiveSection('')} />}
             </div>
 
             {/* Conditionally Render AssignedprojectForm */}

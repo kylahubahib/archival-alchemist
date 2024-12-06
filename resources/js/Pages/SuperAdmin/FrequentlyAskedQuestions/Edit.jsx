@@ -4,6 +4,7 @@ import LongTextInput from '@/Components/LongTextInput';
 import Modal from '@/Components/Modal';
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
+import { showToast } from '@/Components/Toast';
 import { Head, router, useForm } from '@inertiajs/react';
 import { useState } from 'react';
 
@@ -20,7 +21,7 @@ export default function Edit({ isOpen, onClose, faq }) {
             preserveScroll: true,
             onSuccess: () => {
                 onClose();
-                alert('Successfully Updated!');
+                showToast('Successfully Updated!');
             },
             onError: (errors) => {
                 console.error('Update failed', errors);

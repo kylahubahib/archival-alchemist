@@ -160,7 +160,11 @@ useEffect(() => {
 
     useEffect(() => {
         setIsLoading(true); // Set loading to true when the component mounts
-        axios.get('/get-groupID')
+        axios.get('/get-groupID', {
+            params: {
+                section_id: folders?.id
+            }
+        })
             .then(response => {
                // setCourses(response.data.courses);
                console.log("API Response for my group ID:", response.data); // Log the response to inspect the structure
@@ -181,7 +185,7 @@ useEffect(() => {
 
     console.log('group id:', groupID);
     // Filter the classes where group_id matches groupID
-    const myproject = classes.filter((classItem) => classItem.group_id === groupID);
+    const myproject = classes.filter((classItem) => classItem?.group_id === groupID);
 
     console.log("This is the student's project: ", myproject);
 

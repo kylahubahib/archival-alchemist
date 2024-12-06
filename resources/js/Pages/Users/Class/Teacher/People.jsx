@@ -8,7 +8,8 @@ import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Dropdo
 import { Skeleton } from '@nextui-org/skeleton'; // Import Skeleton
 
 
-const People = ({ onBack, folders }) => {
+const People = ({auth, user, onBack, folders }) => {
+    const [profilePic, setProfilePic] = useState(auth.user.user_pic);
     const [FacultyUser, setFacultyUser] = useState(null); // Declare the user state
     const [StudentsUsers, setStudentUser] = useState(null); // Declare the user state
     const [isLoading, setIsLoading] = useState(false);
@@ -30,7 +31,7 @@ useEffect(() => {
         try {
             // Fetch group members and teacher data concurrently
             const [groupResponse, userResponse] = await Promise.all([
-                axios.get("/fetch-groupmembers"),
+                axios.get(`/fetch-groupmembers/${folders.id}`),
                 axios.get("/fetch-currentuser")
             ]);
 
@@ -223,11 +224,17 @@ useEffect(() => {
                         <Skeleton height={40} width="100%" />
                     ) : (
                         <div className="flex items-center space-x-4 p-4 border-b border-gray-200">
-                            <Avatar
+                            {/* <Avatar
                                 src="https://nextui.org/avatars/avatar-1.png"
                                 alt="Teacher"
                                 size="lg"
-                            />
+                            /> */}
+                                                                <img
+                                        className="h-10 w-10 rounded-full object-cover"
+                                        src={ profilePic || "/images/default_user_pic.png"
+                                        }
+                                        alt="Profile Picture"
+                                    />
                             {FacultyUser && <div className="text-gray-800 font-medium">{FacultyUser.name}</div>}
                         </div>
                     )}
@@ -257,10 +264,19 @@ useEffect(() => {
                         StudentsUsers.map((student, index) => (
                             <div key={student.id} className="flex items-center justify-between p-4 border-b border-gray-200">
                                 <div className="flex items-center space-x-4">
-                                    <Avatar
+                                    {/* <Avatar
                                         src="https://nextui.org/avatars/avatar-1.png"
                                         alt="Student"
                                         size="lg"
+                                    /> */}
+                                                                        <img
+                                        className="h-8 w-8 rounded-full object-cover"
+                                        src={
+                                            student.user_id === auth.user.id
+                                                ? profilePic
+                                                : student.user?.user_pic || "/images/default_user_pic.png"
+                                        }
+                                        alt="Profile Picture"
                                     />
                                     <div className="text-gray-800 font-medium">
                                         {student.user.name}

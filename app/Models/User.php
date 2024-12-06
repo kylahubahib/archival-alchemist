@@ -76,9 +76,9 @@ class User extends Authenticatable
         return $this->hasOne(Student::class, 'user_id');
     }
 
-    public function faculty(): HasOne
+    public function faculty(): HasMany
     {
-        return $this->hasOne(Faculty::class, 'user_id');
+        return $this->hasMany(Faculty::class, 'user_id');
     }
 
     public function institution_admin(): HasOne
@@ -233,4 +233,10 @@ class User extends Authenticatable
         return 'name';
     } 
     
+
+    public function user()
+{
+    return $this->belongsTo(User::class, 'stud_id');
+}
+
 }

@@ -5,7 +5,8 @@ namespace App\Http\Controllers\Pages\InstitutionAdmin;
 use App\Http\Controllers\Controller;
 use App\Mail\AccountDetailsMail;
 use App\Http\Controllers\Pages\InsAdminCommonDataController;
-use App\Models\{Faculty, PersonalSubscription, User};
+use App\Models\{Faculty, PersonalSubscription,eser};
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -60,7 +61,7 @@ class FacultyController extends Controller
             'faculty.university_branch:id,uni_id,uni_branch_name',
             'faculty.university_branch.university:id,uni_name,uni_acronym',
             'faculty.course:id,dept_id',
-            'faculty.course.section:id,course_id,section_name',
+            'faculty.course.sections:id,course_id,section_name',
             'faculty.course.department:id,dept_name,dept_acronym,uni_branch_id',
             'personal_subscription:id,user_id,plan_id,start_date,end_date,persub_status',
             'personal_subscription.plan:id,plan_name,plan_type,plan_term',

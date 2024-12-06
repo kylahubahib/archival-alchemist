@@ -73,6 +73,7 @@ export default function Library({ auth }) {
                         description="A list of all available capstone manuscripts."
                         manuscripts={manuscripts} // Pass manuscripts to Manuscript
                         user={auth.user} // Pass the user to Manuscript
+                        auth={auth}
                     //choice={choice} // Pass choice to Manuscript
                     />
                 );
@@ -85,6 +86,7 @@ export default function Library({ auth }) {
                         description="A selection of manuscripts recommended for you."
                         manuscripts={manuscripts} // Update this with actual data as needed
                         user={auth.user} // Pass the user to Manuscript
+                        auth={auth}
                     //choice={choice} // Pass choice to Manuscript
                     />
                 );
@@ -92,11 +94,12 @@ export default function Library({ auth }) {
             case 'ByUniversity': {
                 const choice = 'U';
                 return (
-                    <Manuscript
+                    <MyUniBooks
                         title="Manuscripts by University"
                         description="Manuscripts categorized by university."
                         manuscripts={manuscripts} // Update this with actual data as needed
                         user={auth.user} // Pass the user to Manuscript
+                        auth={auth}
                     //choice={choice} // Pass choice to Manuscript
                     />
                 );
@@ -135,7 +138,7 @@ export default function Library({ auth }) {
             <Head title="Library" />
 
             <div className="bg-white m-4 min-h-screen rounded-xl">
-                <div className="mx-auto sm:px-6 lg:px-8 bg-gray-100 min-poh-screen pt-6">
+                <div className="mx-auto sm:px-6 lg:px-8 bg-gray-100 min-h-screen pt-6">
                     <div className="flex flex-col">
                         <div className="flex justify-between items-center mb-4">
                             <div className="flex">
@@ -151,52 +154,52 @@ export default function Library({ auth }) {
                                 >
                                     Recommended
                                 </button>
-                                <button
-                                    onClick={() => handleTabClick('ByUniversity')}
-                                    className={buttonStyle('ByUniversity')}
-                                >
-                                    My Uni-Books
-                                </button>
+                                 {/* Conditionally render the "My Uni-Books" button */}
+                                 {isAuthenticated && (
+                                    <button
+                                        onClick={() => handleTabClick('ByUniversity')}
+                                        className={buttonStyle('ByUniversity')}
+                                    >
+                                        My Uni-Books
+                                    </button>
+                                )}
                             </div>
 
                             <div className="flex items-center space-x-2">
-                                <div className="flex items-center justify-between">
-                                    <div className="flex flex-col">
-                                        <label className="text-sm">Start Year:</label>
-                                        <select
-                                            value={startYear}
-                                            onChange={(e) => setStartYear(parseInt(e.target.value, 10))}
-                                            className="px-2 py-1 rounded text-sm" // Reduced padding and font size
-                                            style={{ width: "80px" }} // Set a fixed width for the dropdown
-                                        >
-                                            {yearOptions.map((year) => (
-                                                <option key={year} value={year}>
-                                                    {year}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </div>
+      <div className="flex items-center justify-between">
+        <div className="flex flex-col">
+          {/* <label className="text-sm">Start Year:</label> */}
+          {/* <select
+            value={startYear}
+            onChange={(e) => setStartYear(parseInt(e.target.value, 10))}
+            className="px-2 py-1 rounded text-sm" // Reduced padding and font size
+            style={{ width: "80px" }} // Set a fixed width for the dropdown
+          >
+            {yearOptions.map((year) => (
+              <option key={year} value={year}>
+                {year}
+              </option>
+            ))}
+          </select> */}
+        </div>
 
-                                    <div className="flex flex-col ml-4">
-                                        <label className="text-sm">End Year:</label>
-                                        <select
-                                            value={endYear}
-                                            onChange={handleEndYearChange} // Use the new handler
-                                            className="px-2 py-1 rounded text-sm" // Reduced padding and font size
-                                            style={{ width: "80px" }} // Set a fixed width for the dropdown
-                                        >
-                                            {yearOptions.map((year) => (
-                                                <option key={year} value={year}>
-                                                    {year}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </div>
+        {/* <div className="flex flex-col ml-4"> */}
+          {/* <label className="text-sm">End Year:</label>
+          <select
+            value={endYear}
+            onChange={handleEndYearChange} // Use the new handler
+            className="px-2 py-1 rounded text-sm" // Reduced padding and font size
+            style={{ width: "80px" }} // Set a fixed width for the dropdown
+          >
+            {yearOptions.map((year) => (
+              <option key={year} value={year}>
+                {year}
+              </option>
+            ))}
+          </select> */}
+        {/* </div> */}
 
-                                    {/* <p className="text-default-500 text-sm">
-        Selected range: {startYear} - {endYear}
-      </p> */}
-                                </div>
+    </div>
                             </div>
                         </div>
                         <div className="border-b border-gray-300 w-full -mx-6"></div>

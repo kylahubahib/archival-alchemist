@@ -9,6 +9,8 @@ import { useState, useEffect } from 'react';
 import Create from "./Create";
 import Edit from "./Edit";
 import Pagination from "@/Components/Pagination";
+import { showToast } from "@/Components/Toast";
+import PageHeader from "@/Components/Admin/PageHeader";
 
 export default function FrequentlyAskedQuestion({ auth, faqs }) {
     const [filteredData, setFilteredData] = useState(faqs.data);
@@ -64,7 +66,7 @@ export default function FrequentlyAskedQuestion({ auth, faqs }) {
             router.delete(route('manage-faqs.destroy', id), {
                 preserveScroll: true,
                 onSuccess: () => {
-                    alert('Successfully deleted!');
+                    showToast('Successfully deleted!');
                 },
             });
         }
@@ -94,7 +96,8 @@ export default function FrequentlyAskedQuestion({ auth, faqs }) {
 
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
                     <div className="flex flex-row justify-between my-5">
-                        <div className="text-gray-800 text-3xl font-bold">Frequently Asked Questions</div>
+                        <PageHeader>FREQUENTLY ASKED QUESTIONS</PageHeader>
+                        {/* <div className="text-gray-800 text-3xl font-bold">Frequently Asked Questions</div> */}
                         <div>
                             <AddButton onClick={() => setIsCreateModalOpen(true)} className="text-customBlue hover:text-white space-x-1">
                                 <FaPlus /><span>Add FAQ</span>

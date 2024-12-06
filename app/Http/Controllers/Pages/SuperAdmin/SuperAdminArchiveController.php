@@ -304,6 +304,7 @@ class SuperAdminArchiveController extends Controller
     {
         // Adjust the path to match the private storage folder (remove 'storage/' from the db file path)
         $filePath = storage_path('app/private/' . str_replace('storage/', '', $dbFilePath));
+        
 
         // Check if the file exists
         if (!file_exists($filePath)) {

@@ -43,11 +43,31 @@ const Manuscript = ({auth, user}) => {
         setSelectedRating(0); // Reset the rating to 0 (or whatever your default is)
     };
 
-
+    const handleClick = (id) => {
+        // When the PDF is loaded, increment the view count
+        axios
+        .post(`/manuscripts/${id}/increment-view`)
+        .then((response) => {
+            console.log('View count incremented:', response.data);
+        })
+        .catch((error) => {
+            console.error('Error incrementing view count:', error);
+        });
+    };
 
     const handleMaximize = (id) => {
-        setMaximizedId((prevId) => (prevId === id ? null : id)); // Toggle maximization
-      };
+        console.log("This is the mannuscripts ID: ", id)
+      setMaximizedId((prevId) => (prevId === id ? null : id)); // Toggle maximization
+      axios
+      .post(`/manuscripts/${id}/increment-view`)
+      .then((response) => {
+          console.log('View count incremented:', response.data);
+      })
+      .catch((error) => {
+          console.error('Error incrementing view count:', error);
+      });
+
+    };
 
       const toggleSidebar = () => {
           setIsSidebarOpen((prevState) => !prevState); // Toggle sidebar visibility
@@ -413,18 +433,86 @@ const Manuscript = ({auth, user}) => {
     }
 
     return (
-        <section className="w-full mx-auto my-4 ">
-            {manuscriptsToDisplay.map((manuscript) => (
-                <div key={manuscript.id} className="w-relative bg-white shadow-lg flex ">
-                    <div className="rounded w-40 h-full bg-gray-200 flex items-center justify-center">
-                        <img
-                            className="rounded w-36 h-46"
-                            src="https://via.placeholder.com/150"
-                            alt="Book"
-                        />
+        <section className="w-full mx-auto my-4 mt-8 ml-50">
+            <div className="mb-6 w-full flex items-center gap-4"> {/* Adjusted to use flex and gap */}
+            <div className="flex-grow  h-full">
+
+{loading && <div>Loading...</div>}
+                    {error && <div>{error}</div>}
+                    <div>
+                        {manuscriptsToDisplay.length === 0 ? (
+                            <div className="flex justify-center items-center text-gray-400">No manuscripts available.</div>
+                        ) : (
+                            manuscriptsToDisplay.map(manuscript => (
+                                <div key={manuscript.id}>
+                                    <h2>{manuscript.title}</h2>
+                                    {/* Add other manuscript details here */}
+                                </div>
+                            ))
+                        )}
                     </div>
-                    <div className="flex-1 p-4">
-                        <h2 className="text-xl font-bold text-gray-900">{manuscript.man_doc_title}</h2>
+            </div>
+            </div>
+
+            {manuscriptsToDisplay.map((manuscript) => (
+                <div key={manuscript.id} className="w-full bg-white shadow-lg flex mb-4 text-sm">
+
+        <div
+            className={`rounded ${maximizedId === manuscript.id ? 'w-full h-full' : 'w-40 h-48'} bg-gray-200 flex items-center justify-center relative transition-all duration-300 ease-in-out y-4 m-5`}
+        >
+
+  <div className="flex items-center justify-center h-full w-full text-gray-500">
+  {maximizedId === manuscript.id ? (
+    manuscript.man_doc_content ? (
+      <PdfViewer pdfUrl={manuscript.man_doc_content} />
+    ) : (
+      <div className="flex items-center justify-center h-full w-full text-gray-500">
+        <p>No PDF available</p>
+      </div>
+    )
+  ) : (
+    <div className="flex flex-col h-full w-full items-center justify-center text-center text-gray-800 text-xxxs p-2 bg-white border-2 mb-1 leading-tight">
+        {manuscript.man_doc_title}
+        <p className="block pt-12">By:</p> {/* This "By:" will now be on a new line */}
+        <p className="block">{manuscript.authors?.length > 0 ? (
+            <div>
+                {manuscript.authors.map((author, index) => (
+                    <p key={index} className="text-xxxs text-gray-800 mb-1 leading-tight">{author.name}</p>))}
+            </div>) : ( <p >Unknown Authors</p>)}
+        </p>
+        <p className="block pt-5">{new Date(manuscript.updated_at).getFullYear()}</p>
+    </div>
+  )}
+
+  {/* Maximize / Minimize Button */}
+  <button
+    onClick={() => handleMaximize(manuscript.id)}
+    className="text-xxxss absolute top-2 right-2 bg-gray-500 text-white p-2 rounded-full shadow-lg hover:bg-gray-600 transition-colors duration-200 z-40"
+  >
+    {maximizedId === manuscript.id ? 'X' : 'Preview'}
+  </button>
+</div>
+             </div>
+
+
+<div className="flex-1 p-4">
+        <div>
+             {/* {isPremium ? ( */}
+                {/* // If the user is premium, show the link directly */}
+                <h2 className="text-base font-bold text-gray-900">
+                <a
+                  onClick={() => handleClick(manuscript.id)} // Trigger the increment logic before opening the link
+                    href={`http://127.0.0.1:8000/${manuscript.man_doc_content}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-gray-700 hover:text-blue-600 hover:underline cursor-pointer transition-all duration-300 ease-in-out"
+                >
+                    {manuscript.man_doc_title}
+                </a>
+            </h2>
+
+        </div>
+
                         <div className="mt-2 flex flex-wrap gap-2">
                             <p className="text-gray-700 mt-1">Author:</p>
                             {manuscript.authors?.length > 0 ? (
@@ -448,39 +536,32 @@ const Manuscript = ({auth, user}) => {
                     </Tooltip>
 
                     <div
-                    key={manuscript.id}
-                    className="flex items-center text-blue-500 hover:text-blue-700 cursor-pointer"
-                    onClick={() => {
-                        if (!isAuthenticated) {
-                            // Show the login modal if the user is not authenticated
-                            openLogInModal();
-                        } else if (!isPremium) {
-                            // Show the subscription modal if the user is not premium
-                            openSubsModal();
-                        } else {
-                            // Proceed with the bookmark action if the user is premium and authenticated
-                            handleComments(manuscript.id, manuscript.man_doc_title)
-                        }
-                    }}
-                >
-                    <FaComment size={20} />
-                    </div>
+    key={manuscript.id}
+    className="flex items-center text-blue-500 hover:text-blue-700 cursor-pointer"
+    onClick={() => {
+        setSelectedManuscript(manuscript); // Set the selected manuscript
+        setIsSidebarOpen(true); // Ensure the sidebar opens
+    }}
+>
+    <FaComment size={20} />
+</div>
 
-                {/* Render ToggleComments only if a manuscript is selected and the sidebar is open */}
-                {selectedManuscript && (
-                    <ToggleComments
-                    auth={auth}
-                        manuscripts={selectedManuscript}  // Pass the selected manuscript to ToggleComments
-                        man_id={selectedManuscript.id}  // Pass additional properties if needed
-                        man_doc_title={selectedManuscript.title}
-                        isOpen={isSidebarOpen}
-                        toggleSidebar={() => setIsSidebarOpen((prevState) => !prevState)} // Toggle the sidebar
-                    />
-                )}
+{/* Render ToggleComments only if a manuscript is selected and the sidebar is open */}
+{selectedManuscript && isSidebarOpen && (
+    <ToggleComments
+        auth={auth}
+        manuscripts={selectedManuscript} // Pass the selected manuscript to ToggleComments
+        man_id={selectedManuscript.id} // Pass additional properties if needed
+        man_doc_title={selectedManuscript.man_doc_title}
+        isOpen={isSidebarOpen}
+        toggleSidebar={() => setIsSidebarOpen((prevState) => !prevState)} // Toggle the sidebar
+    />
+)}
 
 
 
-<Tooltip content="Bookmark">
+
+                {/* <Tooltip content="Bookmark">
                     <button
                         className="text-gray-600 hover:text-blue-500"
                         onClick={() => {
@@ -498,9 +579,9 @@ const Manuscript = ({auth, user}) => {
                     >
                         <FaBookmark size={20} />
                     </button>
-                </Tooltip>
+                </Tooltip> */}
 
-                <Tooltip content="Download">
+                {/* <Tooltip content="Download">
                     <button
                         className="text-gray-600 hover:text-blue-500"
                         onClick={() => {
@@ -519,7 +600,17 @@ const Manuscript = ({auth, user}) => {
                     >
                         <FaFileDownload size={20} />
                     </button>
-                </Tooltip>
+                </Tooltip> */}
+
+
+<Tooltip content="Download">
+                                <button
+                                    className="text-gray-600 hover:text-blue-500"
+                                    onClick={() => handleDownload(manuscript.id, manuscript.man_doc_title)}
+                                >
+                                    <FaFileDownload size={20} />
+                                </button>
+                            </Tooltip>
 
 
                                 {/* Modal for Non-Premium Users */}
@@ -535,47 +626,25 @@ const Manuscript = ({auth, user}) => {
                     </Modal>
                 )}
 
-<Tooltip content="Ratings">
-                    <button
-                        className="text-gray-600 hover:text-blue-500"
-                        onClick={() => {
-                            if (!isAuthenticated) {
-                                // Show the login modal if the user is not authenticated
-                                openLogInModal();
-                            } else if (!isPremium) {
-                                // Show the subscription modal if the user is not premium
-                                openSubsModal();
-                            } else {
-                                // Proceed with the bookmark action if the user is premium and authenticated
-                                handleRatings(manuscript);
-                            }
-                        }}
-                    >
-                        <FaStar size={20} />
-                    </button>
-                </Tooltip>
+{/* <Tooltip content="Ratings">
+                                <button
+                                    className="text-gray-600 hover:text-blue-500"
+                                    onClick={() => handleRatings(manuscript)}
+                                >
+                                    <FaStar size={20} />
+                                </button>
+                            </Tooltip> */}
 
 
 
                 <Tooltip content="Cite">
-                    <button
-                        className="text-gray-600 hover:text-blue-500"
-                        onClick={() => {
-                            if (!isAuthenticated) {
-                                // Show the login modal if the user is not authenticated
-                                openLogInModal();
-                            } else if (!isPremium) {
-                                // Show the subscription modal if the user is not premium
-                                openSubsModal();
-                            } else {
-                                // Proceed with the bookmark action if the user is premium and authenticated
-                                handleCitation(manuscript);
-                            }
-                        }}
-                    >
-                        <FaQuoteLeft size={20} />
-                    </button>
-                </Tooltip>
+                                <button
+                                    className="text-gray-600 hover:text-blue-500"
+                                    onClick={() => handleCitation(manuscript)}
+                                >
+                                    <FaQuoteLeft size={20} />
+                                </button>
+                            </Tooltip>
 
 
                     {/* Rendering the ratings modal */}

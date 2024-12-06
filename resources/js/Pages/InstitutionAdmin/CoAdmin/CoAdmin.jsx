@@ -15,7 +15,6 @@ import Pagination from "@/Components/Admin/Pagination";
 import TableSkeleton from "@/Components/Admin/TableSkeleton";
 import StatusChip from "@/Components/Admin/StatusChip";
 import NoDataPrompt from "@/Components/Admin/NoDataPrompt";
-import Filter from "./Filter";
 import Add from "@/Pages/SuperAdmin/Users/Add";
 import AccessControl from "@/Pages/SuperAdmin/Users/AccessControl";
 import { FaUserCheck, FaUserSlash } from "react-icons/fa";
@@ -210,7 +209,7 @@ export default function CoAdmins({ auth, insAdminAffiliation, coAdmins, search, 
             <div className="p-4">
                 <div className="flex">
                     <PageHeader>CO-ADMINS</PageHeader>
-                    <PageHeader className="ml-auto mr-4 uppercase">{`${university.uni_name} - ${uni_branch_name}`}</PageHeader>
+                    {/* <PageHeader className="ml-auto mr-4 uppercase">{`${university.uni_name} - ${uni_branch_name}`}</PageHeader> */}
                 </div>
 
                 <div className="mx-auto sm:px-2 lg:px-4">
@@ -223,18 +222,18 @@ export default function CoAdmins({ auth, insAdminAffiliation, coAdmins, search, 
 
                         {/* TABLE CONTROLS */}
                         {renderTableControls('institution-coadmins.filter', searchTerm, setSearchTerm, 'Search by name or user id...',
-                            coAdmins.data.length === 0, totalFilters, handleClearFiltersClick, isFilterOpen, setIsFilterOpen,
+                            coAdmins.data.length === 0, totalFilters, handleClearFiltersClick, isFilterOpen, setIsFilterOpen, false,
                             handleSetEntriesPerPageClick, entriesPerPage, setEntriesPerPage, setCoAdminsToRender
                         )}
 
                         {/* FILTER COMPONENT PLACEMENT */}
-                        <Filter
+                        {/* <Filter
                             autocompleteItems={autocompleteItems}
                             setAutocompleteItems={setAutocompleteItems}
                             selectedAutocompleteItems={selectedAutocompleteItems}
                             setSelectedAutocompleteItems={setSelectedAutocompleteItems}
                             isFilterOpen={isFilterOpen}
-                        />
+                        /> */}
 
                         {/* STUDENT DATA */}
                         <div className="TableContainer border overflow-y-auto  max-h-[50vh] ">

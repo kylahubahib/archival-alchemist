@@ -120,7 +120,7 @@ export default function Add({ isOpen, onClose }) {
                 onClose();
             },
             onError: (error) => {
-                showToast('error', `${error}`);
+                // showToast('error', `${error}`);
                 console.error('Error occurred while adding the student:', error);
                 // showToast('error', 'An error occurred. Please try again.', {
                 //     autoClose: 5000,
@@ -323,6 +323,9 @@ export default function Add({ isOpen, onClose }) {
                     </div> */}
 
                 </div>
+
+
+
                 <div className="bg-customBlue p-2 gap-2 flex justify-end">
                     <Button color="primary" size="sm" type="submit" isLoading={processing}>
                         {processing ? 'Adding...' : 'Add'}
@@ -336,3 +339,4 @@ export default function Add({ isOpen, onClose }) {
         </Modal >
     );
 }
+        

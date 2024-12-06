@@ -13,6 +13,20 @@ use Illuminate\Support\Facades\Auth;
 
 class FAQController extends Controller
 {
+
+
+    public function faq()
+    {   
+        $faqs = CustomContent::where('content_type', 'frequently asked questions')
+                    ->where('content_status', 'available')
+                    ->get();
+
+        return Inertia::render('FAQ', [
+            'faqs' => $faqs
+        ]);
+    }
+
+
     /**
      * Display a listing of the resource.
      */

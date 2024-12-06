@@ -15,13 +15,9 @@ use carbon\Carbon;
 
 class SemesterController extends Controller
 {
-    public function __construct()
-    {
-        // Apply 'can_add' access to 'create' and 'store' actions.
-        $this->middleware('access:can_add')->only(['create', 'store']);
-        // Apply 'can_edit' access to 'edit', 'update', and 'destroy' actions.
-        $this->middleware('access:can_edit')->only(['edit', 'update', 'destroy']);
-    }
+
+   
+
     public function getSemesters()
     {
         $user = Auth::user();
@@ -64,7 +60,7 @@ class SemesterController extends Controller
             'start_date' => 'required|date',
             'end_date' => 'required|date',
             'start_sy' => 'required|string',
-            'end_sy' => 'required|string',
+            'end_sy' => 'required|string'
         ]);
 
         \Log::info('Data passed: ', $request->all());
@@ -99,6 +95,7 @@ class SemesterController extends Controller
             'end_date' => 'required|date',
             'start_sy' => 'required|string',
             'end_sy' => 'required|string',
+            'status' => 'required|string'
         ]);
 
         \Log::info('Data passed: ', $request->all());
@@ -110,7 +107,8 @@ class SemesterController extends Controller
             'name' => $request->name,
             'start_date' => Carbon::parse($request->start_date),
             'end_date' => Carbon::parse($request->end_date),
-            'school_year' => $schoolYear
+            'school_year' => $schoolYear,
+            'status' => $request->status
         ]);
 
 

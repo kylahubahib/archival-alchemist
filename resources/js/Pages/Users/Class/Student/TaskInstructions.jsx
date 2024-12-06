@@ -22,7 +22,7 @@ console.log("This is the Task ID:", taskID);
       man_doc_description: '',
       man_doc_content: null,
       man_doc_adviser: '',
-      agreed: false,
+    //   agreed: false,
   });
   const [errors, setErrors] = useState({ users: '', tags: '' });
   const [message, setMessage] = useState('');
@@ -32,6 +32,29 @@ console.log("This is the Task ID:", taskID);
   const [tagSuggestions, setTagSuggestions] = useState([]);
   const [authorInputValue, setAuthorInputValue] = useState('');
   const [tagInputValue, setTagInputValue] = useState('');
+  const [processing, Setprocessing] = useState(false);
+
+    const [hasGroup, setHasGroup] = useState(false);
+
+    useEffect(() => {
+        // Fetch data from your Laravel API endpoint
+        const checkGroupMembership = async () => {
+            try {
+                const response = await axios.get('/api/check-group', {
+                    params: {
+                        section_id: folders?.id
+                    }
+                }); // Endpoint to check group membership
+                const data = response.data;
+                setHasGroup(data.hasGroup); // Assuming the API returns { hasGroup: true/false }
+            } catch (error) {
+                console.error("Error fetching group membership:", error);
+            }
+        };
+
+        checkGroupMembership();
+    }, [hasGroup]);
+console.log("This user has a group already.", hasGroup)
 
   const resetForm = () => {
       setFormValues({
@@ -40,7 +63,7 @@ console.log("This is the Task ID:", taskID);
           man_doc_description: '',
           man_doc_content: null,
           man_doc_adviser: '',
-          agreed: false,
+        //   agreed: false,
       });
       setTags([]);
       setAuthors([]);
@@ -171,8 +194,8 @@ console.log("This is the Task ID:", taskID);
           formValues.man_doc_adviser &&
           users.length > 0 &&
           tags.length > 0 &&
-          formValues.man_doc_content &&
-          formValues.agreed
+          formValues.man_doc_content
+        //   formValues.agreed
       );
   };
 
@@ -187,7 +210,7 @@ console.log("This is the Task ID:", taskID);
   };
 
   const handleSubmit = async (e) => {
-    
+
       e.preventDefault();
       const newErrors = {};
 
@@ -198,7 +221,7 @@ console.log("This is the Task ID:", taskID);
       if (!formValues.man_doc_adviser) newErrors.man_doc_adviser = 'Adviser is required.';
       if (tags.length === 0) newErrors.tags = 'At least one tag is required.';
       if (!formValues.man_doc_content) newErrors.man_doc_content = 'A file is required.';
-      if (!formValues.agreed) newErrors.agreed = 'You must agree to the terms and conditions.';
+    //   if (!formValues.agreed) newErrors.agreed = 'You must agree to the terms and conditions.';
 
       setErrors(newErrors);
 
@@ -223,7 +246,7 @@ console.log("This is the Task ID:", taskID);
               users.forEach(user => formData.append('name[]', user));
               tags.forEach(tag => formData.append('tags_name[]', tag));
               formData.append('man_doc_content', formValues.man_doc_content);
-              formData.append('agreed', formValues.agreed);
+            //   formData.append('agreed', formValues.agreed);
 
               //Add the class_code
               formData.append('section_id', folders.id);
@@ -407,7 +430,7 @@ console.log("This is the Task ID:", taskID);
       {loading && hasMore && <p className="text-center text-gray-600 mt-4">Loading more tasks...</p>}
 
 
-
+      {!hasGroup ? (
       <div  className="w-[90%] max-relative p-6 bg-white shadow-md rounded-lg ml-20 mt-3">
         <div className="upload-capstone-container p-8">
             {success ? (
@@ -575,15 +598,15 @@ console.log("This is the Task ID:", taskID);
                         </div>
 
                         <div className="flex items-center mb-4">
-                            <input
+                            {/* <input
                                 type="checkbox"
                                 name="agreed"
                                 checked={formValues.agreed}
                                 onChange={handleFormFieldChange}
                                 className="mr-2"
-                            />
-                            <label>I agree to the terms and conditions</label>
-                            {errors.agreed && <div className="text-red-600 text-sm ml-2">{errors.agreed}</div>}
+                            /> */}
+                            {/* <label>I agree to the terms and conditions</label> */}
+                            {/* {errors.agreed && <div className="text-red-600 text-sm ml-2">{errors.agreed}</div>} */}
                         </div>
                         <button
                             type="submit"
@@ -602,7 +625,7 @@ console.log("This is the Task ID:", taskID);
                 </div>
             )}
             {modalOpen && <Modal onClose={() => setModalOpen(false)} />}
-        </div></div>
+        </div></div>):(<div  className="w-[90%] max-relative p-6 bg-green-300 text-center text-gray-700 shadow-md rounded-lg ml-20 mt-3">Your group has submitted successfully.</div>)}
     </div>
 
   );

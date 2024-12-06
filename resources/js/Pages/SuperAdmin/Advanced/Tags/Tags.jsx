@@ -99,7 +99,7 @@ export default function Tags({ auth, tags }) {
                     <div className=" space-x-4 pb-4">
                         <AdvancedMenu />
                     </div>
-                    <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg space-x-4 p-4">
+                    <div className="bg-white overflow-hidden min-h-screen shadow-sm sm:rounded-lg space-x-4 p-4">
 
                         <div className="flex flex-row justify-between m-3">
                                 <div className="relative">

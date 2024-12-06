@@ -126,4 +126,4 @@ export default function InsAdminArchives({ auth, folders, manuscripts, search })
             />
         </AdminLayout >
     );
-}
+}               

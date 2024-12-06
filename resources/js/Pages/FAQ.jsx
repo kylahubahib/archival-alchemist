@@ -3,7 +3,10 @@ import { Link, Head } from '@inertiajs/react';
 import GuestLayout from '@/Layouts/GuestLayout';
 import Collapsible from '@/Components/Collapsible';
 
-export default function FAQ({ auth }) {
+export default function FAQ({ auth, faqs }) {
+
+    console.log(faqs)
+    
     const guidelines = [
         {
             question: "Q&A Guidelines",
@@ -64,17 +67,19 @@ export default function FAQ({ auth }) {
                 </h1>
 
                 <div className="max-w-2xl mx-auto mt-10">
-                    {guidelines.map((item, index) => (
+                    {faqs.map((item, index) => (
                         <div className="mb-5" key={index}> {/* Added margin bottom for spacing */}
                             <Collapsible 
                                 question={
                                     <span style={{ fontFamily: 'Inter, sans-serif', fontWeight: 600 }}>
-                                        {item.question}
+                                        {/* this is the question */}
+                                        {item.content_title}
                                     </span>
                                 }
                                 answer={
                                     <span style={{ fontFamily: 'Inter, sans-serif', fontWeight: 200, color: '#6b7280' }}>
-                                        {item.answer}
+                                        {/* this is the answer */}
+                                        {item.content_text}
                                     </span>
                                 }
                             />

@@ -38,9 +38,14 @@ class Faculty extends Model
         return $this->belongsTo(UniversityBranch::class, 'uni_branch_id');
     }
 
-    public function course(): HasOne
+    public function department()
     {
-
-        return $this->hasOne(Course::class, 'id', 'course_id');
+        return $this->belongsTo(Department::class, 'dept_id');
     }
+
+    public function course(): HasOne {
+return $this->hasOne(Course::class, 'id', 'course_id');
+    }
+
+        
 }

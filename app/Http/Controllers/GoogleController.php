@@ -13,6 +13,7 @@ use Carbon\Carbon;
 use Inertia\Inertia;
 use Inertia\Response;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 
 class GoogleController extends Controller
 {
@@ -20,7 +21,7 @@ class GoogleController extends Controller
     /**
      * Redirect to Google authentication page
      */
-    public function redirectToGoogle() 
+    public function redirectToGoogle()
     {
 
         $user = Auth::user();
@@ -37,12 +38,16 @@ class GoogleController extends Controller
                 ->redirect();
         }
         else 
-        {
-            return Socialite::driver('google')->redirect();
+        {   
+            $parameters = ['access_type' => 'offline', "prompt" => "consent",];
+                return Socialite::driver('google')
+                ->scopes([
+                    'https://www.googleapis.com/auth/drive.file',
+                    'https://www.googleapis.com/auth/documents',
+                ])
+                ->with($parameters)
+                ->redirect();
         }
-
-       
-  
     }
 
     /**
@@ -83,9 +88,9 @@ class GoogleController extends Controller
     //             return redirect()->route('institution-students');
 
     //         } else {
-    //             return redirect()->route('library'); 
+    //             return redirect()->route('library');
     //         }
-           
+
     //     } catch (\Exception $e) {
     //         \Log::error('Google 0Auth Callback Error: ' . $e->getMessage());
     //         return redirect('login')->withErrors(['error' => 'Failed to authenticate with Google.']);
@@ -117,6 +122,7 @@ class GoogleController extends Controller
                 $user = User::create([
                     'name' => $googleUser->getName(),
                     'email' => $googleUser->getEmail(),
+                    'user_type' => 'general_user',
                     'google_user_id' => $googleUser->id,
                     'google_access_token' => $googleUser->token,
                     'google_refresh_token' => $googleUser->refreshToken,
@@ -144,7 +150,7 @@ class GoogleController extends Controller
     public function promptGoogleConnection()
     {
         return Inertia::render('Auth/ConnectToGoogle');
-    } 
+    }
 
 
 }

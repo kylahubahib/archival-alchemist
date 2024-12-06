@@ -197,8 +197,6 @@ class ForumPostController extends Controller
     }
 
 
-    public function faq()
-    {
-        return Inertia::render('FAQ'); // Assuming the file is located in resources/js/Pages/FAQ.jsx
-    }
+        
+
 }

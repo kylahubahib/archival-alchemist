@@ -33,6 +33,7 @@ const PdfViewer = ({ pdfUrl }) => {
     }
   };
 
+
   return (
     <div className="relative w-full h-full p-4 shadow-lg rounded-lg">
       <div

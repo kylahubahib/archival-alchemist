@@ -17,6 +17,8 @@ export default function GuestLayout({ user, children }) {
                             <NavLink href={route('library')} active={route().current('library')} className="text-customBlue">Library</NavLink>
                             <NavLink href={route('pricing')} active={route().current('pricing')} className="text-customBlue">Pricing</NavLink>
                             <NavLink href={route('faq')} active={route().current('faq')} className="text-customBlue">FAQ</NavLink>
+                            <NavLink href={route('forum')} active={route().current('forum')} className="text-customBlue">Forum</NavLink>
+
                         </div>
                         <div className="hidden md:flex space-x-4 sm:space-x-6">
                             {user ? (
