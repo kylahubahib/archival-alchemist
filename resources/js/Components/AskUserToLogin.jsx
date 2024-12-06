@@ -1,6 +1,7 @@
 import React from "react";
 import { FaStar } from "react-icons/fa";
 import NavLink from '@/Components/NavLink';
+
 const AskUserToLogin = () => {
   return (
     <div className="relative text-gray-300 w-full h-full m-0 top-0 bottom-0 right-0 left-0 overflow-hidden" id="pricing">
@@ -41,12 +42,17 @@ const AskUserToLogin = () => {
           {/* Underline (Thin Horizontal Line) */}
           <div className="w-full h-[1px] bg-gray-500 mb-6"></div>
 
-          <a
-            href="#contact"
+          <NavLink
+            href={route('login')}
             className="relative flex h-9 w-full items-center justify-center px-4 before:absolute before:inset-0 before:rounded-full before:bg-white before:transition before:duration-300 hover:before:scale-105 active:duration-75 active:before:scale-95 sm:w-max"
+            active={route().current('login')}
           >
-            <span className="relative text-sm font-semibold text-black hover:bg:blue-500"><NavLink href={route('login')} className="text-customBlue">Login</NavLink></span>
-          </a>
+            <span className="relative text-sm font-semibold text-black hover:bg:blue-500">
+              Sign In Now!
+            </span>
+          </NavLink>
+
+
         </div>
       </div>
     </div>

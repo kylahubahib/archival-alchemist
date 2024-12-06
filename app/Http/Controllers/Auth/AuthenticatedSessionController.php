@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers\Auth;
+
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
@@ -51,7 +52,7 @@ class AuthenticatedSessionController extends Controller
             $user = $authenticatedUser->load(['student', 'faculty']);
 
             // Check if user is affiliated with an institution
-            if ($user->user_type != 'institution_admin' && $user->user_type != 'superadmin') {
+            if ($user->user_type != 'admin' && $user->user_type != 'superadmin') {
                 if ($user->user_type == 'student') {
                     $checkInSub = InstitutionSubscription::where('uni_branch_id', $user->student->uni_branch_id)->first();
                 } elseif ($user->user_type == 'teacher') {
@@ -82,7 +83,7 @@ class AuthenticatedSessionController extends Controller
                         return redirect()->route('library')->with('user', $user);
                     case 'teacher':
                         return redirect()->route('library');
-                    case 'institution_admin':
+                    case 'admin':
                         return redirect()->route('institution-students');
                     case 'superadmin':
                         return redirect()->route('dashboard.index');
@@ -115,15 +116,14 @@ class AuthenticatedSessionController extends Controller
     /**
      * Destroy an authenticated session.
      */
-        public function destroy(Request $request): RedirectResponse
-        {
-            Auth::guard('web')->logout();
+    public function destroy(Request $request): RedirectResponse
+    {
+        Auth::guard('web')->logout();
 
-            $request->session()->invalidate();
+        $request->session()->invalidate();
 
-            $request->session()->regenerateToken();
+        $request->session()->regenerateToken();
 
-            return redirect('/home');
-        }
-
+        return redirect('/home');
+    }
 }

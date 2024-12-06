@@ -6,7 +6,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Controller;
-use Illuminate\Validation\Rules;
+use Illuminate\Validation\Rule;
 use Illuminate\Http\Request;
 use Inertia\Response;
 use Inertia\Inertia;
@@ -14,6 +14,7 @@ use Inertia\Inertia;
 use App\Models\Transaction;
 use App\Models\CustomContent;
 use App\Models\InstitutionAdmin;
+use App\Models\UniversityBranch;
 use App\Models\InstitutionSubscription;
 
 use Maatwebsite\Excel\Facades\Excel;
@@ -180,9 +181,38 @@ class InstitutionSubscriptionController extends Controller
     }
 
     
-    public function renewSubscription(Request $request, string $id)
+    public function updateUniBranch(Request $request)
     {
-        
+        $id = $request->get('uniBranchId');
+
+        // Find the university branch before validation
+        $uniBranch = UniversityBranch::find($id);
+
+        if (!$uniBranch) {
+            return redirect()->back()->with('error', 'University branch not found.');
+        }
+
+        // Validate the incoming data
+        $validatedData = $request->validate([
+            'uni_branch_name' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('university_branches')->where(function ($query) use ($uniBranch) {
+                    return $query->where('uni_id', $uniBranch->uni_id);
+                })->ignore($id),
+            ],
+        ], [
+            'uni_branch_name.required' => 'The university branch is required.',
+            'uni_branch_name.unique' => 'The branch name has already been taken for this university.',
+        ]);
+
+        // Update university branch
+        $uniBranch->update([
+            'uni_branch_name' => $validatedData['uni_branch_name'],
+        ]);
+
+        return response()->json(['success' => true]);
     }
 
 }

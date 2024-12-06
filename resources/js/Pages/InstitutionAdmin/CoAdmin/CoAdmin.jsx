@@ -4,12 +4,12 @@ import { RiArchiveStackFill } from "react-icons/ri";
 import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, Button, User } from "@nextui-org/react";
 import { FaPlus, FaTableList, } from "react-icons/fa6";
 import { FaChevronDown, FaFilter } from "react-icons/fa";
-import PageHeader from '@/Components/Admins/PageHeader';
+import PageHeader from '@/Components/Admin/PageHeader';
 import AdminLayout from '@/Layouts/AdminLayout';
-import SearchBar from "@/Components/Admins/SearchBar";
+import SearchBar from "@/Components/Admin/SearchBar";
 import MainNav from "@/Components/MainNav";
 import { HiDocumentCheck, HiDocumentMinus } from "react-icons/hi2";
-import AddButton from "@/Components/Admins/AddButton";
+import AddButton from "@/Components/Admin/AddButton";
 
 export default function CoAdmin({ auth }) {
     const [searchManuscript, setSearchManuscript] = useState('');

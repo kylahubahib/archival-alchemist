@@ -9,6 +9,7 @@ use App\Models\GroupMember;
 use App\Models\Course;
 use App\Models\Department;
 use App\Models\Semester;
+use App\Models\UniversityBranch;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Validation\Rules;
@@ -16,6 +17,7 @@ use Inertia\Inertia;
 use Inertia\Response;
 use Illuminate\Support\Facades\Auth; 
 use Illuminate\Support\Facades\Log;
+
 
 use App\Notifications\InstitutionAdminNotification;
 
@@ -39,6 +41,28 @@ class SectionsController extends Controller
        ]);
     }
 
+    public function show($id)
+    {
+        try {
+            $members = GroupMember::with(['members', 'group'])->where('section_id', $id)->get();
+            $group = Group::where('section_id', $id)->get();
+    
+            return response()->json([
+                'members' => $members,
+                'group' => $group
+            ], 200);
+
+        } catch (\Exception $e) {
+            \Log::error('Error fetching members: ' . $e->getMessage());
+    
+            return response()->json([
+                'message' => 'Failed to fetch members',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+    
+    
     
     /**
      * Store a newly created resource in storage.
@@ -80,7 +104,7 @@ class SectionsController extends Controller
             $sections = [];
         }
 
-        $departments = Department::with('course')
+        $departments = Department::with(['course', 'university_branch.university'])
             ->where('uni_branch_id', $uniBranchId)->get();
 
         $departmentIds = $departments->pluck('id')->toArray();
@@ -88,8 +112,18 @@ class SectionsController extends Controller
         $courses = Course::whereIn('dept_id', $departmentIds)->get();
 
         $semester = Semester::where('uni_branch_id', $uniBranchId)
-        ->orderBy('start_date', 'desc')
+        ->orderBy('start_date', 'asc')
         ->get();
+
+        $uniBranch = UniversityBranch::with('university')->where('id', $uniBranchId)->first();
+
+        if ($uniBranch) {
+            $uniBranchName = $uniBranch->uni_branch_name; 
+            $uniName = $uniBranch->university->uni_name; 
+        } else {
+            $uniBranchName = null;
+            $uniName = null;
+        }
 
 
 
@@ -97,7 +131,8 @@ class SectionsController extends Controller
             'sections' => $sections,
             'departments' => $departments,
             'courses' => $courses, 
-            'semester' => $semester
+            'semester' => $semester,
+            'university' => $uniName . ' - ' . $uniBranchName
         ]);
 
     }

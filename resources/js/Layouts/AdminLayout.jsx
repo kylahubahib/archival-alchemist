@@ -13,13 +13,13 @@ import ToastNotification from "@/Components/Toast";
 import { FiBell } from "react-icons/fi";
 import Echo from 'laravel-echo';
 
-import { encodeAllParams } from "@/Components/Admins/Functions";
+// import { encodeAllParams } from "@/Components/Admins/Functions";
 
 import SuperAdminNotification from "@/Components/Notifications/SuperAdminNotification";
 import InsAdminNotification from "@/Components/Notifications/InsAdminNotification";
 import { User } from "@nextui-org/react";
 import { useForm } from "@inertiajs/react";
-import PageHeader from "@/Components/Admins/PageHeader";
+import PageHeader from "@/Components/Admin/PageHeader";
 
 export default function AdminLayout({ user, header, children, university = '' }) {
     const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
@@ -70,7 +70,7 @@ export default function AdminLayout({ user, header, children, university = '' })
                 <SidebarTitle title="MANAGEMENT"></SidebarTitle>
                 <SidebarItem icon={<FaUserGraduate size={20} className="text-white group-hover:text-gray-600" />} text="Students" color="white" to="/institution/students"/>
                 <SidebarItem icon={<FaUserTie size={20} className="text-white group-hover:text-gray-600" />} text="Faculties" color="white" to="/institution/faculties" />
-                <SidebarItem icon={<FaUserSecret size={20} className="text-white group-hover:text-gray-600" />} text="Co-admins" color="white" to="/institution/coadmins" alert />
+                <SidebarItem icon={<FaUserSecret size={20} className="text-white group-hover:text-gray-600" />} text="Co-admins" color="white" to="/institution/coadmins" />
                 <SidebarItem icon={<CgOrganisation size={20} className="text-white group-hover:text-gray-600" />} text="Departments" color="white" to="/institution/departments" />
                 <SidebarItem icon={<FaGraduationCap size={20} className="text-white group-hover:text-gray-600" />} text="Sections" color="white" to="/institution/sections" />
 
@@ -94,7 +94,7 @@ export default function AdminLayout({ user, header, children, university = '' })
             <nav className="bg-white sticky top-0 shadow-sm z-50">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
                     <div className="flex justify-between">
-                        {user.user_type === 'institution_admin' &&
+                        {user.user_type === 'admin' &&
                         <div className="flex items-center">
                             <PageHeader className="uppercase">{university}</PageHeader>
                         </div>
@@ -123,7 +123,7 @@ export default function AdminLayout({ user, header, children, university = '' })
                                         as="button"
                                         avatarProps={{
                                             className: "shadow shadow-white outline-[2.5px] outline-customBlue",
-                                            src: user.user_pic
+                                            src: `http://127.0.0.1:8000/${user?.user_pic}`
                                         }}
                                         className="transition-transform"
                                         description={user.email}

@@ -54,7 +54,6 @@ class UsersImport implements ToCollection, WithHeadingRow
                     continue;
                 }
 
-
                 // Generate a secure random password
                 $pwd = Str::random(8);
 
@@ -148,7 +147,6 @@ class UsersImport implements ToCollection, WithHeadingRow
                     }
                 }
             
-
 
                 // Profile creation
                 if ($userType === 'student') {

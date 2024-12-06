@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('access_controls', function (Blueprint $table) {
-            $table->bigIncrements('access_id');
+            $table->id();
             $table->unsignedBigInteger('user_id');
             $table->string('role');
             $table->boolean('dashboard_access');

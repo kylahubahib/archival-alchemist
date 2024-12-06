@@ -27,6 +27,8 @@ class UserReportController extends Controller
      */
     public function index()
     {
+        $this->deleteOldReports();
+
         $userReports = UserReport::with('user')->paginate(100);
 
         $allReportCount = UserReport::count();
@@ -49,6 +51,14 @@ class UserReportController extends Controller
 
         ]);
 
+    }
+
+    private function deleteOldReports()
+    {
+        $thresholdDate = now()->subDays(30); 
+        $oldReports = UserReport::where('created_at', '<', $thresholdDate)->delete();
+
+        \Log::info("Deleted $oldReports old reports older than 30 days.");
     }
 
 

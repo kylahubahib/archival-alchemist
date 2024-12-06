@@ -12,6 +12,7 @@ export default function Modal({ children, show = false, maxWidth = '2xl', closea
         '3xl': 'sm:max-w-3xl',
         '4xl': 'sm:max-w-4xl',
         '5xl': 'sm:max-w-5xl',
+        '6xl': 'sm:max-w-6xl',
     }[maxWidth];
 
     const maxHeightClass = {
@@ -42,7 +43,7 @@ export default function Modal({ children, show = false, maxWidth = '2xl', closea
                     leave="ease-in duration-200"
                     leaveFrom="opacity-100"
                     leaveTo="opacity-0"
-                ><div className="fixed inset-0 bg-gray-800/20" />
+                ><div className="fixed inset-0 bg-gray-800/30" />
 
                 </TransitionChild>
 

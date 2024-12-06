@@ -5,9 +5,10 @@ import { FaFilter } from "react-icons/fa";
 import { toast } from 'react-toastify';
 import Modal from '@/Components/Modal';
 import axios from 'axios';
-import { autocompleteInputProps, capitalize, encodeParam, onChangeHandler, parseDateTime, renderAutocompleteItems, sanitizeParam, updateUrl } from "@/Components/Admins/Functions";
+import { autocompleteInputProps, onChangeHandler, parseNextUIDateTime, renderAutocompleteItems, sanitizeURLParam, updateURLParams } from '@/Components/Admin/Functions';
 import { router } from "@inertiajs/react";
 import { motion } from 'framer-motion'; // Import Framer Motion
+// import AutocompleteList from "@/Components/Admins/AutocompleteList";
 
 export default function Filter({ hasFacultyPremiumAccess, selected, setSelected, autocomplete, setAutocomplete, isFilterOpen }) {
     const [isAutocompleteDataLoading, setIsAutocompleteDataLoading] = useState(false);
@@ -35,11 +36,11 @@ export default function Filter({ hasFacultyPremiumAccess, selected, setSelected,
             ]);
 
             // Extract department names
-            const departmentNames = deptWithCourses.data.map(department => department.dept_name);
+            const departmentAcronyms = deptWithCourses.data.map(department => department.dept_acronym);
 
             setAutocomplete({
                 ...autocomplete,
-                department: departmentNames,
+                department: departmentAcronyms,
                 plan: plansWithPlanStatus.data.plans,
                 planStatus: plansWithPlanStatus.data.planStatus,
             });
@@ -57,15 +58,16 @@ export default function Filter({ hasFacultyPremiumAccess, selected, setSelected,
                 ...params,
                 hasFacultyPremiumAccess,
                 page: null,
-                department: sanitizeParam(selected.department?.origText),
-                plan: sanitizeParam(selected.plan),
-                plan_status: sanitizeParam(selected.planStatus)?.toLowerCase(),
-                date_created: selected.dateCreated ? parseDateTime(selected.dateCreated) : null,
+                department: sanitizeURLParam(selected.department),
+                plan: sanitizeURLParam(selected.plan),
+                plan_status: sanitizeURLParam(selected.planStatus)?.toLowerCase(),
+                date_created: selected.dateCreated ? parseNextUIDateTime(selected.dateCreated) : null,
             }),
             {}, // Additional data (if any)
             { preserveScroll: true, preserveState: true }
         );
     };
+
 
     const handleInputValue = (category) => {
         const selectedWithCategories = {
@@ -77,10 +79,11 @@ export default function Filter({ hasFacultyPremiumAccess, selected, setSelected,
 
         const field = selectedWithCategories[category];
 
-        if (['Department'].includes(category)) {
-            return selected[field]?.acronym ?? '';
+        if (category === 'Date Created') {
+            return selected[field] ?? null;
+        } else {
+            return selected[field] ?? '';
         }
-        return selected[field] ?? (category === 'Date Created' ? null : '');
     };
 
     return (
@@ -140,20 +143,20 @@ export default function Filter({ hasFacultyPremiumAccess, selected, setSelected,
                                             category === 'Plan Status' && params.plan_status ||
                                             category === 'Date Created' && params.date_created
                                         }
-                                        onInputChange={(value) => onChangeHandler({ setter: setSelected, category, value, forOnInputChange: true })}
-                                        onSelectionChange={(value) => onChangeHandler({ setter: setSelected, category, value, forOnSelectionChange: true })}
+                                        onInputChange={(value) => onChangeHandler(setSelected, category, value)}
+                                        onSelectionChange={(value) => onChangeHandler(setSelected, category, value)}
                                         className="min-w-1"
                                     >
-                                        {category === 'Department' && renderAutocompleteItems('Department', autocomplete.department)}
-                                        {category === 'Current Plan' && renderAutocompleteItems('Current Plan', autocomplete.plan)}
-                                        {category === 'Plan Status' && renderAutocompleteItems('Plan Status', autocomplete.planStatus)}
-                                        {category === 'Date Created' && renderAutocompleteItems('Date Created', autocomplete.dateCreated)}
+                                        {category === 'Department' && renderAutocompleteItems(autocomplete.department)}
+                                        {category === 'Current Plan' && renderAutocompleteItems(autocomplete.plan)}
+                                        {category === 'Plan Status' && renderAutocompleteItems(autocomplete.planStatus)}
+                                        {category === 'Date Created' && renderAutocompleteItems(autocomplete.dateCreated)}
                                     </Autocomplete>
                                 </div>
                             }
                         </div>
                     ))
             }
-        </motion.div>
+        </motion.div >
     )
 }

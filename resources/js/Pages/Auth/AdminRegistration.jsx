@@ -32,21 +32,11 @@ export default function AdminRegistration({ tokenData }) {
             onSuccess: () => {
                 // reset();
                 // clearErrors();
-
-                setTimeout(() => {
-                    showToast('success',
-                        <div>
-                            Your account has been <strong>successfully registered</strong>! Please wait for admin approval to access the system.
-                        </div>,
-                        {
-                            // autoClose: 6000,
-                            className: 'max-w-sm'
-                        });
-
-                }, 300);
-
+                alert('Success');
             },
             onError: (errors) => {
+
+                showToast('error', 'Register failed')
                 console.log('Error occurred while registering.', errors);
             },
         });
@@ -67,8 +57,9 @@ export default function AdminRegistration({ tokenData }) {
                         <div className="flex ml-auto items-center justify-center p-1 w-full xl:ml-16 h-full text-customGray text-sm border">
                             <p className="max-sm:text-xs">
                                 <strong>Note:</strong>&nbsp;
-                                Please create a password to complete your registration. Wait for admin approval.&nbsp;
-                                If approved, you will receive an email, and then you can log in using your email and the password you set. Thank you!
+                                Please create a password to complete your registration.
+                                Once you've set your password, you can log in using your email and the password you created.
+                                Thank you!
                             </p>
                         </div>
                     </header>
@@ -146,12 +137,12 @@ export default function AdminRegistration({ tokenData }) {
                     </main>
 
                     <footer>
-                        <div className="mt-4 text-center text-sm max-sm:text-xs">
+                        {/* <div className="mt-4 text-center text-sm max-sm:text-xs">
                             <p className="inline">Want to visit the Archival Alchemist page?</p>&nbsp;
                             <a href="http://127.0.0.1:8000/" target="_blank" className="text-blue-500 hover:underline">
                                 Click here.
                             </a>
-                        </div>
+                        </div> */}
                     </footer>
                 </form>
             </section>

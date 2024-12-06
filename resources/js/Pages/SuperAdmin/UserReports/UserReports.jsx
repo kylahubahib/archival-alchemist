@@ -8,7 +8,7 @@ import ReportModal from "@/Components/ReportModal";
 import { FaEye, FaPen, FaTrash } from "react-icons/fa";
 import Show from "./Show"; 
 import { formatDate, formatPrice } from '@/utils';
-import PageHeader from "@/Components/Admins/PageHeader";
+import PageHeader from "@/Components/Admin/PageHeader";
 
 export default function UserReports({ auth, userReports, pendingCount, solvedCount, allReportCount, reportLocation }) {
     const [filteredData, setFilteredData] = useState(userReports.data);
@@ -83,9 +83,9 @@ export default function UserReports({ auth, userReports, pendingCount, solvedCou
             <div>
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
                     <div className="flex flex-row justify-between m-3">
-                        <PageHeader>USER REPORTS</PageHeader> 
+                        <PageHeader>USER REPORTS</PageHeader>  
                     </div>
-                    <div className="flex flex-row space-x-3">
+                    <div className="grid grid-cols-3 gap-5 space-x-3">
                         <div className="bg-white block max-w-sm p-4 border rounded-lg shadow mb-3">
                             <div className="border-b-2 pb-2 border-yellow-600 text-customBlue font-bold">Total Reports Submitted</div>
                                 <div className="flex flex-row justify-between pt-3">
@@ -111,7 +111,7 @@ export default function UserReports({ auth, userReports, pendingCount, solvedCou
                         {/* <button onClick={openReportModal}>open report modal</button> */}
                     </div>
 
-                    <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                    <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg mt-4">
                         <div className="overflow-x-auto shadow-md sm:rounded-lg px-5 sm:px-5">
                             <div className="flex items-center justify-between flex-column md:flex-row flex-wrap space-y-4 md:space-y-0 py-4 bg-white">
                                 <div className="flex flex-row items-center space-x-2">
@@ -192,9 +192,6 @@ export default function UserReports({ auth, userReports, pendingCount, solvedCou
                                             <td className="px-6 py-4 flex flex-row space-x-2">
                                                 <a onClick={() => {viewDetails(up)}} className="bg-customBlue text-white rounded p-1 hover:bg-transparent hover:text-customBlue cursor-pointer" title="View Details">
                                                     <FaEye/>
-                                                </a>
-                                                <a onClick={() => {}} className="bg-customBlue text-white rounded p-1 hover:bg-transparent hover:text-customBlue cursor-pointer" title="Remove">
-                                                    <FaTrash />
                                                 </a>
                                             </td>
                                         </tr>

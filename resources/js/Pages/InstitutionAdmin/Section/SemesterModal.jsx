@@ -5,7 +5,7 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import { showToast } from '@/Components/Toast';
 import { router, useForm } from '@inertiajs/react';
-import { Button, Chip, DatePicker, Input, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from '@nextui-org/react';
+import { Button, Chip, DatePicker, Input, Select, SelectItem, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from '@nextui-org/react';
 import { useEffect, useState } from 'react';
 import { CgClose } from 'react-icons/cg';
 import {getLocalTimeZone, today, parseDate} from "@internationalized/date";
@@ -28,6 +28,7 @@ export default function Semester({isOpen, onClose, semesters}) {
         end_date: null,
         start_sy: '',
         end_sy: '',
+        status: '',
     });
    
     
@@ -167,6 +168,7 @@ export default function Semester({isOpen, onClose, semesters}) {
         end_date: formattedEndDate,
         start_sy: years[0],
         end_sy: years[1],
+        status: sem.status
     });
 
     setStartDate(parsedStartDate);
@@ -178,18 +180,16 @@ export default function Semester({isOpen, onClose, semesters}) {
         end_date: parsedEndDate,
         start_sy: years[0],
         end_sy: years[1],
+        status: status
     });
 
     setEditable(true);
 };
 
-    
-    
-    
 
     return (
       
-        <Modal show={isOpen} onClose={onClose} closeable={false} maxWidth='5xl'>
+        <Modal show={isOpen} onClose={onClose} closeable={false} maxWidth='6xl'>
             <div className="shadow-sm p-3 justify-between flex flex-row">
                 <h2 className="text-xl text-gray-600 font-bold">Manage University Semesters</h2>
                 <button onClick={handleClose} className="text-gray-600 text-xl p-2 rounded-full hover:bg-gray-100">
@@ -303,11 +303,26 @@ export default function Semester({isOpen, onClose, semesters}) {
                             <InputError message={errors.end_date} className="mt-2" />
                         </div>
 
+                        {/* Change Status */}
+                        <Select
+                            aria-label="Status"
+                            placeholder="Select a status"
+                            value={data.status} 
+                            onChange={(e) => setData('status', e.target.value)} 
+                            className="w-52 h-10 mt-5"
+                            variant='bordered'  
+                        >
+                            <SelectItem key="Active" value="Active">Active</SelectItem>
+                            <SelectItem key="Upcoming" value="Upcoming">Upcoming</SelectItem>
+                            <SelectItem key="Completed" value="Completed">Completed</SelectItem>
+                        </Select>
+
+
                         {/* Submit Button */}
                         <Button
                             className="bg-customBlue mt-5 text-white hover:bg-white hover:text-customBlue hover:border-customBlue border-1"
                             type="submit"
-                            isDisabled={processing} // Prevent multiple submissions
+                            isDisabled={processing} 
                         >
                             Save
                         </Button>

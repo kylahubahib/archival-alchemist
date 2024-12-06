@@ -26,7 +26,7 @@ class SemesterController extends Controller
         {
             $uniBranchId = $user->faculty->uniBranchId;
         }
-        else if($user->user_type === 'institution_admin')
+        else if($user->user_type === 'admin')
         {
             $uniBranchId = $user->institution_admin->uniBranchId;
 
@@ -65,7 +65,7 @@ class SemesterController extends Controller
             'start_date' => 'required|date',
             'end_date' => 'required|date',
             'start_sy' => 'required|string',
-            'end_sy' => 'required|string',
+            'end_sy' => 'required|string'
         ]);
 
         \Log::info('Data passed: ', $request->all());
@@ -103,6 +103,7 @@ class SemesterController extends Controller
             'end_date' => 'required|date',
             'start_sy' => 'required|string',
             'end_sy' => 'required|string',
+            'status' => 'required|string'
         ]);
 
         \Log::info('Data passed: ', $request->all());
@@ -114,7 +115,8 @@ class SemesterController extends Controller
             'name' => $request->name,
             'start_date' => Carbon::parse($request->start_date),
             'end_date' => Carbon::parse($request->end_date),
-            'school_year' => $schoolYear
+            'school_year' => $schoolYear,
+            'status' => $request->status
         ]);
 
         

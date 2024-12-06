@@ -27,6 +27,7 @@ class NotifySubscriptionExpiry extends Command
 
     public function handle()
     {
+        \Log::info('NotifySubscriptionExpiry command started.');
         // Get today's date and 3 days before
         $today = Carbon::today();
         $threeDaysBefore = Carbon::today()->addDays(3);
@@ -118,6 +119,8 @@ class NotifySubscriptionExpiry extends Command
                 }
             }
         }
+
+        \Log::info('NotifySubscriptionExpiry command ended.');
     
         return 0;
     }

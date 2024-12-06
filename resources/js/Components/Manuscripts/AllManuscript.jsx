@@ -460,34 +460,36 @@ const Manuscript = ({auth, user, choice}) => {
     const isBookmarked = bookmarkedManuscripts.has(manuscriptId);
 
 
-    useEffect(() => {
-        const fetchBookmarkedManuscripts = async () => {
-            try {
-                const response = await axios.get('/api/my-favorite-manuscripts');
-                const data = response.data;
+    //THIS CAUSES THE SUDDEN CHANGES OF THE DISPLAY
+    // useEffect(() => {
+    //     const fetchBookmarkedManuscripts = async () => {
+    //         try {
+    //             const response = await axios.get('/api/my-favorite-manuscripts');
+    //             const data = response.data;
 
-                // Create a set of bookmarked manuscript IDs
-                const bookmarksSet = new Set(data.map((item) => item.id));
-                setBookmarkedManuscripts(bookmarksSet);
+    //             // Create a set of bookmarked manuscript IDs
+    //             const bookmarksSet = new Set(data.map((item) => item.id));
+    //             setBookmarkedManuscripts(bookmarksSet);
 
-                // Remove duplicates and set manuscripts
-                const uniqueManuscripts = Array.from(bookmarksSet).map((id) =>
-                    data.find((item) => item.id === id)
-                );
-                setManuscripts(uniqueManuscripts);
-            } catch (error) {
-                console.error('Error fetching manuscripts:', error);
-                setError('An error occurred while fetching the data.');
-            } finally {
-                setLoading(false);
-            }
-        };
+    //             // Remove duplicates and set manuscripts
+    //             const uniqueManuscripts = Array.from(bookmarksSet).map((id) =>
+    //                 data.find((item) => item.id === id)
+    //             );
+    //             setManuscripts(uniqueManuscripts);
+    //         } catch (error) {
+    //             console.error('Error fetching manuscripts:', error);
+    //             setError('An error occurred while fetching the data.');
+    //         } finally {
+    //             setLoading(false);
+    //         }
+    //     };
 
-        if (isAuthenticated) {
-            fetchBookmarkedManuscripts();
-        }
-    }, [isAuthenticated]);
+    //     if (isAuthenticated) {
+    //         fetchBookmarkedManuscripts();
+    //     }
+    // }, [isAuthenticated]);
 
+    
     // const handleBookmark = async (manuscriptId) => {
     //     if (!user) {
     //         alert('You need to be logged in to bookmark.');
@@ -579,7 +581,6 @@ const Manuscript = ({auth, user, choice}) => {
                 if (isMounted) {
                     // Only set state if the component is still mounted
                     setManuscripts(response.data);
-
 
                 }
             } catch (error) {
@@ -675,6 +676,7 @@ const handleDropdownChange = (selectedKey) => {
                 {loading && <div>Loading...</div>}
                     {error && <div>{error}</div>}
                     <div>
+                        {/* This is for the display of the search result */}
                         {manuscriptsToDisplay.length === 0 ? (
                             <div className="flex justify-center items-center text-gray-400">No manuscripts available.</div>
                         ) : (
@@ -714,80 +716,85 @@ const handleDropdownChange = (selectedKey) => {
                 </div>
             </div>
 
+        {/* This is the main display */}
+        {
+            console.log('manuscript to display: ', manuscriptsToDisplay)
+            }
 
-            {manuscriptsToDisplay.map((manuscript) => (
-                <div key={manuscript.id} className="w-full bg-white shadow-lg flex mb-4 text-sm">
+        {manuscriptsToDisplay.map((manuscript) => (
+            <div key={manuscript.id} className="w-full bg-white shadow-lg flex mb-4 text-sm">
 
         <div
             className={`rounded ${maximizedId === manuscript.id ? 'w-full h-full' : 'w-40 h-48'} bg-gray-200 flex items-center justify-center relative transition-all duration-300 ease-in-out y-4 m-5`}
         >
-{!isAuthenticated && (
-  <div className="flex flex-col h-full w-full items-center justify-center text-center text-gray-800 text-xxxs p-2 bg-white border-2 mb-1 leading-tight">
-    <div>{manuscript.man_doc_title}</div>
-    <p className="block pt-12">By:</p>
-    <p className="block">
-      {manuscript.authors?.length > 0 ? (
-        <div>
-          {manuscript.authors.map((author, index) => (
-            <p key={index} className="text-xxxs text-gray-800 mb-1 leading-tight">{author.name}</p>
-          ))}
-        </div>
-      ) : (
-        <p>Unknown Authors</p>
-      )}
-    </p>
-    <p className="block pt-5">{new Date(manuscript.updated_at).getFullYear()}</p>
-  </div>
-)}
 
-
-                   {isPremium ? (
-                     // If the user is premium, show the link directly
-                      // If the user is premium, show the link directly
-  <div className="flex items-center justify-center h-full w-full text-gray-500">
-  {maximizedId === manuscript.id ? (
-    manuscript.man_doc_content ? (
-      <PdfViewer pdfUrl={manuscript.man_doc_content} />
-    ) : (
-      <div className="flex items-center justify-center h-full w-full text-gray-500">
-        <p>No PDF available</p>
-      </div>
-    )
-  ) : (
-    <div className="flex flex-col h-full w-full items-center justify-center text-center text-gray-800 text-xxxs p-2 bg-white border-2 mb-1 leading-tight">
-        {manuscript.man_doc_title}
-        <p className="block pt-12">By:</p> {/* This "By:" will now be on a new line */}
-        <p className="block">{manuscript.authors?.length > 0 ? (
-            <div>
+        {/* Display this if user is not authenticated */}
+        {!isAuthenticated && (
+        <div className="flex flex-col h-full w-full items-center justify-center text-center text-gray-800 text-xxxs p-2 bg-white border-2 mb-1 leading-tight">
+            <div>{manuscript.man_doc_title}</div>
+            <p className="block pt-12">By:</p>
+            <p className="block">
+            {manuscript.authors?.length > 0 ? (
+                <div>
                 {manuscript.authors.map((author, index) => (
-                    <p key={index} className="text-xxxs text-gray-800 mb-1 leading-tight">{author.name}</p>))}
-            </div>) : ( <p >Unknown Authors</p>)}
-        </p>
-        <p className="block pt-5">{new Date(manuscript.updated_at).getFullYear()}</p>
-    </div>
-  )}
+                    <p key={index} className="text-xxxs text-gray-800 mb-1 leading-tight">{author.name}</p>
+                ))}
+                </div>
+            ) : (
+                <p>Unknown Authors</p>
+            )}
+            </p>
+            <p className="block pt-5">{new Date(manuscript.updated_at).getFullYear()}</p>
+        </div>
+        )}
 
-  {/* Maximize / Minimize Button */}
-  <button
-    onClick={() => handleMaximize(manuscript.id)}
-    className="text-xxxss absolute top-2 right-2 bg-gray-500 text-white p-2 rounded-full shadow-lg hover:bg-gray-600 transition-colors duration-200 z-40"
-  >
-    {maximizedId === manuscript.id ? 'X' : 'Preview'}
-  </button>
-</div>
-                   ) : isAuthenticated ? (
-// Authenticated User
-    <div className="flex flex-col h-full w-full items-center justify-center text-center text-gray-800 text-xxxs p-2 bg-white border-2 mb-1 leading-tight">
-    {manuscript.man_doc_title}
-    <p className="block pt-12">By:</p>
-    <p className="block">{manuscript.authors?.length > 0 ? (
-        <div>
-            {manuscript.authors.map((author, index) => (
-                <p key={index} className="text-xxxs text-gray-800 mb-1 leading-tight">{author.name}</p>))}
-        </div>) : ( <p >Unknown Authors</p>)}
-    </p>
-    <p className="block pt-5">{new Date(manuscript.updated_at).getFullYear()}</p>
-</div>
+
+        {isPremium ? (
+            // If the user is premium, show the link directly
+            <div className="flex items-center justify-center h-full w-full text-gray-500">
+            {maximizedId === manuscript.id ? (
+                manuscript.man_doc_content ? (
+                <PdfViewer pdfUrl={manuscript.man_doc_content} />
+                ) : (
+                <div className="flex items-center justify-center h-full w-full text-gray-500">
+                    <p>No PDF available</p>
+                </div>
+                )
+            ) : (
+                <div className="flex flex-col h-full w-full items-center justify-center text-center text-gray-800 text-xxxs p-2 bg-white border-2 mb-1 leading-tight">
+                    {manuscript.man_doc_title}
+                    <p className="block pt-12">By:</p> {/* This "By:" will now be on a new line */}
+                    <p className="block">{manuscript.authors?.length > 0 ? (
+                        <div>
+                            {manuscript.authors.map((author, index) => (
+                                <p key={index} className="text-xxxs text-gray-800 mb-1 leading-tight">{author.name}</p>))}
+                        </div>) : ( <p >Unknown Authors</p>)}
+                    </p>
+                    <p className="block pt-5">{new Date(manuscript.updated_at).getFullYear()}</p>
+                </div>
+            )}
+
+            {/* Maximize / Minimize Button */}
+            <button
+                onClick={() => handleMaximize(manuscript.id)}
+                className="text-xxxss absolute top-2 right-2 bg-gray-500 text-white p-2 rounded-full shadow-lg hover:bg-gray-600 transition-colors duration-200 z-40"
+            >
+                {maximizedId === manuscript.id ? 'X' : 'Preview'}
+            </button>
+            </div>
+        ) : isAuthenticated ? (
+            // Authenticated User
+        <div className="flex flex-col h-full w-full items-center justify-center text-center text-gray-800 text-xxxs p-2 bg-white border-2 mb-1 leading-tight">
+            {manuscript.man_doc_title}
+            <p className="block pt-12">By:</p>
+            <p className="block">{manuscript.authors?.length > 0 ? (
+                <div>
+                    {manuscript.authors.map((author, index) => (
+                        <p key={index} className="text-xxxs text-gray-800 mb-1 leading-tight">{author.name}</p>))}
+                </div>) : ( <p >Unknown Authors</p>)}
+            </p>
+            <p className="block pt-5">{new Date(manuscript.updated_at).getFullYear()}</p>
+        </div>
                    ):null}
 
                     {/* Modal for non-premium authenticated users */}

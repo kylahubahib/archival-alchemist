@@ -1,4 +1,4 @@
-import { Head } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Button, Divider, Skeleton, useDisclosure } from '@nextui-org/react';
@@ -11,8 +11,7 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import InputLabel from '@/Components/InputLabel';
 import TextInput from '@/Components/TextInput';
 import InquiryForm from '@/Pages/InquiryForm';
-
-
+import SubscriptionCard from '@/Components/SubscriptionCard';
 
 export default function SubscriptionForm({user}) {
     const {isOpen, onOpen, onOpenChange} = useDisclosure();
@@ -30,6 +29,7 @@ export default function SubscriptionForm({user}) {
     const [message, setMessage] = useState(null);
     const [personalPlans, setPersonalPlans] = useState([]);
     const [planFeatures, setPlanFeatures] = useState([]);
+    const [error, setError] = useState(null);
 
     const submit = (e) => {
         e.preventDefault();
@@ -66,6 +66,7 @@ export default function SubscriptionForm({user}) {
         axios.post('/remove-affiliation')
         .then(response => {
             setIsAffiliated(response.data.is_affiliated);
+            router.reload();
             setLoading(false);
         });
     };
@@ -231,9 +232,9 @@ export default function SubscriptionForm({user}) {
                          onClick={() => handleRenewal(personalSubscription.plan_id)} >
                             Renew Subscription
                         </Button>
-                        <Button onClick={() => {openModal('popup')}} radius="large" variant='bordered' size='sm' className=" border-red-500 text-red-500 shadow">
+                        {/* <Button onClick={() => {openModal('popup')}} radius="large" variant='bordered' size='sm' className=" border-red-500 text-red-500 shadow">
                             Cancel Subscription
-                        </Button>
+                        </Button> */}
                         </div>
 
                     </div>
@@ -397,89 +398,9 @@ export default function SubscriptionForm({user}) {
 
             {/* Choose subscription plan */}
             {modalContent == 'pricing-list' &&
-                <Modal show={isModalOpen} onClose={closeModal} maxWidth="5xl">
-    <div className="p-6 max-w-5xl mx-auto bg-white rounded-lg relative">
-        {/* Close Button */}
-        <button
-            onClick={closeModal}
-            type="button"
-            className="absolute top-3 right-3 text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-full text-sm w-8 h-8 inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
-            data-modal-hide="popup-modal"
-        >
-            <svg
-                className="w-3 h-3"
-                aria-hidden="true"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 14 14"
-            >
-                <path
-                    stroke="currentColor"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"
-                />
-            </svg>
-            <span className="sr-only">Close modal</span>
-        </button>
-
-        <div className="lg:grid lg:grid-cols-2 sm:gap-6 xl:gap-10 lg:space-y-0 justify-center mt-8">
-            {personalPlans.map((plan) => (
-                <div
-                    key={plan.id}
-                    className={`flex flex-col p-6 mx-auto min-w-80 max-w-md text-center text-gray-900 bg-white rounded-lg border border-gray-100 cursor-pointer shadow`}>
-                    <h3 className="mb-4 text-xl font-semibold">{plan.plan_name}</h3>
-
-                    <p className="font-light text-gray-500 sm:text-md">
-                        {plan.plan_text}
-                    </p>
-
-                    <div className="flex justify-center items-baseline my-8">
-                        <span className="mr-2 text-2xl font-bold">
-                            ₱ {formatPrice(plan.plan_price)}
-                        </span>
-                        <span className="text-gray-500">{plan.plan_term}</span>
-                    </div>
-
-                    {/* Plan Features */}
-                    <ul role="list" className="mb-8 space-y-2 text-left">
-                        {getFeaturesByPlanId(plan.id).map((featureName, index) => (
-                            <li key={index} className="flex items-center">
-                                <svg
-                                    className="flex-shrink-0 w-5 h-5 text-green-500"
-                                    fill="currentColor"
-                                    viewBox="0 0 20 20"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                >
-                                    <path
-                                        fillRule="evenodd"
-                                        d="M16.707 5.293a1 1 0 011.414 0l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                        clipRule="evenodd"
-                                    ></path>
-                                </svg>
-                                <span className="text-sm font-normal leading-tight text-gray-500 ml-3">
-                                    {featureName}
-                                </span>
-                            </li>
-                        ))}
-                    </ul>
-
-                    {/* Subscribe Button */}
-                    <div className="mt-auto">
-                        <button
-                            className={`w-full text-white bg-customBlue hover:bg-blue-900 focus:ring-4 focus:ring-blue-200 font-medium rounded-lg text-sm px-5 py-2.5 text-center ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
-                            onClick={() => handleCheckout(plan.id)}
-                            disabled={loading}
-                        >
-                            {loading ? 'Processing...' : 'Subscribe Now'}
-                        </button>
-                    </div>
-                </div>
-            ))}
-        </div>
-    </div>
-</Modal>
+                <Modal show={isModalOpen} onClose={closeModal}>
+                   <SubscriptionCard/>
+                </Modal>
             }
 
             {modalContent == 'inquiry' &&  <InquiryForm isOpen={isModalOpen} onClose={closeModal} />}

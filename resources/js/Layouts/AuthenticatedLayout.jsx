@@ -50,7 +50,7 @@ export default function Authenticated({ user, children, newProfile = null, searc
     ////console.log(user.user_type); // Add this line to debug
 
     useEffect(() => {
-        if(newProfile != null){
+        if (newProfile != null) {
             setProfilePic(newProfile)
         }
     });
@@ -74,12 +74,12 @@ export default function Authenticated({ user, children, newProfile = null, searc
                 <SidebarItem icon={<MdChatBubbleOutline size={20} />} text="Inbox" to="/chatify" />
                 <SidebarSeparator marginTop={'mt-72'}/>
 
-                {/* <SidebarItem icon={<FaCrown size={20} color="#FFD700" />} text="Subscription" to="/subscription" /> */}
-                <SidebarItem icon={<RiMessengerLine size={20} color="#006AFF" />} text="Chat with us" to="https://m.me/432748959923780" externalLink/>
-                <SidebarItem icon={<BiEnvelope size={20} color="#294996" />} text="Give Feedback" onClick={openModal} isActiveModal={isModalOpen}/>
-            </Sidebar>
+                    {/* <SidebarItem icon={<FaCrown size={20} color="#FFD700" />} text="Subscription" to="/subscription" /> */}
+                    <SidebarItem icon={<RiMessengerLine size={20} color="#006AFF" />} text="Chat with us" to="https://m.me/432748959923780" externalLink />
+                    <SidebarItem icon={<BiEnvelope size={20} color="#294996" />} text="Give Feedback" onClick={openModal} isActiveModal={isModalOpen} />
+                </Sidebar>
 
-            <GiveFeedbackModal isOpen={isModalOpen} onClose={closeModal} />
+                <GiveFeedbackModal isOpen={isModalOpen} onClose={closeModal} />
 
             <div className="flex-1 flex flex-col">
                 <nav className="bg-customBlue border-b rounded-xl m-3 sticky top-3 z-50">
@@ -101,11 +101,11 @@ export default function Authenticated({ user, children, newProfile = null, searc
                                     )}
                                 </button>
 
-                                {/* <FiBell size={24} className="ml-3 text-white" /> */}
+                                    {/* <FiBell size={24} className="ml-3 text-white" /> */}
 
-                                <div className="flex items-center mx-3">
+                                    <div className="flex items-center mx-3">
                                         <UserNotification user={user} />
-                                </div>
+                                    </div>
 
                                 <div className=" relative">
 
@@ -122,7 +122,9 @@ export default function Authenticated({ user, children, newProfile = null, searc
                                                     type="button"
                                                     className="relative items-center px-0 py-0 border border-transparent text-sm leading-4 font-medium rounded-full h-10 w-10 flex justify-center text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150"
                                                 >
-                                                    <img src={profilePic} className="w-full h-full rounded-full object-cover" />
+                                                    <img src={`http://127.0.0.1:8000/${user?.user_pic}`} 
+                                                        className="w-full h-full rounded-full object-cover" />
+
                                                 </button>
 
 
@@ -170,7 +172,7 @@ export default function Authenticated({ user, children, newProfile = null, searc
         </div>
 
 
-                     {/* This part here is for responsive layout. Not yet configured*/}
+                        {/* This part here is for responsive layout. Not yet configured*/}
 
                     <div className={(showingNavigationDropdown ? 'block' : 'hidden') + ' sm:hidden'}>
                         <div className="pt-2 pb-3 space-y-1">

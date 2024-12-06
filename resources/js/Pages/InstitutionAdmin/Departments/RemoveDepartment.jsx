@@ -5,15 +5,15 @@ import axios from 'axios';
 import { router } from '@inertiajs/react';
 
 export default function RemoveDepartment({ isOpen, onClose, selectedDept, departments }) {
-    const [choices, setChoices] = useState(false);
+    const [choices, setChoices] = useState(false); 
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         if (selectedDept) {
-            setLoading(true);
+            setLoading(true); 
             axios.get('get-courses', {params: { id: selectedDept.id }}).then(response => {
                 setChoices(response.data.courses.data.length > 0);
-                setLoading(false);
+                setLoading(false); 
             }).catch(error => {console.error("Error fetching courses:", error);})
         }
     }, [selectedDept]);
@@ -53,11 +53,17 @@ export default function RemoveDepartment({ isOpen, onClose, selectedDept, depart
             ) : choices ? (
                 <div>
                     <div className="p-6 pb-3 space-y-5">
-                        This department has courses associated with it. Before deleting, will you:
+                        Warning! This department has courses associated with it. Are you really sure you want to delete this department?
+                        Doing so will also delete all the related courses and faculties for this department.
                     </div>
 
-                    <div className="p-6 flex flex-row justify-between items-center">
-                        {/* Reassign courses to a different department */}
+                    <div className='flex flex-row justify-center space-x-5'>
+                        <Button size="lg" color="primary" onClick={() => deleteDepartment(selectedDept?.id)}>Yes</Button>
+                        <Button size="lg" color="danger" onClick={onClose}>No</Button>
+                    </div>
+
+                    {/* <div className="p-6 flex flex-row justify-between items-center">
+                        Reassign courses to a different department
                         <div>
                             <Dropdown>
                                 <DropdownTrigger>
@@ -78,11 +84,13 @@ export default function RemoveDepartment({ isOpen, onClose, selectedDept, depart
 
                         <div>or</div>
 
-                        {/* Unassign the courses */}
+                        Unassign the courses
                         <div>
                             <Button variant="bordered" color="danger" onClick={() => handleUnassigning(selectedDept.id)}>COURSES REMAIN UNASSIGNED</Button>
                         </div>
-                    </div>
+                    </div> */}
+
+
                 </div>
             ) : (
                 <div className="py-3 space-y-3">

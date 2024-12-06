@@ -27,7 +27,7 @@ export const adminAccessOptions = {
 };
 
 export const handleCheckAll = (userType = null, setter, hasUseFormSetter = false, field = '') => {
-    if (userType === 'institution_admin') {
+    if (userType === 'admin') {
         if (hasUseFormSetter) {
             setter(field, adminAccessOptions.institution_admin.map(option => option.value))
         } else {
@@ -136,7 +136,7 @@ export default function AccessControl({ userType, userId, username, isOpen, onCl
                     <div className="space-y-5">
                         <div className="flex">
                             {!isDataLoading ? (
-                                userType === "institution_admin" ? (
+                                userType === "admin" ? (
                                     <CheckboxGroup
                                         value={adminAccess}
                                         onChange={setAdminAccess}
@@ -148,7 +148,7 @@ export default function AccessControl({ userType, userId, username, isOpen, onCl
                                             </Checkbox>
                                         ))}
                                     </CheckboxGroup>
-                                ) : userType === "super_admin" ? (
+                                ) : userType === "superadmin" ? (
                                     <CheckboxGroup
                                         label={<>Manage Super Admin Page Access for <strong>{username}</strong></>}
                                         value={adminAccess}
@@ -175,7 +175,7 @@ export default function AccessControl({ userType, userId, username, isOpen, onCl
                             ) : (
                                 // Loading Skeletons for both admin types
                                 <>
-                                    {userType === "institution_admin" ? (
+                                    {userType === "admin" ? (
                                         <CheckboxGroup
                                             label={<>Manage Institution Admin Operations for <strong>{username}</strong></>}
                                         >
@@ -188,7 +188,7 @@ export default function AccessControl({ userType, userId, username, isOpen, onCl
                                                 ))}
                                             </div>
                                         </CheckboxGroup>
-                                    ) : userType === "super_admin" ? (
+                                    ) : userType === "superadmin" ? (
                                         <CheckboxGroup
                                             label={<>Manage Super Admin Page Access for <strong>{username}</strong></>}
                                         >

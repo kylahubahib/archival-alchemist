@@ -7,7 +7,7 @@ import Modal from "@/Components/Modal";
 import PrimaryButton from "@/Components/PrimaryButton";
 import { Spinner } from "@nextui-org/react";
 import { router } from "@inertiajs/react";
-import { ToastContainer, toast } from "react-toastify";
+import { Slide, ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 export default function ViewCSV({ isOpen, onClose, file, ins_sub }) {
@@ -20,13 +20,11 @@ export default function ViewCSV({ isOpen, onClose, file, ins_sub }) {
     useEffect(() => {
         console.log(insubContent);
 
-        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+        // const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
         
         if (insubContent != null) {
             axios.get('/institution/read-csv', {
                 params: { filePath: insubContent },
-            }, {
-                headers: { 'X-CSRF-TOKEN': csrfToken}
             })
                 .then(response => {
                     if (response.data.success) {
@@ -61,9 +59,10 @@ export default function ViewCSV({ isOpen, onClose, file, ins_sub }) {
         e.preventDefault();
 
         if (!selectedFile) {
-            toast.warning('Please select a file.');
+            toast.warning('Please select a file.', {position: "bottom-right"});
             return;
         }
+
 
         const formData = new FormData();
         formData.append('file', selectedFile);
@@ -197,7 +196,20 @@ export default function ViewCSV({ isOpen, onClose, file, ins_sub }) {
                     )}
                 </div>
             </Modal>
-            <ToastContainer />
+            
+            <ToastContainer
+                autoClose={2000}
+                hideProgressBar={false}
+                // progressClassName={'!bg-customBlue'}
+                newestOnTop={false}
+                closeOnClick={true}
+                rtl={false}
+                pauseOnFocusLoss
+                // draggable={true}
+                pauseOnHover={true}
+                theme="light"
+                transition={Slide}
+            />
         </>
     );
 }

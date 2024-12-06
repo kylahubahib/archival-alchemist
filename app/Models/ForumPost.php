@@ -15,7 +15,8 @@ class ForumPost extends Model
         'body',
         'user_id', 
         'viewCount',
-        'status'
+        'status',
+        'comments'
     ];
 
     protected static function boot()
@@ -38,7 +39,7 @@ class ForumPost extends Model
 
     public function user()
     {
-        return $this->belongsTo(User::class); 
+        return $this->belongsTo(User::class, 'user_id'); 
     }
 
     public function incrementViewCount()

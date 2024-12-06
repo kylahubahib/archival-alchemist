@@ -27,7 +27,7 @@ import { formatDate, formatPrice } from '@/utils';
 import RemoveDepartment from "./RemoveDepartment";
 import AddExistingCourse from "./AddExistingCourse";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import SearchBar from "@/Components/Admins/SearchBar";
+import SearchBar from '@/Components/Admin/SearchBar';
 
 export default function Departments({ auth, departments, uniBranch_id, branch}) {
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -398,9 +398,9 @@ export default function Departments({ auth, departments, uniBranch_id, branch}) 
                                         <FaPlus /><span>New Course</span>
                                     </AddButton>
 
-                                    <AddButton onClick={() => {assignCourseModal(selectedDept)}} className="text-customBlue hover:text-white space-x-1">
+                                    {/* <AddButton onClick={() => {assignCourseModal(selectedDept)}} className="text-customBlue hover:text-white space-x-1">
                                         <FaPlus /><span>Unassigned Course</span>
-                                    </AddButton>  
+                                    </AddButton>   */}
 
                                     <AddExistingCourse isOpen={isAddCourseModal} onClose={closeModal} deptId={selectedDept.id}/>
                                 </div> 
@@ -415,7 +415,8 @@ export default function Departments({ auth, departments, uniBranch_id, branch}) 
                                     shadow="sm"
                                     key={course.id}
                                     > 
-                                    <CardBody  onClick={() =>  displaySections(course)} className="cursor-pointer">
+                                    {/* onClick={() =>  displaySections(course)} */}
+                                    <CardBody className="cursor-pointer">
                                         <div className="w-full flex flex-row justify-between">
                                             <div className=" text-gray-600 font-semibold text-lg">{course.course_name} ({course.course_acronym})</div>
                                             <div className="relative flex justify-end items-center gap-2">

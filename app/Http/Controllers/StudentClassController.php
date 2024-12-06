@@ -262,7 +262,6 @@ class StudentClassController extends Controller
         }
     }
 
-
     public function checkClassCode(Request $request)
     {
         // Validate the incoming request to ensure 'class_code' is provided and is a string
@@ -1127,46 +1126,46 @@ public function isPremium()
 // }
 
 
-public function uploadToDrive($file, $authorIds, $teacherId, $manuscriptId)
-{
+    public function uploadToDrive($file, $authorIds, $teacherId, $manuscriptId)
+    {
 
-    Log::info('Start Google Drive Upload Process');
+        Log::info('Start Google Drive Upload Process'); 
 
-    $keyFilePath = storage_path('app/document-management-438910-d2725c4da7e7.json');
+        $keyFilePath = storage_path('app/document-management-438910-d2725c4da7e7.json');
 
-    // Initialize Google Client
-    $client = new GoogleClient();
-    $client->setAuthConfig($keyFilePath);
-    // $client->setAuthConfig([
-    //     'type' => env('GOOGLE_SERVICE_TYPE'),
-    //     'project_id' => env('GOOGLE_SERVICE_PROJECT_ID'),
-    //     'private_key_id' => env('GOOGLE_SERVICE_PRIVATE_KEY_ID'),
-    //     'private_key' => env('GOOGLE_SERVICE_PRIVATE_KEY'),
-    //     'client_email' => env('GOOGLE_SERVICE_CLIENT_EMAIL'),
-    //     'client_id' => env('GOOGLE_SERVICE_CLIENT_ID'),
-    //     'auth_uri' => env('GOOGLE_SERVICE_AUTH_URI'),
-    //     'token_uri' => env('GOOGLE_SERVICE_TOKEN_URI'),
-    //     'auth_provider_x509_cert_url' => env('GOOGLE_SERVICE_AUTH_PROVIDER_CERT_URL'),
-    //     'client_x509_cert_url' => env('GOOGLE_SERVICE_CLIENT_CERT_URL'),
-    // ]);
-    $client->addScope(GoogleDrive::DRIVE_FILE);
+        // Initialize Google Client
+        $client = new GoogleClient();
+        $client->setAuthConfig($keyFilePath);
+        // $client->setAuthConfig([
+        //     'type' => env('GOOGLE_SERVICE_TYPE'),
+        //     'project_id' => env('GOOGLE_SERVICE_PROJECT_ID'),
+        //     'private_key_id' => env('GOOGLE_SERVICE_PRIVATE_KEY_ID'),
+        //     'private_key' => env('GOOGLE_SERVICE_PRIVATE_KEY'),
+        //     'client_email' => env('GOOGLE_SERVICE_CLIENT_EMAIL'),
+        //     'client_id' => env('GOOGLE_SERVICE_CLIENT_ID'),
+        //     'auth_uri' => env('GOOGLE_SERVICE_AUTH_URI'),
+        //     'token_uri' => env('GOOGLE_SERVICE_TOKEN_URI'),
+        //     'auth_provider_x509_cert_url' => env('GOOGLE_SERVICE_AUTH_PROVIDER_CERT_URL'),
+        //     'client_x509_cert_url' => env('GOOGLE_SERVICE_CLIENT_CERT_URL'),
+        // ]);
+        $client->addScope(GoogleDrive::DRIVE_FILE);
 
 
     // Initialize Google Drive Service
     $driveService = new GoogleDrive($client);
 
-    // Upload the file to Google Drive
-    $driveFile = new GoogleDriveFile();
-    $driveFile->setName($file->getClientOriginalName());
-    $driveFile->setMimeType('application/vnd.google-apps.document');
+        // Upload the file to Google Drive
+        $driveFile = new GoogleDriveFile();
+        $driveFile->setName($file->getClientOriginalName());
+        $driveFile->setMimeType('application/vnd.google-apps.document');
 
-    // Convert the file to google docs format
-    $uploadOptions = [
-        'data' => file_get_contents($file->getRealPath()),
-        'mimeType' => 'application/vnd.google-apps.document',
-        'uploadType' => 'multipart',
-        'fields' => 'id'
-    ];
+        // Convert the file to google docs format
+        $uploadOptions = [
+            'data' => file_get_contents($file->getRealPath()),
+            'mimeType' => 'application/vnd.google-apps.document',
+            'uploadType' => 'multipart',
+            'fields' => 'id'
+        ];
 
     try {
          //Create the document in the google drive file
@@ -1287,36 +1286,36 @@ public function sendForRevision(Request $request)
     $googleDocUrl = $manuscript->man_doc_content;
     $googleDocId = $this->extractGoogleDocId($googleDocUrl);
 
-    if (!$googleDocId) {
-        Log::warning("Invalid Google Doc URL for manuscript ID: $manuscriptId");
-        return response()->json(['error' => 'Invalid Google Doc URL.'], 400);
-    }
+        if (!$googleDocId) {
+            Log::warning("Invalid Google Doc URL for manuscript ID: $manuscriptId");
+            return response()->json(['error' => 'Invalid Google Doc URL.'], 400);
+        }
 
-    $keyFilePath = storage_path('app/document-management-438910-d2725c4da7e7.json');
+        $keyFilePath = storage_path('app/document-management-438910-d2725c4da7e7.json');
 
-    // Initialize Google Client
-    $client = new GoogleClient();
-    $client->setAuthConfig($keyFilePath);
-    // $client->setAuthConfig([
-    //     'type' => env('GOOGLE_SERVICE_TYPE'),
-    //     'project_id' => env('GOOGLE_SERVICE_PROJECT_ID'),
-    //     'private_key_id' => env('GOOGLE_SERVICE_PRIVATE_KEY_ID'),
-    //     'private_key' => env('GOOGLE_SERVICE_PRIVATE_KEY'),
-    //     'client_email' => env('GOOGLE_SERVICE_CLIENT_EMAIL'),
-    //     'client_id' => env('GOOGLE_SERVICE_CLIENT_ID'),
-    //     'auth_uri' => env('GOOGLE_SERVICE_AUTH_URI'),
-    //     'token_uri' => env('GOOGLE_SERVICE_TOKEN_URI'),
-    //     'auth_provider_x509_cert_url' => env('GOOGLE_SERVICE_AUTH_PROVIDER_CERT_URL'),
-    //     'client_x509_cert_url' => env('GOOGLE_SERVICE_CLIENT_CERT_URL'),
-    // ]);
-    $client->addScope(GoogleDrive::DRIVE_FILE);
-    $client->setSubject('file-manager@document-management-438910.iam.gserviceaccount.com');
+        // Initialize Google Client
+        $client = new GoogleClient();
+        $client->setAuthConfig($keyFilePath);
+        // $client->setAuthConfig([
+        //     'type' => env('GOOGLE_SERVICE_TYPE'),
+        //     'project_id' => env('GOOGLE_SERVICE_PROJECT_ID'),
+        //     'private_key_id' => env('GOOGLE_SERVICE_PRIVATE_KEY_ID'),
+        //     'private_key' => env('GOOGLE_SERVICE_PRIVATE_KEY'),
+        //     'client_email' => env('GOOGLE_SERVICE_CLIENT_EMAIL'),
+        //     'client_id' => env('GOOGLE_SERVICE_CLIENT_ID'),
+        //     'auth_uri' => env('GOOGLE_SERVICE_AUTH_URI'),
+        //     'token_uri' => env('GOOGLE_SERVICE_TOKEN_URI'),
+        //     'auth_provider_x509_cert_url' => env('GOOGLE_SERVICE_AUTH_PROVIDER_CERT_URL'),
+        //     'client_x509_cert_url' => env('GOOGLE_SERVICE_CLIENT_CERT_URL'),
+        // ]);
+        $client->addScope(GoogleDrive::DRIVE_FILE);
+        $client->setSubject('file-manager@document-management-438910.iam.gserviceaccount.com');
 
     $driveService = new GoogleDrive($client);
 
 
-    $authors = Author::with('user')->where('man_doc_id', $manuscriptId)->get();
-    // $emails = $authors->pluck('user.email')->toArray();
+        $authors = Author::with('user')->where('man_doc_id', $manuscriptId)->get();
+        // $emails = $authors->pluck('user.email')->toArray();
 
     foreach ($authors as $author) {
         $email = $author->user->email;
@@ -1367,25 +1366,25 @@ public function sendForRevision(Request $request)
         }
     }
 
-    $teacherId = Section::where('id', $manuscript->section_id)->value('ins_id');
+        $teacherId = Section::where('id', $manuscript->section_id)->value('ins_id');
 
-    if ($teacherId) {
-        $user = User::find($teacherId);
-
-        if ($user) {
-            $user->notify(new UserNotification([
-                'message' => "A manuscript titled '{$manuscript->man_doc_title}' is ready for review",
-                'user_id' => $user->id
-            ]));
+        if ($teacherId) {
+            $user = User::find($teacherId);
+            
+            if ($user) {
+                $user->notify(new UserNotification([
+                    'message' => "A manuscript titled '{$manuscript->man_doc_title}' is ready for review",
+                    'user_id' => $user->id
+                ]));
+            } else {
+                Log::warning("User not found for teacher ID: {$teacherId}");
+            }
         } else {
-            Log::warning("User not found for teacher ID: {$teacherId}");
+            Log::warning("Teacher ID not found for section ID: {$manuscript->section_id}");
         }
-    } else {
-        Log::warning("Teacher ID not found for section ID: {$manuscript->section_id}");
-    }
 
-    return response()->json(['success' => 'Document updated successfully.']);
-}
+        return response()->json(['success' => 'Document updated successfully.']);
+    }
 
 
     // Method to extract Google Doc ID from the URL

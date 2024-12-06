@@ -19,3 +19,4 @@ yarn-error.log
 /.idea
 /.vscode
 /storage/logs/laravel.log
+/storage/app/document-management-438910-d2725c4da7e7.json

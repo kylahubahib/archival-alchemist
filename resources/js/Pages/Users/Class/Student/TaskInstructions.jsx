@@ -32,6 +32,7 @@ console.log("This is the Task ID:", taskID);
   const [tagSuggestions, setTagSuggestions] = useState([]);
   const [authorInputValue, setAuthorInputValue] = useState('');
   const [tagInputValue, setTagInputValue] = useState('');
+  const [processing, Setprocessing] = useState(false);
 
     const [hasGroup, setHasGroup] = useState(false);
 
@@ -250,9 +251,11 @@ console.log("This user has a group already.", hasGroup)
 
               console.log('In here...')
 
+              const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
               // Submit the form data
               const response = await axios.post('/api/capstone/upload', formData, {
-                  headers: { 'Content-Type': 'multipart/form-data' },
+                  headers: { 'Content-Type': 'multipart/form-data', 'X-CSRF-TOKEN': csrfToken, },
               });
 
               setMessage(response.data.message);

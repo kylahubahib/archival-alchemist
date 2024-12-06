@@ -458,7 +458,6 @@ class TeacherClassController extends Controller
 }
 
 
-
     // 3. Views by Session or IP Address (Track Views by Session)
     public function viewBook($bookId)
     {

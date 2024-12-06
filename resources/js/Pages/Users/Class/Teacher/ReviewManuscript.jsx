@@ -67,6 +67,27 @@ const ReviewManuscript = ({groupId, folders, onBack, task, taskID, closeModal, c
     return <div>Error: {error}</div>;
   }
 
+  const handleReturnFeedback = () => {
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+    axios.post('/return-feedback', { manuscript_id: manuscript.id },
+      {
+        headers: {
+            'X-CSRF-TOKEN': csrfToken,
+          },
+      }
+    ).then(response => {
+        if (response.data.success) {
+          console.log(response.data.success);
+        } else {
+          console.error('Something went wrong:', response.data.error);
+        }
+      }).catch(error => {
+        console.error('Error occurred:', error.response ? error.response.data : error.message);
+      });
+  };
+
+
 
   const toggleDropdown = () => {
     setIsOpen(!isOpen);  // Toggle the dropdown visibility
@@ -296,12 +317,12 @@ const ReviewManuscript = ({groupId, folders, onBack, task, taskID, closeModal, c
                     {/* <p>
                       <strong >Status:</strong> {historyData.manuscript_status}
                     </p> */}
-                    <p>
+                    <span>
                     <strong >Last Updated:</strong>
-                      <p ClassName="text-base"></p>{' '}
+                      <p className="text-base"></p>{' '}
                       {new Date(historyData.updated_at).toLocaleString()}
                       {console.log("Check Date:", historyData)}
-                    </p>
+                    </span>
                   </div>
                 ) : (
                   <p>No revision history found for this manuscript.</p>

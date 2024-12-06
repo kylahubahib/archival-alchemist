@@ -1,5 +1,5 @@
 import { FaUniversity } from "react-icons/fa";
-import { Head, useForm } from '@inertiajs/react';
+import { Head, router, useForm } from '@inertiajs/react';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Modal, ModalContent, ModalHeader, ModalBody, Button } from "@nextui-org/react";
@@ -13,8 +13,13 @@ export default function AffiliateUniversity({ isOpen, onOpenChange, setIsAffilia
     const [message, setMessage] = useState('');
     const { data, setData, post, processing, errors, reset } = useForm({
         uni_branch_id: '',
-        uni_id_num: ''
+        uni_id_num: '',
+        user_role: ''
     });
+
+    useEffect(() => {
+        console.log(data);
+    })
 
     useEffect(() => {
         axios.get('/api/universities-branches')
@@ -36,13 +41,14 @@ export default function AffiliateUniversity({ isOpen, onOpenChange, setIsAffilia
                 ///console.log('Success:', response.data.message);
                 //console.log('affiliation', response.data.is_affiliated);
                 setIsAffiliated(response.data.is_affiliated);
+                router.reload();
             })
             .catch((error) => {
                 if (error.response) {
                     console.error('Error response:', error.response);
                     setMessage('All fields are required.');
                     if (error.response.status === 500) {
-                        console.error('Form submission validation errors:', validationErrors);
+                        console.error('Form submission validation errors:', error.response);
                         setMessage('All fields are required.');
                     }
 
@@ -95,6 +101,22 @@ export default function AffiliateUniversity({ isOpen, onOpenChange, setIsAffilia
                                             )}
                                         </select>
                                     </div>
+
+                                    <div className="mt-4">
+                                        <InputLabel value={'Role'} />
+                                        <select
+                                            id="user_role"
+                                            name="user_role"
+                                            value={data.user_role}
+                                            onChange={(e) => setData('user_role', e.target.value)}
+                                            className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+                                        >
+                                            <option value="" disabled>Select a Role</option>
+                                            <option value="student">Student</option>
+                                            <option value="teacher">Teacher</option>
+                                        </select>
+                                    </div>
+
 
                                     <div className="mt-4">
                                         <InputLabel value={'Id Number'} />

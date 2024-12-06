@@ -1,6 +1,6 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import GuestLayout from '@/Layouts/GuestLayout';
-import { Head } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
 import { 
   Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, 
   useDisclosure, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, 
@@ -43,6 +43,8 @@ export default function Forum({ auth }) {
   const [postToDelete, setPostToDelete] = useState(null);
   const [selectedSort, setSelectedSort] = useState('latest');
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+  const [viewPost, setViewPost] = useState(false);
+
 
     
     const [loading, setLoading] = useState(true);
@@ -277,16 +279,11 @@ const handleTitleClick = async (postId) => {
 
       <div className="py-12">
         <div className="mx-auto sm:px-6 lg:px-14 min-h-screen">
+        { !isModalOpen ? (
           <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg  min-h-screen">
-            <div className="p-8 font-bold text-xl text-black overflow-auto">
-               {/* Sort Dropdown and Search Bar */}
-               <div className="flex space-x-10 justify-between align-middle items-start">
-                <div className="">
-                  {/* /<h2 className="font-semibold text-4xl text-gray-800 leading-tight mt-2 ml-1">Forum</h2> */}
-                  <div className='flex flex-col justify-evenly gap-4'>
-                    
-                  </div>
-                </div>
+              <div className="p-8 font-bold text-xl text-black overflow-auto">
+                {/* Sort Dropdown and Search Bar */}
+                <div className="flex space-x-10 justify-between  items-start">
                 
                 <Dropdown>
                   <DropdownTrigger>
@@ -314,7 +311,7 @@ const handleTitleClick = async (postId) => {
                 </div>
               </div>
 
-              <div className="flex flex-col items-center -mt-21 ml-32">
+              <div className="flex flex-col items-center -mt-21">
               { !loading ? (
                 <>
               {Array.isArray(posts) && posts.length > 0 ? (
@@ -332,6 +329,7 @@ const handleTitleClick = async (postId) => {
 
 
           return (
+            
             <div className="border-b pb-4 mb-4 w-3/4 relative flex flex-col mt-10 " key={post.id}>
               <div className="flex items-start space-x-4">
               <img
@@ -342,18 +340,23 @@ const handleTitleClick = async (postId) => {
                 />
 
 
-                <div className="flex-grow">
-                  <p className="font-light">{post.user?.name || "Anonymous"}</p>
+                <div className="flex-grow ">
+
+                  <Link href={`/profile/${post.user?.id}`} className="font-semibold hover:underline">
+                    {post.user?.name || "Anonymous"}
+                  </Link>
+
+
                   <h3
-                    className="text-2xl text-black cursor-pointer hover:text-gray-700"
+                    className="text-xl text-black font-normal cursor-pointer mt-2 hover:text-gray-700"
                     onClick={() => handleTitleClick(post.id)}
                   >
                     {post.title}
                   </h3>
 
                   {/* Body Preview */}
-                  <p className="mt-2 text-gray-700 text-medium font-extralight">
-                    {post.body.length > 50 ? post.body.substring(0, 50) + '...' : post.body}
+                  <p className="mt-2 text-gray-700 text-medium font-extralight truncate max-w-xl">
+                    {post.body}
                   </p>
 
                   {/* Time Passed, View, and Comment Counts */}
@@ -370,12 +373,12 @@ const handleTitleClick = async (postId) => {
                       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-4 w-4 mr-1">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 0 1 .865-.501 48.172 48.172 0 0 0 3.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018Z" />
                       </svg>
-                      {post.commentCount || 0}
+                      {post.comments || 0}
                     </span>
                   </div>
 
                   {/* Tags */}
-                  <div className="text-sm text-gray-500 ml-5">
+                  <div className="text-sm text-gray-500 ml-5 mt-2">
                     Tags:
                     <span className="ml-2">
                     {Array.isArray(post.tags) && post.tags.length > 0 ? (
@@ -418,98 +421,113 @@ const handleTitleClick = async (postId) => {
                 <p className="text-gray-500 mt-20">No discussions found.</p>
               )}
               </>) : (
-                <Spinner/>
+                <Spinner className=" mt-44"/>
               )
               }
-    </div>
-  
-
-
-                    {/* Modal for displaying post details */}
-                    <PostDetailModal
-                                isOpen={isModalOpen}
-                                onClose={closeModal}
-                                post={selectedPost}
-                     />
-                          </div>
-                        </div>
-                      </div>
-
-        {/* Create Post Modal */}
-        <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
-          <ModalContent>
-            <ModalHeader>Create a New Post</ModalHeader>
-            <ModalBody>
-              <Input
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                label="Title"
-                placeholder="Enter post title"
-                className="mb-4"
-                classNames={{
-                    base: "max-w-full",
-                    mainWrapper: "h-full",
-                    input: "text-small focus:outline-none border-transparent focus:border-transparent focus:ring-0",
-                    inputWrapper: "h-full font-normal text-default-500",
-                }}
-              />
-              <Textarea
-                value={body}
-                onChange={(e) => setBody(e.target.value)}
-                label="Body"
-                placeholder="Enter post content"
-                className="mb-4"
-                classNames={{
-                    base: "max-w-full",
-                    mainWrapper: "h-full",
-                    input: "text-small focus:outline-none border-transparent focus:border-transparent focus:ring-0",
-                    inputWrapper: "h-full font-normal text-default-500",
-                }}
-              />
-              <Input
-                value={tagInput}
-                onKeyDown={handleTagKeyDown}
-                onChange={(e) => setTagInput(e.target.value)}
-                label="Tags"
-                placeholder="Add a tag and press Enter"
-                className="mb-4"
-                classNames={{
-                    base: "max-w-full",
-                    mainWrapper: "h-full",
-                    input: "text-small focus:outline-none border-transparent focus:border-transparent focus:ring-0",
-                    inputWrapper: "h-full font-normal text-default-500",
-                }}
-              />
-              <div className="flex flex-wrap mt-2">
-                {tags.map((tag) => (
-                  <span key={tag} className="bg-gray-200 rounded-full px-2 py-1 text-sm mr-2">
-                    {tag}
-                    <button onClick={() => removeTag(tag)} className="ml-2 text-red-500">x</button>
-                  </span>
-                ))}
               </div>
-            </ModalBody>
-            <ModalFooter>
-              <Button onClick={handlePostSubmit}>Submit</Button>
-              <Button variant="outline" onClick={onOpenChange}>Cancel</Button>
-            </ModalFooter>
-          </ModalContent>
-        </Modal>
-        
-        
+
+              {/* Modal for displaying post details
+              <PostDetailModal
+                isOpen={isModalOpen}
+                onClose={closeModal}
+                post={selectedPost}
+                loggedInUser={auth.user}
+              /> */}
+
+            </div>
+          </div>
+        ) : (
+          <div className="bg-white shadow-sm rounded-lg px-5">
+              <PostDetailModal
+                isOpen={isModalOpen}
+                onClose={closeModal}
+                post={selectedPost}
+                loggedInUser={auth.user}
+              />
+          </div>
+        )
+        }
+
+        </div>
 
 
-        {/* Delete Confirmation Modal */}
-        <Modal isOpen={isConfirmOpen} onOpenChange={onConfirmOpenChange}>
-          <ModalContent>
-            <ModalHeader>Confirm Delete</ModalHeader>
-            <ModalBody>Are you sure you want to delete this post?</ModalBody>
-            <ModalFooter>
-              <Button onClick={handleDeletePost}>Delete</Button>
-              <Button variant="outline" onClick={onConfirmOpenChange}>Cancel</Button>
-            </ModalFooter>
-          </ModalContent>
-        </Modal>
+
+          {/* Create Post Modal */}
+          <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
+            <ModalContent>
+              <ModalHeader>Create a New Post</ModalHeader>
+              <ModalBody>
+                <Input
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  label="Title"
+                  placeholder="Enter post title"
+                  className="mb-4"
+                  classNames={{
+                      base: "max-w-full",
+                      mainWrapper: "h-full",
+                      input: "text-small focus:outline-none border-transparent focus:border-transparent focus:ring-0",
+                      inputWrapper: "h-full font-normal text-default-500",
+                  }}
+                />
+                <Textarea
+                  value={body}
+                  onChange={(e) => setBody(e.target.value)}
+                  label="Body"
+                  placeholder="Enter post content"
+                  className="mb-4"
+                  classNames={{
+                      base: "max-w-full",
+                      mainWrapper: "h-full",
+                      input: "text-small focus:outline-none border-transparent focus:border-transparent focus:ring-0",
+                      inputWrapper: "h-full font-normal text-default-500",
+                  }}
+                />
+                <Input
+                  value={tagInput}
+                  onKeyDown={handleTagKeyDown}
+                  onChange={(e) => setTagInput(e.target.value)}
+                  label="Tags"
+                  placeholder="Add a tag and press Enter"
+                  className="mb-4"
+                  classNames={{
+                      base: "max-w-full",
+                      mainWrapper: "h-full",
+                      input: "text-small focus:outline-none border-transparent focus:border-transparent focus:ring-0",
+                      inputWrapper: "h-full font-normal text-default-500",
+                  }}
+                />
+                <div className="flex flex-wrap mt-2">
+                  {tags.map((tag) => (
+                    <span key={tag} className="bg-gray-200 rounded-full px-2 py-1 text-sm mr-2">
+                      {tag}
+                      <button onClick={() => removeTag(tag)} className="ml-2 text-red-500">x</button>
+                    </span>
+                  ))}
+                </div>
+              </ModalBody>
+              <ModalFooter>
+                <Button onClick={handlePostSubmit}>Submit</Button>
+                <Button variant="outline" onClick={onOpenChange}>Cancel</Button>
+              </ModalFooter>
+            </ModalContent>
+          </Modal>
+          
+          
+
+
+          {/* Delete Confirmation Modal */}
+          <Modal isOpen={isConfirmOpen} onOpenChange={onConfirmOpenChange}>
+            <ModalContent>
+              <ModalHeader>Confirm Delete</ModalHeader>
+              <ModalBody>Are you sure you want to delete this post?</ModalBody>
+              <ModalFooter>
+                <Button onClick={handleDeletePost}>Delete</Button>
+                <Button variant="outline" onClick={onConfirmOpenChange}>Cancel</Button>
+              </ModalFooter>
+            </ModalContent>
+          </Modal>
+
       </div>
 
       <ReportModal isOpen={isReportModalOpen} onClose={closeModal} reportLocation={'Forum'} reportedID={selectedPost}/> 

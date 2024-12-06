@@ -4,7 +4,6 @@
 
 namespace App\Http\Controllers;
 
-
 use App\Models\Author;
 use App\Models\AssignedTask;
 use App\Models\Course;
@@ -22,6 +21,9 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+
+
+use Illuminate\Support\Facades\Storage;
 
 
 use Google\Client as GoogleClient;
@@ -62,9 +64,6 @@ class ClassController extends Controller
 
         return response()->json($courses);
     }
-
-
-
 
 
     public function storeSection(Request $request)
@@ -440,6 +439,8 @@ class ClassController extends Controller
             $this->returnStudentWork($request->manuscript_id, $validatedData['status'], $validatedData['comment']);
 
             return response()->json(['success' => true, 'message' => 'Feedback stored successfully']);
+
+
         } catch (\Exception $e) {
             // Handle any exception that may occur
             Log::error('Error storing feedback:', ['error' => $e->getMessage()]);
@@ -656,9 +657,6 @@ class ClassController extends Controller
         return response()->json($getHistory);
     }
 
-
-
-
     //STUDENT
 
     public function enrollInClass(Request $request)
@@ -833,68 +831,6 @@ class ClassController extends Controller
         // Return the students record in group table as JSON
         return response()->json($grouprecord);
     }
-
-
-    // public function getManuscriptsByClass(Request $request)
-    // {
-    //     $section_id = $request->get('section_id');
-    //     $filter = $request->input('filter');
-
-    //     Log::info('Section Id:', (array)$section_id);
-
-    //     // Base query to join manuscripts and class tables
-    //     $query = ManuscriptProject::with(['authors', 'tags', 'revision_history', 'group'])
-    //         ->where('section_id', $section_id);
-
-    //     // Apply filter condition based on the filter, if set
-    //     if ($filter) {
-    //         switch ($filter) {
-    //             case 'approved':
-    //                 $query->where('man_doc_status', 'A');
-    //                 break;
-    //             case 'declined':
-    //                 $query->where('man_doc_status', 'D');
-    //                 break;
-    //             case 'in_progress':
-    //                 $query->where('man_doc_status', 'I');
-    //                 break;
-    //             case 'pending':
-    //                 $query->where('man_doc_status', 'P');
-    //                 break;
-    //             case 'missing':
-    //                 $query->where('man_doc_status', 'M');
-    //                 break;
-    //         }
-    //     }
-
-    //     $manuscripts = $query->get();
-
-    //     // Transform statuses into user-friendly labels
-    //     $manuscripts->transform(function ($manuscript) {
-    //         switch ($manuscript->man_doc_status) {
-    //             case 'A':
-    //                 $manuscript->man_doc_status = 'Approved';
-    //                 break;
-    //             case 'I':
-    //                 $manuscript->man_doc_status = 'In progress';
-    //                 break;
-    //             case 'D':
-    //                 $manuscript->man_doc_status = 'Declined';
-    //                 break;
-    //             case 'T':
-    //                 $manuscript->man_doc_status = 'To-Review';
-    //                 break;
-    //             case 'P':
-    //                 $manuscript->man_doc_status = 'Pending';
-    //                 break;
-    //             default:
-    //                 $manuscript->man_doc_status = 'Missing';
-    //         }
-    //         return $manuscript;
-    //     });
-
-    //     return response()->json($manuscripts);
-    // }
 
 
 }

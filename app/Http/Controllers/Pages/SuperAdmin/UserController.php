@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Pages\SuperAdmin;
 
 use App\Http\Controllers\Controller;
 use App\Mail\AdminRegistrationMail;
+use App\Mail\PasswordResetMail;
+use App\Mail\ResetPasswordMail;
 use App\Models\AccessControl;
 use App\Models\User;
 use App\Models\UserLog;
@@ -12,6 +14,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Request as FacadesRequest;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Hash;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Support\Str;
@@ -33,108 +36,131 @@ class UserController extends Controller
         return $this->filter('student');
     }
 
-    public function filter($userType = null, $isJsonResponse = false, Request $request = null)
+    public function filter($userType)
     {
-        $request = $request ?? request(); // If $request is null, use the current request object
+        $university = request('university', null);
+        $branch = request('branch', null);
+        $department = request('department', null);
+        $course = request('course', null);
+        $currentPlan = request('current_plan', null);
+        $insAdminRole = request('ins_admin_role', null);
+        $superAdminRole = request('super_admin_role', null);
+        $dateCreated = request('date_created', null);
+        $status = request('status', null);
+        $searchValue = request('search', null);
+        Log::info(['searchValue' => $searchValue]);
+        $entries = request('entries', null);
 
-        // Convert hyphen to underscore only for querying the database
-        $userType = str_replace('-', '_', $userType);
-
-        $searchName = session('search_name') ?? '';
-        $entriesPerPage = session('entries_per_page') ?? 10;
-        $selectedUniversity = $request->query('selected_university', null);
-        $selectedBranch = $request->query('selected_branch', null);
-        $selectedDepartment = $request->query('selected_department', null);
-        $selectedCourse = $request->query('selected_course', null);
-        $selectedCurrentPlan = $request->query('selected_current_plan', null);
-        $selectedInsAdminRole = $request->query('selected_ins_admin_role', null);
-        $selectedSuperAdminRole = $request->query('selected_super_admin_role', null);
-        $selectedDateCreated = $request->query('selected_date_created', null);
-        $selectedStatus = $request->query('selected_status', null);
-        $isJsonResponse = $request->query('is_json_response', $isJsonResponse);
-
-        // Base query to get users
+        // Base query to get the users
         $query = User::where('user_type', $userType)
-            ->whereRaw('LOWER(name) LIKE ?', ["%" . strtolower($searchName) . "%"])
             ->select('id', 'name', 'email', 'is_premium', 'user_pic', 'created_at', 'user_status');
 
-        if ($selectedUniversity) {
-            $query->whereHas('student.university_branch.university', function ($q) use ($selectedUniversity) {
-                $q->where('uni_name', $selectedUniversity);
-            });
-        }
-        if ($selectedBranch) {
-            $query->whereHas('student.university_branch', function ($q) use ($selectedBranch) {
-                $q->where('uni_branch_name', $selectedBranch);
-            });
-        }
-        if ($selectedDepartment) {
-            $query->whereHas('student.university_branch.department', function ($q) use ($selectedDepartment) {
-                $q->where('dept_name', $selectedDepartment);
-            });
-        }
-        if ($selectedCourse) {
-            $query->whereHas('student.university_branch.department.course', function ($q) use ($selectedCourse) {
-                $q->where('course_name', $selectedCourse);
-            });
-        }
-
-        // Load the relationships based on user type
+        // Load the relationships with specific columns selected based on user type for performance optimization
         switch ($userType) {
             case 'student':
                 $query->with([
-                    'student:id,user_id,uni_branch_id',
+                    'student:id,user_id,section_id,uni_branch_id',
                     'student.university_branch:id,uni_id,uni_branch_name',
-                    'student.university_branch.university:id,uni_name',
-                    'student.university_branch.department.course:id,course_name,dept_id',
-                    'student.university_branch.department:id,dept_name,uni_branch_id',
+                    'student.university_branch.university:id,uni_name,uni_acronym',
+                    'student.section:id,course_id,section_name',
+                    'student.section.course:id,course_name,course_acronym,dept_id',
+                    'student.section.course.department:id,dept_name,dept_acronym,uni_branch_id',
                 ]);
                 break;
-            case 'faculty':
+            case 'teacher':
                 $query->with([
-                    'faculty:id,user_id,uni_branch_id,fac_position',
+                    'faculty:id,user_id,course_id,uni_branch_id,faculty_position',
                     'faculty.university_branch:id,uni_id,uni_branch_name',
-                    'faculty.university_branch.university:id,uni_name',
-                    'faculty.university_branch.department:id,dept_name,uni_branch_id',
+                    'faculty.university_branch.university:id,uni_name,uni_acronym',
+                    'faculty.department:id,dept_name,dept_acronym',
                 ]);
                 break;
-            case 'institution_admin':
+            case 'admin':
                 $query->with([
                     'institution_admin:id,user_id,insub_id',
                     'institution_admin.institution_subscription:id,uni_branch_id,plan_id',
                     'institution_admin.institution_subscription.plan:id',
                     'institution_admin.institution_subscription.university_branch:id,uni_id,uni_branch_name',
-                    'institution_admin.institution_subscription.university_branch.university:id,uni_name',
+                    'institution_admin.institution_subscription.university_branch.university:id,uni_name,uni_acronym',
                     'access_control:access_id,user_id,role',
                 ]);
                 break;
-            case 'super_admin':
+            case 'superadmin':
                 $query->with([
                     'access_control:access_id,user_id,role',
                 ]);
                 break;
         }
 
-        $users = $query->latest()->paginate($entriesPerPage);
-
-
-        if (!$isJsonResponse) {
-            return Inertia::render('SuperAdmin/Users/Users', [
-                'users' => $users,
-                'userType' => $userType,
-            ]);
+        // Filters
+        if ($searchValue) {
+            $query->where(function ($q) use ($searchValue) {
+                $q->where('name', 'LIKE', '%' . $searchValue . '%')
+                    ->orWhere('id', $searchValue); // Use orWhere here
+            });
         }
 
-        return response()->json($users);
+        if ($university) {
+            $query->whereHas('student.university_branch.university', function ($q) use ($university) {
+                $q->where('uni_name', $university);
+            });
+        }
+        if ($branch) {
+            $query->whereHas('student.university_branch', function ($q) use ($branch) {
+                $q->where('uni_branch_name', $branch);
+            });
+        }
+        if ($department) {
+            $query->whereHas('student.university_branch.department', function ($q) use ($department) {
+                $q->where('dept_name', $department);
+            });
+        }
+        if ($course) {
+            $query->whereHas('student.university_branch.department.course', function ($q) use ($course) {
+                $q->where('course_name', $course);
+            });
+        }
+
+        $users = $query->latest()->paginate($entries);
+
+        Log::info($users->toArray());
+
+        if (request()->expectsJson()) {
+            return response()->json($users);
+        }
+
+        return Inertia::render('SuperAdmin/Users/Users', [
+            'userType' => $userType,
+            'users' => $users,
+            'searchValue' => $searchValue,
+        ]);
     }
 
-    public function setStatus(Request $request)
+    public function updateStatus(Request $request)
     {
         $userId = $request->input('user_id');
+        $action = $request->input('action');
+
+        Log::info(['action' => $action]);
+
         $user = User::findOrFail($userId);
-        $user->user_status = $user->user_status === 'active' ? 'deactivated' : 'active';
+
+        switch ($action) {
+            case 'Activate':
+                $user->user_status = 'Active';
+                break;
+
+            case 'Deactivate':
+                $user->user_status = 'Deactivated';
+                break;
+
+            default:
+                return response()->json(['error' => 'Invalid action'], 400);
+        }
 
         $user->save();
+
+        return response()->json(['message' => 'User status updated successfully']);
     }
 
     // Functions that set the sesssion variables
@@ -148,11 +174,11 @@ class UserController extends Controller
         session(['search_name' => $request->input('search_name')]);
     }
 
-    public function logs($userId, Request $request)
+    public function logs(Request $request)
     {
         // For search filter
         $searchActivity = $request->get('search_activity', '');
-
+        $userId = $request->get('user_id', null);
         // For date filter
         $startDate = $request->get('start_date', null);
         $endDate = $request->get('end_date', null);
@@ -212,67 +238,65 @@ class UserController extends Controller
 
     public function adminRegistrationForm($token)
     {
-        // Retrieve the token data based on a token
+        // Retrieve the token data based on the provided token
         $tokenData = DB::table('admin_registration_tokens')->where('token', $token)->first();
 
-        // Check if token exists and if it has expired
+        // Check if the token exists and if it has been used or expired
         if (!$tokenData || $tokenData->used || Carbon::parse($tokenData->expires_at)->isPast()) {
+            // Delete the invalid or expired token
+            DB::table('admin_registration_tokens')->where('token', $token)->delete();
+
             return Inertia::render('ErrorPage');
         }
 
         return Inertia::render('Auth/AdminRegistration', ['tokenData' => $tokenData]);
     }
 
+
     public function submitAdminRegistration(Request $request)
     {
+        // Validate the incoming request data
         $validatedData = $request->validate([
             'email' => 'required|email|max:255',
-            'password' => 'required|string|min:8|confirmed',  // Ensures password matches password_confirmation
-            'password_confirmation' => 'required|string|min:8'
+            'password' => 'required|string|min:8|confirmed', // Ensures password matches password_confirmation
+            'password_confirmation' => 'required|string|min:8',
+            'access' => 'nullable|json',
+            'token' => 'required|string',
+            'user_type' => 'required|string',
+            'name' => 'required|string|max:255',
         ]);
 
-
-        // Start a transaction to ensure both User and AccessControl are inserted successfully
-        // and to avoid data anomalies
         DB::beginTransaction();
 
         try {
             // Disable the admin insertion trigger
             DB::statement('SET @DISABLE_ADMIN_INSERTION_TRIGGER = TRUE;');
 
-            // Parse the access JSON from the encoded value in the database
-            $access = json_decode($request->input('access'), true) ?? [];
+            $access = json_decode($validatedData['access'], true) ?? [];
 
-            Log::info('access:', ['access' => $access]);
-
-
-            $token = $request->input('token');
-            $userType = $request->input('user_type');
-            $name = $request->input('name');
-
+            // Create the user
             $user = User::create([
-                'user_type' => $userType,
-                'name' => $name,
+                'user_type' => $validatedData['user_type'],
+                'name' => $validatedData['name'],
                 'email' => $validatedData['email'],
-                'password' => bcrypt($validatedData['password']),
-                'user_status' => 'pending',
+                'password' => Hash::make($validatedData['password']),
+                'user_status' => 'active',
+                'email_verified_at' => Carbon::now(),
             ]);
-            // Log::info('User created:', ['user_id' => $user->user_id]); // Log the user_id to confirm
 
-            $tokenTable = DB::table('admin_registration_tokens')->where('token', $token)->first();
+            $tokenTable = DB::table('admin_registration_tokens')
+                ->where('token', $validatedData['token'])
+                ->first();
 
             if ($tokenTable) {
-
                 $accessControlData = [
                     'user_id' => $user->id,
-                    'role' => $userType === 'institution_admin' ? "co_institution_admin" : "co_super_admin",
+                    'role' => $validatedData['user_type'] === 'institution_admin' ? "co_institution_admin" : "co_super_admin",
                 ];
 
                 $accessControlModel = new AccessControl();
 
-                // Loop through the fillable fields of AccessControl and dynamically assign values to dynamic $accessControlData var
                 foreach ($accessControlModel->getFillable() as $fillableField) {
-                    // Skip these unrelated access columns
                     if (in_array($fillableField, ['user_id', 'role'])) {
                         continue;
                     }
@@ -284,8 +308,8 @@ class UserController extends Controller
 
                 AccessControl::create($accessControlData);
 
-                // Update the used column after the insertion takes place in the users and access_control tables
-                DB::table('admin_registration_tokens')->where('token', $token)->update(['used' => true]);
+                // Mark token as used
+                DB::table('admin_registration_tokens')->where('token', $validatedData['token'])->update(['used' => true]);
             }
 
             // Re-enable the admin insertion trigger
@@ -301,10 +325,10 @@ class UserController extends Controller
 
             Log::error('Failed to register user and access controls', ['error' => $e->getMessage()]);
 
-
             return redirect()->back()->withErrors(['password_confirmation' => 'Register failed. Something went wrong.']);
         }
     }
+
 
     public function adminAccess($userId)
     {
@@ -355,68 +379,90 @@ class UserController extends Controller
         $accessControl->save();
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function sendPasswordReset(Request $request)
     {
-        //
+        $validatedData = $request->validate([
+            'email' => 'required|email|max:255|exists:users,email',  // Check if the email exists in the users table
+        ]);
+
+        // Fetch the user record from the database
+        $user = User::where('email', $validatedData['email'])->first();
+
+        if ($user) {
+            // Generate token
+            $token = Str::random(50);
+
+            // Pass the token here
+            $passwordResetLink = route('users.password-reset-form', ['token' => $token]);
+
+            // Insert the fields into the password reset tokens table for temporary use
+            DB::table('password_reset_tokens')->insert([
+                'token' => $token,
+                'email' => $validatedData['email'],
+                'expires_at' => Carbon::now()->addDay(),
+            ]);
+
+            // Send the email
+            Mail::to($validatedData['email'])->send(new PasswordResetMail($user->name, $validatedData['email'], $passwordResetLink));
+
+            return redirect()->back()->with('message', 'Password changed successfully.');
+        }
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+
+    public function passwordResetForm($token)
     {
-        //
+        // Retrieve the token data based on the provided token
+        $tokenData = DB::table('password_reset_tokens')->where('token', $token)->first();
+
+        // Check if the token exists and if it has been used or expired
+        if (!$tokenData || $tokenData->used || Carbon::parse($tokenData->expires_at)->isPast()) {
+            // Delete the invalid or expired token from the database
+            DB::table('password_reset_tokens')->where('token', $token)->delete();
+
+            // Render the error page since the token is invalid or expired
+            return Inertia::render('ErrorPage');
+        }
+
+        // If the token is valid, return the password reset form
+        return Inertia::render('Auth/PasswordReset', ['tokenData' => $tokenData]);
     }
 
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    public function submitPasswordReset(Request $request)
     {
-        //
-    }
+        $validatedData = $request->validate([
+            'email' => 'required|email|max:255',
+            'password' => 'required|string|min:8|confirmed',
+            'password_confirmation' => 'required|string|min:8',
+            'token' => 'required|string', // Add token to validated data
+        ]);
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
+        // Fetch the user by email
+        $user = User::where('email', $validatedData['email'])->first();
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
+        // Check if the token exists and is valid
+        $tokenTable = DB::table('password_reset_tokens')->where('token', $validatedData['token'])->first();
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        if (!$tokenTable) {
+            return response()->json(['error' => 'Invalid or expired token.'], 400);
+        }
+
+        // Handle the case where the user does not exist
+        if (!$user) {
+            return response()->json(['error' => 'No account found with the provided email address.'], 404);
+        }
+
+        // Mark the token as used
+        DB::table('password_reset_tokens')->where('token', $validatedData['token'])->update(['used' => true]);
+
+        // Delete the token after it is marked as used
+        DB::table('password_reset_tokens')->where('token', $validatedData['token'])->delete();
+
+        // Update the user's password
+        $user->password = Hash::make($validatedData['password']); // Hash the password
+        $user->save();
+
+        return redirect('/login')->with('success', 'Your password has been reset successfully.');
     }
 }
-
-        // return response()->json([
-        //     'current_page' => $users->currentPage(),
-        //     'data' => $users->items(),
-        //     'first_page_url' => $users->firstPageUrl(),
-        //     'from' => $users->firstItem(), // Changed from `firstPageUrl()` to `firstItem()`
-        //     'last_page' => $users->lastPage(),
-        //     'last_page_url' => $users->lastPageUrl(), // Changed from `firstPageUrl()` to `lastPageUrl()`
-        //     'links' => $users->links()->toArray(), // Adjust as needed; assuming you want pagination links
-        //     'next_page_url' => $users->nextPageUrl(),
-        //     'path' => $users->path(), // Changed from `nextPageUrl()` to `path()`
-        //     'per_page' => $users->perPage(),
-        //     'prev_page_url' => $users->previousPageUrl(),
-        //     'to' => $users->lastItem(), // Changed from `previousPageUrl()` to `lastItem()`
-        //     'total' => $users->total(),
-        // ]);

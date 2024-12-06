@@ -26,6 +26,8 @@ class User extends Authenticatable
      *
      * @var array<int, string>
      */
+
+
     protected $fillable = [
         'name',
         'email',
@@ -74,9 +76,9 @@ class User extends Authenticatable
         return $this->hasOne(Student::class, 'user_id');
     }
 
-    public function faculty(): HasMany
+    public function faculty(): HasOne
     {
-        return $this->hasMany(Faculty::class, 'user_id');
+        return $this->hasOne(Faculty::class, 'user_id');
     }
 
     public function institution_admin(): HasOne
@@ -92,22 +94,11 @@ class User extends Authenticatable
     public function custom_content(): HasMany
     {
         return $this->hasMany(CustomContent::class, 'user_id');
-        }
+    }
 
     public function manuscripts(): BelongsToMany
     {
         return $this->belongsToMany(ManuscriptProject::class, 'author', 'user_id', 'man_doc_id');
-    }
-
-
-    public function forum(): HasMany
-    {
-        return $this->hasMany(Forum::class, 'user_id');
-    }
-
-    public function post(): HasMany
-    {
-        return $this->hasMany(Post::class, 'user_id');
     }
 
     public function user_report(): HasMany
@@ -162,25 +153,25 @@ class User extends Authenticatable
     }
 
     // Define the relationship with the Author model
-     // If a User has many Authors
-     public function authors()
-     {
-         return $this->hasMany(Author::class, 'user_id', 'id');
-     }
+    // If a User has many Authors
+    public function authors()
+    {
+        return $this->hasMany(Author::class, 'user_id', 'id');
+    }
 
      public function section()
      {
          return $this->hasMany(Section::class, 'ins_id');
      }
 
-     public function access_control(): HasOne
-     {
-         return $this->hasOne(AccessControl::class, 'user_id');
-     }
-     public function user_log(): HasMany
-     {
-         return $this->hasMany(UserLog::class, 'user_id');
-     }
+    public function access_control(): HasOne
+    {
+        return $this->hasOne(AccessControl::class, 'user_id');
+    }
+    public function user_log(): HasMany
+    {
+        return $this->hasMany(UserLog::class, 'user_id');
+    }
 
     // Google access tokens expires after one hour so this method will automatically
     // create a new access token using the refresh token.
@@ -207,6 +198,12 @@ class User extends Authenticatable
         return $this->hasMany(ForumComment::class);
     }
 
+    public function forum_post()
+    {
+        return $this->hasMany(ForumPost::class, 'user_id'); 
+    }
+
+
     public function groupMembers()
     {
         return $this->hasMany(GroupMember::class, 'section_id');
@@ -230,6 +227,12 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(ManuscriptProject::class, 'book_views', 'user_id', 'man_doc_id');
     }
+
+    public function getRouteKeyName()
+    {
+        return 'name';
+    } 
+    
 
     public function user()
 {

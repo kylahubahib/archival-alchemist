@@ -1,25 +1,48 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { FaEye, FaComment } from 'react-icons/fa';
+import { FaEye, FaComment, FaTrash, FaFlag } from 'react-icons/fa';
 import { CommentSection } from 'react-comments-section';
 import 'react-comments-section/dist/index.css';
+import { Chip } from '@nextui-org/react';
 
-const PostDetailModal = ({ isOpen, onClose, post }) => {
+const PostDetailModal = ({ isOpen, onClose, post, loggedInUser, onUpdateCommentCount }) => {
   const [comments, setComments] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  useEffect(() => {
-    console.log('POst: ', post);
-    if (isOpen && post?.id) {
-      fetchComments(post.id); // Pass post.id here
-    }
-  }, [isOpen, post?.id]);
-
-  const fetchComments = async (postId) => {  // Accept postId as a parameter
-    setIsLoading(true);
+  // Fetch comments from the database or localStorage
+  const fetchComments = async (postId) => {
     try {
-      const response = await axios.get(`/forum-comments/${postId}`); // Use postId
-      setComments(response.data);
+      console.log('Fetching comments from server...');
+      setIsLoading(true);
+
+      const response = await axios.get(`/forum-comments/${postId}`);
+      console.log('API Response:', response.data);
+
+      const commentArray = Array.isArray(response.data.comments) ? response.data.comments : [];
+
+      const fetchedComments = commentArray.map((comment) => ({
+        comId: comment.id.toString(),
+        userId: comment.user?.id || 'unknown',
+        fullName: comment.user?.name || 'Anonymous',
+        avatarUrl:
+          comment.user?.user_pic ||
+          `https://ui-avatars.com/api/?name=${encodeURIComponent(comment.user?.name || 'Anonymous')}&background=random`,
+        text: comment.comment?.toString() || '',
+        replies:
+          comment.replies?.map((reply) => ({
+            comId: reply.id.toString(),
+            userId: reply.user?.id || 'unknown',
+            fullName: reply.user?.name || 'Anonymous',
+            avatarUrl:
+              reply.user?.user_pic ||
+              `https://ui-avatars.com/api/?name=${encodeURIComponent(reply.user?.name || 'Anonymous')}&background=random`,
+            text: reply.comment?.toString() || '',
+          })) || [],
+      }));
+      if (onUpdateCommentCount) {
+        onUpdateCommentCount(postId, fetchedComments.length);
+      }
+      setComments(fetchedComments);
     } catch (error) {
       console.error('Error fetching comments:', error);
     } finally {
@@ -27,44 +50,122 @@ const PostDetailModal = ({ isOpen, onClose, post }) => {
     }
   };
 
-  const handleCommentSubmit = async (newComment) => {
-
-    console.log('Post ID: ', post.id)
-
-    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-    
+  const handleDeleteComment = async (data) => {
+    const { comIdToDelete } = data;
+  
     try {
-      const response = await axios.post('/forum-comments', {
-        
-        post_id: post.id, // Use post.id
-        comment: newComment.text,
-      },
-      {
-        headers: {
-            'X-CSRF-TOKEN': csrfToken,
-          },
+      const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+      await axios.delete(`/forum-comments/${comIdToDelete}`, {
+        headers: { 'X-CSRF-TOKEN': csrfToken },
+      });
+  
+      setComments((prevComments) =>
+        prevComments.filter((comment) => comment.comId !== comIdToDelete)
+      );
+  
+      // Update the comment count in the parent component
+      if (onUpdateCommentCount) {
+        onUpdateCommentCount(post.id, comments.length - 1);
       }
-    );
-      const savedComment = response.data;
-      setComments((prevComments) => [...prevComments, savedComment]);
+  
+      console.log('Comment deleted successfully!');
     } catch (error) {
-      console.error('Error saving comment:', error);
-      alert('Could not save the comment. Please try again.');
+      console.error('Error deleting comment:', error);
+      alert('Failed to delete comment. Please try again.');
+    }
+  };
+  
+  
+
+
+  const handleEditComment = async (data) => {
+    const { comId, text } = data;
+
+    try {
+      const response = await axios.put(`/forum-comments/${comId}/edit`, {
+        comment: text,
+      });
+
+      setComments((prevComments) =>
+        prevComments.map((comment) =>
+          comment.comId === comId
+            ? { ...comment, text: response.data.comment.comment }
+            : comment
+        )
+      );
+
+      alert('Comment updated successfully!');
+    } catch (error) {
+      console.error('Error updating comment:', error);
+      alert('Failed to update comment. Please try again.');
     }
   };
 
-  const customNoComment = () => (
-    <div className="text-gray-500 text-center mt-4">
-      No comments yet. Be the first to comment!
+  const handleReportComment = async (commentId) => {
+    try {
+      const response = await axios.post(`/report-comment/${commentId}`);
+      console.log('Comment reported:', response.data);
+      alert('Comment has been reported.');
+    } catch (error) {
+      console.error('Error reporting comment:', error);
+      alert('Failed to report comment. Please try again.');
+    }
+  };
+
+  const handleCommentSubmit = async (newComment) => {
+    // Existing logic to submit a comment
+    try {
+      const response = await axios.post('/forum-comments', {
+        forum_post_id: post.id,
+        comment: newComment.text,
+      });
+  
+      // Update state with new comment count
+      setComments((prevComments) => [...prevComments, response.data.comment]);
+
+      if (onUpdateCommentCount) {
+        onUpdateCommentCount(post.id, comments.length + 1);
+      }
+    } catch (error) {
+      console.error('Error adding comment:', error);
+    }
+  };
+
+  const handleReplySubmit = async (data) => {
+    // Existing implementation
+  };
+
+  useEffect(() => {
+    if (isOpen && post?.id) {
+      fetchComments(post.id);
+    }
+  }, [isOpen, post?.id]);
+
+  const renderCommentActions = (commentId, userId) => (
+    <div className="flex space-x-2 text-sm text-gray-500 font-normal">
+      {loggedInUser?.id === userId && (
+        <button
+          onClick={() => handleDeleteComment({ comIdToDelete: commentId })}
+          className="flex items-center space-x-1 hover:text-red-500"
+        >
+          <FaTrash />
+          <span>Delete</span>
+        </button>
+      )}
+      <button
+        onClick={() => handleReportComment(commentId)}
+        className="flex items-center space-x-1 hover:text-yellow-500"
+      >
+        <FaFlag />
+        <span>Report</span>
+      </button>
     </div>
   );
-
   if (!isOpen || !post) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-      <div className="relative w-full max-w-3xl bg-white rounded-lg shadow-lg overflow-y-auto max-h-screen p-6 mt-5">
-        {/* Close Button */}
+    <div className="inset-0 z-50 flex items-center justify-center">
+      <div className="relative w-full p-5 mt-5">
         <button
           className="absolute top-4 right-4 p-2 text-gray-600 hover:text-black"
           onClick={onClose}
@@ -72,71 +173,57 @@ const PostDetailModal = ({ isOpen, onClose, post }) => {
           ✕
         </button>
 
-        {/* User Info and Tags */}
         <div className="flex items-center mb-4 mt-5">
           <img
-            src={post.user?.user_pic || 'https://ui-avatars.com/api/?name=User&background=random'} // Fallback to default avatar
+            src={post.user?.user_pic || 'https://ui-avatars.com/api/?name=User&background=random'}
             alt={`${post.user?.name}'s profile`}
             className="w-12 h-12 rounded-full mr-3"
           />
           <div className="flex-1">
-            <div className="font-medium text-gray-800 ml-2">
+            <div className="font-semibold text-2xl text-gray-800 ml-2">
               {post.user?.name || 'User'}
             </div>
-            <div className="text-sm text-gray-500">{post.timePassed}</div>
-          </div>
-          <div className="flex space-x-2">
-            {post.tags?.map((tag) => (
-              <span
-                key={tag.id}
-                className="bg-blue-100 text-blue-800 text-sm font-medium px-3 py-0.5 rounded"
-              >
-                {tag.name}
-              </span>
-            ))}
           </div>
         </div>
 
-        {/* Post Title */}
-        <h2 className="text-3xl font-bold text-gray-800 mb-4">{post.title}</h2>
+        <h2 className="text-2xl font-medium text-gray-700 mb-4">{post.title}</h2>
 
-        {/* Post Body */}
-        <p className="text-gray-600 mb-6 leading-relaxed">{post.body}</p>
+        <div className="flex space-x-2 my-2">
+          {post.tags?.map((tag, index) => (
+            <Chip key={`${tag.id || index}-${tag.name}`} color="primary" variant="flat">
+              {tag.name}
+            </Chip>
+          ))}
+        </div>
 
-        <p className="text-gray-600 font-thin mb-6 leading-relaxed">{post.body}</p>
+        <p className="text-gray-600 mb-6 text-base font-normal">{post.body}</p>
 
-        {/* Views and Comments Count */}
-        <div className="flex items-center text-gray-500 text-sm mb-6 space-x-4">
-          <div className="flex items-center space-x-1">
-            <FaEye />
-            <span>{post.viewCount} views</span>
+        <div className="flex items-center text-gray-600 mb-6">
+          <div className="flex items-center mr-4 text-base font-normal">
+            <FaEye className="mr-1" />
+            {post.viewCount || 0} Views
           </div>
-          <div className="flex items-center space-x-1">
-            <FaComment />
-            <span>{comments.length} comments</span>
+          <div className="flex items-center text-base font-normal">
+            <FaComment className="mr-1" />
+            {comments.length} Comments
           </div>
         </div>
 
-        {/* Comments Section */}
-        <div className="border-t pt-4">
+        <div>
           <CommentSection
             currentUser={{
-              currentUserId: '01a', // Replace with actual logged-in user ID
+              currentUserId: loggedInUser?.id || '01a',
               currentUserImg:
-                'https://ui-avatars.com/api/?name=User&background=random', // Replace with actual user avatar
-              currentUserProfile: '/user-profile',
-              currentUserFullName: 'Current User', // Replace with dynamically fetched full name
+                loggedInUser?.user_pic || 'https://ui-avatars.com/api/?name=User&background=random',
+              currentUserProfile: 'Current User',
+              currentUserFullName: loggedInUser?.name || 'Current User',
             }}
-            commentData={comments.map((comment) => ({
-              userId: comment.user.id,
-              comId: comment.id,
-              fullName: comment.user.name,
-              avatarUrl: comment.user.avatar || 'https://ui-avatars.com/api/?name=User&background=random', // Default if avatar is missing
-              text: comment.comment,
-              replies: comment.replies || [],
-            }))}
+            commentData={comments}
             onSubmitAction={handleCommentSubmit}
-            customNoComment={customNoComment}
+            onReplyAction={handleReplySubmit}
+            onDeleteAction={handleDeleteComment}
+            onEditAction={handleEditComment}
+            customNoComment={() => <div>No comments yet. Be the first to comment!</div>}
           />
         </div>
       </div>

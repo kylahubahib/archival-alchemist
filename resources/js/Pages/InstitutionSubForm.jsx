@@ -18,7 +18,7 @@ export default function InstitutionSubscriptionForm({ plan }) {
         name: '',
         pnum: '',
         email: '',
-        ins_admin_proof: '',
+        // ins_admin_proof: '',
         uni_branch_id: '',
         plan: plan,
         number_of_users: '',
@@ -128,7 +128,6 @@ export default function InstitutionSubscriptionForm({ plan }) {
             setData('campus', value.uni_branch_name);
             checkIfUniversityExist(value.id);
             setFilteredBranches([]);
-            
         }
 
     }
@@ -204,11 +203,11 @@ export default function InstitutionSubscriptionForm({ plan }) {
                                 name="num_users"
                                 value={data.number_of_users}
                                 className="mt-1 block w-1/2"
-                                placeholder="0"
+                                placeholder="100"
                                 onChange={(e) => setData('number_of_users', e.target.value)}
                                 required
                             />
-                            <InputError message={errors.name} className="mt-2" />
+                            <InputError message={errors.number_of_users} className="mt-2" />
                         </div>
 
 
@@ -251,8 +250,8 @@ export default function InstitutionSubscriptionForm({ plan }) {
                             type="number"
                             name="pnum"
                             value={data.pnum}
-                            className="mt-1 block w-full"
-                            placeholder="09XXXXXXX"
+                            className="mt-1 block w-full"s
+                            max={9999999999}
                             onChange={(e) => setData('pnum', e.target.value)}
                             required
                         />
@@ -318,7 +317,7 @@ export default function InstitutionSubscriptionForm({ plan }) {
                         <p className="text-red-500 text-sm mt-2">{validationError}</p>
                     )}
 
-                    <div>
+                    {/* <div>
                         <InputLabel value="Proof of University Connection" />
                         <div className="flex items-center justify-center w-full">
                             <label
@@ -344,7 +343,7 @@ export default function InstitutionSubscriptionForm({ plan }) {
                                 />
                             </label>
                         </div>
-                    </div>
+                    </div> */}
                     </div>
 
                   

@@ -11,10 +11,13 @@ import axios from "axios";
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, ArcElement, Title, Tooltip, Legend)
 
 
-export default function Dashboard({ auth, topManuscripts = [], counts, chartData, revenue}) {
+export default function Dashboard({ auth, topManuscripts = [], counts, chartData, revenue, manuscript}) {
     const [revenueData, setRevenueData] = useState(chartData.monthlyRevenueData);
     const [manuscriptData, setManuscriptData] = useState(chartData.manuscriptCountWeekly);
 
+    useEffect(() => {
+        console.log(manuscript);
+    })
    
     const handleRevenueFilter = (e) => {
         if(e.target.value === 'Monthly') {
