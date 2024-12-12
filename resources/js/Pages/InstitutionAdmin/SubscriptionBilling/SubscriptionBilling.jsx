@@ -32,22 +32,26 @@ export default function InsAdminSubscriptionBilling({ auth, ins_sub, transaction
 
 
     const checkSubscriptionStatus = () => {
-        const currentDate = new Date();
-        const subscriptionEndDate = new Date(ins_sub.end_date);
-        console.log(currentDate, ' and ', subscriptionEndDate);
-    
         if (!ins_sub || !ins_sub.end_date) {
-            console.error("Subscription data is missing");
+            console.error("Subscription data is missing or invalid.");
+            toast.error('Subscription data is missing!', { position: "top-center" });
             return;
         }
     
+        const currentDate = new Date();
+        const subscriptionEndDate = new Date(ins_sub.end_date);
+    
+        console.log('Current: ', currentDate, ' End: ', subscriptionEndDate);
+    
         if (currentDate < subscriptionEndDate) {
-            // console.log('You still have an active subscription');
-            toast.info('You still have an active subscription!', { position: "top-center"})
+            // Active subscription
+            toast.info('You still have an active subscription!', { position: "top-center" });
         } else {
+            // Subscription expired
             openModal('renewal');
         }
-    }
+    };
+    
 
     const handleRenewal = async (id) => {
         // const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');

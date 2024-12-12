@@ -14,7 +14,7 @@ const People = ({ auth, user, onBack, folders }) => {
     const [StudentsUsers, setStudentUser] = useState(null); // Declare the user state
     const [isLoading, setIsLoading] = useState(false);
 
-    const [csrfToken, setCsrfToken] = useState(null);
+    // const [csrfToken, setCsrfToken] = useState(null);
     const [isGroupModalOpen, setIsGroupModalOpen] = useState(false);
     const [errorMessage, setErrorMessage] = useState(''); // Add state for error message
     const [errors, setErrors] = useState({});
@@ -112,14 +112,14 @@ useEffect(() => {
     };
 
     // Fetch the CSRF token and set it in axios defaults
-    useEffect(() => {
-        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-        if (csrfToken) {
-            setCsrfToken(csrfToken);
-            axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken;
-            axios.defaults.headers.common['Content-Type'] = 'application/json';
-        }
-    }, []);
+    // useEffect(() => {
+    //     const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    //     if (csrfToken) {
+    //         setCsrfToken(csrfToken);
+    //         axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken;
+    //         axios.defaults.headers.common['Content-Type'] = 'application/json';
+    //     }
+    // }, []);
 
 
 
@@ -128,10 +128,10 @@ useEffect(() => {
         const folder = folders;  // Or use a condition to select a specific folder
         console.log('Folder ID:', folder.id);  // Check if folder.id is valid
 
-        if (!csrfToken) {
-            setErrorMessage('CSRF token not found. Please try again.');
-            return;
-        }
+        // if (!csrfToken) {
+        //     setErrorMessage('CSRF token not found. Please try again.');
+        //     return;
+        // }
 
         setIsLoading(true);
         setErrorMessage(''); // Clear any previous error message
@@ -152,7 +152,7 @@ useEffect(() => {
                 students: users, // Assuming users is an array of student names
             }, {
                 headers: {
-                    'X-CSRF-TOKEN': csrfToken,  // CSRF token applied here
+                    // 'X-CSRF-TOKEN': csrfToken,  // CSRF token applied here
                     'Content-Type': 'application/json',
                 }
             });

@@ -25,7 +25,7 @@ const UserRepository = ({auth, user, manuscript}) => {
     const [isCiteModalOpen, setIsCiteModalOpen] = useState(false);
     const [selectedRating, setSelectedRating] = useState(0); // Store the rating value
     const [selectedManuscript, setSelectedManuscript] = useState(null); // Track selected manuscript
-    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    // const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
     const [titleInputValue, setTitleInputValue] = useState(''); // State for the title input
     const [selectedSearchField, setSelectedSearchField] = useState("Title"); // Track selected search field
     const [commentStates, setCommentStates] = useState({}); // This will store the state for each manuscript
@@ -220,7 +220,7 @@ const UserRepository = ({auth, user, manuscript}) => {
                   method: 'POST',
                   headers: {
                       'Content-Type': 'application/json',
-                      'X-CSRF-TOKEN': csrfToken
+                    //   'X-CSRF-TOKEN': csrfToken
                   },
                   body: JSON.stringify({
                       manuscript_id: selectedManuscript.id,

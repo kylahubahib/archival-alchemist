@@ -13,6 +13,7 @@ use Inertia\Response;
 
 use App\Traits\CheckSubscriptionTrait;
 use App\Models\InstitutionSubscription;
+use App\Models\UserReport;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\UsersImport;
 use Illuminate\Http\JsonResponse;
@@ -41,10 +42,19 @@ class AuthenticatedSessionController extends Controller
      */
     public function store(LoginRequest $request)
     {
-        \Log::info("hello");
+        \Log::info("Logging in...");
 
         $request->authenticate();
         $authenticatedUser = Auth::user();
+
+        $this->checkUserSuspension($authenticatedUser);
+
+        // Refresh the user model incase status updates in the checkUserSuspension
+        if ($authenticatedUser->fresh()->user_status === 'Suspended') {
+            Auth::guard('web')->logout();
+            return Inertia::render('Auth/AccountSuspended');
+        }
+
 
         if($authenticatedUser->user_type !== 'general_user')
         {
@@ -53,15 +63,40 @@ class AuthenticatedSessionController extends Controller
 
             // Check if user is affiliated with an institution
             if ($user->user_type != 'admin' && $user->user_type != 'superadmin') {
+
                 if ($user->user_type == 'student') {
                     $checkInSub = InstitutionSubscription::where('uni_branch_id', $user->student->uni_branch_id)->first();
-                } elseif ($user->user_type == 'teacher') {
-                    $checkInSub = InstitutionSubscription::where('uni_branch_id', $user->faculty->first()->uni_branch_id)->first();
-                }
+                    
+                    if($checkInSub->insub_status === 'Inactive') {
+                        $user->update([
+                            'is_premium' => false
+                        ]);
+                    }
+                    else {
 
-                if($user->is_premium == 0 || $user->is_affiliated == 0) {
-                    $this->checkInstitutionSubscription($checkInSub, $user);
+                        if($user->is_premium == 0 && $user->is_affiliated == 1) {
+                            $this->checkInstitutionSubscription($checkInSub, $user);
+                        }
+                    }
+
+                } else if ($user->user_type == 'teacher') {
+                    $checkInSub = InstitutionSubscription::where('uni_branch_id', $user->faculty->first()->uni_branch_id)->first();
+                    
+                    if($checkInSub->insub_status === 'Inactive')
+                    {
+                        $user->update([
+                            'is_premium' => false
+                        ]);
+                    }
+                    else {
+                        
+                        if($user->is_premium == 0 && $user->is_affiliated == 1) {
+                            $this->checkInstitutionSubscription($checkInSub, $user);
+                        }
+                    }
+
                 }
+               
             }
 
             // Check if the request expects JSON (API request)
@@ -75,7 +110,11 @@ class AuthenticatedSessionController extends Controller
 
             // If it's not a JSON request, regenerate session and redirect
             if (!$request->expectsJson()) {
-                $request->session()->regenerate();
+                $session = $request->session()->regenerate();
+
+                Log::info('Token...');
+                Log::info($session);
+
 
                 // Redirect based on user_type
                 switch ($user->user_type) {
@@ -111,6 +150,20 @@ class AuthenticatedSessionController extends Controller
 
     }
 
+  
+    private function checkUserSuspension($user)
+    {
+        $report = UserReport::where('reported_user_id', $user->id)
+            ->whereNotNull('suspension_start_date') 
+            ->whereNotNull('suspension_end_date') 
+            ->latest('suspension_end_date') 
+            ->first();
+    
+        if ($report && now()->greaterThan($report->suspension_end_date)) {
+            $user->update(['user_status' => 'Active']); 
+        }
+    }
+    
 
 
     /**
@@ -118,6 +171,8 @@ class AuthenticatedSessionController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
+        Log::info('Logging out...');
+
         Auth::guard('web')->logout();
 
         $request->session()->invalidate();
@@ -126,4 +181,7 @@ class AuthenticatedSessionController extends Controller
 
         return redirect('/home');
     }
+    
+
+
 }

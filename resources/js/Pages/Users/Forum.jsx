@@ -54,8 +54,8 @@ export default function Forum({ auth }) {
 
 
   // Set up Axios CSRF token configuration globally
-  axios.defaults.headers.common['X-CSRF-TOKEN'] = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-  axios.defaults.withCredentials = true;
+  // axios.defaults.headers.common['X-CSRF-TOKEN'] = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+  // axios.defaults.withCredentials = true;
 
 
   const formatPostDate = (dateString) => {
@@ -188,7 +188,7 @@ const handlePostSubmit = async () => {
 
 
 // Render loading or error states
-if (loading) return <div>Loading posts...</div>;
+// if (loading) return <div className="flex justify-center mt-20"><Spinner/></div>;
 if (error) return <div>Error: {error}</div>;
 
 const handleTitleClick = async (postId) => {
@@ -229,7 +229,8 @@ const closeModal = () => {
 const handlePostError = async (error, newPost) => {
   if (error.response?.status === 419) {
     console.warn("CSRF token error. Refreshing token and retrying...");
-    await axios.get('/sanctum/csrf-cookie'); // Refresh CSRF token
+
+    // await axios.get('/sanctum/csrf-cookie'); // Refresh CSRF token
     try {
       const retryResponse = await axios.post('/forum-posts', newPost);
       if (retryResponse.status === 201) {
@@ -280,12 +281,12 @@ const handleDeleteConfirmation = (postId) => {
 
 const handleDeletePost = async () => {
   if (postToDelete !== null) {
-    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    // const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
     try {
       const response = await axios.delete(`/forum-posts/${postToDelete}`, {
         headers: {
-          'X-CSRF-TOKEN': csrfToken,
+          // 'X-CSRF-TOKEN': csrfToken,
         },
       });
 

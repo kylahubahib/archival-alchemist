@@ -56,7 +56,7 @@ class UserReportController extends Controller
     private function deleteOldReports()
     {
         $thresholdDate = now()->subDays(30); 
-        $oldReports = UserReport::where('created_at', '<', $thresholdDate)->delete();
+        $oldReports = UserReport::where('updated_at', '<', $thresholdDate)->delete();
 
         \Log::info("Deleted $oldReports old reports older than 30 days.");
     }
@@ -187,7 +187,7 @@ class UserReportController extends Controller
                 'report_type' => $request->report_type,
                 'report_attachment' => $request->report_attachment,
                 'report_desc' => $request->report_desc,
-                'report_location' => $request->report_location,
+                'report_location' => $request->report_location
             ]);
 
             \Log::info($report->toArray());
@@ -262,7 +262,8 @@ class UserReportController extends Controller
                         'report_status' => 'Solved',  
                         'suspension_start_date' => Carbon::now(),
                         'suspension_end_date' => $end_date,
-                        'closed_at' => Carbon::now()
+                        'closed_at' => Carbon::now(),
+                        'reported_user_id' => $user->id
                     ]);
                 }
                 break;
@@ -281,7 +282,8 @@ class UserReportController extends Controller
                     'report_status' => 'Solved',  
                     'suspension_start_date' => Carbon::now(),
                     'suspension_end_date' => $end_date,
-                    'closed_at' => Carbon::now()
+                    'closed_at' => Carbon::now(),
+                    'reported_user_id' => $user->id
                 ]);
                 break;
 

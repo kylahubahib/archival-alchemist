@@ -25,34 +25,30 @@ export default function Login({ status, canResetPassword }) {
     }, []);
 
 
-    const submit = (e) => {
-        e.preventDefault();
-
-        post(route('login'));
-    };
-
     // const submit = (e) => {
     //     e.preventDefault();
-    
-    //     // Send the login request
-    //     router.post(route('login'), {}, {
-    //         onSuccess: (page) => {
-    //             // Check if the server returned a new CSRF token
-    //             if (page.props.csrfToken) {
-    //                 // Update the meta tag
-    //                 document.querySelector('meta[name="csrf-token"]').setAttribute('content', page.props.csrfToken);
-    
-    //                 // Update Axios headers (if using Axios)
-    //                 window.axios.defaults.headers.common['X-CSRF-TOKEN'] = page.props.csrfToken;
-    //             }
-    //         },
-    //         onError: (errors) => {
-    //             console.error('Login failed:', errors);
-    //         },
-    //     });
+
+    //     post(route('login'));
     // };
 
-
+    const submit = (e) => {
+        e.preventDefault();
+    
+        // Include CSRF token manually if needed
+        // const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+        // console.log('CSRF TOKEN: ', csrfToken);
+    
+        // Post with Inertia's useForm
+        post(route('login'), {
+            headers: {
+                // 'X-CSRF-TOKEN': csrfToken, // Include CSRF token
+            },
+            // withCredentials: true, // Ensure cookies are sent with the request
+        });
+    };
+    
+    
+    
 
     return (
         //<GuestLayout>

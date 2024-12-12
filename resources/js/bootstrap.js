@@ -1,11 +1,24 @@
+import { router } from '@inertiajs/react';
 import axios from 'axios';
 window.axios = axios;
 
-// Ensure credentials (cookies) are included in requests
+// Enable credentials for cross-origin requests
 window.axios.defaults.withCredentials = true;
 
-// Set X-Requested-With header for Laravel
 window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
+
+router.on('finish', (event) => {
+    if (event.detail.visit.url === route('logout')) {
+        delete axios.defaults.headers.common['X-CSRF-TOKEN']; // Clear the token
+        axios.get('/sanctum/csrf-cookie') // Refresh the CSRF token
+            .then(() => {
+                console.log('CSRF token refreshed successfully after logout.');
+            })
+            .catch(err => {
+                console.error('Error refreshing CSRF token:', err);
+            });
+    }
+});
 
 
 /**

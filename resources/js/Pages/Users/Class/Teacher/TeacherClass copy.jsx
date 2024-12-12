@@ -14,7 +14,7 @@ import CreateClassSection from '@/Pages/Users/Class/Teacher/CreateClassSection';
 
 
 //axios.defaults.headers.common['X-CSRF-TOKEN'] = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-axios.defaults.headers['X-CSRF-TOKEN'] = document.querySelector('meta[name="csrf-token"]').content;
+// axios.defaults.headers['X-CSRF-TOKEN'] = document.querySelector('meta[name="csrf-token"]').content;
 
 export default function TeacherClass({ auth }) {
     const [isCreating, setIsCreating] = useState(true);

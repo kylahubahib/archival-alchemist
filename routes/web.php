@@ -137,29 +137,32 @@ Route::get('/library', function () {
     return Inertia::render('Users/Library');
 })->middleware(['user-type:student,teacher,guest,general_user'])->name('library');
 
+
+// Route::get('/teacherclass', function () {
+//     return Inertia::render('Users/Class/Teacher/TeacherClass');
+// });
+
+// Route::get('/studentclass', function () {
+//     return Inertia::render('Users/Class/Student/StudentClass');
+// })->middleware(['auth', 'verified', 'user-type:student,teacher'])->name('studentclass');
+
 Route::get('/forum', function () {
     return Inertia::render('Users/Forum');
 })->middleware(['user-type:student,teacher,guest,general_user'])->name('forum');
 
-// Route::get('/studentclass', function () {
-//     return Inertia::render('Users/Class/Student/StudentClass');
-// })->middleware(['auth', 'verified', 'user-type:student', 'check-google' ])->name('studentclass');
-
-// Route::get('/teacherclass', function () {
-//     return Inertia::render('Users/Class/Teacher/TeacherClass');
-// })->middleware(['auth', 'verified', 'user-type:teacher', 'check-google'])->name('teacherclass');
-
 Route::get('/studentclass', function () {
     return Inertia::render('Users/Class/Student/StudentClass');
-})->middleware(['auth', 'verified', 'user-type:student,teacher'])->name('studentclass');
+})->middleware(['auth', 'verified', 'user-type:student', 'check-google' ])->name('studentclass');
+
+Route::get('/teacherclass', function () {
+    return Inertia::render('Users/Class/Teacher/TeacherClass');
+})->middleware(['auth', 'verified', 'user-type:teacher', 'check-google'])->name('teacherclass');
+
 
 // Route::get('/savedlist', function () {
 //     return Inertia::render('Users/SavedList');
 // })->middleware(['auth', 'verified', 'user-type:student,teacher,general_user'])->name('savedlist');
 
-Route::get('/teacherclass', function () {
-    return Inertia::render('Users/Class/Teacher/TeacherClass');
-});
 
 Route::get('/authors', function () {
     return Inertia::render('Users/Authors');
@@ -437,7 +440,9 @@ Route::middleware(['auth', 'verified', 'user-type:admin'])->prefix('institution'
     Route::get('/read-csv', [InstitutionSubscriptionController::class, 'readCSV'])->name('read-csv');
     Route::middleware(['access:can_edit'])->group(function () {
         Route::post('/update-university', [InstitutionSubscriptionController::class, 'updateUniBranch'])->name('update-university');
-    });});
+    });
+
+});
 
 //guest
 Route::get('/home', function () {
@@ -659,7 +664,13 @@ Route::get('/fetch-studentClasses', [ClassController::class, 'fetchStudentClasse
 Route::post('/store-groupmembers', [ClassController::class, 'addStudentsToClass']);
 Route::get('/fetch-currentuser', [ClassController::class, 'getCurrentUser']);
 
-Route::get('/fetch-groupmembers/{id}', [ClassController::class, 'getGroupMembers']);
+// Route::get('/fetch-groupmembers/{id}', [ClassController::class, 'getGroupMembers']);
+
+Route::post('/store-newGroupmembers', [ClassController::class, 'addNewStudentsToClass']);
+Route::get('/students/search-in-class', [TagController::class, 'searchStudents']);
+Route::put('/update-project/{id}', [StudentClassController::class, 'updateProject']);
+
+Route::get('/fetch-mygroupmembers/{id}', [ClassController::class, 'getMyGroupMembers']);
 
 // In web.php or api.php
 Route::delete('/delete-groupmembers/{id}', [ClassController::class, 'deleteStudent']);
@@ -710,6 +721,7 @@ Route::get('/pdf-viewer/{filename}', function ($filename) {
  Route::get('/export-csv', [ClassController::class, 'exportCSV']);
 
  Route::get('/profile/post', [ProfileController::class, 'getForumPosts' ]);
+
 
 
 require __DIR__.'/auth.php';
