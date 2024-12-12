@@ -23,6 +23,7 @@ export default function InstitutionSubscriptionForm({ plan }) {
         plan: plan,
         number_of_users: '',
         total_amount: '',
+        uni_acro: ''
     });
     const [universities, setUniversities] = useState([]);
     const [branches, setBranches] = useState([]);
@@ -43,6 +44,17 @@ export default function InstitutionSubscriptionForm({ plan }) {
             return;
         }
 
+        if(!data.uni_acro && !data.university) {
+            setValidationError('University acronym fields is required');
+            return;
+        }
+
+        if(data.number_of_users < 0 || data.number_of_users < 5)
+        {
+            setValidationError('Invalid input: The number of users must be greater than 5 and cannot be negative. Please enter a valid value.');
+            return;
+        }
+
         setValidationError(null); 
 
         // post('/register-institution', data, {
@@ -57,6 +69,7 @@ export default function InstitutionSubscriptionForm({ plan }) {
                     window.location.href = page.props.checkout_url;
                     // window.open(page.props.checkout_url, '_blank');
                 }
+
             }
         });
     
@@ -109,6 +122,7 @@ export default function InstitutionSubscriptionForm({ plan }) {
             ) : [];
             setFilteredBranches(suggestions);
         }
+
       
     };
 
@@ -118,7 +132,7 @@ export default function InstitutionSubscriptionForm({ plan }) {
 
         if(content === 'university')
         {
-            setData('university', value.uni_name)
+            setData('university', value.uni_name);
             setFilteredUniversities([]);
         
             setBranches(value.university_branch);
@@ -129,7 +143,6 @@ export default function InstitutionSubscriptionForm({ plan }) {
             checkIfUniversityExist(value.id);
             setFilteredBranches([]);
         }
-
     }
 
     const handleFileChange = (e) => {
@@ -283,6 +296,20 @@ export default function InstitutionSubscriptionForm({ plan }) {
                             </ul>
                         )}
                     </div>
+                    
+                    <div>
+                        {/* University Acronym Input */}
+                        <label htmlFor="uni-acro">University Acronym</label>
+                        <input
+                            type="text"
+                            id="university-acro"
+                            value={data.uni_acro}
+                            onChange={(e) => setData('uni_acro', e.target.value)}
+                            className="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                            placeholder="University Acronym"
+                        />
+                        
+                    </div>
 
                     <div>
                         {/* Branch Input */}
@@ -310,6 +337,8 @@ export default function InstitutionSubscriptionForm({ plan }) {
                             </ul>
                         )}
                     </div>
+
+                   
 
                  
 

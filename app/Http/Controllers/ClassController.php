@@ -180,7 +180,7 @@ class ClassController extends Controller
         // Validate the incoming request data
         $validatedData = $request->validate([
             'students' => 'required|array',
-            'students.*' => 'string', // Expecting student names as strings
+            'students.*' => 'string', 
         ]);
         Log::info('Request data:', $request->all());
 
@@ -249,6 +249,7 @@ class ClassController extends Controller
             return response()->json(['message' => 'An error occurred while adding students.'], 500);
         }
     }
+
 
 
 
@@ -827,12 +828,74 @@ class ClassController extends Controller
     }
 
 
+    public function getMyGroupMembers(Request $request, string $id)
+    {
+        $task_id = $request->input('task_id');
+        $section_id = $request->input('section_id');
+
+        Log::info($request->all()); 
+
+        // Correct the way to fetch the group ID
+        $group_id = $this->groupID($section_id, $task_id);
+
+        Log::info('Route accessed with GET method');
+        // Log the extracted values for debugging
+        Log::info('Received group_id and task_id:', [
+            'group_id' => $group_id,
+            'task_id' => $task_id,
+        ]);
+
+        if (!$group_id) {
+            return response()->json(['message' => 'Group not found'], 404);
+        }
+
+        // Retrieve all group members with their associated user information
+        $groupMembers = GroupMember::with('user')
+            ->where('section_id', $id)
+            ->where('group_id', $group_id)
+            ->where('task_id', $task_id)
+            ->get();
+
+        // Log the retrieved group members with their users
+        Log::info('Retrieved group members', ['groupMembers' => $groupMembers->toArray()]);
+
+        return response()->json($groupMembers); // Return the full group members with users
+    }
+
+    private function groupID($section_id, $task_id)
+    {
+        Log::info('Received group_id and task_id:', [
+            'section_id' => $section_id,
+            'task_id' => $task_id,
+        ]);
+
+
+        // Fetch the group associated with the user's ID, task_id, and section_id
+        $groupRecord = GroupMember::where('stud_id', Auth::id()) // Assuming stud_id refers to the student's ID
+            ->where('task_id', $task_id)
+            ->where('section_id', $section_id)
+            ->first(); // Use first() to retrieve a single record instead of get()
+
+            Log::info('Retrieved group record', ['groupRecord' => $groupRecord]);
+
+        if ($groupRecord) {
+            // If a group record is found, return the group_id
+            return $groupRecord->group_id;
+        } else {
+            // Return null or a custom error if no group record is found
+            return null; // or throw an exception depending on your error handling preference
+        }
+    }
+
+
     public function getgroupID(Request $request)
     {
         $section_id = $request->query('section_id');
+        $task_id = $request->query('task_id');
 
         // Fetch Group associated with the users ID
         $grouprecord = GroupMember::where('stud_id', Auth::id())
+            ->where('task_id', $task_id)
             ->where('section_id', $section_id)
             ->get();
 
@@ -840,5 +903,199 @@ class ClassController extends Controller
         return response()->json($grouprecord);
     }
 
+
+   public function addNewStudentsToClass(Request $request)
+    {
+        // Validate the incoming request data
+        $validatedData = $request->validate([
+            'students' => 'required|array',
+            'students.*' => 'string', // Expecting student names as strings
+        ]);
+
+        Log::info('Request data:', $request->all());
+    // Fetching all request data
+    $data = $request->all();  // or $data = $request->input('yourData')
+
+    // Ensure the `man_doc_id` is a single value (not an array)
+    $man_doc_id = $data['man_doc_id'];
+
+    // Handle case where it's an array
+    if (is_array($man_doc_id)) {
+        $man_doc_id = $man_doc_id[0];  // Get the first element if it's an array
+    }
+        $section_id = $request->input('section_id');
+        $group_id = $request->input('group_id');
+        $task_id = $request->input('task_id');
+        $instructorId = Auth::id();
+        $studentNames = $request->input('students'); // Array of student names
+
+        Log::info('Section Id: ', (array)$section_id);
+        Log::info('Student names: ', (array)$studentNames);
+
+        DB::beginTransaction();
+
+        try {
+            // Find the section by instructor ID and section_classcode
+            //Remove the where('ins_id', $instructorId) since id of section is already unique
+            $section = Section::where('id', $section_id)->first();
+
+            Log::info('Section Found: ', (array)$section);
+
+            if ($section) {
+                Log::info('Adding students to GroupMembers', [
+                    'instructor_id' => $instructorId,
+                    'section_id' => $section_id,
+                    'students' => $studentNames,
+                    'task_id' => $task_id,
+                    'group_id' => $group_id,
+                ]);
+
+                // Convert student names to their corresponding user IDs
+                $newStudentIds = $this->getUserIdsByNames($studentNames);
+
+                if (!$newStudentIds) {
+                    return response()->json(['message' => 'One or more students not found.'], 404);
+                }
+
+                // Insert into the group_members table using the GroupMember model
+                foreach ($newStudentIds as $studentId) {
+                    // $exists = GroupMember::where('section_id', $section->id)
+                    // ->where('stud_id', $studentId)
+                    // ->whereNotNull('group_id') // Excludes records where group_id is null
+                    // ->exists();
+                    $exists = GroupMember::where('section_id', $section->id)
+                    ->where('stud_id', $studentId)
+                    ->whereNull('group_id') // Excludes records where group_id is null
+                    ->first();  // Use first() to get the actual model, not exists()
+
+
+                    if ($exists) {
+                        // GroupMember::create([
+                        //     'section_id' => $section->id,
+                        //     'stud_id' => $studentId,
+                        //     'task_id' => $task_id,
+                        //     'group_id' => $group_id,
+
+                        // ]);
+
+                        Log::info('Updating GroupMember', [
+                            'section_id' => $section->id,
+                            'stud_id' => $studentId,
+                            'task_id' => $task_id,
+                            'group_id' => $group_id,
+                        ]);
+
+                        $exists->update([
+                            'task_id' => 18,  // Example task_id
+                            'group_id' => 39, // Example group_id
+                        ]);
+
+                        Author::create([
+                            'user_id' => $studentId,
+                            'man_doc_id' => $man_doc_id,
+                        ]);
+                    } else {
+                        Log::warning("No GroupMember record found for update", [
+                            'section_id' => $section->id,
+                            'stud_id' => $studentId,
+                        ]);
+                    }
+                }
+
+                DB::commit();
+
+                return response()->json([
+                    'success' => true,
+                    'message' => count($newStudentIds) . " student(s) added successfully."
+                ]);
+
+            } else {
+                return response()->json(['message' => 'Class not found.'], 404);
+            }
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error adding students: ', ['exception' => $e]);
+            return response()->json(['message' => 'An error occurred while adding students.'], 500);
+        }
+    }
+
+    private function addGoogleDocUserPermission($manuscriptId, $authorIds)
+    {
+        
+        $keyFilePath = storage_path('app/document-management-438910-d2725c4da7e7.json');
+
+        // Initialize Google Client
+        $client = new GoogleClient();
+        $client->setAuthConfig($keyFilePath);
+        $client->addScope(GoogleDrive::DRIVE_FILE);
+        $client->setSubject('file-manager@document-management-438910.iam.gserviceaccount.com');
+
+        $driveService = new GoogleDrive($client);
+
+        // Get author emails from the Author table
+        $emails = User::whereIn('id', $authorIds)->pluck('email')->toArray();
+
+        Log::info('Fetched Author Emails:', ['authorEmails' => $emails]);
+
+        $authors = Author::with('user')->where('man_doc_id', $manuscriptId)->get();
+
+        foreach ($authors as $author) {
+            $email = $author->user->email;
+            $permId = $author->permission_id;
+    
+            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                Log::warning('Invalid Email Address:', ['email' => $email]);
+                continue;
+            }
+    
+    
+            try {
+                // Fetch existing permissions
+                $permissions = $driveService->permissions->listPermissions($googleDocId);
+                Log::info("Existing Permissions: ", ['permissions' => $permissions]);
+    
+                $permissionFound = false;
+    
+                // Delete the existing permission if found
+                foreach ($permissions as $permission) {
+                    if ($permission->getId() === $permId) {
+                        $driveService->permissions->delete($googleDocId, $permission->getId());
+                        Log::info("Deleted existing permission for: $email");
+                        Log::info("Permission Id:", ['permissions' => $permission->getId()]);
+                        Log::info("Permission Id in Author Table:", ['permissions' => $permId]);
+    
+                        $permissionFound = true;
+                        break;
+                    }
+                }
+    
+                // Create a new permission for the user
+                $newPermission = new Permission();
+                $newPermission->setType('user');
+                $newPermission->setRole('reader');
+                $newPermission->setEmailAddress($email);
+                $driveService->permissions->create($googleDocId, $newPermission, ['sendNotificationEmail' => false]);
+                Log::info("Created new 'reader' permission for: $email");
+    
+                // If no permission found, log the error
+                if (!$permissionFound) {
+                    Log::warning("Permission not found for: $email. Skipping permission creation.");
+                }
+    
+            } catch (Exception $e) {
+                Log::error("Error deleting/creating permission for: $email", ['error' => $e->getMessage()]);
+                return response()->json(['error' => 'Error setting permission: ' . $e->getMessage()], 500);
+            }
+        }
+
+        return;
+    }
+
+    private function removerGoogleDocUserPermission()
+    {
+
+    }
+
+    
 
 }

@@ -79,27 +79,40 @@ class AdvancedForumController extends Controller
      */
     public function show(string $id)
     {
-        $comments = ForumComment::with('user:id,user_pic,email,name')->where('forum_post_id', $id)->get();
-
+        $comments = ForumComment::with([
+            'user:id,user_pic,email,name',
+            'replies.user:id,user_pic,email,name' 
+        ])
+        ->where('forum_post_id', $id)
+        ->whereNull('parent_id') 
+        ->get();
+    
         \Log::info($comments);
-
+    
         return response()->json([
             'comments' => $comments
         ]);
     }
     
+    
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, string $id): RedirectResponse
     {
-        $forumPost = ForumPost::find($id);
-
-        $forumPost->update([
-            'status' => 'Hidden'
+        $forumPost = ForumPost::findOrFail($id);
+    
+        $validated = $request->validate([
+            'status' => 'required|in:Hidden,Visible', 
         ]);
 
-        return redirect(route('manage-forum-posts.index'))->with('success', 'Status updated.');
+        \Log::info($validated['status']);
+    
+        $forumPost->update([
+            'status' => $validated['status']
+        ]);
+    
+        return redirect()->route('manage-forum-posts.index')->with('success', 'Status updated.');
     }
 
 

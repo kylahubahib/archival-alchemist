@@ -206,7 +206,7 @@ class User extends Authenticatable
 
     public function groupMembers()
     {
-        return $this->hasMany(GroupMember::class, 'section_id');
+        return $this->hasMany(GroupMember::class, 'stud_id');
     }
 
 

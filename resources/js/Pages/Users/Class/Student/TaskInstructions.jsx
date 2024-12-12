@@ -32,7 +32,7 @@ console.log("This is the Task ID:", taskID);
   const [tagSuggestions, setTagSuggestions] = useState([]);
   const [authorInputValue, setAuthorInputValue] = useState('');
   const [tagInputValue, setTagInputValue] = useState('');
-  const [processing, Setprocessing] = useState(false);
+  const [processing, setProcessing] = useState(false);
 
     const [hasGroup, setHasGroup] = useState(false);
 
@@ -211,6 +211,7 @@ console.log("This user has a group already.", hasGroup)
 
   const handleSubmit = async (e) => {
 
+        setProcessing(true);
       e.preventDefault();
       const newErrors = {};
 
@@ -255,13 +256,15 @@ console.log("This user has a group already.", hasGroup)
 
               console.log('In here...')
 
-              const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+            //   const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
               // Submit the form data
               const response = await axios.post('/api/capstone/upload', formData, {
-                  headers: { 'Content-Type': 'multipart/form-data', 'X-CSRF-TOKEN': csrfToken, },
+                  headers: { 'Content-Type': 'multipart/form-data' },
               });
 
+              
+              setProcessing(false);
               setMessage(response.data.message);
               setSuccess(true);
           } catch (error) {
@@ -608,13 +611,22 @@ console.log("This user has a group already.", hasGroup)
                             {/* <label>I agree to the terms and conditions</label> */}
                             {/* {errors.agreed && <div className="text-red-600 text-sm ml-2">{errors.agreed}</div>} */}
                         </div>
-                        <button
+                        {/* <button
                             type="submit"
                             className={`bg-blue-500 text-white p-2 rounded w-full ${isFormValid() ? '' : 'opacity-50 cursor-not-allowed'}`}
                             disabled={!isFormValid()}
                         >
                             Submit
-                        </button>
+                        </button> */}
+                        <Button
+                            type="submit"
+                            isLoading={processing}
+                            className={`bg-blue-500 text-white p-2 rounded w-full ${isFormValid() ? '' : 'opacity-50 cursor-not-allowed'}`}
+                            disabled={!isFormValid()}
+                        >
+                            Submit
+                        </Button>
+                        
                     </div>
                 </form>
             )}

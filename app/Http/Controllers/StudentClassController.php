@@ -1306,7 +1306,7 @@ public function sendForRevision(Request $request)
         $client->addScope(GoogleDrive::DRIVE_FILE);
         $client->setSubject('file-manager@document-management-438910.iam.gserviceaccount.com');
 
-    $driveService = new GoogleDrive($client);
+        $driveService = new GoogleDrive($client);
 
 
         $authors = Author::with('user')->where('man_doc_id', $manuscriptId)->get();
@@ -1389,6 +1389,8 @@ public function sendForRevision(Request $request)
 
         return response()->json(['success' => 'Document updated successfully.']);
     }
+
+
 
 
     // Method to extract Google Doc ID from the URL
@@ -1492,22 +1494,138 @@ public function sendForRevision(Request $request)
     // }
 
     public function incrementViewCount($manuscriptId)
+    {
+        // Check if the manuscript has already been viewed in this session
+        if (session()->has('viewed_manuscripts') && in_array($manuscriptId, session('viewed_manuscripts'))) {
+            return response()->json(['message' => 'You have already viewed this manuscript during this session.'], 200);
+        }
+
+        // Increment the view count
+        $manuscript = ManuscriptProject::find($manuscriptId);
+        if ($manuscript) {
+            $manuscript->increment('man_doc_view_count');
+        }
+
+        // Add the manuscript to the session as viewed
+        session()->push('viewed_manuscripts', $manuscriptId);
+
+        return response()->json(['message' => 'View count incremented successfully.'], 200);
+    }
+
+    public function addMemberPermissions()
+    {
+        $manuscriptId = $request->get('manuscript_id');
+        Log::info("Starting 'sendForRevision' process for manuscript ID: $manuscriptId");
+    
+        // Find the manuscript
+        $manuscript = ManuscriptProject::find($manuscriptId);
+    
+        if (!$manuscript || empty($manuscript->man_doc_adviser)) {
+            Log::warning("Manuscript not found or invalid data. Manuscript ID: $manuscriptId");
+            return response()->json(['error' => 'Manuscript not found or invalid data.'], 404);
+        }
+    
+        $manuscript->update(['man_doc_status' => 'To Review']);
+        $googleDocUrl = $manuscript->man_doc_content;
+        $googleDocId = $this->extractGoogleDocId($googleDocUrl);
+    
+            if (!$googleDocId) {
+                Log::warning("Invalid Google Doc URL for manuscript ID: $manuscriptId");
+                return response()->json(['error' => 'Invalid Google Doc URL.'], 400);
+            }
+    
+            $keyFilePath = storage_path('app/document-management-438910-d2725c4da7e7.json');
+    
+            // Initialize Google Client
+            $client = new GoogleClient();
+            $client->setAuthConfig($keyFilePath);
+            $client->addScope(GoogleDrive::DRIVE_FILE);
+            $client->setSubject('file-manager@document-management-438910.iam.gserviceaccount.com');
+    
+        $driveService = new GoogleDrive($client);
+    
+    
+            $authors = Author::with('user')->where('man_doc_id', $manuscriptId)->get();
+            // $emails = $authors->pluck('user.email')->toArray();
+    
+        foreach ($authors as $author) {
+            $email = $author->user->email;
+            $permId = $author->permission_id;
+    
+            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                Log::warning('Invalid Email Address:', ['email' => $email]);
+                continue;
+            }
+    
+    
+            try {
+                // Fetch existing permissions
+                $permissions = $driveService->permissions->listPermissions($googleDocId);
+                Log::info("Existing Permissions: ", ['permissions' => $permissions]);
+    
+                $permissionFound = false;
+    
+                // Delete the existing permission if found
+                foreach ($permissions as $permission) {
+                    if ($permission->getId() === $permId) {
+                        $driveService->permissions->delete($googleDocId, $permission->getId());
+                        Log::info("Deleted existing permission for: $email");
+                        Log::info("Permission Id:", ['permissions' => $permission->getId()]);
+                        Log::info("Permission Id in Author Table:", ['permissions' => $permId]);
+    
+                        $permissionFound = true;
+                        break;
+                    }
+                }
+    
+                // Create a new permission for the user
+                $newPermission = new Permission();
+                $newPermission->setType('user');
+                $newPermission->setRole('reader');
+                $newPermission->setEmailAddress($email);
+                $driveService->permissions->create($googleDocId, $newPermission, ['sendNotificationEmail' => false]);
+                Log::info("Created new 'reader' permission for: $email");
+    
+                // If no permission found, log the error
+                if (!$permissionFound) {
+                    Log::warning("Permission not found for: $email. Skipping permission creation.");
+                }
+    
+            } catch (Exception $e) {
+                Log::error("Error deleting/creating permission for: $email", ['error' => $e->getMessage()]);
+                return response()->json(['error' => 'Error setting permission: ' . $e->getMessage()], 500);
+            }
+        }
+    
+    
+        return response()->json(['success' => 'Document updated successfully.']);
+    }
+
+    public function updateProject(Request $request, $id)
 {
-    // Check if the manuscript has already been viewed in this session
-    if (session()->has('viewed_manuscripts') && in_array($manuscriptId, session('viewed_manuscripts'))) {
-        return response()->json(['message' => 'You have already viewed this manuscript during this session.'], 200);
+    // Validate incoming data
+    $request->validate([
+        'title' => 'required|string|max:255',
+        'description' => 'required|string',
+        'adviser' => 'required|string|max:255',
+    ]);
+
+    // Find the project by ID
+    $project = ManuscriptProject::find($id);
+
+    if (!$project) {
+        return response()->json(['message' => 'Project not found'], 404);
     }
 
-    // Increment the view count
-    $manuscript = ManuscriptProject::find($manuscriptId);
-    if ($manuscript) {
-        $manuscript->increment('man_doc_view_count');
-    }
+    // Update the project with new data
+    $project->update([
+        'man_doc_title' => $request->input('title'),
+        'man_doc_description' => $request->input('description'),
+        'man_doc_adviser' => $request->input('adviser'),
+    ]);
 
-    // Add the manuscript to the session as viewed
-    session()->push('viewed_manuscripts', $manuscriptId);
-
-    return response()->json(['message' => 'View count incremented successfully.'], 200);
+    // Return success response
+    return response()->json(['message' => 'Project updated successfully', 'data' => $project]);
 }
 
 

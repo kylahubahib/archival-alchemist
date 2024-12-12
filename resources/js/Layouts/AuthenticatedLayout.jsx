@@ -9,13 +9,13 @@ import { useEffect, useState } from 'react';
 import Dropdown from '@/Components/Dropdown';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
 import Sidebar, { SidebarItem, SidebarSeparator } from '@/Components/Sidebar';
-
 import { FaCrown, FaEnvelope } from "react-icons/fa";
 import GiveFeedbackModal from "@/Components/GiveFeedbackModal";
 import ToastNotification, { showToast } from "@/Components/Toast";
 import UserNotification from "@/Components/Notifications/UserNotification";
 import SearchBar from "@/Components/SearchBar";
 import UserProfileSearchBar from "@/Components/SearchBars/UserProfileSearchBar";
+import axios from "axios";
 
 export default function Authenticated({ user, children, newProfile = null, searchProfile = false }) {
     const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
@@ -35,6 +35,7 @@ export default function Authenticated({ user, children, newProfile = null, searc
     }, []); // Empty dependency array means this runs only once after the component mounts
 
     console.log("Is Affiliated?: ", isAffiliated);
+    
 
 
 
@@ -136,7 +137,8 @@ export default function Authenticated({ user, children, newProfile = null, searc
 
                                         <Dropdown.Content>
                                             <Dropdown.Link href={route('profile.update')}>Profile</Dropdown.Link>
-                                            <Dropdown.Link href={route('logout')} method="post" as="button">
+                                            <Dropdown.Link href={route('logout')} method="post" as="button"
+                                                >
                                                 Log Out
                                             </Dropdown.Link>
                                         </Dropdown.Content>

@@ -20,17 +20,17 @@ const JoinClassSection = ({ auth, user, userId, }) => {
 
     useEffect(() => {
         // Retrieve CSRF token from the meta tag
-        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-        console.log("CSRF Token Retrieved: ", csrfToken); // Log the CSRF token
+        // const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+        // console.log("CSRF Token Retrieved: ", csrfToken); // Log the CSRF token
 
         // Set default CSRF token for axios requests
-        axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken;
+        // axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken;
 
         // Fetch classes
         fetch('/fetch-studentClasses', {
             method: 'GET',
             headers: {
-                'X-CSRF-TOKEN': csrfToken,  // CSRF token applied here
+                // 'X-CSRF-TOKEN': csrfToken,  // CSRF token applied here
                 'Authorization': `Bearer ${userToken}`,
             }
         })
@@ -54,7 +54,7 @@ const JoinClassSection = ({ auth, user, userId, }) => {
         fetch('/fetch-courses', {
             method: 'GET',
             headers: {
-                'X-CSRF-TOKEN': csrfToken,  // CSRF token applied here
+                // 'X-CSRF-TOKEN': csrfToken,  // CSRF token applied here
             }
         })
             .then(response => response.json())

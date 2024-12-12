@@ -19,6 +19,7 @@ use App\Models\InstitutionSubscription;
 
 use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\UsersImport;
+use App\Jobs\ProcessCSVJob;
 
 class InstitutionSubscriptionController extends Controller
 {
@@ -26,13 +27,7 @@ class InstitutionSubscriptionController extends Controller
      * Display a listing of the resource.
      */
 
-     public function __construct()
-     {
-         // Apply 'can_add' access to 'create' and 'store' actions.
-         $this->middleware('access:can_add')->only(['create', 'store']);
-         // Apply 'can_edit' access to 'edit', 'update', and 'destroy' actions.
-         $this->middleware('access:can_edit')->only(['edit', 'update', 'destroy']);
-     }
+     
     public function index()
     {
         $user = Auth::user();
@@ -80,6 +75,8 @@ class InstitutionSubscriptionController extends Controller
 
     public function uploadCSV(Request $request) 
     {
+        $user = Auth::user();
+
         $request->validate([
             'file' => 'required|file|mimes:csv,txt|max:2048',
             'insubId' => 'required|exists:institution_subscriptions,id', 
@@ -91,6 +88,12 @@ class InstitutionSubscriptionController extends Controller
         $university = $request->get('university');
         
         $ins_sub = InstitutionSubscription::find($insubId);
+
+        // $studentAffiliated = Student::where('uni_branch_id', $ins_sub->uni_branch_id)->count();
+        // $teacherAffiliated = Faculty::where('uni_branch_id', $ins_sub->uni_branch_id)->count();
+        // $adminAffiliated = InstitutionAdmin::where('insub_id', $ins_sub->id)->count();
+        // $limit = $ins_sub->insub_num_user - ($studentAffiliated + $teacherAffiliated + $adminAffiliated);
+
         $limit = $ins_sub->insub_num_user;
 
         // Read CSV data and count rows (excluding header)
@@ -115,8 +118,12 @@ class InstitutionSubscriptionController extends Controller
         ]);
 
         try {
-            Excel::import(new UsersImport, public_path($filePath));
-            \Log::info('User import successful!');
+            
+            \Log::info('Dispatching CSV import job...');
+            ProcessCSVJob::dispatch($user->id, $filePath);
+            \Log::info('CSV import job dispatched!');
+            // Excel::import(new UsersImport, public_path($filePath));
+            // \Log::info('User import successful!');
         } catch (\Exception $e) {
             \Log::error('Error during user import: ' . $e->getMessage());
             return response()->json([
@@ -148,7 +155,7 @@ class InstitutionSubscriptionController extends Controller
         }
 
         //Excel::toArray purpose is to read the contents of an Excel or CSV file and convert it into an array format. 
-        $csvData = Excel::toArray(new UsersImport, public_path($filePath));
+        $csvData = Excel::toArray(new UsersImport(Auth::id()), public_path($filePath));
 
         // \Log::info('CSV Data:', $csvData[0]);
 

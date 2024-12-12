@@ -31,19 +31,19 @@ const CreateClassSection = ({auth, user, setDropdownVisible, visible, selectedSe
 
       useEffect(() => {
         // Retrieve CSRF token from the meta tag
-        const csrfToken = document
-          .querySelector('meta[name="csrf-token"]')
-          .getAttribute('content');
-        console.log("CSRF Token Retrieved:", csrfToken);
+        // const csrfToken = document
+        //   .querySelector('meta[name="csrf-token"]')
+        //   .getAttribute('content');
+        // console.log("CSRF Token Retrieved:", csrfToken);
 
         // Set default CSRF token for axios requests
-        axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken;
+        // axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken;
 
         // Fetch courses
         fetch('/fetch-courses', {
           method: 'GET',
           headers: {
-            'X-CSRF-TOKEN': csrfToken, // CSRF token applied here
+            // 'X-CSRF-TOKEN': csrfToken, // CSRF token applied here
           },
         })
           .then((response) => {
@@ -61,14 +61,14 @@ const CreateClassSection = ({auth, user, setDropdownVisible, visible, selectedSe
 
       // Function to fetch classes
       const fetchClasses = () => {
-        const csrfToken = document
-          .querySelector('meta[name="csrf-token"]')
-          .getAttribute('content'); // Retrieve CSRF token again (optional)
+        // const csrfToken = document
+        //   .querySelector('meta[name="csrf-token"]')
+        //   .getAttribute('content'); // Retrieve CSRF token again (optional)
 
         fetch(`/fetch-classes?sem_id=${selectedSemester}`, {
           method: 'GET',
           headers: {
-            'X-CSRF-TOKEN': csrfToken, // CSRF token applied here
+            // 'X-CSRF-TOKEN': csrfToken, // CSRF token applied here
             'Authorization': `Bearer ${userToken}`, // Include user token for authentication
           },
         })
@@ -99,8 +99,8 @@ const CreateClassSection = ({auth, user, setDropdownVisible, visible, selectedSe
         setIsCreating(true);
 
         // Retrieve CSRF token for POST request
-        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-        console.log("CSRF Token Used for Folder Creation: ", csrfToken); // Log CSRF token used in the POST request
+        // const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+        // console.log("CSRF Token Used for Folder Creation: ", csrfToken); // Log CSRF token used in the POST request
 
         try {
             // POST request to create a new class section
@@ -113,7 +113,7 @@ const CreateClassSection = ({auth, user, setDropdownVisible, visible, selectedSe
 
             }, {
                 headers: {
-                    'X-CSRF-TOKEN': csrfToken,  // CSRF token applied here
+                    // 'X-CSRF-TOKEN': csrfToken,  // CSRF token applied here
                     'Authorization': `Bearer ${userToken}`,  // Optional: Add the user token if needed
                 }
             });

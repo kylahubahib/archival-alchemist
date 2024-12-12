@@ -25,7 +25,7 @@ const PostDetailModal = ({ isOpen, onClose, post, loggedInUser, onUpdateCommentC
         userId: comment.user?.id || 'unknown',
         fullName: comment.user?.name || 'Anonymous',
         avatarUrl:
-          comment.user?.user_pic ||
+        `http://127.0.0.1:8000/${comment.user?.user_pic}` ||
           `https://ui-avatars.com/api/?name=${encodeURIComponent(comment.user?.name || 'Anonymous')}&background=random`,
         text: comment.comment?.toString() || '',
         replies: Array.isArray(comment.replies)
@@ -34,7 +34,7 @@ const PostDetailModal = ({ isOpen, onClose, post, loggedInUser, onUpdateCommentC
               userId: reply.user?.id || 'unknown',
               fullName: reply.user?.name || 'Anonymous',
               avatarUrl:
-                reply.user?.user_pic ||
+               `http://127.0.0.1:8000/${reply.user?.user_pic}` ||
                 `https://ui-avatars.com/api/?name=${encodeURIComponent(reply.user?.name || 'Anonymous')}&background=random`,
               text: reply.comment?.toString() || '',
             }))
@@ -58,9 +58,9 @@ const PostDetailModal = ({ isOpen, onClose, post, loggedInUser, onUpdateCommentC
     const { comIdToDelete } = data;
   
     try {
-      const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+      // const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
       await axios.delete(`/forum-comments/${comIdToDelete}`, {
-        headers: { 'X-CSRF-TOKEN': csrfToken },
+        // headers: { 'X-CSRF-TOKEN': csrfToken },
       });
   
       setComments((prevComments) =>
@@ -125,7 +125,7 @@ const PostDetailModal = ({ isOpen, onClose, post, loggedInUser, onUpdateCommentC
         comId: response.data.comment.id.toString(),
         userId: response.data.comment.user_id,
         fullName: response.data.comment.user?.name || loggedInUser.name,
-        avatarUrl: response.data.comment.user?.user_pic || loggedInUser.user_pic,
+        avatarUrl: `http://127.0.0.1:8000/${response.data.comment.user?.user_pic}` || `http://127.0.0.1:8000/${loggedInUser.user_pic}`,
         text: response.data.comment.comment,
         replies: [],
       };
@@ -192,7 +192,7 @@ const PostDetailModal = ({ isOpen, onClose, post, loggedInUser, onUpdateCommentC
 
         <div className="flex items-center mb-4 mt-5">
           <img
-            src={post.user?.user_pic || 'https://ui-avatars.com/api/?name=User&background=random'}
+            src={`http://127.0.0.1:8000/${post.user?.user_pic}`|| 'https://ui-avatars.com/api/?name=User&background=random'}
             alt={`${post.user?.name}'s profile`}
             className="w-12 h-12 rounded-full mr-3"
           />
@@ -232,7 +232,8 @@ const PostDetailModal = ({ isOpen, onClose, post, loggedInUser, onUpdateCommentC
   currentUser={loggedInUser?.id ? {
     currentUserId: loggedInUser?.id || '01a',
     currentUserImg:
-      loggedInUser?.user_pic || 'https://ui-avatars.com/api/?name=User&background=random',
+    `http://127.0.0.1:8000/${loggedInUser?.user_pic}`
+       || 'https://ui-avatars.com/api/?name=User&background=random',
     currentUserProfile: 'Current User',
     currentUserFullName: loggedInUser?.name || 'Current User',
   } : null}

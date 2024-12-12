@@ -84,7 +84,7 @@ const PreviewTask = ({ auth, user, folders, onBack, task, taskID }) => {
             {/* Content Section with Margin Top */}
             <div  className="w-full bg-gray-100  pt-12"> {/* Add mt-12 to create space below the header */}
                 {activeSection === 'taskInstructions' && <TaskInstructions folders={folders} onBack={() => setActiveSection('')}  task={task} taskID={taskID}/>}
-                {activeSection === 'studentWork' && <StudentWork folders={folders} onBack={() => setActiveSection('')}  task={task} taskID={taskID}/>}
+                {activeSection === 'studentWork' && <StudentWork auth={auth} folders={folders} onBack={() => setActiveSection('')}  task={task} taskID={taskID}/>}
                 {/* {activeSection === 'studentWork' && <Track folders={folders} onBack={() => setActiveSection('')}  task={task} taskID={taskID}/>} */}
                 {activeSection === 'approved' && <Approved auth={auth} user={user} folders={folders} onBack={() => setActiveSection('')}  task={task} taskID={taskID}/>}
                 </div>

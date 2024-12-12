@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\UsersImport;
 
+use App\Notifications\UserNotification;
+
 trait CheckSubscriptionTrait
 {
     public function checkInstitutionSubscription($checkInSub, $user)
@@ -23,7 +25,7 @@ trait CheckSubscriptionTrait
             }
 
             // Retrieve data from the CSV file
-            $csvData = Excel::toArray(new UsersImport, public_path($filePath));
+            $csvData = Excel::toArray(new UsersImport(Auth::id()), public_path($filePath));
 
             // Log user data
             Log::info('Auth ' . $user->uni_id_num . ' ' . $user->name . ' ' . $user->user_dob);
@@ -40,6 +42,7 @@ trait CheckSubscriptionTrait
                             // Check if subscription is active
                             if ($checkInSub->insub_status === 'Active') {
                                 // Upgrade the user to premium if they match the CSV data
+                                \Log::info('Subscription is active! Upgrading user to premium.');
                                 $user->update([
                                     'is_premium' => true,
                                     'is_affiliated' => true
@@ -51,11 +54,21 @@ trait CheckSubscriptionTrait
                                     'message' => 'Congratulations! You successfully affiliated to the institution!'
                                 ];
                             } else {
-                                if ($user->is_premium) {
+                                \Log::info('Subscription is inactive! Downgradng user to basic.');
+                                if ($user->is_premium === true) {
                                     $user->update([
                                         'is_premium' => false,
                                         'is_affiliated' => true
                                     ]);
+                                }
+
+                                if ($user) {
+                                    $user->notify(new UserNotification([
+                                        'message' => "Your institution subscription has expired, resulting in a downgrade of your 
+                                        access to limited features. Please contact your institution's administrator to renew the 
+                                        subscription and regain full access to all features. Thank you for your understanding.",
+                                        'user_id' => $user->id
+                                    ]));
                                 }
 
                                 return [

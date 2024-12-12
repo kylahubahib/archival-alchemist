@@ -29,6 +29,7 @@ class CoAdminController extends Controller
         $this->insAdminUniBranchId = $commonData->getInsAdminUniBranchId();
         $this->insAdminAffiliation = $commonData->getInsAdminAffiliation();
     }
+    
     public function index()
     {
         $role = request('role', null);

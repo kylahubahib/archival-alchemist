@@ -287,7 +287,8 @@ class ProfileController extends Controller
 
         $user->update([
             'is_affiliated' => false,
-            'is_premium' => false
+            'is_premium' => false,
+            'user_type' => 'general_user'
         ]);
 
         

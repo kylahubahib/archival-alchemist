@@ -27,6 +27,26 @@ export default function ViewPost({post}) {
         })
     }
 
+    const renderReplies = (replies) => {
+        return replies.map((reply) => (
+            <div key={reply.id} className="ml-8 my-2">
+                <div className="flex justify-between items-center">
+                    <div className="flex flex-row space-x-5 items-center">
+                        <Avatar src={`http://127.0.0.1:8000/${reply.user?.user_pic}`} size="sm" />
+                        <div className="text-md text-gray-500 font-semibold">{reply.user.name || 'User Name'}</div>
+                    </div>
+                    <div className="text-small text-gray-600">
+                        {new Date(reply.created_at).toLocaleDateString('en-US')}
+                    </div>
+                </div>
+    
+                <div className="ml-12 text-gray-700">{reply.comment}</div>
+                <Divider className="mt-2" />
+            </div>
+        ));
+    };
+    
+
     return ( 
         
     <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg min-h-[527px] p-8 px-10">
@@ -85,29 +105,35 @@ export default function ViewPost({post}) {
                 </div>
             ) : (
                 <div>
-                    {comments.length > 0 ? (
-                        comments.map((com) => (
-                            <div key={com.id} className="my-2">
-                                <div className="flex justify-between items-center">
-
-                                    <div className=" flex flex-row space-x-5 items-center">
-                                        <Avatar src={`http://127.0.0.1:8000/${com.user?.user_pic}`} size="md" />
-                                        <div className=" text-lg text-gray-500 font-semibold">{com.user.name || 'User Name'}</div>
-                                    </div>
-                                    <div className="text-small text-gray-600">
-                                        {new Date(com.created_at).toLocaleDateString('en-US')}
-                                    </div>
-
+                {comments.length > 0 ? (
+                    comments.map((com) => (
+                        <div key={com.id} className="my-2">
+                            <div className="flex justify-between items-center">
+                                <div className="flex flex-row space-x-5 items-center">
+                                    <Avatar src={`http://127.0.0.1:8000/${com.user?.user_pic}`} size="md" />
+                                    <div className="text-lg text-gray-500 font-semibold">{com.user.name || 'User Name'}</div>
                                 </div>
-
-                                <div className=" ml-16 space-y-2">
-                                    <div>{com.body}</div>
-
-                                    <Divider className=" mt-4"/>
+                                <div className="text-small text-gray-600">
+                                    {new Date(com.created_at).toLocaleDateString('en-US')}
                                 </div>
                             </div>
-                        ))
-                    ): (<div className="text-center mt-5 text-gray-600">No comments found</div>)}
+
+                            <div className="ml-16 space-y-2">
+                                <div>{com.comment}</div>
+                                {com.replies && com.replies.length > 0 && (
+                                    <div className="mt-4">
+                                        <h4 className="text-sm text-gray-500 font-semibold">Replies:</h4>
+                                        {renderReplies(com.replies)}
+                                    </div>
+                                )}
+                                <Divider className="mt-4" />
+                            </div>
+                        </div>
+                    ))
+                ) : (
+                    <div className="text-center mt-5 text-gray-600">No comments found</div>
+                )}
+
                 </div>
             )
 

@@ -15,7 +15,7 @@ import ReviewManuscript from '@/Pages/Users/Class/Teacher/ReviewManuscript';
 import ViewModal from '@/Components/studentworkModal';
 
 //axios.defaults.headers.common['X-CSRF-TOKEN'] = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-axios.defaults.headers['X-CSRF-TOKEN'] = document.querySelector('meta[name="csrf-token"]').content;
+// axios.defaults.headers['X-CSRF-TOKEN'] = document.querySelector('meta[name="csrf-token"]').content;
 
 
 const StudentWork = ({folders, onBack, task, taskID,  fileUrl,  }) => {

@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 
 const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken;
 
 const ToggleComments = ({ auth, manuscripts, man_id, man_doc_title, isOpen, toggleSidebar }) => {
     const [profilePic, setProfilePic] = useState(auth.user.user_pic);
@@ -15,6 +14,8 @@ const ToggleComments = ({ auth, manuscripts, man_id, man_doc_title, isOpen, togg
     const [fetchError, setFetchError] = useState(false);
 
     useEffect(() => {
+        console.log('SELECTED MANUSCRIPT: ', man_id);
+
         const fetchComments = async () => {
             try {
                 const response = await axios.get(`/fetch-comments/${man_id}`);
@@ -131,7 +132,8 @@ const ToggleComments = ({ auth, manuscripts, man_id, man_doc_title, isOpen, togg
                                         src={
                                             comment.user_id === auth.user.id
                                                 ? profilePic
-                                                : comment.user?.user_pic || "/images/default_user_pic.png"
+                                                :   `http://127.0.0.1:8000/${comment.user?.user_pic}` || "/images/default_user_pic.png"
+                                                // comment.user?.user_pic || "/images/default_user_pic.png"
                                         }
                                         alt="Profile Picture"
                                     />

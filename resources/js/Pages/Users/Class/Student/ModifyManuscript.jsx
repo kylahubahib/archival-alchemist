@@ -79,12 +79,12 @@ console.log("This is the group ID: ", groupId)
 
 
   const handleSendForReview = () => {
-    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    // const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
     axios.post('/send-for-revision', { manuscript_id: manuscript.id },
       {
         headers: {
-            'X-CSRF-TOKEN': csrfToken,
+            // 'X-CSRF-TOKEN': csrfToken,
           },
       }
     )

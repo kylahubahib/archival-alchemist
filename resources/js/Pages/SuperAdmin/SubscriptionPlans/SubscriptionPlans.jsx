@@ -8,6 +8,8 @@ import Show from './Show';
 import Edit from './Edit';
 import Pagination from '@/Components/Pagination';
 import PageHeader from '@/Components/Admin/PageHeader';
+import SearchBar from '@/Components/Admin/SearchBar';
+import { Chip } from '@nextui-org/react';
 
 export default function SubscriptionPlans({ auth, subscriptionPlans = [], features, planFeatures }) {
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -112,22 +114,17 @@ export default function SubscriptionPlans({ auth, subscriptionPlans = [], featur
 
                         <div className="overflow-x-auto shadow-md sm:rounded-lg px-5">
                             <div className="flex items-center justify-between flex-column md:flex-row flex-wrap space-y-4 md:space-y-0 py-4 bg-white">
-                                <label className="sr-only">Search</label>
-                                <div className="relative">
-                                    <div className="absolute inset-y-0 rtl:inset-r-0 start-0 flex items-center ps-3 pointer-events-none">
-                                        <svg className="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
-                                            <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
-                                        </svg>
-                                    </div>
-                                    <input 
-                                        type="text" 
-                                        id="search-users" 
-                                        className="block pt-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg w-80 bg-gray-50 focus:ring-blue-500 focus:border-blue-500" 
-                                        placeholder="Search" 
+                                {/* Search Filter */}
+                                <div className="w-1/2">
+                                    <SearchBar 
+                                        name='search'
                                         value={wordEntered}
+                                        variant="bordered"
                                         onChange={handleFilter}
+                                        placeholder="Search (Name, Type)..."
+                                        className=" min-w-sm flex-1"
                                     />
-                                </div>
+                                </div>  
 
                                 <div className="inline-flex overflow-hidden bg-white border divide-x rounded-lg dark:bg-gray-900 rtl:flex-row-reverse">
                                     <button onClick={() => {filterStatus("All")}} 
@@ -149,8 +146,8 @@ export default function SubscriptionPlans({ auth, subscriptionPlans = [], featur
 
                             <div className="min-h-[480px]"> 
                             {/* className="overflow-y-auto h-480" */}
-                                <table className="w-full text-sm text-left rtl:text-right text-gray-500">
-                                    <thead className="text-xs text-gray-700 uppercase bg-gray-50">
+                                <table className="w-full text-sm text-left rtl:text-right text-gray-500 border-1">
+                                    <thead className="text-xs sticky z-20 -top-[1px] pb-[20px] text-customGray uppercase align-top bg-customLightGray">
                                         <tr>
                                             <th scope="col" className="px-6 py-3">
                                                 Plans
@@ -186,9 +183,12 @@ export default function SubscriptionPlans({ auth, subscriptionPlans = [], featur
                                                     <td className="px-6 py-4">{sp.plan_price}</td>
                                                     <td className="px-6 py-4">
                                                         <div className="w-1/2">
-                                                            <p className={`text-xs font-medium me-2 w-full px-2.5 py-0.5 rounded text-center ${sp.plan_status === "Available" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>
-                                                                {sp.plan_status}
-                                                            </p>
+                                                            {sp.plan_status === "Available" ? (
+                                                                <Chip color='success' variant='flat'>{sp.plan_status}</Chip>
+                                                            ) : (
+                                                                <Chip color='danger' variant='flat'>{sp.plan_status}</Chip>
+                                                            )}
+                                                           
                                                         </div>
                                                     </td>
                                                     <td className="px-6 py-4 flex flex-row space-x-2">

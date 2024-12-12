@@ -68,12 +68,12 @@ const ReviewManuscript = ({groupId, folders, onBack, task, taskID, closeModal, c
   }
 
   const handleReturnFeedback = () => {
-    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    // const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
     axios.post('/return-feedback', { manuscript_id: manuscript.id },
       {
         headers: {
-            'X-CSRF-TOKEN': csrfToken,
+            // 'X-CSRF-TOKEN': csrfToken,
           },
       }
     ).then(response => {
