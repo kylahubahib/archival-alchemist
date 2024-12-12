@@ -59,7 +59,7 @@ useEffect(() => {
             await axios.delete(`/delete-groupmembers/${studentId}`);
 
             // Refetch the students list from the server
-            const response = await axios.get("/fetch-groupmembers");
+            const response = await axios.get(`/fetch-groupmembers/${folders.id}`);
             setStudentUser(response.data);  // Update state with fresh student data
         } catch (error) {
             // Handle error (show message, etc.)
@@ -179,7 +179,7 @@ useEffect(() => {
             console.log("API Response:", response.data)
 
             // Refetch the students list from the server after the student has been added
-            const groupResponse = await axios.get("/fetch-groupmembers");
+            const groupResponse = await axios.get(`/fetch-groupmembers/${folders.id}`);
 
             if (groupResponse.data) {
                 setStudentUser(groupResponse.data);  // Update the students state with the fresh data
@@ -214,7 +214,7 @@ useEffect(() => {
 
     console.log('Folders in People:', folders);  // Check the folders prop
     return (
-        <div className="pl-10 mt-0 bg-gray-100 rounded-lg shadow-lg w-full pb-20">
+        <div className="pl-10 bg-gray-100 pt-5 w-full pb-20">
             {/* Teachers Section */}
             <div className="relative w-relative h-48 mb-5 bg-white p-10 rounded-md shadow ml-5 mr-20">
                 <h3 className="text-lg font-semibold text-gray-600 mb-4">Teachers</h3>
@@ -294,7 +294,7 @@ useEffect(() => {
                             </div>
                         ))
                     ) : (
-                        <p>No students enrolled.</p>
+                        <p className="text-gray-500">No students enrolled.</p>
                     )}
                 </div>
 

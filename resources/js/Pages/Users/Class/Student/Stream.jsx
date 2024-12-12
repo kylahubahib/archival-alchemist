@@ -40,24 +40,24 @@ const Stream = ({ auth, user, folders, onBack }) => {
   }, [fetchAssignedTasks, folders]);
 
   // Scroll event listener
-  const handleScroll = () => {
-    const bottom =
-      window.innerHeight + document.documentElement.scrollTop === document.documentElement.offsetHeight;
+//   const handleScroll = () => {
+//     const bottom =
+//       window.innerHeight + document.documentElement.scrollTop === document.documentElement.offsetHeight;
 
-    if (bottom && !loading && hasMore) {
-      setPage((prevPage) => prevPage + 1); // Load next page
-    }
-  };
+//     if (bottom && !loading && hasMore) {
+//       setPage((prevPage) => prevPage + 1); // Load next page
+//     }
+//   };
 
-  useEffect(() => {
-    // Attach the scroll event listener when the component mounts
-    window.addEventListener('scroll', handleScroll);
+//   useEffect(() => {
+//     // Attach the scroll event listener when the component mounts
+//     window.addEventListener('scroll', handleScroll);
 
-    // Clean up the event listener when the component unmounts
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-    };
-  }, [loading, hasMore]);
+//     // Clean up the event listener when the component unmounts
+//     return () => {
+//       window.removeEventListener('scroll', handleScroll);
+//     };
+//   }, [loading, hasMore]);
 
   // Retry fetching tasks
   const retryFetch = () => {

@@ -3,6 +3,7 @@ import { Card, Button } from '@nextui-org/react';
 import PreviewTask from '@/Pages/Users/Class/Teacher/PreviewTask';
 import axios from 'axios';
 import Modal from '@/Components/Modal';
+import { Spinner } from '@nextui-org/react';  // Import the Spinner component
 
 const TaskInstructions = ({ folders, onBack, task, taskID }) => {
   const [tasks, setTasks] = useState([]);  // Store the tasks
@@ -16,6 +17,8 @@ console.log("This is the Task ID:", taskID);
   const [tags, setTags] = useState([]);
   const [users, setAuthors] = useState([]);
   const [modalOpen, setModalOpen] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
   const [formValues, setFormValues] = useState({
       group_name: '',
       man_doc_title: '',
@@ -42,7 +45,8 @@ console.log("This is the Task ID:", taskID);
             try {
                 const response = await axios.get('/api/check-group', {
                     params: {
-                        section_id: folders?.id
+                        section_id: folders?.id,
+                        task_id: taskID
                     }
                 }); // Endpoint to check group membership
                 const data = response.data;
@@ -150,8 +154,9 @@ console.log("This user has a group already.", hasGroup)
 
   const fetchAuthorSuggestions = async (query) => {
       try {
-          const response = await axios.get('/api/authors/suggestions', {
-              params: { query, users },
+          const response = await axios.get('/students/search-in-class', {
+              params: { query,
+                section_id: folders?.id, users },
           });
           setAuthorSuggestions(response.data);
       } catch (error) {
@@ -235,6 +240,8 @@ console.log("This user has a group already.", hasGroup)
           }
 
           try {
+            setLoading(true);  // Set loading to true when submission starts
+            setIsSubmitted(true);
               // Prepare form data
               const formData = new FormData();
               formData.append('group_name', formValues.group_name);
@@ -255,11 +262,13 @@ console.log("This user has a group already.", hasGroup)
 
               console.log('In here...')
 
-              const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+            //   const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
               // Submit the form data
               const response = await axios.post('/api/capstone/upload', formData, {
-                  headers: { 'Content-Type': 'multipart/form-data', 'X-CSRF-TOKEN': csrfToken, },
+                  headers: { 'Content-Type': 'multipart/form-data',
+                    // 'X-CSRF-TOKEN': csrfToken,
+                },
               });
 
               setMessage(response.data.message);
@@ -277,10 +286,19 @@ console.log("This user has a group already.", hasGroup)
                   console.error('Error:', error.message);
                   setMessage('An unexpected error occurred.');
               }
-          }
+          }finally {
+            setLoading(false);  // Reset loading state after submission
+        }
       } else {
           window.scrollTo(0, 0);
       }
+
+              // Prevent further submissions by setting isSubmitted to true
+              if (!isSubmitted && isFormValid()) {
+                setIsSubmitted(true);
+                // Proceed with your form submission logic here
+                console.log('Form submitted');
+            }
   };
 
 
@@ -436,12 +454,6 @@ console.log("This user has a group already.", hasGroup)
             {success ? (
                 <div>
                     <h2 className="text-green-600 mb-4"></h2>
-                    <button
-                        className="bg-blue-500 text-white p-2 rounded"
-                        onClick={resetForm}
-                    >
-                        Submit another manuscript project
-                    </button>
                 </div>
             ) : (
                 <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4">
@@ -608,13 +620,26 @@ console.log("This user has a group already.", hasGroup)
                             {/* <label>I agree to the terms and conditions</label> */}
                             {/* {errors.agreed && <div className="text-red-600 text-sm ml-2">{errors.agreed}</div>} */}
                         </div>
-                        <button
+                        {/* <button
                             type="submit"
-                            className={`bg-blue-500 text-white p-2 rounded w-full ${isFormValid() ? '' : 'opacity-50 cursor-not-allowed'}`}
-                            disabled={!isFormValid()}
+                            // className={`bg-blue-500 text-white p-2 rounded w-full ${isFormValid() ? '' : 'opacity-50 cursor-not-allowed'}`}
+                            // disabled={!isFormValid()}
+                            className={`bg-blue-500 text-white p-2 rounded w-full ${isFormValid() && !isSubmitted ? '' : 'opacity-50 cursor-not-allowed'}`}
+                            disabled={!isFormValid() || isSubmitted}
                         >
                             Submit
-                        </button>
+                        </button> */}
+                                    <button
+                type="submit"
+                className={`bg-blue-500 text-white p-2 rounded w-full ${isFormValid() && !loading ? '' : 'opacity-50 cursor-not-allowed'}`}
+                disabled={!isFormValid() || loading}
+            >
+                {loading ? (
+                    <Spinner color="warning" size="sm" label="Loading..." />  // Show the spinner
+                ) : (
+                    'Submit'
+                )}
+            </button>
                     </div>
                 </form>
             )}
@@ -625,7 +650,7 @@ console.log("This user has a group already.", hasGroup)
                 </div>
             )}
             {modalOpen && <Modal onClose={() => setModalOpen(false)} />}
-        </div></div>):(<div  className="w-[90%] max-relative p-6 bg-green-300 text-center text-gray-700 shadow-md rounded-lg ml-20 mt-3">Your group has submitted successfully.</div>)}
+        </div></div>):(<div  className="w-[90%] max-relative p-6 bg-green-200 text-center text-gray-700 shadow-md rounded-lg ml-20 mt-3">Your group has submitted successfully.</div>)}
     </div>
 
   );

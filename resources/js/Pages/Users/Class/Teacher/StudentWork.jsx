@@ -395,6 +395,10 @@ const handleShowStudentWork = () => {
             </header>
 
             <div className="relative w-relative m-10 ">
+            {classes.length === 0 ? (
+    <p className="text-center text-gray-500">Nothing to review</p>
+  ) : (
+
                 <Table>
                     <TableHeader>
                         <TableColumn className="w-[10%] text-left">Group Name</TableColumn>
@@ -441,7 +445,7 @@ const handleShowStudentWork = () => {
                         ))}
                     </TableBody>
                 </Table>
-
+  )}
                 <ViewModal show={isViewModalOpen} onClose={closeViewModal}>
 
 {console.log("These are the props reviewManuscriptProps:", reviewManuscriptProps)}
@@ -464,16 +468,16 @@ const handleShowStudentWork = () => {
                                                 Filter:
                                             </label>
                                             <select
-  onChange={(event) => handleGroupChange(event.target.value)}
-  className="rounded border border-gray-300 text-sm w-full"
->
-  <option value="" disabled selected>Select a Group</option>
-  {classes.map((item) => (
-    <option key={item.group?.id} value={item.group?.id}>
-      {item.group?.group_name}
-    </option>
-  ))}
-</select>
+                                                onChange={(event) => handleGroupChange(event.target.value)}
+                                                className="rounded border border-gray-300 text-sm w-full"
+                                                >
+                                                <option value="" disabled selected>Select a Group</option>
+                                                {classes.map((item) => (
+                                                    <option key={item.group?.id} value={item.group?.id}>
+                                                    {item.group?.group_name}
+                                                    </option>
+                                                ))}
+                                            </select>
                                         </div>
 
                                         <div className="flex items-center space-x-2">

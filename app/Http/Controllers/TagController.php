@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\ManuscriptProject;
 use App\Models\Tags;
 use App\Models\User;
+use App\Models\GroupMember;
+
+use App\Models\Student;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Log;
@@ -114,6 +117,40 @@ class TagController extends Controller
         ->get();
         return response()->json($users);
     }
+
+
+/**
+ * Search for authors based on the query.
+ *
+ * @param  \Illuminate\Http\Request  $request
+ * @return \Illuminate\Http\Response
+ */
+
+ public function searchStudents(Request $request)
+ {
+     $query = $request->input('query'); // The search term for the user's name
+     $section_id = $request->input('section_id'); // The section ID to filter by
+
+     // Log the section ID for context
+     Log::info("This is the section ID for authors suggestion:", ['section_id' => $section_id]);
+
+     // Retrieve the users matching the query and section_id
+     $users = User::where('name', 'like', "%{$query}%") // Filter by user name
+         ->where('is_premium', 1) // Filter by premium status
+         ->whereHas('groupMembers', function ($query) use ($section_id) {
+             // Ensure the groupMember record for each user has the matching section_id
+             $query->where('section_id', $section_id);
+         })
+         ->get();
+
+     // Log the users fetched
+     Log::info("Users fetched for authors suggestion:", ['users' => $users->toArray()]);
+
+     return response()->json($users);
+ }
+
+
+
 
         /**
      * Search for authors based on the query.

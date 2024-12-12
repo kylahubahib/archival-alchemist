@@ -12,6 +12,7 @@ const AssignedprojectForm = ({ onBack, folders }) => {
     const [startDate, setStartDate] = useState('');
     const [dueDate, setDueDate] = useState('');
     const [isFormVisible, setIsFormVisible] = useState(true);
+    const [errorMessage, setErrorMessage] = useState('');  // State to store error message
 
     // Handle date range change
     const handleDateChange = (value) => {
@@ -74,7 +75,14 @@ const AssignedprojectForm = ({ onBack, folders }) => {
             }, 500);
 
         } catch (error) {
-            // Handle error
+            // Handle error (e.g., task already exists)
+            if (error.response && error.response.data && error.response.data.message) {
+                // Set the error message from the backend
+                setErrorMessage(error.response.data.message);
+            } else {
+                // Handle other errors
+                setErrorMessage('An error occurred while saving the task.');
+            }
             console.error("Error saving project:", error);
         }
     };
@@ -171,6 +179,12 @@ const AssignedprojectForm = ({ onBack, folders }) => {
                                     }}
                                 />
                             </div>
+                                                        {/* Error Message */}
+                                                        {errorMessage && (
+                                <div className="text-red-500 text-sm mb-4">
+                                    {errorMessage}
+                                </div>
+                            )}
                             <div className="w-full px-8 mb-4">
                             <Button
                                 onClick={handleSave}

@@ -517,22 +517,22 @@ const MyUniBooks = ({auth, user, choice}) => {
     }, []);
 
 
-    const fetchManuscripts = async (keyword, searchField) => {
-        if (!keyword) return; // Exit early if no keyword input
-        setLoading(true);
-        try {
-            // Construct the query with the selected search field
-            const response = await axios.get(`/api/published-manuscripts`, {
-                params: { keyword, searchField }
-            });
-            setManuscripts(response.data);
-        } catch (error) {
-            console.error('Error fetching manuscripts:', error);
-            setError('An error occurred while fetching the data.');
-        } finally {
-            setLoading(false);
-        }
-    };
+    // const fetchManuscripts = async (keyword, searchField) => {
+    //     if (!keyword) return; // Exit early if no keyword input
+    //     setLoading(true);
+    //     try {
+    //         // Construct the query with the selected search field
+    //         const response = await axios.get(`/api/published-manuscripts`, {
+    //             params: { keyword, searchField }
+    //         });
+    //         setManuscripts(response.data);
+    //     } catch (error) {
+    //         console.error('Error fetching manuscripts:', error);
+    //         setError('An error occurred while fetching the data.');
+    //     } finally {
+    //         setLoading(false);
+    //     }
+    // };
 
 // Update the dropdown selection handler
 const handleDropdownChange = (selectedKey) => {
@@ -1219,4 +1219,3 @@ toggleSidebar={() => setIsSidebarOpen((prevState) => !prevState)} // Toggle the 
 }
 
 export default MyUniBooks;
-                                                    

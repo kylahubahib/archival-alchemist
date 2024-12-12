@@ -14,6 +14,7 @@ class VerifyCsrfToken extends Middleware
     protected $except = [
         'login',  
         'register',
+        'forum-comments',
         // 'auth/*', 
     ];
     

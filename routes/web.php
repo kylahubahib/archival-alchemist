@@ -485,7 +485,8 @@ Route::get('api/universities-branches', [UniversityController::class, 'getUniver
 // Route::middleware(['auth'])->group(function () {
     // Route for storing a new manuscript project
     Route::post('/api/capstone/upload', [StudentClassController::class, 'storeManuscriptProject'])->name('api.capstone.upload');
-
+    Route::put('/update-project/{id}', [StudentClassController::class, 'updateProject']);
+     Route::get('/fetch-userType', [TeacherClassController::class, 'fetchUserType']);
         // Route for tracking a student's activity
         Route::post('/student/track-activity', [StudentClassController::class, 'trackActivity'])
             ->name('student.trackActivity.store');
@@ -616,10 +617,26 @@ Route::middleware(['web'])->group(function () {
     Route::post('/forum-posts/{id}/view', [ForumPostController::class, 'incrementViewCount'])->name('forum-posts.incrementViewCount');
 
     //Route for Forum Comments
-    Route::get('/forum-comments/{postId}', [ForumCommentController::class, 'index']);
-    Route::post('/forum-comments', [ForumCommentController::class, 'store']);
-    Route::put('/forum-comments/{comId}/edit', [ForumCommentController::class, 'update']);
-    Route::delete('/forum-comments/{comId}', [ForumCommentController::class, 'destroy']);
+    // For fetching comments of a specific post
+        Route::get('/forum-comments/{postId}', [ForumCommentController::class, 'index']);
+
+        // For submitting a new comment or reply
+        Route::post('/forum-comments', [ForumCommentController::class, 'store']);
+
+        // For updating a comment
+        Route::put('/forum-comments/{id}', [ForumCommentController::class, 'update']);
+
+        // For deleting a comment
+        Route::delete('/forum-comments/{id}', [ForumCommentController::class, 'destroy']);
+
+
+        
+Route::post('/store-newGroupmembers', [ClassController::class, 'addNewStudentsToClass']);
+Route::get('/students/search-in-class', [TagController::class, 'searchStudents']);
+Route::put('/update-project/{id}', [StudentClassController::class, 'updateProject']);
+
+Route::get('/fetch-mygroupmembers/{id}', [ClassController::class, 'getMyGroupMembers']);
+
 });
 
 
@@ -675,7 +692,7 @@ Route::post('/manuscripts/{id}/increment-view', [StudentClassController::class, 
 
 
 Route::get('/api/check-group', [StudentClassController::class, 'checkGroup']);
-Route::get('/fetch-userType', [TeacherClassController::class, 'fetchUserType']);
+Route::get('/fetch-userType', [TeacherClassController::class, 'n']);
 Route::get('/fetch-affiliation', [TeacherClassController::class, 'fetchAffiliation']);
 
 

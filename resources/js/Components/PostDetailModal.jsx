@@ -1,52 +1,25 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
-import { FaEye, FaComment, FaTrash, FaFlag } from 'react-icons/fa';
-import { CommentSection } from 'react-comments-section';
-import 'react-comments-section/dist/index.css';
-import { Chip } from '@nextui-org/react';
+import { FaEye, FaComment, FaTrash, FaFlag, FaEdit, FaReply, FaEllipsisH } from 'react-icons/fa';
+import { Chip, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem } from '@nextui-org/react';
 
 const PostDetailModal = ({ isOpen, onClose, post, loggedInUser, onUpdateCommentCount }) => {
-  const [comments, setComments] = useState([]);
+ const [comments, setComments] = useState([]);
+  const [newComment, setNewComment] = useState('');
+  const [editingComment, setEditingComment] = useState(null);
+  const [replyingTo, setReplyingTo] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [showOptions, setShowOptions] = useState({}); // To control the visibility of options
+  const optionsRef = useRef(null); // Reference for the options menu
 
-  // Fetch comments from the database or localStorage
-  const fetchComments = async (postId) => {
+  
+  // Fetch comments for the post
+  const fetchComments = async () => {
     try {
-      console.log('Fetching comments from server...');
       setIsLoading(true);
-
-      const response = await axios.get(`/forum-comments/${postId}`);
-      console.log('API Response:', response.data);
-
-      const commentArray = Array.isArray(response.data.comments) ? response.data.comments : [];
-
-      const fetchedComments = commentArray.map((comment) => ({
-        comId: comment.id.toString(),
-        userId: comment.user?.id || 'unknown',
-        fullName: comment.user?.name || 'Anonymous',
-        avatarUrl:
-          comment.user?.user_pic ||
-          `https://ui-avatars.com/api/?name=${encodeURIComponent(comment.user?.name || 'Anonymous')}&background=random`,
-        text: comment.comment?.toString() || '',
-        replies: Array.isArray(comment.replies)
-          ? comment.replies.map((reply) => ({
-              comId: reply.id.toString(),
-              userId: reply.user?.id || 'unknown',
-              fullName: reply.user?.name || 'Anonymous',
-              avatarUrl:
-                reply.user?.user_pic ||
-                `https://ui-avatars.com/api/?name=${encodeURIComponent(reply.user?.name || 'Anonymous')}&background=random`,
-              text: reply.comment?.toString() || '',
-            }))
-          : [], // Ensure replies is always an array
-      }));
-
-      setComments(fetchedComments);
-
-      // Notify parent of comment count
-      if (onUpdateCommentCount) {
-        onUpdateCommentCount(postId, fetchedComments.length);
-      }
+      const response = await axios.get(`/forum-comments/${post.id}`);
+      console.log('Fetched Comments:', response.data);
+      setComments(response.data);
     } catch (error) {
       console.error('Error fetching comments:', error);
     } finally {
@@ -54,131 +27,233 @@ const PostDetailModal = ({ isOpen, onClose, post, loggedInUser, onUpdateCommentC
     }
   };
 
-  const handleDeleteComment = async (data) => {
-    const { comIdToDelete } = data;
-  
+  // Submit a new comment or reply
+  const handleCommentSubmit = async () => {
     try {
-      const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-      await axios.delete(`/forum-comments/${comIdToDelete}`, {
-        headers: { 'X-CSRF-TOKEN': csrfToken },
-      });
-  
-      setComments((prevComments) =>
-        prevComments.filter((comment) => comment.comId !== comIdToDelete)
-      );
-  
-      // Update the comment count in the parent component
-      if (onUpdateCommentCount) {
-        onUpdateCommentCount(post.id, comments.length - 1);
-      }
-  
-      console.log('Comment deleted successfully!');
-    } catch (error) {
-      console.error('Error deleting comment:', error);
-      alert('Failed to delete comment. Please try again.');
-    }
-  };
-
-
-  const handleEditComment = async (data) => {
-    const { comId, text } = data;
-
-    try {
-      const response = await axios.put(`/forum-comments/${comId}/edit`, {
-        comment: text,
-      });
-
-      setComments((prevComments) =>
-        prevComments.map((comment) =>
-          comment.comId === comId
-            ? { ...comment, text: response.data.comment.comment }
-            : comment
-        )
+      const response = await axios.post(
+        '/forum-comments',
+        {
+          forum_post_id: post.id,
+          comment: newComment,
+          parent_id: replyingTo?.id || null,
+        },
+        {
+          headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+          },
+        }
       );
 
-      alert('Comment updated successfully!');
-    } catch (error) {
-      console.error('Error updating comment:', error);
-      alert('Failed to update comment. Please try again.');
-    }
-  };
+      const newCommentData = response.data;
 
-  const handleReportComment = async (commentId) => {
-    try {
-      const response = await axios.post(`/report-comment/${commentId}`);
-      console.log('Comment reported:', response.data);
-      alert('Comment has been reported.');
-    } catch (error) {
-      console.error('Error reporting comment:', error);
-      alert('Failed to report comment. Please try again.');
-    }
-  };
+      // Function to add a reply to the correct comment recursively
+      const addReplyToComments = (comments, parentId, reply) => {
+        return comments.map((comment) => {
+          if (comment.id === parentId) {
+            return {
+              ...comment,
+              replies: [...(comment.replies || []), reply],
+            };
+          }
 
-  const handleCommentSubmit = async (newComment) => {
-    try {
-      const response = await axios.post('/forum-comments', {
-        forum_post_id: post.id,
-        comment: newComment.text,
-      });
+          if (comment.replies) {
+            return {
+              ...comment,
+              replies: addReplyToComments(comment.replies, parentId, reply),
+            };
+          }
 
-      const newCommentData = {
-        comId: response.data.comment.id.toString(),
-        userId: response.data.comment.user_id,
-        fullName: response.data.comment.user?.name || loggedInUser.name,
-        avatarUrl: response.data.comment.user?.user_pic || loggedInUser.user_pic,
-        text: response.data.comment.comment,
-        replies: [],
+          return comment;
+        });
       };
 
-      setComments((prev) => [...prev, newCommentData]);
-
-      if (onUpdateCommentCount) {
-        onUpdateCommentCount(post.id, comments.length + 1);
+      // If replying to a specific comment or reply
+      if (replyingTo) {
+        setComments((prev) => addReplyToComments(prev, replyingTo.id, newCommentData));
+      } else {
+        // If it's a new top-level comment
+        setComments((prev) => [...prev, newCommentData]);
       }
+
+      setNewComment('');
+      setReplyingTo(null);
     } catch (error) {
-      console.error('Error adding comment:', error);
+      console.error('Error submitting comment:', error.response?.data || error.message);
     }
   };
 
-  const redirectToLogin = () => {
-    alert('Redirect to login');
-    window.location.href = '/login';
+  // Edit an existing comment
+ // Edit an existing comment or reply
+const handleEditCommentSubmit = async () => {
+  try {
+    const response = await axios.put(
+      `/forum-comments/${editingComment.id}`,
+      { comment: newComment },
+      {
+        headers: { "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').content },
+      }
+    );
+
+    // Recursively update the specific comment or reply in the comments array
+    const updateCommentInTree = (comments, updatedComment) => {
+      return comments.map((comment) => {
+        if (comment.id === updatedComment.id) {
+          // Update the specific comment
+          return { ...comment, comment: updatedComment.comment };
+        }
+
+        // Recursively check and update replies
+        if (comment.replies) {
+          return { ...comment, replies: updateCommentInTree(comment.replies, updatedComment) };
+        }
+
+        return comment;
+      });
+    };
+
+    // Update comments with the edited comment
+    setComments((prev) => updateCommentInTree(prev, response.data));
+
+    setEditingComment(null); // Reset editing state
+    setNewComment(""); // Clear input field
+  } catch (error) {
+    console.error("Error editing comment:", error);
   }
+};
 
 
-  const handleReplySubmit = async (data) => {
-    // Existing implementation
+
+  // Delete a comment
+  const handleDeleteComment = async (id) => {
+    try {
+      const response = await axios.delete(`/forum-comments/${id}`, {
+        headers: {
+          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+        },
+      });
+
+      console.log('Delete Response:', response.data);
+
+      // Update the state to remove the deleted comment or reply
+      const removeCommentById = (comments, idToRemove) => {
+        return comments
+          .map((comment) => {
+            if (comment.id === idToRemove) {
+              return null; // Remove the comment
+            }
+
+            // Recursively check and update replies
+            if (comment.replies) {
+              return { ...comment, replies: removeCommentById(comment.replies, idToRemove) };
+            }
+
+            return comment;
+          })
+          .filter(Boolean); // Remove `null` values from the array
+      };
+
+      setComments((prev) => removeCommentById(prev, id));
+    } catch (error) {
+      console.error('Error deleting comment:', error.response?.data || error.message);
+    }
   };
 
-  useEffect(() => {
-    if (isOpen && post?.id) {
-      fetchComments(post.id);
-    }
-  }, [isOpen, post?.id]);
-
-  const renderCommentActions = (commentId, userId) => (
-    <div className="flex space-x-2 text-sm text-gray-500 font-normal">
-      {loggedInUser?.id === userId && (
-        <button
-          onClick={() => handleDeleteComment({ comIdToDelete: commentId })}
-          className="flex items-center space-x-1 hover:text-red-500"
-        >
-          <FaTrash />
-          <span>Delete</span>
-        </button>
-      )}
-      <button
-        onClick={() => handleReportComment(commentId)}
-        className="flex items-center space-x-1 hover:text-yellow-500"
-      >
-        <FaFlag />
-        <span>Report</span>
-      </button>
-    </div>
-  );
-  if (!isOpen || !post) return null;
 
   
+  const renderComments = (comments, depth = 0) => {
+    if (!comments || comments.length === 0) return null;
+
+    return comments.map((comment) => (
+      <div key={comment.id} className={`ml-${depth * 4} p-4 border-b border-gray-200`}>
+        <div className="flex items-start space-x-4">
+          <img
+            src={comment.user?.avatar || '/default-avatar.png'}
+            alt={comment.user?.name || 'User'}
+            className="w-10 h-10 rounded-full object-cover"
+          />
+          <div className="flex-1">
+            <div className="flex justify-between text-sm">
+              <span className="font-semibold text-gray-700">{comment.user?.name || 'Unknown User'}</span>
+              <span className="text-gray-500">{comment.created_at}</span>
+            </div>
+
+            <div className="mt-1 text-base text-gray-800">{comment.comment}</div>
+
+            
+
+            {/* Action Buttons */}
+            <div className="mt-2 flex items-center space-x-4 text-sm text-gray-600">
+              <button
+                onClick={() => setReplyingTo(comment)}
+                className="flex items-center space-x-1 hover:text-blue-500"
+              >
+                <FaReply />
+                <span>Reply</span>
+              </button>
+
+              {/* Three-dot menu for options */}
+              <Dropdown>
+                <DropdownTrigger>
+                  <button
+                    className="text-gray-500 hover:text-gray-700"
+                    onClick={() => toggleOptions(comment.id)}
+                  >
+                    <FaEllipsisH />
+                  </button>
+                </DropdownTrigger>
+                <DropdownMenu aria-label="Actions">
+                  <DropdownItem  onClick={() => {setEditingComment(comment); setNewComment(comment.comment);
+                    }}>
+                    Edit
+                  </DropdownItem>
+                  <DropdownItem onClick={() => handleDeleteComment(comment.id)} key="delete" className="text-danger">
+                    Delete
+                  </DropdownItem>
+                </DropdownMenu>
+              </Dropdown>
+            </div>
+          </div>
+        </div>
+
+        {/* Recursive rendering of replies */}
+        {comment.replies && renderComments(comment.replies, depth + 1)}
+      </div>
+    ));
+  };
+  
+  // Close menu when clicking outside
+ useEffect(() => {
+  // Close the options menu if clicked outside
+  const handleClickOutside = (event) => {
+    if (optionsRef.current && !optionsRef.current.contains(event.target)) {
+      setShowOptions({});
+    }
+  };
+
+  document.addEventListener('click', handleClickOutside);
+  return () => {
+    document.removeEventListener('click', handleClickOutside);
+  };
+}, []);
+
+
+  // Toggle the visibility of options (Edit/Delete/Reply) for each comment
+  const toggleOptions = (commentId) => {
+    setShowOptions((prevState) => ({
+      ...prevState,
+      [commentId]: !prevState[commentId], // Toggle menu for the clicked comment
+    }));
+  };
+
+
+  
+
+  // Fetch comments when the modal is opened
+  useEffect(() => {
+    if (isOpen) fetchComments();
+  }, [isOpen]);
+
+  if (!isOpen || !post) return null;
 
   return (
     <div className="inset-0 z-50 flex items-center justify-center">
@@ -226,30 +301,26 @@ const PostDetailModal = ({ isOpen, onClose, post, loggedInUser, onUpdateCommentC
           </div>
         </div>
 
-        <div>
-          
-        <CommentSection
-  currentUser={loggedInUser?.id ? {
-    currentUserId: loggedInUser?.id || '01a',
-    currentUserImg:
-      loggedInUser?.user_pic || 'https://ui-avatars.com/api/?name=User&background=random',
-    currentUserProfile: 'Current User',
-    currentUserFullName: loggedInUser?.name || 'Current User',
-  } : null}
-  logIn={{
-    onLogin: () => { window.location.href = '/login'; },
-    onSignUp: () => { window.location.href = '/register'; } // Add this to handle sign-up redirection
-  }}
-  commentData={comments}
-  onSubmitAction={handleCommentSubmit}
-  onReplyAction={handleReplySubmit}
-  onDeleteAction={handleDeleteComment}
-  onEditAction={handleEditComment}
-  customNoComment={() => <div>No comments yet. Be the first to comment!</div>}
-/>
-
-
+        {/* New Comment Section */}
+        <div className="mt-6">
+          <textarea
+            value={newComment}
+            onChange={(e) => setNewComment(e.target.value)}
+            className="w-full p-2 border rounded-md"
+            placeholder="Share your thoughts..."
+          />
+          <div className="mt-2 flex justify-end">
+            <button
+              onClick={editingComment ? handleEditCommentSubmit : handleCommentSubmit}
+              className="px-4 py-2 bg-blue-500 text-white rounded-md"
+            >
+              {editingComment ? 'Save Changes' : 'Post Comment'}
+            </button>
+          </div>
         </div>
+
+        {/* Render Comments */}
+        <div>{renderComments(comments)}</div>
       </div>
     </div>
   );

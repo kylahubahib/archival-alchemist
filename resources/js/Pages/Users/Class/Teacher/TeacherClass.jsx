@@ -293,6 +293,7 @@ useEffect(() => {
                 setDropdownVisible={setDropdownVisible}
         visible={dropdownVisible} // Control visibility
                 selectedSemester={selectedSemester}
+                semesterStatus={semesters.status}
                 semesters={semesters} // Passing fetched semesters here as a prop
                     onCreate={handleCreate}
                     className="flex justify-between items-center w-h-full"

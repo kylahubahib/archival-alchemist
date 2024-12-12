@@ -29,6 +29,8 @@ const ViewClass = ({auth, user, onBack, folders }) => {
         setShowForm(true);  // Show form directly instead of toggling
     };
 
+
+
     return (
         <div className="w-full min-h-screen">
             {/* Header Bar */}
@@ -63,19 +65,19 @@ const ViewClass = ({auth, user, onBack, folders }) => {
                     <Button onClick={onBack} auto bordered color="error" className="text-gray-600 font-semibold hover:text-blue-500">
                         Back
                         <svg
-    xmlns="http://www.w3.org/2000/svg"
-    className="h-6 w-6 transform rotate-180 group-hover:text-blue-600"
-    fill="none"
-    viewBox="0 0 24 24"
-    stroke="currentColor"
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M15 19l-7-7 7-7"
-    />
-  </svg>
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-6 w-6 transform rotate-180 group-hover:text-blue-600"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                        >
+                            <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M15 19l-7-7 7-7"
+                            />
+                        </svg>
                     </Button>
                 </div>
             </div>

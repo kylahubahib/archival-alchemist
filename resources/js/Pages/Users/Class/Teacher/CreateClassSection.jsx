@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Card, CardFooter, Image, Button } from '@nextui-org/react';
 import ViewClass from '@/Pages/Users/Class/Teacher/ViewClass';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
-const CreateClassSection = ({auth, user, setDropdownVisible, visible, selectedSemester, semesters,  userId }) => {
+const CreateClassSection = ({auth, user, setDropdownVisible, visible, selectedSemester, semesterStatus, semesters,  userId }) => {
     const [folders, setFolders] = useState([]);
     const [classCourse, setCourse] = useState('');
     const [classSubjectName, setSubjectName] = useState('');
@@ -13,9 +15,37 @@ const CreateClassSection = ({auth, user, setDropdownVisible, visible, selectedSe
     const [courses, setCourses] = useState([]);
     const [fetchError, setFetchError] = useState(false);
     const [isViewClassOpen, setIsViewClassOpen] = useState(false);
+    const [shouldRefreshFolders, setShouldRefreshFolders] = useState(false);  // New state for triggering refresh
 
-    console.log("This is the selectedSemester in CreateClass.js:", selectedSemester)
-    console.log("This is the Semesters in CreateClass.js:", semesters)
+    useEffect(() => {
+        console.log('Selected semester:', selectedSemester);
+        console.log('Semesters array:', semesters);
+
+        // Ensure selectedSemester is a number and compare properly
+        const selectedSemesterObject = semesters.find(semester => semester.id === Number(selectedSemester));
+        console.log('Selected semester object:', selectedSemesterObject);
+
+        const status = selectedSemesterObject ? selectedSemesterObject.status : "Semester not found";
+        console.log('Status:', status);
+      }, [selectedSemester, semesters]); // Ensure dependencies are properly handled
+
+
+// Handler for opening the modal
+const handleCreateClassClick = () => {
+    // Find the selected semester object using its id
+    const selectedSemesterObject = semesters.find(semester => semester.id === Number(selectedSemester));
+
+    // If the selected semester is found and its status is 'Active', show the toast
+    if (selectedSemesterObject && selectedSemesterObject.status === 'Active') {
+
+      // Open the modal if the semester is not active
+      setIsModalOpen(true);
+    } else {
+        toast.error("Please select the current semester");
+
+    }
+  };
+
     // Add this to store the selected section data
     const [selectedFolder, setSelectedFolder] = useState(null);
 
@@ -31,19 +61,19 @@ const CreateClassSection = ({auth, user, setDropdownVisible, visible, selectedSe
 
       useEffect(() => {
         // Retrieve CSRF token from the meta tag
-        const csrfToken = document
-          .querySelector('meta[name="csrf-token"]')
-          .getAttribute('content');
-        console.log("CSRF Token Retrieved:", csrfToken);
+        // const csrfToken = document
+        //   .querySelector('meta[name="csrf-token"]')
+        //   .getAttribute('content');
+        // console.log("CSRF Token Retrieved:", csrfToken);
 
-        // Set default CSRF token for axios requests
-        axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken;
+        // // Set default CSRF token for axios requests
+        // axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken;
 
         // Fetch courses
         fetch('/fetch-courses', {
           method: 'GET',
           headers: {
-            'X-CSRF-TOKEN': csrfToken, // CSRF token applied here
+            // 'X-CSRF-TOKEN': csrfToken, // CSRF token applied here
           },
         })
           .then((response) => {
@@ -61,14 +91,14 @@ const CreateClassSection = ({auth, user, setDropdownVisible, visible, selectedSe
 
       // Function to fetch classes
       const fetchClasses = () => {
-        const csrfToken = document
-          .querySelector('meta[name="csrf-token"]')
-          .getAttribute('content'); // Retrieve CSRF token again (optional)
+        // const csrfToken = document
+        //   .querySelector('meta[name="csrf-token"]')
+        //   .getAttribute('content'); // Retrieve CSRF token again (optional)
 
         fetch(`/fetch-classes?sem_id=${selectedSemester}`, {
           method: 'GET',
           headers: {
-            'X-CSRF-TOKEN': csrfToken, // CSRF token applied here
+            // 'X-CSRF-TOKEN': csrfToken, // CSRF token applied here
             'Authorization': `Bearer ${userToken}`, // Include user token for authentication
           },
         })
@@ -99,8 +129,8 @@ const CreateClassSection = ({auth, user, setDropdownVisible, visible, selectedSe
         setIsCreating(true);
 
         // Retrieve CSRF token for POST request
-        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-        console.log("CSRF Token Used for Folder Creation: ", csrfToken); // Log CSRF token used in the POST request
+        // const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+        // console.log("CSRF Token Used for Folder Creation: ", csrfToken); // Log CSRF token used in the POST request
 
         try {
             // POST request to create a new class section
@@ -113,22 +143,46 @@ const CreateClassSection = ({auth, user, setDropdownVisible, visible, selectedSe
 
             }, {
                 headers: {
-                    'X-CSRF-TOKEN': csrfToken,  // CSRF token applied here
+                    // 'X-CSRF-TOKEN': csrfToken,  // CSRF token applied here
                     'Authorization': `Bearer ${userToken}`,  // Optional: Add the user token if needed
                 }
             });
 
             console.log('Success:', response.data.message);
             alert(response.data.message);
-
+        // Assuming response contains the classCode (generated on the backend)
+        const { classCode } = response.data;
             const newFolder = {
                 subject_name: classSubjectName,
                 section_name: classSection,
                 course_id: classCourse,
+                class_code: classCode,  // Add the class code here
                 instructor_picture: response.data.instructor_picture || DEFAULT_PROFILE_IMAGE,
             };
-
             setFolders((prevFolders) => [newFolder, ...prevFolders]);
+            fetch(`/fetch-classes?sem_id=${selectedSemester}`, {
+                method: 'GET',
+                headers: {
+                //   'X-CSRF-TOKEN': csrfToken, // CSRF token applied here
+                  'Authorization': `Bearer ${userToken}`, // Include user token for authentication
+                },
+              })
+                .then((response) => {
+                  if (!response.ok) {
+                    setFetchError(true);
+                    throw new Error('Network response was not ok');
+                  }
+                  return response.json(); // Parse JSON response
+                })
+                .then((data) => {
+                  setFolders(data); // Set fetched classes in state
+                  setFetchError(false);
+                  console.log('Fetched Classes:', data);
+                })
+                .catch((error) => {
+                  console.error("Error fetching classes:", error);
+                  setFetchError(true);
+                });
             setIsModalOpen(false);
         } catch (error) {
             console.error('Error creating folder:', error);
@@ -137,6 +191,32 @@ const CreateClassSection = ({auth, user, setDropdownVisible, visible, selectedSe
             setIsCreating(false);
         }
     };
+
+        // Effect to refresh folders whenever `shouldRefreshFolders` is true
+        useEffect(() => {
+            if (shouldRefreshFolders) {
+                // Fetch the updated folders from the backend
+                const fetchFolders = async () => {
+                    try {
+                        const response = await axios.get('/fetch-folders', {
+                            headers: {
+                                'Authorization': `Bearer ${userToken}`,
+                            }
+                        });
+                        setFolders(response.data.folders); // Assuming the response contains the folders
+                    } catch (error) {
+                        console.error('Error fetching folders:', error);
+                        alert('Failed to fetch folders.');
+                    } finally {
+                        // Reset refresh trigger after data is fetched
+                        setShouldRefreshFolders(false);
+                    }
+                };
+
+                fetchFolders();
+            }
+        }, [shouldRefreshFolders, userToken]); // Trigger effect when `shouldRefreshFolders` changes
+
 
     // Pass a parameter here
     const handleViewClass = (data) => {
@@ -157,6 +237,7 @@ const CreateClassSection = ({auth, user, setDropdownVisible, visible, selectedSe
     };
 
 
+    console.log("folders CreateClasssection:", folders)
     return (
         <div className="flex flex-col items-start justify-start min-h-screen my-5 bg-gray-100 mt-0 relative w-relative mx-8 px-10">
             {isViewClassOpen ? (
@@ -172,7 +253,8 @@ const CreateClassSection = ({auth, user, setDropdownVisible, visible, selectedSe
                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 w-full m-10 mr-50">
                             {/* First the "Create Class" folder */}
                             <div
-                                onClick={() => setIsModalOpen(true)}
+                                // onClick={() => setIsModalOpen(true)}
+                                onClick={handleCreateClassClick}
                                 className="bg-[#dfe1e5] flex justify-center items-center h-44 rounded-lg border-2 border-[#c1c8d0] cursor-pointer transform hover:scale-105 transition-all duration-200 shadow-md hover:shadow-lg"
                             >
                                 <div className="flex flex-col items-center text-center  mx-16">
@@ -196,7 +278,8 @@ const CreateClassSection = ({auth, user, setDropdownVisible, visible, selectedSe
                                         {/* Text (Subject and Section) */}
                                         <div className="ml-4">
                                             <p className="text-lg font-semibold text-black">{folder.subject_name}</p>
-                                            <p className="text-sm text-black">{folder.course_acronym} {folder.section_name}</p>
+                                            {console.log("folder.course_acronym and folder.section_name:", folder.course?.course_acronym, folder.section_name)}
+                                            <p className="text-sm text-black">{folder.course?.course_acronym} {folder.section_name}</p>
                                         </div>
                                     </div>
                                     <CardFooter className="justify-between before:bg-white/10 border-white/20 border-1 overflow-hidden py-1 absolute before:rounded-xl rounded-large bottom-1 w-[calc(100%_-_8px)] shadow-small ml-1 z-10">
@@ -264,7 +347,21 @@ const CreateClassSection = ({auth, user, setDropdownVisible, visible, selectedSe
                     )}
                 </>
             )}
+      {/* ToastContainer for displaying toasts */}
+      <ToastContainer
+        position="top-right"
+        autoClose={2000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="colored"
+      />
         </div>
+
     );
 };
 

@@ -207,12 +207,14 @@ class StudentClassController extends Controller
                     ->where('section_id', $section_id) // Add the filter for section_id
                     ->update([
                         'group_id' => $group->id,    // Set the new group_id
+                        'task_id' => $task_id,
                     ]);
 
                 Log::info("Updated Group Member Table:", [
                     'stud_id' => $userId,
                     'group_id' => $group->id,  // Log the updated group ID
                     'section_id' => $section_id, // Log the section ID
+                    'task_id' => $task_id,
                 ]);
             }
 
@@ -245,7 +247,7 @@ class StudentClassController extends Controller
                  $faculty = $section->ins_id;
 
                  RevisionHistory::create([
-                     'ins_comment' => null,
+                     'ins_comment' => "Start",
                      'man_doc_id' => $manuscriptProject->id,
                      'ins_id' => $faculty,
                      'man_doc_status' => 'P',
@@ -262,6 +264,8 @@ class StudentClassController extends Controller
         }
     }
 
+
+    
     public function checkClassCode(Request $request)
     {
         // Validate the incoming request to ensure 'class_code' is provided and is a string
@@ -579,16 +583,16 @@ public function getPublishedRecManuscripts(Request $request)
 
 public function getMyUniBooks(Request $request)
 {
-
     try {
-
+        // Fetch Uni Branch ID
         $uniBranchId = $this->fetchUniBranchId();
-        // Log::info('Uni Branch Id: ', $uniBranchId);
+        Log::info('Uni Branch Id: ', ['uniBranchId' => $uniBranchId]);  // Updated to pass array
+
         // Retrieve the 'keyword' and 'searchField' query parameters
         $keyword = $request->query('keyword');
         $searchField = $request->query('searchField', 'Title'); // Default to Title if not specified
-        Log::info('My keyword: ' . $keyword);
-        Log::info('Search field: ' . $searchField);
+        Log::info('My keyword: ', ['keyword' => $keyword]);  // Updated to pass array
+        Log::info('Search field: ', ['searchField' => $searchField]);  // Updated to pass array
 
         // Optionally, you can check if the user is authenticated
         if (auth()->check()) {
@@ -627,7 +631,7 @@ public function getMyUniBooks(Request $request)
 
         // Log the number of manuscripts found
         if ($fetchedManuscripts->isNotEmpty()) {
-            Log::info('Found manuscripts:', $fetchedManuscripts->toArray());
+            Log::info('Found manuscripts:', ['manuscripts' => $fetchedManuscripts->toArray()]);
         } else {
             Log::info('No manuscripts found for the given keyword and search field.');
         }
@@ -1188,6 +1192,35 @@ public function isPremium()
         return response()->json(['error' => 'Error uploading file: ' . $e->getMessage()], 500);
     }
 }
+
+
+public function updateProject(Request $request, $id)
+{
+    // Validate incoming data
+    $request->validate([
+        'title' => 'required|string|max:255',
+        'description' => 'required|string',
+        'adviser' => 'required|string|max:255',
+    ]);
+
+    // Find the project by ID
+    $project = ManuscriptProject::find($id);
+
+    if (!$project) {
+        return response()->json(['message' => 'Project not found'], 404);
+    }
+
+    // Update the project with new data
+    $project->update([
+        'man_doc_title' => $request->input('title'),
+        'man_doc_description' => $request->input('description'),
+        'man_doc_adviser' => $request->input('adviser'),
+    ]);
+
+    // Return success response
+    return response()->json(['message' => 'Project updated successfully', 'data' => $project]);
+}
+
 
 
 private function setPermissions($driveService, $fileId, $authorIds, $teacherId, $manuscriptId)

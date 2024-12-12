@@ -37,6 +37,7 @@ const TaskInstructions = ({ folders, onBack, task, taskID }) => {
     }
   }, [folders, taskID]);
 
+  
   // Handle scroll event to trigger fetching of new tasks when reaching the bottom
   const handleScroll = () => {
     const bottom =
