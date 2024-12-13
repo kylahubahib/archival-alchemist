@@ -18,7 +18,7 @@ export default function SubscriptionForm({user}) {
     const [transactionHistory, setTransactionHistory] = useState(null);
     const [agreement, setAgreement] = useState(null)
     const [personalSubscription, setPersonalSubscription] = useState(null);
-    const [isAffiliated, setIsAffiliated] = useState(user.is_affiliated);
+    const [isAffiliated, setIsAffiliated] = useState(!!user.is_affiliated);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [modalContent, setModalContent] = useState(null);
@@ -57,19 +57,25 @@ export default function SubscriptionForm({user}) {
         });
     }, [personalPlans, planFeatures, isAffiliated]);
 
-    // useEffect(() => {
-    //     console.log('Updated personalSubscription:', personalSubscription);
-    // }, [personalSubscription]);
+    useEffect(() => {
+        console.log('Updated affiliation:', isAffiliated);
+    }, [isAffiliated]);
 
     const removeAffiliation = () => {
         setLoading(true);
         axios.post('/remove-affiliation')
-        .then(response => {
-            setIsAffiliated(response.data.is_affiliated);
-            router.reload();
-            setLoading(false);
-        });
+            .then(response => {
+                setIsAffiliated(false);
+                router.reload();
+            })
+            .catch(error => {
+                console.error("Error removing affiliation:", error);
+            })
+            .finally(() => {
+                setLoading(false);
+            });
     };
+    
 
     const handleCheckout = async (planId) => {
 
@@ -241,7 +247,7 @@ export default function SubscriptionForm({user}) {
                 </>
             ) : (
                 <>
-                    {isAffiliated === 0 ? (
+                    {isAffiliated === false ? (
                         <>
                             <div className="text-gray-900">You are currently in the free plan.</div>
                             <div className="flex space-x-3">

@@ -12,8 +12,9 @@ import { showToast } from "./Toast";
 export default function ReportModal({ isOpen, onClose, reportLocation, reportedID }) {
     const [ReportTypes, setReportTypes] = useState([]);
     const [errorMessage, setErrorMessage] = useState(null);
+    const [processing, setProcessing] = useState(false);
     
-    const { data, setData, post, processing, errors, reset } = useForm({
+    const { data, setData, post, errors, reset } = useForm({
         reported_id: reportedID, 
         report_location: reportLocation, 
         report_type: '',
@@ -23,6 +24,9 @@ export default function ReportModal({ isOpen, onClose, reportLocation, reportedI
 
     const submit = (e) => {
         e.preventDefault();
+
+        setProcessing(true);
+        setErrorMessage(false);
     
         axios.post(route('user-reports.store'), {
             reported_id: reportedID,
@@ -33,15 +37,19 @@ export default function ReportModal({ isOpen, onClose, reportLocation, reportedI
         })
         .then(response => {
             if (response.data.success) {
+                setProcessing(false);
                 showToast('success', response.data.message)
+
                 onClose();  
                 reset();    
             } else {
+                setProcessing(false);
                 showToast('warning', response.data.message)
             }
         })
         .catch(error => {
             if (error.response) {
+                setProcessing(false);
                 setErrorMessage(error.response.data.message);  
                 console.log('Error:', error.response.data);  
             }

@@ -467,16 +467,19 @@ Route::get('/privacy-policy', [TermsAndConditionController::class, 'privacyPolic
 Route::get('profile-pic/{filename}', [ProfileController::class, 'showProfilePic'])->name('profile.pic');
 
 
+//PROFILE
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     Route::post('/profile/picture', [ProfileController::class, 'updatePicture'])->name('profile.updatePicture');
+    Route::get('/profile/post', [ProfileController::class, 'getForumPosts'])->name('profile.post');
 
     Route::post('/assign-user-role', [ProfileController::class, 'assignUserRole']);
     Route::get('/get-plans', [SubscriptionPlanController::class, 'getPlans'])->name('get-plans');
     Route::get('/get-semesters', [SemesterController::class, 'getSemester'])->name('get-semester');
     Route::get('/profile/{id}',[ProfileController::class, 'viewProfile'])->name('profile.view');
+    Route::get('/profile/post', [ProfileController::class, 'getForumPosts'])->name('profile.post');
 });
 
 //Universities Controller Route
@@ -719,8 +722,6 @@ Route::get('/pdf-viewer/{filename}', function ($filename) {
 })->name('pdf.viewer');
 
  Route::get('/export-csv', [ClassController::class, 'exportCSV']);
-
- Route::get('/profile/post', [ProfileController::class, 'getForumPosts' ]);
 
 
 

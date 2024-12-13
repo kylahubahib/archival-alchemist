@@ -249,7 +249,8 @@ class ProfileController extends Controller
             if ($result['status'] === true) {
                 // Update user with affiliation details
                 $user->update([
-                    'user_type' => $request->user_role
+                    'user_type' => $request->user_role,
+                    'is_premium' => true
                 ]);
 
                 // Handle additional update for students only
@@ -355,20 +356,28 @@ class ProfileController extends Controller
 
     }
 
-    public function getForumPosts() 
-{
-    // Get the authenticated user
-    $user = Auth::user();
+    
+    public function getForumPosts()
+    {
+        Log::info('Start forum...');
+        
+        // Get the authenticated user
+        $user = Auth::user();
+        if (!$user) {
+            return response()->json(['error' => 'User not authenticated'], 401);
+        }
 
-    $user->load([
-        'forum_post' => function ($query) {
-            $query->where('status', 'Visible')
-                ->with(['tags']);            
-}]);
+        $user->load([
+            'forum_post' => function ($query) {
+                $query->where('status', 'Visible')
+                    ->with(['tags']);
+            }
+        ]);
 
-    Log::info($user->toArray());
+        Log::info('User: ', $user->toArray());
 
-    return response()->json($user);
-}
+        return response()->json($user->forum_post);
+    }
+
 
 }

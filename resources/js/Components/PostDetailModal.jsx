@@ -267,7 +267,7 @@ const handleEditCommentSubmit = async () => {
 
         <div className="flex items-center mb-4 mt-5">
           <img
-            src={post.user?.user_pic || 'https://ui-avatars.com/api/?name=User&background=random'}
+            src={`http://127.0.0.1:8000/${post.user?.user_pic || 'default-avatar.jpg'}`}
             alt={`${post.user?.name}'s profile`}
             className="w-12 h-12 rounded-full mr-3"
           />
