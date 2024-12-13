@@ -51,7 +51,7 @@ class RegisteredUserController extends Controller
         $validatedData = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'password' => ['required', 'confirmed', Rules\Password::min(8)->numbers()->letters()->mixedCase()->symbols()],
             // 'role' => 'required|string|in:student,teacher,admin',
             // 'uni_branch_id' => 'nullable|integer',
             // 'uni_id_num' => 'nullable|string|max:50',
