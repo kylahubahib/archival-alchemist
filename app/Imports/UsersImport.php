@@ -17,6 +17,8 @@ use App\Models\Department;
 use App\Models\InstitutionAdmin;
 use Exception;
 
+
+use App\Notifications\UserNotification;
 use App\Mail\AccountCredentialsMail;
 use Illuminate\Support\Facades\Mail;
 
