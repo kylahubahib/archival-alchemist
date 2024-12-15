@@ -26,15 +26,12 @@ class AccessControlMiddleware
 
         // Check if the user has the necessary access
         if ($user->access_control && isset($user->access_control->{$permission}) && !$user->access_control->{$permission}) {
-            if ($user->user_type === "superadmin") {
+            if ($user->user_type === "superadmin" || user->user_type === 'admin') {
                 return Inertia::render('AccessDenied', [
                     'user' => $user,
                 ]);
             }
-
-            throw new HttpException(403, 'Unauthorized');
         }
-
 
         return $next($request);
     }

@@ -10,6 +10,7 @@ use App\Models\Department;
 use App\Models\ManuscriptProject;
 use App\Models\Section;
 use App\Models\UniversityBranch;
+use App\Models\UserLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -42,7 +43,7 @@ class InsAdminArchiveController extends Controller
     public function filter($department = null, $course = null, $section = null)
     {
         $search = request('search', null);
-
+        $manDocVisibility = request('manuscript_visibility', null);
         $departmentFolders = [];
         $courseFolders = [];
         $sectionFolders = [];
@@ -60,7 +61,7 @@ class InsAdminArchiveController extends Controller
         }
 
         if ($section) {
-            $searchResults = $manuscripts = $this->getManuscriptsFromSection($section, $search);
+            $searchResults = $manuscripts = $this->getManuscriptsFromSection($section, $search, $manDocVisibility);
         }
 
         if (request()->expectsJson()) {
@@ -148,7 +149,7 @@ class InsAdminArchiveController extends Controller
         return $sections;
     }
 
-    public function getManuscriptsFromSection($sectionName, $searchTerm)
+    public function getManuscriptsFromSection($sectionName, $searchTerm, $manDocVisibility)
     {
         $this->selectedSectionId = Section::where('section_name', $sectionName)
             ->where('course_id', $this->selectedCourseId)
@@ -161,6 +162,11 @@ class InsAdminArchiveController extends Controller
                     ->orWhereHas('tags', function ($query) use ($searchTerm) {
                         $query->where('tags_name', 'LIKE', '%' . $searchTerm . '%');
                     });
+            })
+            ->where(function ($query) use ($manDocVisibility) {
+                if ($manDocVisibility !== null) {
+                    $query->where('man_doc_visibility', $manDocVisibility);
+                }
             })
             ->with(['tags', 'group', 'group.group_member', 'group.group_member.student.user'])
             ->get();
@@ -202,7 +208,7 @@ class InsAdminArchiveController extends Controller
             'manuscript_visibility' => 'required|in:Public,Private',
         ]);
 
-        // Count the total public manuscripts related to the given UniversityBranch
+        // Count the total public manuscripts related to the given UniversityBranchP
         $totalPublicManuscripts = ManuscriptProject::where('man_doc_visibility', 'Public')
             ->whereHas('section.course.department.university_branch', function ($query) {
                 $query->where('id', $this->insAdminUniBranchId); // Filter by UniversityBranch ID
@@ -210,13 +216,18 @@ class InsAdminArchiveController extends Controller
             ->count();
 
         Log::info(['totalPublicManuscripts' => $totalPublicManuscripts]);
+        Log::info(['manuscript_visibility' =>  $request->manuscript_visibility]);
+        Log::info(['manuscript_id' =>  $request->manuscript_id]);
 
         // Fetch the manuscript to be updated
         $manuscript = ManuscriptProject::findOrFail($request->manuscript_id);
 
         // Check if the manuscript visibility can be updated based on the public manuscripts count
-        if ($totalPublicManuscripts >= 3 && $request->manuscript_visibility === 'Private') {
-            return back()->with(['message' => 'Cannot update to private. Must have at least 3 public manuscripts to display.'], 400);
+        if ($totalPublicManuscripts <= 3 && $request->manuscript_visibility === 'Private') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Cannot update to private. Must have at least 3 public manuscripts to display.',
+            ], 400); // 400 Bad Request
         }
 
         // Update the manuscript visibility based on the conditions
@@ -225,9 +236,17 @@ class InsAdminArchiveController extends Controller
         // Save the changes
         $manuscript->save();
 
-        return back()->with('success', 'Manuscript visibility updated successfully.');
-    }
+        UserLog::create([
+            'user_id' => $this->authUserId, // Log the action by the currently authenticated user
+            'log_activity' => "Updated Manuscript Visibility", // Activity title
+            'log_activity_content' => "Updated visibility of manuscript <strong>{$manuscript->title}</strong> to <strong>{$manuscript->man_doc_visibility}</strong>.",
+        ]);
 
+        return response()->json([
+            'success' => true,
+            'message' => 'Manuscript visibility updated successfully.',
+        ]);
+    }
 
     public function downloadManuscript($id)
     {

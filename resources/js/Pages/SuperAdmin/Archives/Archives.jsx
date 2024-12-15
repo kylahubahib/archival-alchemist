@@ -6,7 +6,7 @@ import { MdPrivacyTip } from "react-icons/md";
 import { FaEye, FaTags } from "react-icons/fa";
 import { ImArrowDown } from "react-icons/im";
 import { AnimatePresence, motion } from 'framer-motion';
-import { getAnimationProps, updateURLParams } from "@/Utils/common-utils";
+import { decodeURLParam, getAnimationProps, updateURLParams } from "@/Utils/common-utils";
 import {
     fetchSearchFilteredData, getLastFileCategory, handleDownloadPDFClick, handleFileCategoryClick, handleFileClick, handleManDocVisibilityFilterClick, handleOpenPDFClick,
     loadFilesByCategory, loadPageSetup, loadSearchBarPlaceholder
@@ -23,7 +23,7 @@ import ManuscriptSkeleton from "@/Components/Admin/ManuscriptSkeleton";
 export const renderTableControls = (routeName, params, fileCategoryCollections, fileCategories, setFileCategories,
     handleFileCategoryClick, lastFileCategory, searchTerm, setSearchTerm, searchBarPlaceholder, setIsDataLoading) => {
 
-    const [manDocVisibility, setManDocVisibility] = useState(null);
+    const [manDocVisibility, setManDocVisibility] = useState(params?.manuscript_visibility || 'None');
 
     return (
         <div className="w-full gap-10 content-start flex max-sm:flex-col max-sm:gap-3">
@@ -42,7 +42,8 @@ export const renderTableControls = (routeName, params, fileCategoryCollections, 
                                     setFileCategories,
                                     category,
                                     setSearchTerm,
-                                    setIsDataLoading
+                                    setIsDataLoading,
+                                    setManDocVisibility,
                                 )
                             }
                         >
@@ -52,44 +53,53 @@ export const renderTableControls = (routeName, params, fileCategoryCollections, 
                 </Breadcrumbs>
             </div>
 
-            {/* SEARCH BAR */}
-            <div className="auto w-full flex max-md:flex-col flex-1 gap-3">
-                <SearchBar
-                    name="searchName"
-                    value={searchTerm}
-                    variant="bordered"
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    placeholder={searchBarPlaceholder}
-                    isDisabled={fileCategoryCollections.some(file => Array.isArray(file.files) && file.files.length === 0 && file.category === lastFileCategory)}
-                    className="flex-1 min-w-[300px]"
-                />
-            </div>
-            <div>
-                {/* <DropdownTrigger>
-                    <Button
-                        radius="sm"
-                        disableRipple
-                        endContent={<FaChevronDown size={14} className="text-customGray" />}
-                        className="border w-[190px] max-sm:w-full border-customLightGray bg-white"
-                    >
-                        <span className="text-gray-500 tracking-wide">
-                            Filter by
-                            <strong>: {manDocVisibility}</strong>
-                        </span>
-                    </Button>
-                </DropdownTrigger>
 
-                <DropdownMenu disabledKeys={[manDocVisibility?.toString()]}>
-                    {['Public, Private'].map((visibility) => (
-                        <DropdownItem
-                            key={visibility}
-                            className="!text-customGray"
-                            onClick={() => handleManDocVisibilityFilterClick('archives.filter-visibility', { ...params, manuscript_visibility: visibility })}
-                        >
-                            {visibility}
-                        </DropdownItem>
-                    ))}
-                </DropdownMenu> */}
+            <div className="flex gap-2">
+                {/* SEARCH BAR */}
+                <div className="auto w-full flex max-md:flex-col flex-1 gap-3">
+                    <SearchBar
+                        name="searchName"
+                        value={searchTerm}
+                        variant="bordered"
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        placeholder={searchBarPlaceholder}
+                        // isDisabled={fileCategoryCollections.some(file => Array.isArray(file.files) && file.files.length === 0 && file.category === lastFileCategory)}
+                        className="flex-1 min-w-[300px]"
+                    />
+                </div>
+                {/* FILTER */}
+                {lastFileCategory === 'Manuscripts' && (
+                    <div>
+                        <Dropdown>
+                            <DropdownTrigger>
+                                <Button
+                                    radius="sm"
+                                    disableRipple
+                                    endContent={<FaChevronDown size={14} className="text-customGray" />}
+                                    className="border min-w-[150px] max-sm:w-full border-customLightGray bg-white"
+                                >
+                                    <span className="text-gray-500 tracking-wide">
+                                        Filter by visibility
+                                        <strong>{(manDocVisibility !== 'None' && manDocVisibility) ? `: ${manDocVisibility}` : ''}</strong>
+                                    </span>
+                                </Button>
+                            </DropdownTrigger>
+
+                            <DropdownMenu defaultSelectedKeys={['None']} disabledKeys={[manDocVisibility?.toString()]}>
+                                {['None', 'Public', 'Private'].map((visibility) => (
+                                    <DropdownItem
+                                        key={visibility}
+                                        className="!text-customGray"
+                                        onClick={() => handleManDocVisibilityFilterClick('archives.filter',
+                                            { ...params, manuscript_visibility: visibility === 'None' ? null : visibility }, visibility, setManDocVisibility)}
+                                    >
+                                        {visibility}
+                                    </DropdownItem>
+                                ))}
+                            </DropdownMenu>
+                        </Dropdown>
+                    </div>
+                )}
             </div>
         </div >
     );
@@ -157,7 +167,7 @@ export const renderManuscripts = (adminType, openManuscriptRoute, downloadManusc
     handleManuscriptVisibilityClick = null, filesToDisplay, hasFilteredData, getAnimationProps, isDataLoading) => {
 
     return (
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 p-4 h-full w-full overflow-y-auto border-1">
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 p-4 items-start w-full overflow-y-auto border-1">
             {!isDataLoading ? (
                 filesToDisplay.length > 0 ? (
                     filesToDisplay.map((file, index) => (
@@ -167,7 +177,7 @@ export const renderManuscripts = (adminType, openManuscriptRoute, downloadManusc
                                 className="flex items-start h-full w-full group"
                                 {...getAnimationProps({ animationType: 'fadeUp', index })}
                             >
-                                <Card isHoverable className="w-full shadow-md border-1">
+                                <Card isHoverable className="w-full h-full shadow-md border-1">
                                     <CardBody>
                                         <div className="flex h-full gap-4 items-center">
                                             <img
@@ -271,7 +281,7 @@ export default function SuperAdminArchives({ auth, folders, manuscripts, search 
     const [isDataLoading, setIsDataLoading] = useState(false);
 
     // Restore the searchTerm value after a page reload by setting the default value from the search prop
-    const [searchTerm, setSearchTerm] = useState(search || '');
+    const [searchTerm, setSearchTerm] = useState(decodeURLParam(search) || '');
 
     const fileCategoryCollections = [
         { files: universityFolders, param: 'university', category: 'Universities' },
@@ -308,7 +318,7 @@ export default function SuperAdminArchives({ auth, folders, manuscripts, search 
 
     useEffect(() => {
         loadFilesByCategory(lastFileCategory, fileCategoryCollections, setFilesToDisplay);
-    }, [universityFolders, branchFolders, departmentFolders, courseFolders, sectionFolders, manuscripts]);
+    }, [universityFolders, branchFolders, departmentFolders, courseFolders, sectionFolders, manuscripts, fileCategoryCollections]);
 
     useEffect(() => {
         loadSearchBarPlaceholder(fileCategories, fileCategoryCollections, setSearchBarPlaceholder);

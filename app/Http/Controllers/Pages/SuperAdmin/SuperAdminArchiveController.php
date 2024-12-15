@@ -46,6 +46,10 @@ class SuperAdminArchiveController extends Controller
         $searchResults = [];
         $manuscripts = [];
 
+        \Log::info(['search' => $search]);
+
+        \Log::info(['$section' => $section]);
+
         $searchResults = $universityFolders = $this->getUniversityFolders($search);
 
         if ($university) {
@@ -65,11 +69,7 @@ class SuperAdminArchiveController extends Controller
         }
 
         if ($section) {
-            $searchResults = $manuscripts = $this->getManuscriptsFromSection($section, $search);
-        }
-
-        if ($manDocVisibility && $this->selectedSectionId) {
-            $searchResults = $manuscripts = $this->getFilteredManuscriptsByVisibility($manDocVisibility);
+            $searchResults = $manuscripts = $this->getManuscriptsFromSection($section, $search, $manDocVisibility);
         }
 
         if (request()->expectsJson()) {
@@ -139,6 +139,9 @@ class SuperAdminArchiveController extends Controller
             ->where('uni_id', $this->selectedUniId)
             ->value('id');
 
+        Log::info('searchTerm department part', ['searchTerm' => $searchTerm]);
+
+
         $departments = Department::where('uni_branch_id', $this->selectedUniBranchId)
             ->where('dept_name', 'LIKE', '%' . $searchTerm . '%')
             // Use alias for naming consistency to be used in the view
@@ -199,14 +202,14 @@ class SuperAdminArchiveController extends Controller
         return $sections;
     }
 
-    public function getManuscriptsFromSection($sectionName, $searchTerm)
+    public function getManuscriptsFromSection($sectionName, $searchTerm, $manDocVisibility)
     {
         $this->selectedSectionId = Section::where('section_name', $sectionName)
             ->where('course_id', $this->selectedCourseId)
             ->value('id');
 
         Log::info('selectedSectionId', ['selectedSectionId' => $this->selectedSectionId]);
-
+        Log::info('searchTerm section part', ['searchTerm' => $searchTerm]);
 
         $manuscripts = ManuscriptProject::where('section_id', $this->selectedSectionId)
             ->where('is_publish', true)
@@ -216,8 +219,14 @@ class SuperAdminArchiveController extends Controller
                         $query->where('tags_name', 'LIKE', '%' . $searchTerm . '%');
                     });
             })
+            ->where(function ($query) use ($manDocVisibility) {
+                if ($manDocVisibility !== null) {
+                    $query->where('man_doc_visibility', $manDocVisibility);
+                }
+            })
             ->with(['tags', 'group', 'group.group_member', 'group.group_member.student.user'])
             ->get();
+
 
         // Formats the manuscript data before passing it to the view
         $manuscripts->each(function ($manuscript) {
@@ -226,24 +235,37 @@ class SuperAdminArchiveController extends Controller
 
             $manuscript->tag_names = $manuscript->tags->pluck('tags_name');
             $manuscript->capstone_group = $manuscript->group ? [$manuscript->group->group_name] : [];
-            $manuscript->group_members = $manuscript->group->group_member->pluck('stud_id');
 
-            // Map through group members to fetch author names, ensuring it's always an array
-            $manuscript->authors = $manuscript->group->group_member
+            // Ensure group and group_member are not null
+            if ($manuscript->group && $manuscript->group->group_member) {
+                $manuscript->group_members = $manuscript->group->group_member->pluck('stud_id');
+            } else {
+                $manuscript->group_members = [];
+            }
+
+            // Ensure group_member and student relationships are not null before accessing
+            $manuscript->authors = $manuscript->group && $manuscript->group->group_member
+                ? $manuscript->group->group_member
                 ->map(fn($member) => $member->student->user->name ?? null)
                 ->filter() // Remove null values
                 ->values() // Re-index the array
-                ->toArray();
+                ->toArray()
+                : [];
 
-            // Remove unnecessary loaded relationships 
+            // Remove unnecessary loaded relationships
             unset($manuscript->tags, $manuscript->group);
         });
 
         return $manuscripts;
     }
 
+
     public function getFilteredManuscriptsByVisibility($manDocVisibility)
     {
+
+        \Log::info(['mandocvis' => $manDocVisibility]);
+        \Log::info(['selectedSectionId' => $this->selectedSectionId]);
+
         if (!$this->selectedSectionId) {
             return response()->json([
                 'error' => 'Section ID and visibility are required.'
@@ -304,7 +326,7 @@ class SuperAdminArchiveController extends Controller
     {
         // Adjust the path to match the private storage folder (remove 'storage/' from the db file path)
         $filePath = storage_path('app/private/' . str_replace('storage/', '', $dbFilePath));
-        
+
 
         // Check if the file exists
         if (!file_exists($filePath)) {

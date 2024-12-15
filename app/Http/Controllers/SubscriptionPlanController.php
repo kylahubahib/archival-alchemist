@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\SubscriptionPlan;
 use App\Models\Feature;
 use App\Models\PlanFeature;
+use App\Models\UserLog;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Validation\Rule;
@@ -100,13 +101,13 @@ class SubscriptionPlanController extends Controller
 
         $request->validate([
             'plan_name' => [
-                            'required',
-                            'string',
-                            'max:255',
-                            Rule::unique('subscription_plans')->where(function ($query) use ($request) {
-                                return $query->where('plan_type', $request->plan_type);
-                            }),
-                        ],
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('subscription_plans')->where(function ($query) use ($request) {
+                    return $query->where('plan_type', $request->plan_type);
+                }),
+            ],
             'plan_price' => 'required|numeric|between:0,999999.99',
             'plan_term' => 'required|string|max:255',
             'plan_type' => 'required|string|max:255',
@@ -118,7 +119,7 @@ class SubscriptionPlanController extends Controller
 
         //Convert percentage discount in decimal
         if ($request->plan_discount !== null && $request->plan_discount != 0.00) {
-            $discount = $request->plan_discount/100;
+            $discount = $request->plan_discount / 100;
         } else {
             $discount = $request->plan_discount;
         }
@@ -131,7 +132,7 @@ class SubscriptionPlanController extends Controller
             'plan_user_num' => $request->plan_user_num,
             'plan_discount' => $discount,
             'free_trial_days' => $request->free_trial_days,
-            'plan_text'=> $request->plan_text,
+            'plan_text' => $request->plan_text,
             'plan_status' => 'Available',
         ]);
 
@@ -141,9 +142,14 @@ class SubscriptionPlanController extends Controller
                 'feature_id' => $featureId,
             ]);
         }
-        
+
         //\Log::info('Plan created:', ['plan_id' => $plan->id]);
 
+        UserLog::create([
+            'user_id' => Auth::id(),
+            'log_activity' => 'Created Subscription Plan',
+            'log_activity_content' => "Created a new subscription plan with the name <strong>{$plan->plan_name}</strong> priced at <strong>\${$plan->plan_price}</strong> for <strong>{$plan->plan_term}</strong> with a type of <strong>{$plan->plan_type}</strong>",
+        ]);
 
         //return redirect(route('subscription-plans'))->with('success', 'Subscription Plans created successfully.');
         return redirect(route('manage-subscription-plans.index'))->with('success', 'Subscription Plans created successfully.');
@@ -206,7 +212,7 @@ class SubscriptionPlanController extends Controller
             'plan_user_num' => $request->plan_user_num,
             'plan_discount' => $request->plan_discount,
             'free_trial_days' => $request->free_trial_days,
-            'plan_text'=> $request->plan_text,
+            'plan_text' => $request->plan_text,
             'plan_status' => 'Available',
         ]);
 
@@ -219,6 +225,12 @@ class SubscriptionPlanController extends Controller
             ]);
         }
 
+        UserLog::create([
+            'user_id' => Auth::id(),
+            'log_activity' => 'Updated Subscription Plan',
+            'log_activity_content' => "Updated the subscription plan with the name <strong>{$subscriptionPlan->plan_name}</strong>. The plan is priced at <strong>\${$subscriptionPlan->plan_price}</strong>, valid for <strong>{$subscriptionPlan->plan_term}</strong>, and has a type of <strong>{$subscriptionPlan->plan_type}</strong>.",
+        ]);
+
         return redirect(route('manage-subscription-plans.index'))->with('success', 'Subscription Plan updated successfully.');
     }
 
@@ -228,32 +240,43 @@ class SubscriptionPlanController extends Controller
     public function destroy(string $id)
     {
         $subscriptionPlan = SubscriptionPlan::findOrFail($id);
+
+        UserLog::create([
+            'user_id' => Auth::id(),
+            'log_activity' => 'Deleted Subscription Plan',
+            'log_activity_content' => "Deleted subscription plan named <strong>{$subscriptionPlan->plan_name}</strong>.",
+        ]);
+
         $subscriptionPlan->delete();
 
         return redirect(route('manage-subscription-plans.index'))->with('success', 'Subscription Plan deleted successfully.');
     }
 
+
     public function change_status(Request $request, $id): RedirectResponse
     {
         $plan = SubscriptionPlan::findOrFail($id);
 
+        //
+        $previousStatus = $plan->plan_status;
 
-
-        if($plan->plan_status === 'Unavailable'){
+        if ($plan->plan_status === 'Unavailable') {
             $plan->update([
                 'plan_status' => 'Available',
             ]);
-        }
-        else if($plan->plan_status === 'Available'){
+        } else if ($plan->plan_status === 'Available') {
             $plan->update([
                 'plan_status' => 'Unavailable',
             ]);
-        }
-        else {
+        } else {
             Log::info('Something went wrong');
         }
 
-
+        UserLog::create([
+            'user_id' => Auth::id(),
+            'log_activity' => 'Updated Subscription Plan',
+            'log_activity_content' => "Updated the subscription plan <strong>{$plan->plan_name}</strong> status from <strong>{$previousStatus}</strong> to <strong>{$plan->plan_status}</strong>.",
+        ]);
 
         return redirect(route('manage-subscription-plans.index'))->with('success', 'Terms and conditions deleted successfully.');
     }

@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Course;
 use App\Models\Faculty;
 use App\Models\Department;
+use App\Models\User;
+use App\Models\UserLog;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Validation\Rules;
@@ -17,18 +19,11 @@ use Illuminate\Support\Facades\DB;
 
 class CoursesController extends Controller
 {
-    
+
     /**
      * Display the courses under a specific department
      */
 
-     public function __construct()
-     {
-         // Apply 'can_add' access to 'create' and 'store' actions.
-         $this->middleware('access:can_add')->only(['create', 'store']);
-         // Apply 'can_edit' access to 'edit', 'update', and 'destroy' actions.
-         $this->middleware('access:can_edit')->only(['edit', 'update', 'destroy']);
-     }
     public function getCourses(Request $request)
     {
         $id = $request->get('id');
@@ -79,11 +74,11 @@ class CoursesController extends Controller
             ],
         ]);
 
-
+        $department = Department::find($request->dept_id);
 
         \Log::info('New Course: ', $request->all());
 
-        Course::create([
+        $course = Course::create([
             'dept_id' => $request->dept_id,
             'course_name' =>  $request->course_name,
             'added_by' => Auth::user()->name,
@@ -94,6 +89,15 @@ class CoursesController extends Controller
         // return response()->json([
         //     'message' => 'Successfully created course!'
         // ]);
+
+        // Log the course creation in UserLog
+        UserLog::create([
+            'user_id' => Auth::id(), // Log the action by the currently authenticated user
+            'log_activity' => "Created Course", // Activity title
+            'log_activity_content' => "Created course <strong>{$course->course_name}</strong>"
+                . ($course->course_acronym ? " ({$course->course_acronym})" : "")
+                . " under department <strong>{$department->dept_acronym}</strong>.",
+        ]);
 
         return redirect()->back()->with(['success' => true]);
     }
@@ -110,9 +114,33 @@ class CoursesController extends Controller
 
         $course = Course::find($id);
 
+        // Store the original course data for comparison
+        $previousCourseName = $course->course_name;
+        $previousCourseAcronym = $course->course_acronym;
+
         $course->update([
             'course_name' =>  $request->course_name,
             'course_acronym' => $request->course_acronym
+        ]);
+
+        // Build the UserLog message
+        $logContent = "Updated course <strong>{$previousCourseName}</strong>";
+
+        // Check if acronym has changed
+        if ($request->course_acronym !== $previousCourseAcronym) {
+            $logContent .= " (acronym changed from {$previousCourseAcronym} to {$request->course_acronym})";
+        }
+
+        // Check if the course name has changed
+        if ($request->course_name !== $previousCourseName) {
+            $logContent .= " to <strong>{$request->course_name}</strong>";
+        }
+
+        // Create UserLog
+        UserLog::create([
+            'user_id' => Auth::id(), // Log the action by the currently authenticated user
+            'log_activity' => "Updated Course", // Activity title
+            'log_activity_content' => $logContent, // Log the previous and updated course details
         ]);
 
         return redirect()->back();
@@ -123,7 +151,21 @@ class CoursesController extends Controller
      */
     public function destroy(string $id)
     {
-        Course::find($id)->delete();
+        $course = Course::find($id);
+
+        if (!$course) {
+            return redirect()->back()->with(['error' => 'Course not found.']);
+        }
+
+        // Log the course deletion
+        UserLog::create([
+            'user_id' => Auth::id(), // Log the action by the currently authenticated user
+            'log_activity' => "Deleted Course", // Activity title
+            'log_activity_content' => "Deleted course <strong>{$course->course_name}</strong> (acronym: {$course->course_acronym}).",
+        ]);
+
+        // Delete the course
+        $course->delete();
 
         return redirect()->back()->with(['success' => true]);
     }
@@ -134,16 +176,44 @@ class CoursesController extends Controller
      */
     public function reassignFaculty(Request $request, string $id)
     {
-        $courseId = $request->get('course_id');
+        // Validate the incoming request
+        $validated = $request->validate([
+            'course_id' => 'required|exists:courses,id',
+        ]);
 
-        Faculty::where('course_id', $courseId)->update([
-            'course_id' => $id
+        $courseId = $validated['course_id'];
+
+        // Retrieve the course and faculty
+        $course = Course::firstWhere('id', $courseId);
+        $faculty = Faculty::firstWhere('course_id', $courseId);
+
+        if (!$faculty) {
+            return response()->json(['message' => 'Faculty not found for the given course'], 404);
+        }
+
+        $user = User::firstWhere('id', $faculty->user_id);
+        if (!$user) {
+            return response()->json(['message' => 'User associated with the faculty not found'], 404);
+        }
+
+        // Update the faculty's course assignment
+        $faculty->update([
+            'course_id' => $id,
+        ]);
+
+        // Log the activity
+        UserLog::create([
+            'user_id' => Auth::id(),
+            'log_activity' => "Reassigned Faculty",
+            // Escape dynamic content to prevent XSS attacks
+            'log_activity_content' => "Reassigned faculty <strong>" . e($user->name) . "</strong> to course <strong>" . e($course->course_acronym) . "</strong>.",
         ]);
 
         return response()->json([
-            'message' => 'Successfully reassigned teacher!'
+            'message' => 'Successfully reassigned teacher!',
         ]);
     }
+
 
     /**
      * Unassign the courses
@@ -152,14 +222,31 @@ class CoursesController extends Controller
     {
         $courseId = $request->get('course_id');
 
-        Faculty::where('course_id', $courseId)->update([
+        // Retrieve the faculty associated with the course
+        $faculty = Faculty::where('course_id', $courseId)->first();
+
+        // If no faculty is found, return an error
+        if (!$faculty) {
+            return response()->json(['message' => 'No faculty found for the specified course'], 404);
+        }
+
+        // Update the faculty's course assignment to null (unassign)
+        $faculty->update([
             'course_id' => null
+        ]);
+
+        // Log the activity
+        UserLog::create([
+            'user_id' => Auth::id(), // Log the action by the currently authenticated user
+            'log_activity' => "Unassigned Faculty", // Activity title
+            'log_activity_content' => "Unassigned faculty <strong>" . e($faculty->user->name) . "</strong> from course <strong>" . e($faculty->course->course_acronym) . "</strong>.",
         ]);
 
         return response()->json([
             'message' => 'Successfully unassigned courses! You can manually assign them in the courses tab.'
         ]);
     }
+
 
     public function getUnassignedCourses()
     {
@@ -179,15 +266,34 @@ class CoursesController extends Controller
         ]);
     }
 
-    public function assignCourses(Request $request)
-    {
-        $deptId = $request->get('deptId');
-        $courses = $request->get('courses');
+public function assignCourses(Request $request)
+{
+$deptId = $request->get('deptId');
+$courses = $request->get('courses');
 
-        Course::whereIn('id', $courses)->update(['dept_id' => $deptId]);
+// Get the department for logging purposes
+$department = Department::firstWhere('id', $deptId); // Fetch the department
 
-        return response()->json([
-            'message' => 'Successfully assigned courses!'
-        ]);
-    }
+// If no department is found, return an error
+if (!$department) {
+    return response()->json(['message' => 'Department not found'], 404);
+}
+
+// Get the course names for logging purposes
+$courseNames = Course::whereIn('id', $courses)->pluck('course_acronym')->implode(', ');
+
+// Update the department assignment for the selected courses
+Course::whereIn('id', $courses)->update(['dept_id' => $deptId]);
+
+// Log the activity
+UserLog::create([
+    'user_id' => Auth::id(), // Log the action by the currently authenticated user
+    'log_activity' => "Assigned Courses", // Activity title
+    'log_activity_content' => "Assigned courses <strong>{$courseNames}</strong> to department <strong>{$department->dept_acronym}</strong>.",
+]);
+
+return response()->json([
+    'message' => 'Successfully assigned courses!'
+]);
+}
 }

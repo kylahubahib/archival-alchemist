@@ -13,6 +13,7 @@ use App\Models\ForumComment;
 use Inertia\Inertia;
 use App\Models\CustomContent;
 use App\Models\User;
+use App\Models\UserLog;
 use App\Notifications\InstitutionAdminNotification;
 use App\Notifications\UserNotification;
 
@@ -46,20 +47,20 @@ class AdvancedForumController extends Controller
                 $query->orderBy('view_count', 'desc');
                 break;
 
-            // case 'most_comment':
-            //     $query->withCount('comments')->orderBy('comments_count', 'desc');
-            //     break;
+                // case 'most_comment':
+                //     $query->withCount('comments')->orderBy('comments_count', 'desc');
+                //     break;
 
             case 'visible_post':
-                $query->where('status', 'Visible'); 
+                $query->where('status', 'Visible');
                 break;
 
             case 'hidden_post':
-                $query->where('status', 'Hidden'); 
+                $query->where('status', 'Hidden');
                 break;
 
             case 'deleted_post':
-                $query->where('status', 'Deleted'); 
+                $query->where('status', 'Deleted');
                 break;
 
             default:
@@ -72,9 +73,7 @@ class AdvancedForumController extends Controller
         return response()->json(['filteredPosts' => $filteredPosts]);
     }
 
-
-
-     /**
+    /**
      * Display the specified resource.
      */
     public function show(string $id)
@@ -87,7 +86,7 @@ class AdvancedForumController extends Controller
             'comments' => $comments
         ]);
     }
-    
+
     /**
      * Update the specified resource in storage.
      */
@@ -95,14 +94,21 @@ class AdvancedForumController extends Controller
     {
         $forumPost = ForumPost::find($id);
 
+        $previousStatus = $forumPost->status;
+
+
         $forumPost->update([
             'status' => 'Hidden'
         ]);
 
+        UserLog::create([
+            'user_id' => Auth::id(),
+            'log_activity' => 'Updated Forum Post Status',
+            'log_activity_content' => "Updated the status of the forum post titled <strong>{$forumPost->title}</strong> from <strong>{$previousStatus}</strong> to <strong>Hidden</strong>.",
+        ]);
+
         return redirect(route('manage-forum-posts.index'))->with('success', 'Status updated.');
     }
-
-
 
     /**
      * Show the form for creating a new resource.

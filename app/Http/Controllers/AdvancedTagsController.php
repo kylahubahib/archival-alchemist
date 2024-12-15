@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\Tags;
+use App\Models\UserLog;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rules;
@@ -14,7 +15,7 @@ use Illuminate\Support\Facades\Log;
 
 class AdvancedTagsController extends Controller
 {
-    
+
     /**
      * Display a listing of the resource.
      */
@@ -44,9 +45,17 @@ class AdvancedTagsController extends Controller
             'tags_name' => 'required|string|unique:tags',
         ]);
 
-        Tags::create([
+        $tag = Tags::create([
             'tag_name' => $request->tag_name
         ]);
+
+        if ($tag) {
+            UserLog::create([
+                'user_id' => Auth::id(),
+                'log_activity' => 'Created Tag',
+                'log_activity_content' => "Added a new tag with the name <strong>{$request->tag_name}</strong>.",
+            ]);
+        }
 
         return redirect(route('manage-tags.index'));
     }
@@ -88,10 +97,19 @@ class AdvancedTagsController extends Controller
         ]);
 
         $tags = Tags::find($id);
+        $oldTagName = $tags->tag_name;
 
         $tags->update([
             'tags_name' => $request->tag_name
         ]);
+
+        if ($request->tag_name) {
+            UserLog::create([
+                'user_id' => Auth::id(),
+                'log_activity' => 'Updated Tag',
+                'log_activity_content' => "Updated tag name from <strong>{$oldTagName}</strong> to <strong>{$request->tag_name}</strong>.",
+            ]);
+        }
 
         return redirect(route('manage-tags.index'));
     }
@@ -102,10 +120,26 @@ class AdvancedTagsController extends Controller
      */
     public function destroy($id): RedirectResponse
     {
-        Tags::find($id)->delete();
+        // Find the tag by ID
+        $tag = Tags::find($id);
 
-        return redirect(route('manage-tags.index'));
+        // Check if the tag exists
+        if (!$tag) {
+            // Redirect with error if tag is not found
+            return redirect(route('manage-tags.index'))->with('error', 'Tag not found.');
+        }
+
+        // Log the deletion of the tag
+        UserLog::create([
+            'user_id' => Auth::id(),
+            'log_activity' => 'Deleted Tag',
+            'log_activity_content' => "Deleted tag <strong>{$tag->tag_name}</strong>.",
+        ]);
+
+        // Delete the tag
+        $tag->delete();
+
+        // Return success message after deletion
+        return redirect(route('manage-tags.index'))->with('success', 'Tag deleted successfully.');
     }
-
-
 }

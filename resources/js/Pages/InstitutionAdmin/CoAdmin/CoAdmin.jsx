@@ -22,7 +22,7 @@ import Logs from "@/Pages/SuperAdmin/Users/Logs";
 import UpdateStatus from "@/Pages/SuperAdmin/Users/UpdateStatus";
 import { router } from "@inertiajs/react";
 
-export default function CoAdmins({ auth, insAdminAffiliation, coAdmins, search, entries }) {
+export default function CoAdmins({ auth, insAdminAffiliation, coAdmins, planUserLimit, totalAffiliatedPremiumUsers, search, entries }) {
     console.log('coAdmins', coAdmins);
     console.log('insAdminAffiliation', insAdminAffiliation);
     const [coAdminsToRender, setCoAdminsToRender] = useState(coAdmins);
@@ -55,10 +55,8 @@ export default function CoAdmins({ auth, insAdminAffiliation, coAdmins, search, 
     const [selectedAutocompleteItems, setSelectedAutocompleteItems] = useState({ department: '', course: '', plan: '', currentPlanStatus: '', dateCreated: { start: null, end: null, } });
 
     const [{ university, uni_branch_name, id: uni_branch_id }] = insAdminAffiliation;
-    // console.log('uni_branch_id', uni_branch_id);
+    const remainingUserSlots = planUserLimit - totalAffiliatedPremiumUsers;
     const params = route().params;
-
-    console.log('params', params);
 
     useEffect(() => {
         console.log('hasFilteredData', hasFilteredData);
@@ -99,36 +97,6 @@ export default function CoAdmins({ auth, insAdminAffiliation, coAdmins, search, 
 
     }, [searchTerm.trim()]);
 
-    const renderActionButtons = (userId, name, currentPlanName, currentPlanStatus) => {
-        const actionText = currentPlanStatus.toLowerCase() === 'active' ? "Deactivate" : "Activate";
-
-        return (
-            <div className="p-2 flex gap-2">
-                {currentPlanStatus && (
-                    <ActionButton
-                        icon={currentPlanStatus.toLowerCase() === 'active' ? <FaFileCircleMinus /> : <FaFileCircleCheck />}
-                        tooltipContent={currentPlanStatus === 'Active' ? 'Deactivate plan' : 'Activate plan'}
-                        onClick={() =>
-                            handleUpdatePlanStatusModalClick(
-                                userId,
-                                name,
-                                currentPlanName,
-                                actionText,
-                            )
-                        }
-                    />
-                )}
-            </div>
-        )
-    };
-
-    const handleUpdatePlanStatusModalClick = (id, name, currentPlanName, actionText) => {
-        setIsUpdateStatusModalOpen(true);
-        setUserId(id);
-        setName(name);
-        setCurrentPlanName(currentPlanName);
-        setAction(actionText);
-    }
 
     const handleClearFiltersClick = () => {
         setSelectedAutocompleteItems({ department: '', course: '', plan: '', currentPlanStatus: '', dateCreated: null })
@@ -210,21 +178,32 @@ export default function CoAdmins({ auth, insAdminAffiliation, coAdmins, search, 
                 <div className="flex">
                     <PageHeader>CO-ADMINS</PageHeader>
                     {/* <PageHeader className="ml-auto mr-4 uppercase">{`${university.uni_name} - ${uni_branch_name}`}</PageHeader> */}
-                </div>
-
-                <div className="mx-auto sm:px-2 lg:px-4">
-                    <div className="flex py-4  ml-auto">
+                    <div className="flex pb-4 mr-4 ml-auto">
                         <AddButton onClick={() => setIsAddInsAdminModalOpen(true)} icon={<FaPlus />}>
                             Add co-ins admin
                         </AddButton>
                     </div>
+                </div>
+
+                <div className="mx-auto sm:px-2 lg:px-4">
                     <div className="bg-white flex flex-col gap-4 h-[68dvh] relative shadow-md sm:rounded-lg overflow-hidden p-4">
 
                         {/* TABLE CONTROLS */}
-                        {renderTableControls('institution-coadmins.filter', searchTerm, setSearchTerm, 'Search by name or user id...',
-                            coAdmins.data.length === 0, totalFilters, handleClearFiltersClick, isFilterOpen, setIsFilterOpen, false,
-                            handleSetEntriesPerPageClick, entriesPerPage, setEntriesPerPage, setCoAdminsToRender
-                        )}
+                        {renderTableControls({
+                            routeName: 'institution-coadmins',
+                            searchVal: searchTerm,
+                            searchValSetter: setSearchTerm,
+                            searchBarPlaceholder: 'Search by name, email, user id...',
+                            isDisabled: coAdmins.data.length === 0,
+                            totalFilters: totalFilters,
+                            clearFiltersOnClick: handleClearFiltersClick,
+                            isFilterOpen: isFilterOpen,
+                            isFilterOpenSetter: setIsFilterOpen,
+                            entriesPerPage: entriesPerPage,
+                            setEntriesPerPage: setEntriesPerPage,
+                            setEntriesResponseData: setCoAdminsToRender,
+                            params: null
+                        })}
 
                         {/* FILTER COMPONENT PLACEMENT */}
                         {/* <Filter
@@ -303,6 +282,8 @@ export default function CoAdmins({ auth, insAdminAffiliation, coAdmins, search, 
                 routeName="institution-coadmins.send-registration"
                 userType='admin'
                 uniBranchId={uni_branch_id}
+                planUserLimit={planUserLimit}
+                remainingUserSlots={remainingUserSlots}
             />
             <AccessControl
                 fetchAdminAccessRouteName='institution-coadmins.admin-access'

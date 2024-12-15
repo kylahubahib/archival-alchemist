@@ -22,8 +22,7 @@ Route::get('/fetch-current-plans', [FetchDataController::class, 'fetchDistinctCu
 Route::get('/fetch-status', [FetchDataController::class, 'fetchDistinctUserStatus'])->name('fetch.status');
 Route::get('/fetch-institution-admin-roles', [FetchDataController::class, 'fetchInstitutionAdminRoles'])->name('fetch.institution-admin-roles');
 Route::get('/fetch-super-admin-roles', [FetchDataController::class, 'fetchSuperAdminRoles'])->name('fetch.super-admin-roles');
-
-
+Route::get('/fetch-university-related-data', [FetchDataController::class, 'fetchUniversityRelatedData'])->name('fetch.university-related-data');
 
 
 // USER VIEW APIS
@@ -34,4 +33,3 @@ Route::post('logout', [AuthenticatedSessionController::class, 'destroy']);
 Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
     return $request->user();
 });
-

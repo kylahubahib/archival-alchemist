@@ -1,6 +1,6 @@
 
 import TextInput from '@/Components/TextInput';
-import { Input, Button, CheckboxGroup, Checkbox } from '@nextui-org/react';
+import { Input, Button, CheckboxGroup, Checkbox, Divider } from '@nextui-org/react';
 import React, { useState, useEffect } from 'react';
 import { useForm } from '@inertiajs/react';
 import { FaUser } from "react-icons/fa6";
@@ -10,7 +10,8 @@ import { adminAccessOptions, handleCheckAll, handleClearAll } from './AccessCont
 import { showToast } from '@/Components/Toast';
 import Modal from '@/Components/Modal';
 
-export default function Add({ routeName = 'users.send-admin-registration', uniBranchId, userType, isOpen, onClose }) {
+export default function Add({ userType, routeName = 'users.send-admin-registration',
+    planUserLimit, remainingUserSlots, uniBranchId, isOpen, onClose }) {
 
     console.log('uniBranchIdSheesh', uniBranchId);
 
@@ -54,6 +55,14 @@ export default function Add({ routeName = 'users.send-admin-registration', uniBr
     const handleSendRegistration = (e) => {
         e.preventDefault();
 
+        if (remainingUserSlots === 0) {
+            return (showToast('error',
+                <div>
+                    Cannot add! There are no <strong>available slots</strong> left.
+                </div>,
+            ))
+        }
+
         // The `processing` state will automatically be true during the request
         post(route(routeName), {
             data: {
@@ -89,11 +98,19 @@ export default function Add({ routeName = 'users.send-admin-registration', uniBr
     }
 
     return (
-        <Modal show={isOpen} onClose={onClose} maxWidth={userType === "admin" ? "xl" : "3xl"}>
-            <div className="bg-customBlue p-3">
+        <Modal show={isOpen} onClose={onClose} maxWidth={userType === "admin" ? "2xl" : "3xl"}>
+            <div className={`bg-customBlue p-3 ${userType === 'admin' && 'text-white p-3 flex justify-between'}`}>
                 <h2 className="text-xl text-white inline-block font-bold tracking-widest">
                     {userType === "admin" ? "Add co-institution admin" : "Add co-super admin"}
                 </h2>
+                {userType === 'admin' && (
+                    <div className="flex justify-between items-center gap-3 tracking-wide">
+                        <span><strong>Plan User Limit: </strong>{planUserLimit}</span>
+                        <Divider className="bg-white" orientation="vertical" />
+                        <span><strong>Remaining User Slots: </strong>{remainingUserSlots}</span>
+                    </div>
+                )
+                }
             </div>
 
             <form onSubmit={handleSendRegistration}>

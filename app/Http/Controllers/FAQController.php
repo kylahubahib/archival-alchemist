@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\CustomContent;
+use App\Models\UserLog;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rules;
@@ -16,10 +17,10 @@ class FAQController extends Controller
 
 
     public function faq()
-    {   
+    {
         $faqs = CustomContent::where('content_type', 'frequently asked questions')
-                    ->where('content_status', 'available')
-                    ->get();
+            ->where('content_status', 'available')
+            ->get();
 
         return Inertia::render('FAQ', [
             'faqs' => $faqs
@@ -63,12 +64,18 @@ class FAQController extends Controller
             'content_text' => 'answer',
         ]);
 
-        CustomContent::create([
+        $faq = CustomContent::create([
             'user_id' => Auth::id(),
             'content_type' => 'frequently asked questions',
             'content_title' => $request->content_title,
             'content_text' => $request->content_text,
             'subject' => null,
+        ]);
+
+        UserLog::create([
+            'user_id' => Auth::id(),
+            'log_activity' => 'Created FAQ',
+            'log_activity_content' => "Added a new FAQ entitled <strong>{$faq->content_title}</strong> with a question <strong>{$faq->content_text}</strong>.",
         ]);
 
         return redirect(route('manage-faqs.index'))->with('success', 'FAQ created successfully.');
@@ -124,6 +131,12 @@ class FAQController extends Controller
             'user_id' => Auth::id(),
         ]);
 
+        UserLog::create([
+            'user_id' => Auth::id(),
+            'log_activity' => 'Updated FAQ',
+            'log_activity_content' => "Updated the FAQ entitled <strong>{$faq->content_title}</strong> with a question <strong>{$faq->content_text}</strong>.",
+        ]);
+
         return redirect(route('manage-faqs.index'))->with('success', 'FAQ updated successfully.');
     }
 
@@ -133,7 +146,15 @@ class FAQController extends Controller
      */
     public function destroy($id): RedirectResponse
     {
-        CustomContent::find($id)->delete();
+        $faq = CustomContent::find($id);
+
+        UserLog::create([
+            'user_id' => Auth::id(),
+            'log_activity' => 'Deleted FAQ',
+            'log_activity_content' => "Deleted a FAQ entitled <strong>{$faq->content_title}</strong> with a question <strong>{$faq->content_text}</strong>.",
+        ]);
+
+        $faq->delete();
 
         return redirect(route('manage-faqs.index'))->with('success', 'FAQ deleted successfully.');
     }
@@ -141,23 +162,27 @@ class FAQController extends Controller
     public function change_status(Request $request, $id): RedirectResponse
     {
 
-    $faq = CustomContent::find($id);
+        $faq = CustomContent::find($id);
 
 
-    if ($faq->content_status === 'available') {
-        $faq->update([
-            'content_status' => 'unavailable',
+        if ($faq->content_status === 'available') {
+            $faq->update([
+                'content_status' => 'unavailable',
+            ]);
+        } else if ($faq->content_status === 'unavailable') {
+            $faq->update([
+                'content_status' => 'available',
+            ]);
+        } else {
+            \Log::info('Something went wrong');
+        }
+
+        UserLog::create([
+            'user_id' => Auth::id(),
+            'log_activity' => 'Updated FAQ',
+            'log_activity_content' => "Updated the status of FAQ entitled <strong>{$faq->content_title}</strong> with a question <strong>{$faq->content_text}</strong> to <strong>" . ($faq->content_status === 'available' ? 'unavailable' : 'available') . "</strong>.",
         ]);
-    } else if ($faq->content_status === 'unavailable') {
-        $faq->update([
-            'content_status' => 'available',
-        ]);
-    } else {
-        \Log::info('Something went wrong');
+
+        return redirect(route('manage-faqs.index'))->with('success', 'Status updated.');
     }
-
-
-    return redirect(route('manage-faqs.index'))->with('success', 'Status updated.');
-    }
-
 }

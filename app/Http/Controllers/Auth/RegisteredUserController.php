@@ -34,7 +34,7 @@ class RegisteredUserController extends Controller
      * Display the registration view.
      */
     public function create(): Response
-    {   
+    {
         // return Inertia::render('Auth/RegistrationForm');
         return Inertia::render('Auth/Register');
     }
@@ -58,28 +58,28 @@ class RegisteredUserController extends Controller
             'user_dob' => 'required|string|max:255',
             // 'ins_admin_proof' => 'nullable|file|mimes:pdf,jpg,png,docx|max:2048'
         ]);
-        
+
         \Log::info('Validated Data:', $validatedData);
-        
+
         // $file = $request->file('ins_admin_proof');
-        
+
         // if ($file) {
         //     \Log::info('File:', [
         //         'name' => $file->getClientOriginalName(),
         //         'mime_type' => $file->getClientMimeType(),
         //         'size' => $file->getSize(),
         //     ]);
-        
+
         //     // Generate a unique file name
         //     $fileName = time() . '_' . $file->getClientOriginalName();
-            
+
         //     // Store the file in the 'admin_proof_files' directory
         //     $file->storeAs('admin_proof_files', $fileName, 'public');
-            
+
         // } else {
         //     \Log::info('No file uploaded for ins_admin_proof.');
         // }
-        
+
 
         //\Log::info('File:', $fileName);
         //Result: 09/01/2005
@@ -87,12 +87,12 @@ class RegisteredUserController extends Controller
 
         //Result: 9/1/2005
         $formattedDate = Carbon::createFromFormat('Y-m-d',  $validatedData['user_dob'])->format('n/j/Y');
-        
+
         // if($validatedData['uni_id_num'] != null && $validatedData['uni_branch_id'] != null)
         // {
         //     $is_affiliated = true;
         // }
-        
+
         \Log::info($formattedDate);
 
         try {
@@ -166,6 +166,11 @@ class RegisteredUserController extends Controller
             //         }
             //     }                
             // }
+            UserLog::create([
+                'user_id' =>  $user->id,
+                'log_activity' =>  'Created account',
+                'log_activity_content' =>  'Account created successfully.',
+            ]);
 
             event(new Registered($user));
 
@@ -179,12 +184,9 @@ class RegisteredUserController extends Controller
             // ]);
 
             return redirect()->route('login')->with('success', 'Registration successful. Please log in.');
-
         } catch (\Exception $e) {
             \Log::error('Error during registration:', ['error' => $e->getMessage()]);
             return redirect()->back()->withErrors(['error' => 'An unexpected error occurred. Please try again.']);
         }
     }
-
-   
 }

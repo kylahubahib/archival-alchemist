@@ -40,6 +40,7 @@ export default function InsAdminArchives({ auth, folders, manuscripts, search })
             console.log(`${category.category} folder:`, category.files);
         });
     }, [fileCategoryCollections]);
+
     useEffect(() => {
         console.log('manuscripts', manuscripts);
     }, [manuscripts]);
@@ -58,7 +59,7 @@ export default function InsAdminArchives({ auth, folders, manuscripts, search })
 
     useEffect(() => {
         loadFilesByCategory(lastFileCategory, fileCategoryCollections, setFilesToDisplay);
-    }, [universityFolders, branchFolders, departmentFolders, courseFolders, sectionFolders, manuscripts]);
+    }, [universityFolders, branchFolders, departmentFolders, courseFolders, sectionFolders, manuscripts, fileCategoryCollections]);
 
     useEffect(() => {
         loadSearchBarPlaceholder(fileCategories, fileCategoryCollections, setSearchBarPlaceholder);
@@ -101,7 +102,7 @@ export default function InsAdminArchives({ auth, folders, manuscripts, search })
                         {renderTableControls('institution-archives.filter', params, fileCategoryCollections, fileCategories, setFileCategories, handleFileCategoryClick,
                             lastFileCategory, searchTerm, setSearchTerm, searchBarPlaceholder, setIsDataLoading)}
 
-                        {/* FOLDERS */}a
+                        {/* FOLDERS */}
                         {lastFileCategory !== 'Manuscripts' && (
                             renderFolders('institution-archives.filter', params, filesToDisplay, setFilesToDisplay, handleFileClick, fileCategoryCollections, fileCategories,
                                 setFileCategories, setSearchTerm, hasFilteredData, getAnimationProps, isDataLoading, setIsDataLoading)

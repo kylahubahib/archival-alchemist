@@ -7,6 +7,7 @@ use App\Models\UniversityBranch;
 use App\Models\Course;
 use App\Models\Section;
 use App\Models\Faculty;
+use App\Models\UserLog;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
@@ -23,9 +24,9 @@ class DepartmentsController extends Controller
      * Display a listing of the resource.
      */
 
-   
 
-    public function index() 
+
+    public function index()
     {
         // dd();
 
@@ -131,11 +132,20 @@ class DepartmentsController extends Controller
 
         \Log::info('Create Data: ', $request->all());
 
-        Department::create([
+        $department = Department::create([
             'uni_branch_id' => $request->uni_branch_id,
             'dept_name' =>  $request->dept_name,
             'added_by' => Auth::user()->name,
             'dept_acronym' => $request->dept_acronym
+        ]);
+
+        $universityBranch = UniversityBranch::find($department->uni_branch_id);
+
+        // Log the department creation in the UserLog
+        UserLog::create([
+            'user_id' => Auth::id(), // Log the activity for the currently authenticated user
+            'log_activity' => "Created Department", // Activity title
+            'log_activity_content' => "Created a new department named <strong>{$department->dept_name}</strong> with acronym <strong>{$department->dept_acronym}</strong> in university branch <strong>{$universityBranch->uni_branch_name}</strong>.", // Activity content
         ]);
 
         return redirect(route('manage-departments.index'))->with('success', 'Departments created successfully.');
@@ -170,9 +180,33 @@ class DepartmentsController extends Controller
 
         $department = Department::find($id);
 
+        // Log the department details before update
+        $previousDeptName = $department->dept_name;
+        $previousDeptAcronym = $department->dept_acronym;
+
         $department->update([
             'dept_name' =>  $request->dept_name,
             'dept_acronym' => $request->dept_acronym
+        ]);
+
+        // Build the UserLog message
+        $logContent = "Updated department <strong>{$previousDeptName}</strong>";
+
+        // If acronym has changed, update it in the log
+        if ($request->dept_acronym !== $previousDeptAcronym) {
+            $logContent .= " (acronym changed from {$previousDeptAcronym} to {$request->dept_acronym})";
+        }
+
+        // Add dept_name change to log content if it changed
+        if ($request->dept_name !== $previousDeptName) {
+            $logContent .= " to <strong>{$request->dept_name}</strong>";
+        }
+
+        // Create UserLog
+        UserLog::create([
+            'user_id' => Auth::id(), // Log the action by the currently authenticated user
+            'log_activity' => "Updated Department", // Activity title
+            'log_activity_content' => $logContent, // Log the previous and updated department details
         ]);
 
         return redirect(route('manage-departments.index'))->with('success', 'Departments created successfully.');
@@ -181,13 +215,25 @@ class DepartmentsController extends Controller
     /**
      * Remove the specified resource from storage.
      */
+
     public function destroy(string $id)
     {
-        Department::find($id)->delete();
+        // Find the department to delete
+        $department = Department::find($id);
 
+        // Log the department name and acronym before deletion
+        UserLog::create([
+            'user_id' => Auth::id(), // Log the action by the currently authenticated user
+            'log_activity' => "Deleted Department", // Activity title
+            'log_activity_content' => "Deleted department <strong>{$department->dept_name}</strong> (acronym: {$department->dept_acronym}).", // Log the department details
+        ]);
+
+        // Delete the department
+        $department->delete();
+
+        // Redirect back with success message
         return redirect(route('manage-departments.index'))->with('success', 'Department deleted successfully.');
     }
-
 
     /**
      * Reassign the courses
@@ -195,6 +241,15 @@ class DepartmentsController extends Controller
     public function reassignCourses(Request $request, string $id)
     {
         $deptId = $request->get('dept_id');
+        $course = Course::find($id);
+        $department = Department::find($deptId);
+
+        // Log the reassignment action before updating the courses
+        UserLog::create([
+            'user_id' => Auth::id(), // Log the action by the currently authenticated user
+            'log_activity' => "Reassigned Courses", // Activity title
+            'log_activity_content' => "Reassigned <strong>{$course->course_acronym}</strong> to department <strong>{$department->dept_acronym}</strong>.",
+        ]);
 
         Course::where('dept_id', $deptId)->update([
             'dept_id' => $id
@@ -211,9 +266,16 @@ class DepartmentsController extends Controller
      */
     public function unassignCourses(string $id)
     {
+        $department = Department::find($id);
 
-        Course::where('dept_id', $id)->update([
+        $course = Course::where('dept_id', $id)->update([
             'dept_id' => null
+        ]);
+
+        UserLog::create([
+            'user_id' => Auth::id(), // Log the action by the currently authenticated user
+            'log_activity' => "Unassigned Courses", // Activity title
+            'log_activity_content' => "Unassigned <strong>{$course->course_acronym}</strong> from department <strong>{$department->dept_acronym}</strong>.",
         ]);
 
         return response()->json([

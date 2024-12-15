@@ -1,11 +1,11 @@
 import TextInput from '@/Components/TextInput';
-import { Input, Button, Autocomplete, useCalendar, DatePicker } from '@nextui-org/react';
+import { Input, Button, Autocomplete, useCalendar, DatePicker, Divider } from '@nextui-org/react';
 import React, { useState, useEffect } from 'react';
 import { useForm } from '@inertiajs/react';
 import { FaFileExcel, FaUser } from "react-icons/fa6";
 import { IoMail, IoCheckmarkDone } from "react-icons/io5";
 import { GiGraduateCap } from "react-icons/gi";
-import { MdTextFields } from "react-icons/md";
+import { MdAlternateEmail, MdTextFields } from "react-icons/md";
 import { MdRemoveDone } from "react-icons/md";
 import { showToast } from '@/Components/Toast';
 import Modal from '@/Components/Modal';
@@ -16,7 +16,7 @@ import FileUpload from '@/Components/Admin/FileUpload';
 import { customAutocompleteInputProps, customInputClassNames, parseNextUIDate } from '@/Utils/common-utils';
 import { renderAutocompleteList } from '@/Pages/SuperAdmin/Users/Filter';
 
-export default function Add({ isOpen, onClose }) {
+export default function Add({ isOpen, onClose, planUserLimit, remainingUserSlots }) {
 
     const [dateOfBirth, setDateOfBirth] = useState(null);
     const [selectedFile, setSelectedFile] = useState(null);
@@ -64,6 +64,7 @@ export default function Add({ isOpen, onClose }) {
         } else if (onClose) {
             // Add a delay so that resetting the default values will not be visible when the modal closes
             const counterModalCloseDelay = setTimeout(() => {
+                
                 reset();
                 clearErrors();
             }, 300)
@@ -99,9 +100,12 @@ export default function Add({ isOpen, onClose }) {
     const handleAddStudent = (e) => {
         e.preventDefault();
 
-        if (selectedFile) {
-
-
+        if (remainingUserSlots === 0) {
+            return (showToast('error',
+                <div>
+                    Cannot add! There are no <strong>available slots</strong> left.
+                </div>,
+            ))
         }
 
         post(route('institution-students.add'), {
@@ -144,22 +148,6 @@ export default function Add({ isOpen, onClose }) {
         clearErrors();
     }
 
-    const handleFileChange = (event) => {
-        const file = event.target.files[0];
-
-        // Validate the file type if it is a CSV or not
-        if (file && file.type !== 'text/csv' && file.name.split('.').pop().toLowerCase() !== 'csv') {
-            setErrorMessage('Please upload a valid CSV file.');
-            setSelectedFile(null);
-            return;
-        }
-
-        // Clear previous errors and set the selected file
-        setErrorMessage('');
-        setSelectedFile(file);
-        //console.log("Selected file:", file);
-    };
-
     // const handleDepartmentClick = (deptAcronym) => {
     //     // Find the courses for the selected department
     //     const selectedDepartment = departmentsWithCoursesResponse.find(department => department.dept_acronym === deptAcronym);
@@ -186,10 +174,15 @@ export default function Add({ isOpen, onClose }) {
 
     return (
         <Modal show={isOpen} onClose={onClose} maxWidth="2xl">
-            <div className="bg-customBlue p-3">
-                <h2 className="text-xl text-white inline-block font-bold tracking-widest">
+            <div className="bg-customBlue text-white p-3 flex justify-between">
+                <h2 className="text-xl  inline-block font-bold tracking-widest">
                     Add student
                 </h2>
+                <div className="flex justify-between items-center gap-3 tracking-wide">
+                    <span><strong>Plan User Limit: </strong>{planUserLimit}</span>
+                    <Divider className="bg-white" orientation="vertical" />
+                    <span><strong>Remaining User Slots: </strong>{remainingUserSlots}</span>
+                </div>
             </div>
 
             <form onSubmit={handleAddStudent}>
@@ -207,7 +200,7 @@ export default function Add({ isOpen, onClose }) {
                                 min={1}
                                 radius="sm"
                                 labelPlacement="outside"
-                                label="University ID"
+                                label="Student University ID"
                                 startContent={<FaHashtag />}
                                 isInvalid={errors.uni_id_num}
                                 errorMessage={errors.uni_id_num}
@@ -271,7 +264,7 @@ export default function Add({ isOpen, onClose }) {
                                 label="Email"
                                 value={data.email}
                                 onChange={(e) => setData('email', e.target.value)}
-                                startContent={<IoMail size={20} />}
+                                startContent={<MdAlternateEmail size={20} />}
                                 isInvalid={errors.email}
                                 errorMessage={errors.email}
                                 classNames={customInputClassNames({ base: "col-span-2" }, {})}

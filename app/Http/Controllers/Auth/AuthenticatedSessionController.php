@@ -50,10 +50,9 @@ class AuthenticatedSessionController extends Controller
         $authenticatedUser = Auth::user();
 
         UserLog::create([
-            'user_id' =>  $authenticatedUser->id, // The authenticated user's ID
-            'log_activity' =>  'User logged in', // The type of activity
-            'log_activity_content' =>  'User logged in successfully at ' . Carbon::now()->toDateTimeString(), // Content explaining the activity
-            'created_at' =>  Carbon::now(), // Timestamp of the log
+            'user_id' =>  $authenticatedUser->id,
+            'log_activity' =>  'Logged in',
+            'log_activity_content' =>  'Logged in successfully.',
         ]);
 
         if ($authenticatedUser->user_type !== 'general_user') {
@@ -95,33 +94,33 @@ class AuthenticatedSessionController extends Controller
                     case 'teacher':
                         return redirect()->route('library');
                     case 'admin':
-                        return redirect()->route('institution-students');
-                    case 'superadmin':
                         $accessRoutes = [
-                            'dashboard_access' => 'dashboard',
-                            'users_access' => 'users',
-                            'archives_access' => 'archives',
-                            'subscriptions_and_billings_access' => 'subscription-billing',
-                            'user_reports_access' => 'user-reports',
-                            'user_feedbacks_access' => 'user-feedbacks',
-                            'terms_and_conditions_access' => 'terms-condition',
-                            'subscription_plans_access' => 'subscription-plans',
-                            'faqs_access' => 'faq',
-                            'advanced_access' => 'advanced',
+                            'ins_students_access' => 'institution-students',
+                            'ins_faculties_access' => 'institution-faculties',
+                            'ins_coadmins_access' => 'institution-coadmins',
+                            'ins_departments_access' => 'manage-departments.index',
+                            'ins_sections_access' => 'manage-sections.index',
+                            'ins_subscription_billing_access' => 'institution-subscription-billing.index',
+                            'ins_archives_access' => 'institution-archives',
                         ];
 
-                        // Automatically sets the default route redirection if one of the pages can't be accessed.
-                        foreach ($accessRoutes as $access => $route) {
-                            if ($user->access_control->$access) {
-                                return redirect()->route($route);
-                            }
-                        }
+                        return $this->checkAdminAccess($user, $accessRoutes);
 
-                        // If no access granted for all pages, log out the user and show error
-                        Auth::logout();
-                        return redirect()->route('login')->withErrors([
-                            'password' => "Can't log in. All page access has been blocked. Please contact support for more information.",
-                        ]);
+                    case 'superadmin':
+                        $accessRoutes = [
+                            'super_dashboard_access' => 'dashboard.index',
+                            'super_users_access' => 'users',
+                            'super_archives_access' => 'archives',
+                            'super_subscription_and_billing_access' => 'subscription-billing',
+                            'super_user_reports_access' => 'user-reports',
+                            'super_user_feedbacks_access' => 'user-feedbacks',
+                            'super_terms_and_conditions_access' => 'terms-condition',
+                            'super_subscription_plans_access' => 'subscription-plans',
+                            'super_faqs_access' => 'faq',
+                            'super_advanced_access' => 'advanced',
+                        ];
+
+                        return $this->checkAdminAccess($user, $accessRoutes);
 
                     default:
                         return redirect('/');
@@ -144,14 +143,47 @@ class AuthenticatedSessionController extends Controller
         }
     }
 
+    public function checkAdminAccess($user, $accessRoutes)
+    {
+        // Automatically sets the default route redirection if one of the pages can't be accessed.
+        if ($user->access_control) {  // Check if access_control is not null
+            foreach ($accessRoutes as $access => $route) {
+                if ($user->access_control->$access) {
+                    return redirect()->route($route);
+                }
+            }
+        } else {
+            // Handle null access control values, specifically for superadmins and not co-superadmins
+            // created in the database where access controls were not inserted
+            if ($user->user_type === 'superadmin') {
+                return redirect()->route('dashboard.index');
+            }
+            if ($user->user_type === 'admin') {
+                return redirect()->route('institution-students');
+            }
+        }
 
+        // If no access granted for all pages, log out the user and show error
+        Auth::logout();
+        return redirect()->route('login')->withErrors([
+            'password' => "Can't log in. All page access has been blocked. Please contact support for more information.",
+        ]);
+    }
 
     /**
      * Destroy an authenticated session.
      */
     public function destroy(Request $request): RedirectResponse
     {
+        $authenticatedUser = Auth::user();
+
         Auth::guard('web')->logout();
+
+        UserLog::create([
+            'user_id' => $authenticatedUser->id,
+            'log_activity' => 'Logged out',
+            'log_activity_content' => 'Logged out successfully.',
+        ]);
 
         $request->session()->invalidate();
 

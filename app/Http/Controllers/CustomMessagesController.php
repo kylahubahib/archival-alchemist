@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\CustomContent;
+use App\Models\UserLog;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rules;
@@ -56,7 +57,12 @@ class CustomMessagesController extends Controller
     {
         $content_type = $request->get('content_type');
 
-         $data = CustomContent::findOrFail($id);
+        $data = CustomContent::findOrFail($id);
+
+        // Capture old values for logging
+        $oldContentTitle = $data->content_title;
+        $oldContentText = $data->content_text;
+        $oldContentSubject = $data->subject;
 
         if ($content_type === 'hero page') {
             $request->validate([
@@ -68,11 +74,35 @@ class CustomMessagesController extends Controller
             $data->update([
                 'content_text' => $request->content_text,
                 'content_title' => $request->content_title,
-                'subject' => $request->subject, 
+                'subject' => $request->subject,
             ]);
-        } 
 
-        elseif ($content_type === 'our services' || $content_type === 'our team') {
+            $logMessage = '';
+
+            // Handle changes in title
+            if ($oldContentTitle !== $request->content_title) {
+                $logMessage .= "Updated the title of {$content_type} from <strong>{$oldContentTitle}</strong> to <strong>{$request->content_title}</strong>. ";
+            }
+
+            // Handle changes in content text
+            if ($oldContentText !== $request->content_text) {
+                $logMessage .= "Updated the content text of {$content_type} from <strong>{$oldContentText}</strong> to <strong>{$request->content_text}</strong>. ";
+            }
+
+            // Handle changes in subject
+            if ($oldContentSubject !== $request->subject) {
+                $logMessage .= "Updated the subject of {$content_type} from <strong>{$oldContentSubject}</strong> to <strong>{$request->subject}</strong>. ";
+            }
+
+            // No changes
+            if ($logMessage !== '') {
+                UserLog::create([
+                    'user_id' => Auth::id(),
+                    'log_activity' => 'Updated Hero Page',
+                    'log_activity_content' => $logMessage,
+                ]);
+            }
+        } elseif ($content_type === 'our services' || $content_type === 'our team') {
 
             $request->validate([
                 'content_text' => 'required|string|max:5000',
@@ -83,6 +113,31 @@ class CustomMessagesController extends Controller
                 'content_text' => $request->content_text,
                 'content_title' => $request->content_title
             ]);
+
+            $logMessage = '';
+
+            // Handle changes in title
+            if ($oldContentTitle !== $request->content_title) {
+                $logMessage .= "Updated the title of {$content_type} from <strong>{$oldContentTitle}</strong> to <strong>{$request->content_title}</strong>. ";
+            }
+
+            // Handle changes in content text
+            if ($oldContentText !== $request->content_text) {
+                $logMessage .= "Updated the content text of {$content_type} from <strong>{$oldContentText}</strong> to <strong>{$request->content_text}</strong>. ";
+            }
+
+            // Handle changes in subject
+            if ($oldContentSubject !== $request->subject) {
+                $logMessage .= "Updated the subject of {$content_type} from <strong>{$oldContentSubject}</strong> to <strong>{$request->subject}</strong>. ";
+            }
+
+            if ($logMessage !== '') {
+                UserLog::create([
+                    'user_id' => Auth::id(),
+                    'log_activity' => "Updated {$content_type}",
+                    'log_activity_content' => $logMessage,
+                ]);
+            }
         }
 
         return redirect(route('manage-custom-messages.index'))->with('success', 'Updated successfully.');
@@ -98,13 +153,26 @@ class CustomMessagesController extends Controller
         $request->subject->move(public_path('storage/images'), $imageName);
 
         $data = CustomContent::findOrFail($id);
+        $oldSubject = $data->subject;
 
         $data->update([
             'subject' => 'storage/images/' . $imageName
         ]);
 
-        return response()->json();
+        // Prepare log message
+        $logMessage = "Updated the icon for <strong>{$title}</strong>";
+        if ($oldSubject) {
+            $logMessage .= " from <strong>{$oldSubject}</strong>";
+        }
+        $logMessage .= " to <strong>storage/images/{$imageName}</strong>.";
 
+        UserLog::create([
+            'user_id' => Auth::id(),
+            'log_activity' => 'Updated Icon',
+            'log_activity_content' => $logMessage,
+        ]);
+
+        return response()->json();
     }
 
     public function storeService(Request $request)
@@ -112,10 +180,10 @@ class CustomMessagesController extends Controller
         $request->validate([
             'content_text' => 'required|string|max:5000',
             'content_title' => 'required|string|max:255',
-            'subject' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048', 
+            'subject' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
-        $imageName = $request->content_title . '_' . time().'.'.$request->subject->extension();
+        $imageName = $request->content_title . '_' . time() . '.' . $request->subject->extension();
         $request->subject->move(public_path('storage/images'), $imageName);
 
 
@@ -127,6 +195,14 @@ class CustomMessagesController extends Controller
             'subject' => 'storage/images/' . $imageName
         ]);
 
+        UserLog::create([
+            'user_id' => Auth::id(),
+            'log_activity' => 'Added New Service',
+            'log_activity_content' => "Added a new service with title <strong>{$request->content_title}</strong>, content text <strong>{$request->content_text}</strong>, and subject image <strong>{$imageName}</strong>.",
+        ]);
+
+
+
         // return response()->json(['message' => 'Service added successfully!']);
         return redirect(route('manage-custom-messages.index'))->with('success', 'Updated successfully.');
     }
@@ -136,10 +212,10 @@ class CustomMessagesController extends Controller
         $request->validate([
             'content_text' => 'required|string|max:5000',
             'content_title' => 'required|string|max:255',
-            'subject' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048', 
+            'subject' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
-        $imageName = $request->content_title . '_' . time().'.'.$request->subject->extension();
+        $imageName = $request->content_title . '_' . time() . '.' . $request->subject->extension();
         $request->subject->move(public_path('storage/images'), $imageName);
 
         CustomContent::create([
@@ -148,6 +224,12 @@ class CustomMessagesController extends Controller
             'content_title' => $request->content_title,
             'content_text' => $request->content_text,
             'subject' => 'storage/images/' . $imageName
+        ]);
+
+        UserLog::create([
+            'user_id' => Auth::id(),
+            'log_activity' => 'Added New Team Member',
+            'log_activity_content' => "Added a new team member named <strong>{$request->content_title}</strong>, with the role of <strong>{$request->content_text}</strong>.",
         ]);
 
         //return response()->json(['message' => 'Team added successfully!']);
@@ -159,10 +241,16 @@ class CustomMessagesController extends Controller
      */
     public function destroy(string $id)
     {
-        CustomContent::find($id)->delete();
+        $content = CustomContent::findOrFail($id);
+
+        UserLog::create([
+            'user_id' => Auth::id(),
+            'log_activity' => 'Deleted Content',
+            'log_activity_content' => "Deleted a content with title <strong>{$content->content_title}</strong> and type <strong>{$content->content_type}</strong>.",
+        ]);
+
+        $content->delete();
 
         return redirect(route('manage-custom-messages.index'))->with('success', 'Deleted successfully.');
     }
-
-    
 }

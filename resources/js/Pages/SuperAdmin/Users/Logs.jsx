@@ -6,32 +6,32 @@ import Modal from '@/Components/Modal';
 import axios from 'axios';
 import SearchBar from '@/Components/Admin/SearchBar';
 import NoDataPrompt from '@/Components/Admin/NoDataPrompt';
+import TableSkeleton from '@/Components/Admin/TableSkeleton';
+import { renderTableHeaders } from './Users';
 
-export default function Logs({ userId, username, isOpen, onClose }) {
+export default function Logs({ userId, name, isOpen, onClose }) {
     const [userLogs, setUserLogs] = useState([]);
-    // const [userLogsToRender, setUserLogsToRender] = useState([]);
+    const [hasFilteredData, setHasFilteredData] = useState(false);
     const [searchActivity, setSearchActivity] = useState('');
+    const [isDataLoading, setIsDataLoading] = useState(true);
     const [date, setDate] = useState({
         start: null,
         end: null,
     });
-    const [isLoading, setIsLoading] = useState(true);
+
+    const tableHeaders = {
+        'logs': ['Activity', 'Description', 'Date'],
+    };
+
+    // Fetch the logs for a specific user by their ID 
+    useEffect(() => {
+        fetchData();
+    }, [userId]);
 
     useEffect(() => {
-        console.log("date", date);
-        console.log("userLogs", userLogs);
-    },)
+        fetchFilteredData();
+    }, [searchActivity.trim()]);
 
-    // Fetches the logs for a specific user by their ID and by all the filters
-    useEffect(() => {
-        setIsLoading(true);
-
-        const debounce = setTimeout(() => {
-            if (userId !== null) fetchData();
-        }, 300);
-
-        return () => clearTimeout(debounce);
-    }, [userId, searchActivity, date]);
 
 
     // Clear the filter values when the modal is closed
@@ -39,31 +39,20 @@ export default function Logs({ userId, username, isOpen, onClose }) {
         const counterModalAnimation = setTimeout(() => {
             setDate(null);
             setSearchActivity('');
+            setUserLogs([]);
         }, 300)
 
         return () => clearTimeout(counterModalAnimation);
 
-    }, [!isOpen]);
-
+    }, [onClose]);
 
     const fetchData = async () => {
-        if (!userId) {
-            console.error("userId is missing");
-            setIsLoading(false);
-            return;
-        }
+        setIsDataLoading(true);
 
         try {
             const response = await axios.get(route('users.logs'), {
                 params: {
                     user_id: userId,
-                    search_activity: searchActivity.trim(),
-                    start_date: date?.start
-                        ? `${date.start.year}-${date.start.month}-${date.start.day} ${date.start.hour}:${date.start.minute}:00`
-                        : null,
-                    end_date: date?.end
-                        ? `${date.end.year}-${date.end.month}-${date.end.day} ${date.end.hour}:${date.end.minute}:00`
-                        : null,
                 },
             });
 
@@ -71,22 +60,45 @@ export default function Logs({ userId, username, isOpen, onClose }) {
         } catch (error) {
             console.error("There was an error fetching the data", error);
         } finally {
-            setIsLoading(false);
+            setIsDataLoading(false);
         }
     };
 
+    const fetchFilteredData = async () => {
+        setIsDataLoading(true);
+
+        try {
+            const response = await axios.get(route('users.logs'), {
+                params: {
+                    search_activity: searchActivity.trim(),
+                    start_date: date?.start
+                        ? `${date.start.year}-${date.start.month}-${date.start.day} ${date.start.hour}:${date.start.minute}:00`
+                        : null,
+                    end_date: date?.end
+                        ? `${date.end.year}-${date.end.month}-${date.end.day} ${date.end.hour}:${date.end.minute}:00`
+                        : null,
+                }
+            })
+
+            response.data.length > 0 ? setHasFilteredData(true) : setHasFilteredData(false);
+        } catch (error) {
+            console.error("There was an error fetching the data", error);
+        } finally {
+            setIsDataLoading(false);
+        }
+    }
 
     return (
-        <Modal show={isOpen} onClose={onClose} maxWidth="3xl">
-            <div className="bg-customBlue p-3">
+        <Modal show={isOpen} onClose={onClose} maxWidth="4xl">
+            <div className="flex justify-between bg-customBlue p-3">
                 <h2 className="text-xl text-white inline-block font-bold tracking-widest">
-                    Logs
+                    <strong>{name}'s</strong>  Logs
                 </h2>
+                <Button isIconOnly radius="full" color="default" size="sm" onClick={onClose}><FaXmark /></Button>
             </div>
 
             <form>
                 <div className="flex flex-col p-6 space-y-5 overflow-auto tracking-wide">
-                    <label className="text-customGray text-center -mb-3 -mt-3"><strong>{username}'s</strong> Logs</label>
                     <div className="TableControlsContainer flex gap-0 h-full md:flex-row justify-between space-y-3 md:space-y-0 md:space-x-4">
                         <SearchBar
                             name="searchName"
@@ -106,7 +118,7 @@ export default function Logs({ userId, username, isOpen, onClose }) {
                                 isDisabled={
                                     (userLogs.length === 0 && !searchActivity) ||
                                     (userLogs.length === 0 && searchActivity) ||
-                                    isLoading
+                                    isDataLoading
                                 }
                                 startContent={<FaFilter size={33} />}
                                 granularity="minute"
@@ -126,64 +138,44 @@ export default function Logs({ userId, username, isOpen, onClose }) {
 
                     </div>
                     <div className="overflow-y-auto max-h-[400px] sm:max-h-[500px] md:max-h-[600px] lg:max-h-[700px] xl:max-h-[800px]">
-                        {!isLoading ? (
-                            userLogs.length > 0 ? (
-                                <table className="w-full table-auto relative text-xs text-left border-current text-customGray tracking-wide">
-                                    <thead className="text-xs sticky z-20 -top-[1px] pb-[20px] text-customGray uppercase align-top">
-                                        <tr className="border border-gray">
-                                            <th className="p-2 border border-gray">Activity</th>
-                                            <th className="p-2 border border-gray">Content</th>
-                                            <th className="p-2 border border-gray">Date</th>
+                        {!isDataLoading ? (
+                            userLogs?.data?.length > 0 ? (
+                                <table className="w-full table-auto relative text-xs text-left text-customGray tracking-wide border-1">
+                                    <thead className="text-xs sticky z-20 -top-[1px] pb-[20px] text-customGray bg-gray-300 uppercase align-top">
+                                        <tr>
+                                            <th className="p-2">Activity</th>
+                                            <th className="p-2">Content</th>
+                                            <th className="p-2">Date</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {userLogs.map((log) => (
-                                            <tr className="text-gray-400 border border-gray" key={log.log_id}>
-                                                <td className="p-2 font-bold border border-gray">{log.log_activity}</td>
-                                                <td className="p-2 border border-gray">{log.log_activity_content}</td>
-                                                <td className="p-2 border border-gray">{log.created_at}</td>
+                                        {userLogs.data.map((log) => (
+                                            <tr className="text-gray-400 border-t-1 border-gray" key={log.log_id}>
+                                                <td className="p-2 font-bold">{log.log_activity}</td>
+                                                <td className="p-2">
+                                                    <p dangerouslySetInnerHTML={{ __html: log.log_activity_content }}></p>
+                                                </td>
+                                                <td className="p-2">{log.created_at}</td>
                                             </tr>
                                         ))}
                                     </tbody>
                                 </table>
                             ) :
                                 <>
-                                    <table className="w-full table-auto relative text-xs text-left border-current text-customGray tracking-wide">
-                                        <thead className="text-xs sticky z-20 -top-[1px] pb-[20px] text-customGray uppercase align-top">
-                                            <tr className="border border-gray">
-                                                <th className="p-2 border border-gray">Activity</th>
-                                                <th className="p-2 border border-gray">Content</th>
-                                                <th className="p-2 border border-gray">Date</th>
-                                            </tr>
-                                        </thead>
-                                    </table>
-                                    <NoDataPrompt />
+                                    <div className="border-1">
+                                        <table className="w-full border-1">
+                                            {renderTableHeaders(tableHeaders, 'logs')}
+                                        </table>
+                                        <NoDataPrompt type={hasFilteredData ? '' : 'filter'} />
+                                    </div>
                                 </>
 
                         ) :
-                            <table className="w-full table-auto relative text-xs text-left border-current text-customGray tracking-wide">
-                                <thead className="text-xs sticky z-20 -top-[1px] pb-[20px] text-customGray uppercase align-top">
-                                    <tr className="border border-gray">
-                                        <th className="p-2 border border-gray"><Skeleton className="h-4 w-full rounded-lg" /></th>
-                                        <th className="p-2 border border-gray"><Skeleton className="h-4 w-full rounded-lg" /></th>
-                                        <th className="p-2 border border-gray"><Skeleton className="h-4 w-full rounded-lg" /></th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr className="text-gray-400 border border-gray">
-                                        <td className="p-2 font-bold border border-gray"><Skeleton className="h-3 w-full rounded-lg" /></td>
-                                        <td className="p-2 border border-gray"><Skeleton className="h-3 w-full rounded-lg" /></td>
-                                        <td className="p-2 border border-gray"><Skeleton className="h-3 w-full rounded-lg" /></td>
-                                    </tr>
-                                </tbody>
-                            </table>}
+                            <TableSkeleton tableHeaders={tableHeaders} tableHeaderType="logs" thClassName='bg-gray-300  ' />
+                        }
                     </div>
                 </div>
             </form >
-
-            <div className="bg-customBlue p-2 gap-2 flex justify-end">
-                <Button color="default" size="sm" onClick={onClose}>Close</Button>
-            </div>
         </Modal >
     );
 }

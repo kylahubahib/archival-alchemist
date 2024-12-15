@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\University;
 use App\Models\UniversityBranch;
 use App\Models\InstitutionSubscription;
+use App\Models\UserLog;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
@@ -27,7 +28,6 @@ class UniversityController extends Controller
             'universities' => $universities,
             'uniBranches' => $uniBranches
         ]);
-
     }
 
     public function checkUniversitySubscription(Request $request)
@@ -43,7 +43,7 @@ class UniversityController extends Controller
         if ($checkIfExist) {
             return response()->json([
                 'message' => 'This university already exists in our system.',
-            ], 200); 
+            ], 200);
         }
 
         return response()->json([], 204);
@@ -54,13 +54,12 @@ class UniversityController extends Controller
     {
         $id = $request->get('id');
 
-        if($id == 0){
+        if ($id == 0) {
             $uniBranches = UniversityBranch::with('university')->get();
-        }
-        else {
+        } else {
             $uniBranches = UniversityBranch::with('university')
-            ->where('uni_id', $id)
-            ->get();
+                ->where('uni_id', $id)
+                ->get();
         }
 
 
@@ -84,6 +83,10 @@ class UniversityController extends Controller
         if (!$uniBranch) {
             return redirect()->back()->with('error', 'University branch not found.');
         }
+
+        // Capture old values for logging
+        $oldBranchName = $uniBranch->uni_branch_name;
+        $oldUniName = University::find($uniBranch->uni_id)?->uni_name;
 
         // Validate the incoming data
         $validatedData = $request->validate([
@@ -121,6 +124,23 @@ class UniversityController extends Controller
             ]);
         }
 
+        // Log the changes
+        $logMessage = '';
+        if ($oldBranchName && $oldBranchName !== $validatedData['uni_branch_name']) {
+            $logMessage .= "Updated branch name from <strong>{$oldBranchName}</strong> to <strong>{$validatedData['uni_branch_name']}</strong>. ";
+        }
+
+        if ($oldUniName && $oldUniName !== $validatedData['uni_name']) {
+            $logMessage .= "Updated university name from <strong>{$oldUniName}</strong> to <strong>{$validatedData['uni_name']}</strong>. ";
+        }
+        if ($logMessage !== '') {
+            UserLog::create([
+                'user_id' => Auth::id(),
+                'log_activity' => 'Updated University',
+                'log_activity_content' => $logMessage,
+            ]);
+        }
+
         return redirect(route('manage-universities.index'))->with('success', 'University successfully updated.');
     }
 
@@ -129,9 +149,5 @@ class UniversityController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
-    { 
-
-    }
-
+    public function destroy(string $id) {}
 }

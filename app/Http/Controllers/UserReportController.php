@@ -6,6 +6,7 @@ use App\Models\ReportType;
 use App\Models\UserReport;
 use App\Models\User;
 use App\Models\ForumPost;
+use App\Models\UserLog;
 // use App\Models\Post;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
@@ -14,7 +15,7 @@ use Illuminate\Validation\Rules;
 use Inertia\Inertia;
 use Inertia\Response;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Auth; 
+use Illuminate\Support\Facades\Auth;
 
 use App\Notifications\SuperadminNotification;
 use App\Notifications\InstitutionAdminNotification;
@@ -50,12 +51,11 @@ class UserReportController extends Controller
             'reportLocation' => $reportLocation
 
         ]);
-
     }
 
     private function deleteOldReports()
     {
-        $thresholdDate = now()->subDays(30); 
+        $thresholdDate = now()->subDays(30);
         $oldReports = UserReport::where('created_at', '<', $thresholdDate)->delete();
 
         \Log::info("Deleted $oldReports old reports older than 30 days.");
@@ -74,11 +74,11 @@ class UserReportController extends Controller
             $reports->where('report_status', $status);
         }
 
-        if($location != 'All') {
+        if ($location != 'All') {
             $reports->where('report_location', $location);
         }
 
-        \Log::info('Date:'. $date);
+        \Log::info('Date:' . $date);
         \Log::info('Date Today: ' . Carbon::today());
         //\Log::info(UserReport::distinct()->pluck('created_at'));
 
@@ -97,7 +97,7 @@ class UserReportController extends Controller
                     //The whereMonth is used to filter records by the month of a specific date field
                     //The whereYear ensures that only reports from the current year are considered.
                     $reports->whereYear('created_at', Carbon::now()->year)
-                            ->whereMonth('created_at', Carbon::now()->month);
+                        ->whereMonth('created_at', Carbon::now()->month);
                     break;
             }
         }
@@ -131,13 +131,13 @@ class UserReportController extends Controller
             return redirect()->back()->with('error', 'Report not found.');
         }
 
-        switch ($report->report_location) {  
+        switch ($report->report_location) {
             case 'Forum':
-                $content = ForumPost::with('user:id,name,user_status,user_pic')->find($report->reported_id); 
+                $content = ForumPost::with('user:id,name,user_status,user_pic')->find($report->reported_id);
                 break;
 
             case 'Profile':
-                $content = User::find($report->reported_id); 
+                $content = User::find($report->reported_id);
                 $reportedCount = UserReport::where('reported_id', $report->reported_id)->count();
                 break;
 
@@ -192,10 +192,9 @@ class UserReportController extends Controller
 
             \Log::info($report->toArray());
 
-            if($report)
-            {
+            if ($report) {
                 $superadmins = User::where('user_type', 'superadmin')->get();
-            
+
                 //Notify the superadmin for the newly registered institution admin
                 if ($superadmins->isNotEmpty()) {
                     foreach ($superadmins as $superadmin) {
@@ -211,7 +210,6 @@ class UserReportController extends Controller
                 'success' => true,
                 'message' => 'Report submitted successfully!'
             ]);
-
         } catch (\Exception $e) {
 
             \Log::error('Error creating report: ' . $e->getMessage());
@@ -240,13 +238,13 @@ class UserReportController extends Controller
         $reportedId = $request->get('reportedId');
         $end_date = Carbon::now()->addDays($duration);
 
-        switch ($report->report_location) {  
+        switch ($report->report_location) {
             case 'Forum':
                 $content = ForumPost::find($report->reported_id);
 
                 if ($content) {
                     \Log::info('Content: ', $content->toArray());
-                
+
                     $content->update([
                         'status' => 'Hidden',
                     ]);
@@ -259,10 +257,17 @@ class UserReportController extends Controller
                     }
 
                     $report->update([
-                        'report_status' => 'Solved',  
+                        'report_status' => 'Solved',
                         'suspension_start_date' => Carbon::now(),
                         'suspension_end_date' => $end_date,
                         'closed_at' => Carbon::now()
+                    ]);
+
+                    // Log the action
+                    UserLog::create([
+                        'user_id' => Auth::id(),
+                        'log_activity' => 'Updated user status',
+                        'log_activity_content' => "Updated the status of <strong>{$user->name}</strong> to <strong>{$user->user_status}</strong> due to a report on the Forum.",
                     ]);
                 }
                 break;
@@ -274,15 +279,22 @@ class UserReportController extends Controller
                     $user->update([
                         'user_status' => 'Suspended'
                     ]);
-
                 }
 
                 $report->update([
-                    'report_status' => 'Solved',  
+                    'report_status' => 'Solved',
                     'suspension_start_date' => Carbon::now(),
                     'suspension_end_date' => $end_date,
                     'closed_at' => Carbon::now()
                 ]);
+
+                // Log the action
+                UserLog::create([
+                    'user_id' => Auth::id(),
+                    'log_activity' => 'Updated user status',
+                    'log_activity_content' => "Updated the status of <strong>{$user->name}</strong> to <strong>{$user->user_status}</strong> due to a report on the Profile.",
+                ]);
+
                 break;
 
             default:
@@ -291,15 +303,15 @@ class UserReportController extends Controller
 
         $reporter = User::find($report->reporter_id);
 
-        if($reporter) {
+        if ($reporter) {
             $reporter->notify(new UserNotification([
-                'message' => 'Hello ' . $reporter->name. ', we wanted to inform you that action has been taken regarding your 
+                'message' => 'Hello ' . $reporter->name . ', we wanted to inform you that action has been taken regarding your 
                 recent report on ' . $user->name . '. Thank you for helping us keep the Archival Alchemist community safe!',
                 'user_id' => $reporter->id
             ]));
         }
 
-      return response()->json([]);
+        return response()->json([]);
     }
 
 
@@ -315,7 +327,7 @@ class UserReportController extends Controller
     public function warnUser(Request $request, string $id)
     {
 
-        
+
         $report = UserReport::find($id);
 
         if (!$report) {
@@ -325,7 +337,7 @@ class UserReportController extends Controller
         $status = $request->get('status');
         $reportedUser = $request->get('reportedUser');;
 
-                
+
         $user = User::find($reportedUser);
         \Log::info($user);
 
@@ -343,7 +355,12 @@ class UserReportController extends Controller
             'report_status' => 'Dropped',
             'closed_at' => Carbon::now()
         ]);
-                
+
+        UserLog::create([
+            'user_id' => Auth::id(),
+            'log_activity' => 'Warned user',
+            'log_activity_content' => "Warned user <strong>{$user->name} (" . strtoupper($user->user_type) . ")</strong> regarding a report on their activity. No violation found, but advised to review community guidelines.",
+        ]);
 
         return response()->json();
     }

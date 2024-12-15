@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Pages\InstitutionAdmin;
 use App\Http\Controllers\Controller;
 use App\Mail\AccountDetailsMail;
 use App\Http\Controllers\Pages\InsAdminCommonDataController;
-use App\Models\{Faculty, PersonalSubscription,eser};
+use App\Models\{Faculty, PersonalSubscription, eser, UserLog};
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -21,14 +21,18 @@ class FacultyController extends Controller
     protected $authUserId;
     protected $insAdminUniBranchId;
     protected $insAdminAffiliation;
+    protected $totalAffiliatedPremiumUsers;
+    protected $planUserLimit;
 
     public function __construct()
     {
-        // Create an instance of CommonDataController to get the values intended for the institution admin
+        // Create an instance of CommonDataController to get the needed values
         $commonData = new InsAdminCommonDataController();
         $this->authUserId = Auth::id();
         $this->insAdminUniBranchId = $commonData->getInsAdminUniBranchId();
         $this->insAdminAffiliation = $commonData->getInsAdminAffiliation();
+        $this->totalAffiliatedPremiumUsers = $commonData->getTotalAffiliatedPremiumUsers();
+        $this->planUserLimit = $commonData->getPlanUserLimit();
     }
 
     public function index()
@@ -41,20 +45,20 @@ class FacultyController extends Controller
         $search = request('search', null);
         $department = request('department', null);
         // $course = request('course', null);
-        $plan = request('plan', null);
-        $planStatus = request('plan_status', null);
         $dateCreated = request('date_created', null);
         $entries = (int) request('entries', 10);
 
-        $query = User::where('user_type', 'teacher') // Only students
+        $query = User::where('user_type', 'teacher')
             ->select('id', 'uni_id_num', 'name', 'email', 'is_affiliated', 'is_premium', 'user_pic', 'created_at', 'user_status');
 
         // Filter premium access
         if ($hasFacultyPremiumAccess === 'with-premium-access') {
-            $query->where('users.is_affiliated', true);
+            $query->where('is_premium', true);
         } elseif ($hasFacultyPremiumAccess === 'no-premium-access') {
-            $query->where('users.is_affiliated', false);
+            $query->where('is_premium', false);
         }
+
+        $query->where('is_affiliated', true);
 
         $query->with([
             'faculty:id,user_id,course_id,uni_branch_id',
@@ -63,8 +67,6 @@ class FacultyController extends Controller
             'faculty.course:id,dept_id',
             'faculty.course.sections:id,course_id,section_name',
             'faculty.course.department:id,dept_name,dept_acronym,uni_branch_id',
-            'personal_subscription:id,user_id,plan_id,start_date,end_date,persub_status',
-            'personal_subscription.plan:id,plan_name,plan_type,plan_term',
         ]);
 
         // Filter by related university branch
@@ -72,15 +74,11 @@ class FacultyController extends Controller
             $q->where('uni_branch_id', $this->insAdminUniBranchId);
         });
 
-        // Filter by subscription plan type
-        // $query->whereHas('personal_subscription.plan', function ($q) {
-        //     $q->where('plan_type', 'Personal');
-        // });
-
         // Search by user name or faculty ID
         if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'LIKE', '%' . $search . '%');
+                $q->orWhere('email', 'LIKE', '%' . $search . '%');
                 $q->orWhere('uni_id_num', 'LIKE', '%' . $search . '%');
             });
         }
@@ -97,21 +95,7 @@ class FacultyController extends Controller
         //     $query->whereHas('faculty.course', function ($q) use ($course) {
         //         $q->where('course_acronym', $course);
         //     });
-        // }
-
-        // Filter by subscription plan name
-        if ($plan) {
-            $query->whereHas('personal_subscription.plan', function ($q) use ($plan) {
-                $q->where('plan_name', $plan);
-            });
-        }
-
-        // Filter by subscription status
-        if ($planStatus) {
-            $query->whereHas('personal_subscription', function ($q) use ($planStatus) {
-                $q->where('persub_status', $planStatus);
-            });
-        }
+        //
 
         // Filter by creation date range
         if ($dateCreated) {
@@ -119,9 +103,9 @@ class FacultyController extends Controller
             $query->whereBetween('users.created_at', [$startDate, $endDate]);
         }
         $faculties = $query
-            // ->whereHas('faculty', function ($q) {
-            //     $q->orderBy('id', 'asc');
-            // })
+            ->whereHas('faculty', function ($q) {
+                $q->orderBy('id', 'asc');
+            })
             ->paginate($entries)
             ->withQueryString();
 
@@ -133,37 +117,11 @@ class FacultyController extends Controller
             'insAdminAffiliation' => $this->insAdminAffiliation,
             'faculties' => $faculties,
             'hasFacultyPremiumAccess' => $hasFacultyPremiumAccess,
+            'totalAffiliatedPremiumUsers' => $this->totalAffiliatedPremiumUsers,
+            'planUserLimit' => $this->planUserLimit,
             'entries' => $entries,
             'search' => $search,
         ]);
-    }
-
-    public function updatePlanStatus(Request $request, $hasFacultyPremiumAccess)
-    {
-        $userId = $request->input('user_id');
-        $action = $request->input('action');
-
-        $personalPlan = PersonalSubscription::firstWhere('user_id', $userId);
-
-        Log::info(['action' => $action]);
-
-
-        switch ($action) {
-            case 'Activate':
-                $personalPlan->persub_status = 'Active';
-                break;
-
-            case 'Deactivate':
-                $personalPlan->persub_status = 'Deactivated';
-                break;
-
-            default:
-                return response()->json(['error' => 'Invalid action'], 400);
-        }
-
-        $personalPlan->save();
-
-        return  $this->filter($hasFacultyPremiumAccess);
     }
 
     public function addFaculty(Request $request)
@@ -188,7 +146,7 @@ class FacultyController extends Controller
                         }
                     },
                 ],
-                'name' => 'string|max:255',
+                'name' => 'required|string|max:255',
                 'email' => 'required|email|max:255|unique:users,email',
                 'date_of_birth' => 'required|max:150',
             ],
@@ -215,13 +173,22 @@ class FacultyController extends Controller
                 'uni_id_num' => $validatedData['uni_id_num'],
                 'user_dob' => $validatedData['date_of_birth'],
                 'email' => $validatedData['email'],
-                'password' => $hashedPassword, // Store the hashed password
+                'password' => $hashedPassword,
+                'is_affiliated' => true,
+                'is_premium' => true,
             ]);
 
             // Create the student
             Faculty::create([
                 'user_id' => $user->id,
                 'uni_branch_id' => $this->insAdminUniBranchId,
+            ]);
+
+            // Log the activity
+            UserLog::create([
+                'user_id' => Auth::id(),
+                'log_activity' => 'Added Faculty',
+                'log_activity_content' => "Added faculty <strong>{$validatedData['name']}</strong> with university ID <strong>{$validatedData['uni_id_num']}</strong> and email <strong>{$validatedData['email']}</strong>.",
             ]);
 
             DB::commit(); // Commit the transaction if everything is fine

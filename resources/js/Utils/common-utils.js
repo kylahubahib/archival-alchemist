@@ -40,14 +40,21 @@ export const parseNextUIDateTime = (date) => {
 export const updateURLParams = (paramKey, paramValue) => {
     const urlParams = new URLSearchParams(window.location.search);
 
-    if (paramValue === null || paramValue === '') {
-        urlParams.delete(paramKey);
-    } else {
+    // Check if paramValue is a valid number (and not NaN)
+    if (typeof paramValue === 'number' && !isNaN(paramValue)) {
         urlParams.set(paramKey, paramValue);
+    } else if (paramValue != null && paramValue.trim() !== '') {
+        // For non-number values, check if it's a non-empty string
+        urlParams.set(paramKey, paramValue);
+    } else {
+        // Delete the parameter if the value is invalid
+        urlParams.delete(paramKey);
     }
 
-    window.history.pushState({}, '', `${window.location.pathname}${paramValue ? '?' : ''}${urlParams}`);
+    // Add '?' to the URL if there are any parameters (including valid numbers)
+    window.history.pushState({}, '', `${window.location.pathname}${urlParams.toString() ? '?' : ''}${urlParams}`);
 };
+
 
 export const encodeURLParam = (param) => {
     // Assign a default null value to remove the param in the url if the value is an empty string
@@ -118,6 +125,8 @@ export const getAnimationProps = ({ index = 0, animationType = 'fadeUp', duratio
             return {};
     }
 };
+
+// Next ui custom input classnames
 export const customInputClassNames = (propsClass = {}, styleProps = {}) => ({
     base: "tracking-wide pb-2",
     input: "border-none focus:ring-0 text-customGray",

@@ -21,7 +21,14 @@ export const renderAutocompleteList = (items, onClick = null) => {
 
 export default function Filter({ userType, selectedAutocompleteItems, setSelectedAutocompleteItems,
     autocompleteItems, setAutocompleteItems, isFilterOpen }) {
+
     const [isAutocompleteDataLoading, setIsAutocompleteDataLoading] = useState(false);
+    const [universitiesRelatedData, setUniversitiesRelatedData] = useState(false);
+    const [unfilteredBranches, setUnfilteredBranches] = useState([]);
+    const [unfilteredDepartments, setUnfilteredDepartments] = useState([]);
+    const [unfilteredCourses, setUnfilteredCourses] = useState([]);
+    const [unfilteredSections, setUnfilteredSections] = useState([]);
+
     const params = route().params;
 
     // useEffect(() => {
@@ -36,49 +43,102 @@ export default function Filter({ userType, selectedAutocompleteItems, setSelecte
         return () => clearTimeout(debounce);
     }, [selectedAutocompleteItems]);
 
-    // Fetches the data as dropdown menus data including universities, branches, departments, etc.  
     useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const [universitiesResponse, currentPlansResponse, statusResponse,
-                    insAdminRolesResponse, superAdminRolesResponse] = await axios.all([
-                        axios.get(route('fetch.universities')),
-                        axios.get(route('fetch.current-plans')),
-                        axios.get(route('fetch.status')),
-                        axios.get(route('fetch.institution-admin-roles')),
-                        axios.get(route('fetch.super-admin-roles'))
-                    ]);
-
-                setAutocompleteItems({
-                    ...autocompleteItems,
-                    university: universitiesResponse.data,
-                    currentPlan: currentPlansResponse.data,
-                    insAdminRole: insAdminRolesResponse.data,
-                    superAdminRole: superAdminRolesResponse.data,
-                    status: statusResponse.data
-                });
-            }
-            catch (error) {
-                console.error("There was an error fetching the data!", error);
-            }
-        };
 
         fetchData();
     }, []);
 
-    // Fetches the related branches, departments, and courses for the university 
+    const fetchData = async () => {
+        try {
+            const [universitiesResponse, currentPlansResponse, statusResponse,
+                insAdminRolesResponse, superAdminRolesResponse] = await axios.all([
+                    axios.get(route('fetch.university-related-data')),
+                    axios.get(route('fetch.current-plans')),
+                    axios.get(route('fetch.status')),
+                    axios.get(route('fetch.institution-admin-roles')),
+                    axios.get(route('fetch.super-admin-roles'))
+                ]);
+
+            setUniversitiesRelatedData(universitiesResponse.data);
+
+
+            const universityAcronyms = universitiesResponse?.data?.map(university => university.uni_acronym);
+
+            const branches = universitiesResponse?.data?.flatMap(universiy =>
+                universiy.university_branch.map(branch => branch.uni_branch_name)
+            );
+
+            const departmentAcronyms = universitiesResponse?.data?.flatMap(universiy =>
+                universiy.university_branch.flatMap(branch =>
+                    branch.department.map(department => department.dept_acronym))
+            );
+
+            const courseAcronyms = universitiesResponse?.data?.flatMap(universiy =>
+                universiy.university_branch.flatMap(branch =>
+                    branch.department.flatMap(department =>
+                        department.course.map(course => course.course_acronym)))
+            );
+
+            const sections = universitiesResponse?.data?.flatMap(universiy =>
+                universiy.university_branch.flatMap(branch =>
+                    branch.department.flatMap(department =>
+                        department.course.flatMap(course =>
+                            course.sections.map(section => section.section_name))))
+            );
+
+
+            setUnfilteredBranches(branches);
+            setUnfilteredDepartments(departmentAcronyms);
+            setUnfilteredCourses(courseAcronyms);
+            setUnfilteredSections(sections);
+
+            console.log('universityAcronyms', universityAcronyms);
+            console.log('branches', branches);
+            console.log('departmentAcronyms', departmentAcronyms);
+            console.log('courseAcronyms', courseAcronyms);
+            console.log('sections', sections);
+            console.log('insAdminRolesResponse', insAdminRolesResponse);
+            console.log('superAdminRolesResponse', superAdminRolesResponse);
+
+            console.log('universitiesResponse.data', universitiesResponse.data);
+
+
+            setAutocompleteItems({
+                ...autocompleteItems,
+                university: universityAcronyms,
+                branch: branches,
+                department: departmentAcronyms,
+                course: courseAcronyms,
+                section: sections,
+                currentPlan: currentPlansResponse.data,
+                insAdminRole: insAdminRolesResponse.data,
+                superAdminRole: superAdminRolesResponse.data,
+                status: statusResponse.data
+            });
+        }
+        catch (error) {
+            console.error("There was an error fetching the data!", error);
+        }
+    };
 
 
     const setFilters = () => {
         router.get(
             route('users.filter', {
                 ...params,
-                hasStudentPremiumAccess,
+                userType,
                 page: null,
+                university: sanitizeURLParam(selectedAutocompleteItems.university),
+                branch: sanitizeURLParam(selectedAutocompleteItems.branch),
                 department: sanitizeURLParam(selectedAutocompleteItems.department),
                 course: sanitizeURLParam(selectedAutocompleteItems.course),
+                section: sanitizeURLParam(selectedAutocompleteItems.section),
                 plan: sanitizeURLParam(selectedAutocompleteItems.plan),
                 plan_status: sanitizeURLParam(selectedAutocompleteItems.planStatus),
+                super_admin_role: sanitizeURLParam(selectedAutocompleteItems.superAdminRole),
+                ins_admin_role: sanitizeURLParam(selectedAutocompleteItems.insAdminRole),
+                date_created: sanitizeURLParam(selectedAutocompleteItems.dateCreated),
+                status: sanitizeURLParam(selectedAutocompleteItems.status),
             }),
             {}, // Additional data (if any)
             { preserveScroll: true, preserveState: true }
@@ -87,11 +147,17 @@ export default function Filter({ userType, selectedAutocompleteItems, setSelecte
 
     const handleInputValue = (category) => {
         const selectedWithCategories = {
+            'University': 'university',
+            'Branch': 'branch',
             'Department': 'department',
             'Course': 'course',
+            'Section': 'section',
             'Current Plan': 'plan',
             'Plan Status': 'planStatus',
-            'Date Created': 'dateCreated'
+            'Date Created': 'dateCreated',
+            'Status': 'status',
+            'Super Admin Role': 'superAdminRole',
+            'Institution Admin Role': 'insAdminRole',
         };
 
         const field = selectedWithCategories[category];
@@ -111,17 +177,17 @@ export default function Filter({ userType, selectedAutocompleteItems, setSelecte
             className={`${isFilterOpen ? 'flex' : 'hidden'} justify-center gap-2 text-sm items-center text-customGray -my-2`}
         >
             {
-                ['University', 'Branch', 'Department', 'Course', 'Current Plan', 'Role', 'Status']
+                ['University', 'Branch', 'Department', 'Course', 'Section', 'Current Plan', 'Super Admin Role', 'Institution Admin Role', 'Date Created', 'Status']
                     .filter(item => { // Show specific dropdowns based on userType
                         switch (userType) {
                             case 'student':
-                                return !['Role'].includes(item);
-                            case 'faculty':
-                                return !['Course', 'Role'].includes(item);
+                                return !['Super Admin Role', 'Institution Admin Role'].includes(item);
+                            case 'teacher':
+                                return !['Course', 'Section', 'Super Admin Role', 'Institution Admin Role'].includes(item);
                             case 'admin':
-                                return !['Department', 'Course', 'Current Plan'].includes(item);
+                                return !['Department', 'Course', 'Section', 'Current Plan', 'Super Admin Role'].includes(item);
                             case 'superadmin':
-                                return !['University', 'Branch', 'Department', 'Course', 'Current Plan'].includes(item);
+                                return !['University', 'Branch', 'Department', 'Course', 'Section', 'Current Plan', 'Institution Admin Role'].includes(item);
                         }
                     })
                     .map((category, index) => (
@@ -132,20 +198,25 @@ export default function Filter({ userType, selectedAutocompleteItems, setSelecte
                                         aria-label="Date filter"
                                         size="sm"
                                         radius="sm"
-                                        label="Date Created"
+                                        label="Date Created (Start Date - End Date)"
                                         placeholder=" "
                                         className="max-w-xl !text-white"
                                         granularity="minute"
                                         hideTimeZone
                                         visibleMonths={2}
-                                        // defaultValue={handleInputValue(category)}
+                                        value={handleInputValue(category)}
                                         onChange={(date) => autocompleteOnChangeHandler(setSelectedAutocompleteItems, 'Date Created', date)}
                                     />
                                     {(selectedAutocompleteItems.dateCreated?.start && selectedAutocompleteItems.dateCreated?.end) && (
                                         <Button
                                             radius="sm"
                                             isIconOnly
-                                            onClick={() => setSelectedAutocompleteItems({ ...selectedAutocompleteItems, dateCreated: null })}
+                                            onClick={() =>
+                                                setSelectedAutocompleteItems(prevState => ({
+                                                    ...prevState,
+                                                    dateCreated: null,
+                                                }))
+                                            }
                                             className="mb-auto h-[47.99px] bg-[#f4f4f5] hover:bg-[#e4e4e7] text-[#7f7f87]"
                                         >
                                             <FaXmark size={20} />
@@ -165,38 +236,45 @@ export default function Filter({ userType, selectedAutocompleteItems, setSelecte
                                         // defaultInputValue={handleInputValue(category)}
                                         inputValue={handleInputValue(category)}
                                         defaultSelectedKey={
+                                            category === 'University' && params.university ||
+                                            category === 'Branch' && params.branch ||
                                             category === 'Department' && params.department ||
                                             category === 'Course' && params.course ||
+                                            category === 'Section' && params.section ||
                                             category === 'Current Plan' && params.plan ||
                                             category === 'Plan Status' && params.plan_status ||
+                                            category === 'Status' && params.status ||
                                             category === 'Date Created' && params.date_created
                                         }
                                         onInputChange={(value) => autocompleteOnChangeHandler(setSelectedAutocompleteItems, category, value)}
                                         onSelectionChange={(value) => autocompleteOnChangeHandler(setSelectedAutocompleteItems, category, value)}
-                                        className="min-w-1"
+                                        className="min-w-11"
                                     >
                                         {category === 'University' && (
-                                            renderAutocompleteList('University', autocompleteItems.university)
+                                            renderAutocompleteList(autocompleteItems.university)
                                         )}
                                         {category === 'Branch' && (
-                                            renderAutocompleteList('Branch', autocompleteItems.branch)
+                                            renderAutocompleteList(autocompleteItems.branch)
                                         )}
                                         {category === 'Department' && (
-                                            renderAutocompleteList('Department', autocompleteItems.department)
+                                            renderAutocompleteList(autocompleteItems.department)
                                         )}
                                         {category === 'Course' && (
-                                            renderAutocompleteList('Course', autocompleteItems.course)
+                                            renderAutocompleteList(autocompleteItems.course)
+                                        )}
+                                        {category === 'Section' && (
+                                            renderAutocompleteList(autocompleteItems.section)
                                         )}
                                         {category === 'Current Plan' && (
-                                            renderAutocompleteList('Current Plan', autocompleteItems.currentPlan)
+                                            renderAutocompleteList(autocompleteItems.currentPlan)
                                         )}
                                         {category === 'Role' && (
                                             userType === 'institution_admin' ?
-                                                renderAutocompleteList('Role', autocompleteItems.insAdminRole) :
-                                                renderAutocompleteList('Role', autocompleteItems.superAdminRole)
+                                                renderAutocompleteList(autocompleteItems.insAdminRole) :
+                                                renderAutocompleteList(autocompleteItems.superAdminRole)
                                         )}
                                         {category === 'Status' && (
-                                            renderAutocompleteList('Status', autocompleteItems.status)
+                                            renderAutocompleteList(autocompleteItems.status)
                                         )}
                                     </Autocomplete>
                                 </div>

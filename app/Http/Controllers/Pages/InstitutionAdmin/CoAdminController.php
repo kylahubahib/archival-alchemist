@@ -20,21 +20,26 @@ class CoAdminController extends Controller
     protected $authUserId;
     protected $insAdminUniBranchId;
     protected $insAdminAffiliation;
+    protected $totalAffiliatedPremiumUsers;
+    protected $planUserLimit;
 
     public function __construct()
     {
-        // Create an instance of CommonDataController to get the values intended for the institution admins
+        // Create an instance of CommonDataController to get the needed values
         $commonData = new InsAdminCommonDataController();
         $this->authUserId = Auth::id();
         $this->insAdminUniBranchId = $commonData->getInsAdminUniBranchId();
         $this->insAdminAffiliation = $commonData->getInsAdminAffiliation();
+        $this->totalAffiliatedPremiumUsers = $commonData->getTotalAffiliatedPremiumUsers();
+        $this->planUserLimit = $commonData->getPlanUserLimit();
     }
+
     public function index()
     {
         $role = request('role', null);
         $status = request('status', null);
-        $searchValue = request('search', null);
-        Log::info(['searchValue' => $searchValue]);
+        $search = request('search', null);
+        Log::info(['search' => $search]);
         $entries = request('entries', null);
 
         // Base query to get the users
@@ -54,10 +59,10 @@ class CoAdminController extends Controller
         });
 
         // Filters
-        if ($searchValue) {
-            $query->where(function ($q) use ($searchValue) {
-                $q->where('name', 'LIKE', '%' . $searchValue . '%')
-                    ->orWhere('id', $searchValue); // Use orWhere here
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'LIKE', '%' . $search . '%')
+                    ->orWhere('id', $search); // Use orWhere here
             });
         }
 
@@ -70,15 +75,10 @@ class CoAdminController extends Controller
         return Inertia::render('InstitutionAdmin/CoAdmin/CoAdmin', [
             'insAdminAffiliation' => $this->insAdminAffiliation,
             'coAdmins' => $coAdmins,
-            'searchValue' => $searchValue,
+            'totalAffiliatedPremiumUsers' => $this->totalAffiliatedPremiumUsers,
+            'planUserLimit' => $this->planUserLimit,
+            'entries' => $entries,
+            'search' => $search,
         ]);
-    }
-
-    public function sampleUpdateManuscript()
-    {
-
-        $book = ManuscriptProject::where('id', 3)->first();
-        $book->is_publish = true;
-        $book->save();
     }
 }
