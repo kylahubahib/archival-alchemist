@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { User, Chip, user, Button, } from "@nextui-org/react";
-import { FaPlus, FaFileCircleCheck, FaFileCircleMinus, FaFileInvoice } from "react-icons/fa6";
+import { User } from "@nextui-org/react";
+import { FaPlus } from "react-icons/fa6";
 import { HiDocumentCheck, HiDocumentMinus } from "react-icons/hi2";
 import { decodeURLParam, formatDateTime } from "@/Utils/common-utils";
 import { renderTableControls, renderTableHeaders } from "@/Pages/SuperAdmin/Users/Users";
-import { fetchSearchFilteredData, getTotalFilters, handleSetEntriesPerPageClick } from "@/Utils/admin-utils";
+import { fetchSearchFilteredData, getTotalFilters } from "@/Utils/admin-utils";
 import PageHeader from '@/Components/Admin/PageHeader';
 import AdminLayout from '@/Layouts/AdminLayout';
 import MainNav from "@/Components/MainNav";
@@ -12,64 +12,52 @@ import AddButton from "@/Components/Admin/AddButton";
 import ActionButton from "@/Components/Admin/ActionButton";
 import Pagination from "@/Components/Admin/Pagination";
 import TableSkeleton from "@/Components/Admin/TableSkeleton";
-import StatusChip from "@/Components/Admin/StatusChip";
 import NoDataPrompt from "@/Components/Admin/NoDataPrompt";
 import Filter from "./Filter";
 import Add from "./Add";
-import UpdatePlanStatus from "./UpdatePlanStatus";
-import { router } from "@inertiajs/core";
+import UpdatePremiumAccess from "./UpdatePremiumAccess.jsx";
 
-export default function Students({ auth, insAdminAffiliation, students, hasStudentPremiumAccess, search, entries }) {
-    console.log('students', students);
+export default function Students({ auth, insAdminAffiliation, students, hasStudentPremiumAccess,
+    planUserLimit, totalAffiliatedPremiumUsers, search, entries }) {
+
     const [studentsToRender, setStudentsToRender] = useState(students);
     const [userId, setUserId] = useState(null);
     const [isDataLoading, setIsDataLoading] = useState(false);
     const [hasFilteredData, setHasFilteredData] = useState(false);
     const [name, setName] = useState('');
     const [searchTerm, setSearchTerm] = useState(search ? decodeURLParam(search) : '');
-    const [currentPlanName, setCurrentPlanName] = useState('');
-    const [currentPlanStatus, setCurrentPlanStatus] = useState('');
     const [action, setAction] = useState(null);
     const [entriesPerPage, setEntriesPerPage] = useState(entries || 10);
     const [totalFilters, setTotalFilters] = useState(null);
     const [isAddStudentModalOpen, setIsAddStudentModalOpen] = useState(false);
-    const [isUpdatePlanStatusModalOpen, setIsUpdatePlanStatusModalOpen] = useState(false);
+    const [isUpdatePremiumAccessModalOpen, setIsUpdatePremiumAccessModalOpen] = useState(false);
     const [isFilterOpen, setIsFilterOpen] = useState(false);
 
     // State variables to be passed to the Filter component
-    const [autocompleteItems, setAutocompleteItems] = useState({ department: [], course: [], plan: [], currentPlanStatus: [] });
-    const [selectedAutocompleteItems, setSelectedAutocompleteItems] = useState({ department: '', course: '', plan: '', currentPlanStatus: '', dateCreated: { start: null, end: null, } });
+    const [autocompleteItems, setAutocompleteItems] = useState({
+        department: [], course: [], section: []
+    });
+    const [selectedAutocompleteItems, setSelectedAutocompleteItems] = useState({
+        department: '', course: '', section: '', dateCreated: { start: null, end: null, }
+    });
 
     const [{ university, uni_branch_name }] = insAdminAffiliation;
+    const remainingUserSlots = planUserLimit - totalAffiliatedPremiumUsers;
     const params = route().params;
-
-    console.log('params', params);
-
-    useEffect(() => {
-        console.log('hasFilteredData', hasFilteredData);
-
-    }, [hasFilteredData]);
 
     useEffect(() => {
         console.log('insAdminAffiliation', insAdminAffiliation);
     }, []);
 
-    const filterParams = ['department', 'course', 'plan', 'plan_status', 'date_created'];
+    const filterParams = ['department', 'course', 'section', 'date_created'];
     const navigations = [
         { text: 'Premium Access', icon: <HiDocumentCheck />, param: 'with-premium-access' },
         { text: 'No Premium Access', icon: <HiDocumentMinus />, param: 'no-premium-access' },
     ];
-
     const tableHeaders = {
-        'with-premium-access': ['Name', 'Student ID', 'Department', 'Course', 'Section', 'Date Created',],
-        'no-premium-access': ['Name', 'Student ID', 'Department', 'Course', 'Section', 'Date Created',],
+        'with-premium-access': ['Name', 'Email', 'Student University ID', 'Department', 'Course', 'Section', 'Date Created', 'Action'],
+        'no-premium-access': ['Name', 'Email', 'Student University ID', 'Department', 'Course', 'Section', 'Date Created', 'Action'],
     };
-
-
-    // const tableHeaders = {
-    //     'with-premium-access': ['Name', 'Student ID', 'Department', 'Course', 'Section', 'Date Created', 'Action'],
-    //     'no-premium-access': ['Name', 'Student ID', 'Department', 'Course', 'Section', 'Date Created',],
-    // };
 
     // Get the total number of filters from the query parameters that have values
     useEffect(() => {
@@ -85,7 +73,7 @@ export default function Students({ auth, insAdminAffiliation, students, hasStude
     useEffect(() => {
         setIsDataLoading(true);
 
-        const debounce = setTimeout(() => {
+        const debounce = setTimeout(() => {         
             fetchSearchFilteredData('institution-students.filter', { hasStudentPremiumAccess: hasStudentPremiumAccess }, params, searchTerm,
                 setIsDataLoading, setStudentsToRender, setHasFilteredData);
         }, 300);
@@ -94,42 +82,47 @@ export default function Students({ auth, insAdminAffiliation, students, hasStude
 
     }, [searchTerm.trim()]);
 
-    const renderActionButtons = (userId, name, currentPlanName, currentPlanStatus) => {
-        const actionText = currentPlanStatus.toLowerCase() === 'active' ? "Deactivate" : "Activate";
-
+    const renderActionButtons = (userId, name, hasStudentPremiumAccess) => {
         return (
-            <div className="p-2 flex gap-2">
-                {currentPlanStatus && (
+            <div className="flex gap-2">
+                {hasStudentPremiumAccess ? (
                     <ActionButton
-                        icon={currentPlanStatus.toLowerCase() === 'active' ? <FaFileCircleMinus /> : <FaFileCircleCheck />}
-                        tooltipContent={currentPlanStatus === 'Active' ? 'Deactivate plan' : 'Activate plan'}
+                        icon={<HiDocumentMinus />}
+                        tooltipContent={'Remove institution premium access'}
                         onClick={() =>
-                            handleUpdatePlanStatusModalClick(
+                            handleUpdateStudentPremiumAccess(
                                 userId,
                                 name,
-                                currentPlanName,
-                                actionText,
+                                "Remove",
                             )
                         }
-                    />
-                )}
+                    />)
+                    : (
+                        <ActionButton
+                            icon={<HiDocumentCheck />}
+                            tooltipContent={'Grant institution premium access'}
+                            onClick={() =>
+                                handleUpdateStudentPremiumAccess(
+                                    userId,
+                                    name,
+                                    "Grant",
+                                )
+                            }
+                        />
+                    )}
             </div>
         )
     };
 
-    const handleUpdatePlanStatusModalClick = (id, name, currentPlanName, actionText) => {
-        setIsUpdatePlanStatusModalOpen(true);
+    const handleUpdateStudentPremiumAccess = (id, name, actionText) => {
+        setIsUpdatePremiumAccessModalOpen(true);
         setUserId(id);
         setName(name);
-        setCurrentPlanName(currentPlanName);
         setAction(actionText);
     }
 
     const handleClearFiltersClick = () => {
         setSelectedAutocompleteItems({ department: '', course: '', plan: '', currentPlanStatus: '', dateCreated: null })
-    }
-
-    const handleSampleUpdateManuscript = () => {
     }
 
     return (
@@ -141,8 +134,6 @@ export default function Students({ auth, insAdminAffiliation, students, hasStude
                 <div className="flex">
                     <PageHeader>STUDENTS</PageHeader>
                 </div>
-
-                {/* <Button onClick={ } /> */}
 
                 <div className="mx-auto sm:px-2 lg:px-4">
                     <div className="MainNavContainer flex gap-3 py-4">
@@ -164,13 +155,24 @@ export default function Students({ auth, insAdminAffiliation, students, hasStude
                         </AddButton>
                     </div>
 
-                    <div className="bg-white flex flex-col gap-4 h-[68dvh] relative shadow-md sm:rounded-lg overflow-hidden p-4">
+                    <div className="bg-white flex flex-col gap-4 min-h-[68dvh]  relative shadow-md sm:rounded-lg overflow-hidden p-4">
 
                         {/* TABLE CONTROLS */}
-                        {renderTableControls('institution-students.filter', searchTerm, setSearchTerm, 'Search by name or student id...',
-                            students.data.length === 0, totalFilters, handleClearFiltersClick, isFilterOpen, setIsFilterOpen,
-                            handleSetEntriesPerPageClick, entriesPerPage, setEntriesPerPage, setStudentsToRender
-                        )}
+                        {renderTableControls({
+                            routeName: 'institution-students.filter',
+                            searchVal: searchTerm,
+                            searchValSetter: setSearchTerm,
+                            searchBarPlaceholder: 'Search by name, email, student university id...',
+                            isDisabled: students.data.length === 0,
+                            totalFilters: totalFilters,
+                            clearFiltersOnClick: handleClearFiltersClick,
+                            isFilterOpen: isFilterOpen,
+                            isFilterOpenSetter: setIsFilterOpen,
+                            entriesPerPage: entriesPerPage,
+                            setEntriesPerPage: setEntriesPerPage,
+                            setEntriesResponseData: setStudentsToRender,
+                            params: { ...params, hasStudentPremiumAccess: hasStudentPremiumAccess },
+                        })}
 
                         {/* FILTER COMPONENT PLACEMENT */}
                         <Filter
@@ -190,14 +192,11 @@ export default function Students({ auth, insAdminAffiliation, students, hasStude
                                         {renderTableHeaders(tableHeaders, hasStudentPremiumAccess)}
                                         <tbody>
                                             {studentsToRender.data.map((stud, index) => {
-                                                const { id, uni_id_num, name, email, created_at, user_pic, student, personal_subscription } = stud;
+                                                const { id, uni_id_num, name, email, created_at, user_pic, student, is_premium } = stud;
 
-                                                const studentId = student?.id || 'N/A';
                                                 const departmentAcronym = student?.section?.course?.department?.dept_acronym || 'N/A';
                                                 const courseAcronym = student?.section?.course?.course_acronym || 'N/A';
                                                 const sectionName = student?.section?.section_name || 'N/A';
-                                                const planName = personal_subscription?.plan?.plan_name || 'Basic Plan';
-                                                const planStatus = personal_subscription?.persub_status || 'N/A';
                                                 const formattedDateCreated = formatDateTime(created_at) || 'N/A';
 
                                                 return (
@@ -205,32 +204,24 @@ export default function Students({ auth, insAdminAffiliation, students, hasStude
                                                         <td className="flex items-center content-center pl-3 p-2">
                                                             <User
                                                                 name={name}
-                                                                description={email}
                                                                 avatarProps={{
                                                                     src: user_pic ? `/${user_pic}` : '/images/default-profile.png',
                                                                     alt: "Profile Picture",
-                                                                    isBordered: true
+                                                                    isBordered: true,
+                                                                    className: "flex h-7 w-7 mr-1 flex-shrink-0 text",
                                                                 }}
+                                                                classNames={
+                                                                    { name: "text-xs", }
+                                                                }
                                                             />
                                                         </td>
+                                                        <td className="p-2 tracking-wider">{email}</td>
                                                         <td className="p-2">{uni_id_num}</td>
                                                         <td className="p-2">{departmentAcronym ?? 'N/A'}</td>
                                                         <td className="p-2">{courseAcronym ?? 'N/A'}</td>
                                                         <td className="p-2">{sectionName ?? 'N/A'}</td>
                                                         <td className="p-2">{formattedDateCreated}</td>
-                                                        {/* <td className="p-2">
-                                                            <Chip startContent={<FaFileInvoice size={16} />} size="sm" className="text-customGray h-full p-1 text-wrap flex text-center" variant='faded'>
-                                                                {planName}
-                                                            </Chip>
-                                                        </td> */}
-                                                        {/* <td className="p-2">{<StatusChip status={planStatus} />}</td> */}
-
-                                                        {/* {hasStudentPremiumAccess === 'with-premium-access' && (
-                                                            <>
-                                                                <td className="p-2">{renderActionButtons(id, name, planName, planStatus)}</td>
-                                                            </>
-                                                        )} */}
-
+                                                        <td className="p-2">{renderActionButtons(id, name, is_premium)}</td>
                                                     </tr>
                                                 )
                                             })}
@@ -244,7 +235,7 @@ export default function Students({ auth, insAdminAffiliation, students, hasStude
                                         <NoDataPrompt type={hasFilteredData ? '' : 'filter'} />
                                     </>
                                 )
-                                : <TableSkeleton tableHeaders={tableHeaders} tableHeaderType={hasStudentPremiumAccess} />
+                                : <TableSkeleton tableHeaders={tableHeaders} tableHeaderType={hasStudentPremiumAccess} trClassName="border-none" />
                             }
 
                         </div>
@@ -262,16 +253,19 @@ export default function Students({ auth, insAdminAffiliation, students, hasStude
             <Add
                 isOpen={isAddStudentModalOpen}
                 onClose={() => setIsAddStudentModalOpen(false)}
+                planUserLimit={planUserLimit}
+                remainingUserSlots={remainingUserSlots}
             />
-            <UpdatePlanStatus
+            <UpdatePremiumAccess
                 hasStudentPremiumAccess={hasStudentPremiumAccess}
+                planUserLimit={planUserLimit}
+                remainingUserSlots={remainingUserSlots}
                 userId={userId}
                 name={name}
-                currentPlanName={currentPlanName}
                 action={action}
                 setStudentsToRender={setStudentsToRender}
-                isOpen={isUpdatePlanStatusModalOpen}
-                onClose={() => setIsUpdatePlanStatusModalOpen(false)}
+                isOpen={isUpdatePremiumAccessModalOpen}
+                onClose={() => setIsUpdatePremiumAccessModalOpen(false)}
             />
         </AdminLayout >
     );

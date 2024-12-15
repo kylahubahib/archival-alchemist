@@ -740,6 +740,7 @@ class ClassController extends Controller
         }
 
         $manuscript->update(['man_doc_status' => $feedbackStatus]);
+        $manuscript->update(['man_doc_visibility' => 'Y']);
         $googleDocUrl = $manuscript->man_doc_content;
         $googleDocId = $this->extractGoogleDocId($googleDocUrl);
 

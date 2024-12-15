@@ -26,14 +26,14 @@ import TableSkeleton from "@/Components/Admin/TableSkeleton";
 
 // Since the super admin is the highest admin level
 // Below are the functions that render elements conditionally for use on other admin pages with the same structure
-export const renderTableHeaders = (headers, headerType) => {
+export const renderTableHeaders = (headers, headerType, className) => {
     if (!headers || !headers[headerType] || !Array.isArray(headers[headerType])) {
         console.warn(`Invalid headers or headerType: ${headerType}`);
         return null; // Return null to render nothing if invalid
     }
 
     return (
-        <thead className="text-xs sticky z-10 -top-[1px] pb-[20px] text-customGray uppercase align-top bg-customLightGray">
+        <thead className={`text-xs sticky z-10 -top-[1px] pb-[20px]  w-full  text-customGray uppercase align-top bg-customLightGray ${className}`}>
             <tr>
                 {/* Loads the tableHeader for a specific header type */}
                 {headers[headerType].map((header, index) => (
@@ -45,11 +45,11 @@ export const renderTableHeaders = (headers, headerType) => {
         </thead>
     );
 };
-
-
-export const renderTableControls = (routeName, searchVal, searchValSetter, searchBarPlaceholder, isDisabled, totalFilters,
-    clearFiltersOnClick, isFilterOpen, isFilterOpenSetter, isShowToggleFilter = true, entriesPerPageOnClick, entriesPerPage, setEntriesPerPage, setEntriesResponseData) => {
-
+export const renderTableControls = ({
+    routeName, searchVal, searchValSetter, searchBarPlaceholder, isDisabled, totalFilters,
+    clearFiltersOnClick, isFilterOpen, isFilterOpenSetter, entriesPerPage, setEntriesPerPage,
+    setEntriesResponseData, params
+}) => {
     return (
         <div className="flex flex-col gap-3 min-[480px]:flex-row md:gap-20 w-full">
             <SearchBar
@@ -68,7 +68,7 @@ export const renderTableControls = (routeName, searchVal, searchValSetter, searc
                 <div className="flex flex-1 gap-1 justify-end">
 
                     {/* CLEAR FILTERS */}
-                    {/* <AnimatePresence>
+                    <AnimatePresence>
                         {totalFilters > 0 && (
                             <motion.div
                                 key="close-button"
@@ -97,12 +97,10 @@ export const renderTableControls = (routeName, searchVal, searchValSetter, searc
                                 </Tooltip>
                             </motion.div>
                         )}
-                    </AnimatePresence> */}
+                    </AnimatePresence>
 
                     {/* TOGGLE FILTER */}
-
-                    {isShowToggleFilter && (
-                        <div>
+                    <div>
                         <Button
                             className="text-customGray border min-w-[100px] border-customLightGray bg-white"
                             radius="sm"
@@ -116,17 +114,15 @@ export const renderTableControls = (routeName, searchVal, searchValSetter, searc
                             </span>
                         </Button>
                     </div>
-                    )}
-                  
                 </div>
 
                 {/* ENTRIES PER PAGE */}
-                {/* <Dropdown>
+                <Dropdown>
                     <DropdownTrigger>
                         <Button
                             radius="sm"
                             disableRipple
-                            endContent={<FaChevronDown size={14} className="text-customGray" />}
+                            endContent={<FaChevronDown size={14} className="text-customGray flex-shrink-0" />}
                             className="border w-[190px] max-sm:w-full border-customLightGray bg-white"
                         >
                             <span className="text-gray-500 tracking-wide">
@@ -136,24 +132,25 @@ export const renderTableControls = (routeName, searchVal, searchValSetter, searc
                         </Button>
                     </DropdownTrigger>
 
-                    <DropdownMenu disabledKeys={[entriesPerPage.toString()]}>
-                        {[10, 15, 20, 25, 30, 50, 100].map((entry) => (
+                    <DropdownMenu disabledKeys={[entriesPerPage?.toString()]}>
+                        {[1, 10, 15, 20, 25, 30, 50, 100].map((entry) => (
                             <DropdownItem
                                 key={entry}
                                 className="!text-customGray"
-                                onClick={() => entriesPerPageOnClick(routeName, entry, setEntriesPerPage, setEntriesResponseData)}
+                                onClick={() => handleSetEntriesPerPageClick(routeName, entry, setEntriesPerPage, setEntriesResponseData, params)}
                             >
                                 {entry}
                             </DropdownItem>
                         ))}
                     </DropdownMenu>
-                </Dropdown> */}
+                </Dropdown>
             </div>
-        </div >
+        </div>
     )
 };
 
-export default function Users({ auth, users, userType, searchValue }) {
+
+export default function Users({ auth, users, userType, searchValue, entries }) {
     console.log('users', users);
     console.log('auth', auth);
 
@@ -164,7 +161,7 @@ export default function Users({ auth, users, userType, searchValue }) {
     const [totalFilters, setTotalFilters] = useState(0);
     const [searchTerm, setSearchTerm] = useState(searchValue || '');
     const [hasFilteredData, setHasFilteredData] = useState(false);
-    const [entriesPerPage, setEntriesPerPage] = useState(10);
+    const [entriesPerPage, setEntriesPerPage] = useState(entries);
     const [isDataLoading, setIsDataLoading] = useState(false);
 
     // For modals
@@ -177,14 +174,15 @@ export default function Users({ auth, users, userType, searchValue }) {
     const [autocompleteItems, setAutocompleteItems] = useState(
         { university: [], branch: [], department: [], course: [], currentPlan: [], insAdminRole: [], superAdminRole: [], status: [] }
     );
-    const [selectedAutocompleteItem, setSelectedAutocompleteItem] = useState(
+    const [selectedAutocompleteItems, setSelectedAutocompleteItems] = useState(
         { // Set the default value of dateCreated to null to avoid date format errors, and keep the other default values as empty strings to prevent input null errors.
-            university: '', branch: '', department: '', course: '', currentPlan: '', insAdminRole: '',
-            superAdminRole: '', dateCreated: { start: null, end: null, }, status: ''
+            university: '', branch: '', department: '', course: '',
+            currentPlan: '', insAdminRole: '', superAdminRole: '', dateCreated: null, status: ''
         });
 
     const params = route().params;
-    const authAdminRole = auth.user.access_control.role;
+    const authAdminRole = auth?.user?.access_control?.role || '';
+    console.log('authAdminRole', authAdminRole);
 
     const filterParams = ['university', 'branch', 'department', 'course', 'currentPlan', 'role', 'dateCreated', 'status'];
 
@@ -196,10 +194,10 @@ export default function Users({ auth, users, userType, searchValue }) {
         { text: 'Super Admins', icon: <FaUserSecret />, param: 'superadmin' }
     ];
     const tableHeaders = {
-        'student': ['Name', 'User ID', 'University', 'Current Plan', 'Date Created', 'Status', 'Actions'],
-        'teacher': ['Name', 'User ID', 'University', 'Department', 'Current Plan', 'Position', 'Date Created', 'Status', 'Actions'],
-        'admin': ['Name', 'User ID', 'Affiliated University', 'Role', 'Date Created', 'Status', 'Actions'],
-        'superadmin': ['Name', 'User ID', 'Date Created', 'Role', 'Status', 'Actions']
+        'student': ['Name', 'Email', 'User ID', 'University', 'Department', 'Course', 'Section', 'Current Plan', 'Date Created', 'Status', 'Actions'],
+        'teacher': ['Name', 'Email', 'User ID', 'University', 'Department', 'Current Plan', 'Position', 'Date Created', 'Status', 'Actions'],
+        'admin': ['Name', 'Email', 'User ID', 'Affiliated University', 'Role', 'Date Created', 'Status', 'Actions'],
+        'superadmin': ['Name', 'Email', 'User ID', 'Date Created', 'Role', 'Status', 'Actions']
     };
 
     useEffect(() => {
@@ -222,7 +220,7 @@ export default function Users({ auth, users, userType, searchValue }) {
 
         const debounce = setTimeout(() => {
             fetchSearchFilteredData('users.filter', { userType: userType }, params, searchTerm, setIsDataLoading, setUsersToRender, setHasFilteredData);
-        }, 350);
+        }, 300);
 
         return () => clearTimeout(debounce);
 
@@ -253,7 +251,7 @@ export default function Users({ auth, users, userType, searchValue }) {
     }
 
     const handleClearFiltersClick = () => {
-        setSelectedAutocompleteItem({
+        setSelectedAutocompleteItems({
             university: '', branch: '', department: '', course: '', currentPlan: '', insAdminRole: '',
             superAdminRole: '', dateCreated: { start: null, end: null, }, status: ''
         })
@@ -379,12 +377,34 @@ export default function Users({ auth, users, userType, searchValue }) {
                     </div>
 
                     <div className="flex-col gap-3 max-h-[65dvh] relative bg-white flex shadow-md sm:rounded-lg overflow-hidden p-4">
-                        {renderTableControls('entries route', searchTerm, setSearchTerm, 'Search by name or user id...', users.data.length === 0,
-                            totalFilters, handleClearFiltersClick, isFilterOpen, setIsFilterOpen, handleSetEntriesPerPageClick,
-                            entriesPerPage, setEntriesPerPage, setUsersToRender)}
+                        {renderTableControls({
+                            routeName: 'users.filter',
+                            searchVal: searchTerm,
+                            searchValSetter: setSearchTerm,
+                            searchBarPlaceholder: 'Search by name, email, user id...',
+                            isDisabled: users.data.length === 0,
+                            totalFilters: totalFilters,
+                            clearFiltersOnClick: handleClearFiltersClick,
+                            isFilterOpen: isFilterOpen,
+                            isFilterOpenSetter: setIsFilterOpen,
+                            entriesPerPage: entriesPerPage,
+                            setEntriesPerPage: setEntriesPerPage,
+                            setEntriesResponseData: setUsersToRender,
+                            params: { ...params, userType: userType },
+                        })}
+
+                        {/* FILTER COMPONENT PLACEMENT */}
+                        <Filter
+                            userType={userType}
+                            autocompleteItems={autocompleteItems}
+                            setAutocompleteItems={setAutocompleteItems}
+                            selectedAutocompleteItems={selectedAutocompleteItems}
+                            setSelectedAutocompleteItems={setSelectedAutocompleteItems}
+                            isFilterOpen={isFilterOpen}
+                        />
 
                         {/* STUDENT DATA */}
-                        <div className="TableContainer border overflow-y-auto  max-h-[50vh] ">
+                        <div className="TableContainer border overflow-y-auto max-h-[50vh] ">
                             {!isDataLoading ?
                                 (usersToRender.data.length > 0 ? (
                                     <table className="w-full table-auto relative text-xs text-left text-customGray tracking-wide">
@@ -400,7 +420,7 @@ export default function Users({ auth, users, userType, searchValue }) {
                                                     ?? institution_admin?.institution_subscription?.university_branch?.university?.uni_acronym
                                                     ?? 'N/A';
 
-                                
+
                                                 const studentId = student?.id;
 
                                                 const facultyId = faculty?.id;
@@ -416,7 +436,7 @@ export default function Users({ auth, users, userType, searchValue }) {
                                                     ?? faculty?.department?.dept_acronym
                                                     ?? 'N/A';
 
-                                                    console.log('Faculty: ', faculty?.department);
+                                                console.log('Faculty: ', faculty?.department);
 
                                                 const courseAcronym = student?.section?.course.course_acronym
                                                     ?? 'N/A';
@@ -437,20 +457,27 @@ export default function Users({ auth, users, userType, searchValue }) {
                                                         <td className="flex items-center content-center pl-3 p-2">
                                                             <User
                                                                 name={name}
-                                                                description={email}
                                                                 avatarProps={{
                                                                     src: user_pic ? `/${user_pic}` : '/images/default-profile.png',
-                                                                    alt: "profile-pic",
-                                                                    isBordered: true
+                                                                    alt: "Profile Picture",
+                                                                    isBordered: true,
+                                                                    className: "flex h-7 w-7 mr-1 flex-shrink-0 text",
                                                                 }}
+                                                                classNames={
+                                                                    { name: "text-xs", }
+                                                                }
                                                             />
                                                         </td>
+                                                        <td className="p-2 tracking-wider">{email}</td>
                                                         <td className="p-2">{id}</td>
 
                                                         {userType === 'student' && (
                                                             <>
                                                                 {/* <td className="p-2">{studentId}</td> */}
                                                                 <td className="p-2">{combinedUniAndBranch}</td>
+                                                                <td className="p-2">{departmentAcronym}</td>
+                                                                <td className="p-2">{courseAcronym}</td>
+                                                                <td className="p-2">{sectionName}</td>
                                                                 <td className="p-2">{is_premium ? 'Premium' : 'Basic'}</td>
                                                                 <td className="p-2">{formattedDateCreated}</td>
                                                                 <td className="p-2"><StatusChip status={user_status} /></td>
@@ -505,7 +532,7 @@ export default function Users({ auth, users, userType, searchValue }) {
                                         </>
                                     )
                                 )
-                                : <TableSkeleton tableHeaders={tableHeaders} tableHeaderType={userType} />
+                                : <TableSkeleton tableHeaders={tableHeaders} tableHeaderType={userType} trClassName="border-none" />
                             }
 
                         </div>

@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Pages\InstitutionAdmin;
 use App\Mail\AccountDetailsMail;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Pages\InsAdminCommonDataController;
-use App\Models\{PersonalSubscription, Student, User};
+use App\Models\{PersonalSubscription, Student, User, UserLog};
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -20,14 +20,18 @@ class StudentController extends Controller
     protected $authUserId;
     protected $insAdminUniBranchId;
     protected $insAdminAffiliation;
+    protected $totalAffiliatedPremiumUsers;
+    protected $planUserLimit;
 
     public function __construct()
     {
-        // Create an instance of CommonDataController to get the values intended for the institution admins
+        // Create an instance of CommonDataController to get the needed values
         $commonData = new InsAdminCommonDataController();
         $this->authUserId = Auth::id();
         $this->insAdminUniBranchId = $commonData->getInsAdminUniBranchId();
         $this->insAdminAffiliation = $commonData->getInsAdminAffiliation();
+        $this->totalAffiliatedPremiumUsers = $commonData->getTotalAffiliatedPremiumUsers();
+        $this->planUserLimit = $commonData->getPlanUserLimit();
     }
 
     public function index()
@@ -43,8 +47,7 @@ class StudentController extends Controller
 
         $department = request('department', null);
         $course = request('course', null);
-        $plan = request('plan', null);
-        $planStatus = request('plan_status', null);
+        $section = request('section', null);
         $dateCreated = request('date_created', null);
         $entries = (int) request('entries', 10);
 
@@ -53,10 +56,12 @@ class StudentController extends Controller
 
         // Filter premium access
         if ($hasStudentPremiumAccess === 'with-premium-access') {
-            $query->where('users.is_affiliated', true);
+            $query->where('is_premium', true);
         } elseif ($hasStudentPremiumAccess === 'no-premium-access') {
-            $query->where('users.is_affiliated', false);
+            $query->where('is_premium', false);
         }
+
+        $query->where('is_affiliated', true);
 
         $query->with([
             'student:id,user_id,section_id,uni_branch_id',
@@ -65,8 +70,6 @@ class StudentController extends Controller
             'student.section:id,course_id,section_name',
             'student.section.course:id,course_name,course_acronym,dept_id',
             'student.section.course.department:id,dept_name,dept_acronym,uni_branch_id',
-            'personal_subscription:id,user_id,plan_id,start_date,end_date,persub_status',
-            'personal_subscription.plan:id,plan_name,plan_type,plan_term',
         ]);
 
         // Filter by related university branch
@@ -74,56 +77,41 @@ class StudentController extends Controller
             $q->where('uni_branch_id', $this->insAdminUniBranchId);
         });
 
-        // Filter by subscription plan type
-        // $query->whereHas('personal_subscription.plan', function ($q) {
-        //     $q->where('plan_type', 'Personal');
-        // });
-
-        // Search by user name or student ID
         if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'LIKE', '%' . $search . '%');
+                $q->orWhere('email', 'LIKE', '%' . $search . '%');
                 $q->orWhere('uni_id_num', 'LIKE', '%' . $search . '%');
             });
         }
 
-        // Filter by department
         if ($department) {
             $query->whereHas('student.section.course.department', function ($q) use ($department) {
                 $q->where('dept_acronym', $department);
             });
         }
 
-        // Filter by course
         if ($course) {
             $query->whereHas('student.section.course', function ($q) use ($course) {
                 $q->where('course_acronym', $course);
             });
         }
 
-        // Filter by subscription plan name
-        if ($plan) {
-            $query->whereHas('personal_subscription.plan', function ($q) use ($plan) {
-                $q->where('plan_name', $plan);
+        if ($section) {
+            $query->whereHas('student.section', function ($q) use ($section) {
+                $q->where('section_name', $section);
             });
         }
 
-        // Filter by subscription status
-        if ($planStatus) {
-            $query->whereHas('personal_subscription', function ($q) use ($planStatus) {
-                $q->where('persub_status', $planStatus);
-            });
-        }
-
-        // Filter by creation date range
         if ($dateCreated) {
             [$startDate, $endDate] = explode(' - ', $dateCreated);
             $query->whereBetween('users.created_at', [$startDate, $endDate]);
         }
+
         $students = $query
-            // ->whereHas('student', function ($q) {
-            //     $q->orderBy('id', 'asc');
-            // })
+            ->whereHas('student', function ($q) {
+                $q->orderBy('id', 'asc');
+            })
             ->paginate($entries)
             ->withQueryString();
 
@@ -135,41 +123,66 @@ class StudentController extends Controller
             'insAdminAffiliation' => $this->insAdminAffiliation,
             'students' => $students,
             'hasStudentPremiumAccess' => $hasStudentPremiumAccess,
+            'totalAffiliatedPremiumUsers' => $this->totalAffiliatedPremiumUsers,
+            'planUserLimit' => $this->planUserLimit,
             'entries' => $entries,
             'search' => $search,
         ]);
     }
 
-    public function updatePlanStatus(Request $request, $hasStudentPremiumAccess)
+    public function updatePremiumAccess(Request $request)
     {
-        $userId = $request->input('user_id');
-        $action = $request->input('action');
+        // Validate the incoming request
+        $validatedData = $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'action' => 'required|in:Grant,Remove',
+        ]);
 
-        $personalPlan = PersonalSubscription::firstWhere('user_id', $userId);
+        $userId = $validatedData['user_id'];
+        $action = $validatedData['action'];
 
-        Log::info(['action' => $action]);
+        // Retrieve the user to be updated
+        $user = User::findOrFail($userId);
 
+        // Keep track of the previous affiliation
+        $previousIsPremiumVal = $user->is_premium;
 
+        // Update is_premium based on action
         switch ($action) {
-            case 'Activate':
-                $personalPlan->persub_status = 'Active';
+            case 'Grant':
+                $user->is_premium = true;
                 break;
 
-            case 'Deactivate':
-                $personalPlan->persub_status = 'Deactivated';
+            case 'Remove':
+                $user->is_premium = false;
                 break;
-
-            default:
-                return response()->json(['error' => 'Invalid action'], 400);
         }
 
-        $personalPlan->save();
+        // Check if the plan user limit has been reached before granting institution premium access
+        if ($action === 'Grant' && $this->totalAffiliatedPremiumUsers >= $this->planUserLimit) {
+            return back()->with('error', 'Premium access update failed. The plan user limit has been reached.');
+        }
 
-        return  $this->filter($hasStudentPremiumAccess);
+        // Save the updated user
+        $user->save();
+
+        // Log the activity
+        UserLog::create([
+            'user_id' => Auth::id(),
+            'log_activity' => "Update " . ucfirst($user->user_type) . " institution premium Access",
+            'log_activity_content' => "Updated {$user->user_type} instititution premium access for <strong>{$user->name}</strong> from <strong>{$previousIsPremiumVal}</strong> to <strong>{$user->is_premium}</strong>.",
+        ]);
+
+        return back()->with('success', 'Premium access updated successfully.');
     }
 
     public function addStudent(Request $request)
     {
+        // Check if the plan user limit has been reached before granting institution premium access
+        if ($this->totalAffiliatedPremiumUsers >= $this->planUserLimit) {
+            return back()->with('error', 'Unable to add student. The plan user limit has been reached.');
+        }
+
         // Validate the student data
         $validatedData = $request->validate(
             [
@@ -190,7 +203,7 @@ class StudentController extends Controller
                         }
                     },
                 ],
-                'name' => 'string|max:255',
+                'name' => 'required|string|max:255',
                 'email' => 'required|email|max:255|unique:users,email',
                 'date_of_birth' => 'required|max:150',
             ],
@@ -215,13 +228,22 @@ class StudentController extends Controller
                 'uni_id_num' => $validatedData['uni_id_num'],
                 'user_dob' => $validatedData['date_of_birth'],
                 'email' => $validatedData['email'],
-                'password' => $hashedPassword, // Store the hashed password
+                'password' => $hashedPassword,
+                'is_affiliated' => true,
+                'is_premium' => true,
             ]);
 
             // Create the student
             Student::create([
                 'user_id' => $user->id,
                 'uni_branch_id' => $this->insAdminUniBranchId,
+            ]);
+
+            // Log the activity
+            UserLog::create([
+                'user_id' => Auth::id(),
+                'log_activity' => 'Added Student',  // Concise activity type
+                'log_activity_content' => "Added student <strong>{$validatedData['name']}</strong> with university ID <strong>{$validatedData['uni_id_num']}</strong> and email <strong>{$validatedData['email']}</strong>.", // Detailed content
             ]);
 
             DB::commit(); // Commit the transaction if everything is fine
@@ -248,4 +270,3 @@ class StudentController extends Controller
         }
     }
 }
-        

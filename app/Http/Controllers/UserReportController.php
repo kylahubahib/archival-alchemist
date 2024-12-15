@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\ReportType;
+use App\Models\UserLog;
 use App\Models\UserReport;
 use App\Models\User;
 use App\Models\ForumPost;
@@ -240,13 +241,13 @@ class UserReportController extends Controller
         $reportedId = $request->get('reportedId');
         $end_date = Carbon::now()->addDays($duration);
 
-        switch ($report->report_location) {  
+        switch ($report->report_location) {
             case 'Forum':
                 $content = ForumPost::find($report->reported_id);
 
                 if ($content) {
                     \Log::info('Content: ', $content->toArray());
-                
+
                     $content->update([
                         'status' => 'Hidden',
                     ]);
@@ -259,11 +260,17 @@ class UserReportController extends Controller
                     }
 
                     $report->update([
-                        'report_status' => 'Solved',  
+                        'report_status' => 'Solved',
                         'suspension_start_date' => Carbon::now(),
                         'suspension_end_date' => $end_date,
-                        'closed_at' => Carbon::now(),
-                        'reported_user_id' => $user->id
+                        'closed_at' => Carbon::now()
+                    ]);
+
+                    // Log the action
+                    UserLog::create([
+                        'user_id' => Auth::id(),
+                        'log_activity' => 'Updated user status',
+                        'log_activity_content' => "Updated the status of <strong>{$user->name}</strong> to <strong>{$user->user_status}</strong> due to a report on the Forum.",
                     ]);
                 }
                 break;
@@ -275,16 +282,22 @@ class UserReportController extends Controller
                     $user->update([
                         'user_status' => 'Suspended'
                     ]);
-
                 }
 
                 $report->update([
-                    'report_status' => 'Solved',  
+                    'report_status' => 'Solved',
                     'suspension_start_date' => Carbon::now(),
                     'suspension_end_date' => $end_date,
-                    'closed_at' => Carbon::now(),
-                    'reported_user_id' => $user->id
+                    'closed_at' => Carbon::now()
                 ]);
+
+                // Log the action
+                UserLog::create([
+                    'user_id' => Auth::id(),
+                    'log_activity' => 'Updated user status',
+                    'log_activity_content' => "Updated the status of <strong>{$user->name}</strong> to <strong>{$user->user_status}</strong> due to a report on the Profile.",
+                ]);
+
                 break;
 
             default:
@@ -293,15 +306,15 @@ class UserReportController extends Controller
 
         $reporter = User::find($report->reporter_id);
 
-        if($reporter) {
+        if ($reporter) {
             $reporter->notify(new UserNotification([
-                'message' => 'Hello ' . $reporter->name. ', we wanted to inform you that action has been taken regarding your 
+                'message' => 'Hello ' . $reporter->name . ', we wanted to inform you that action has been taken regarding your 
                 recent report on ' . $user->name . '. Thank you for helping us keep the Archival Alchemist community safe!',
                 'user_id' => $reporter->id
             ]));
         }
 
-      return response()->json([]);
+        return response()->json([]);
     }
 
 
@@ -317,7 +330,7 @@ class UserReportController extends Controller
     public function warnUser(Request $request, string $id)
     {
 
-        
+
         $report = UserReport::find($id);
 
         if (!$report) {
@@ -327,7 +340,7 @@ class UserReportController extends Controller
         $status = $request->get('status');
         $reportedUser = $request->get('reportedUser');;
 
-                
+
         $user = User::find($reportedUser);
         \Log::info($user);
 
@@ -345,7 +358,12 @@ class UserReportController extends Controller
             'report_status' => 'Dropped',
             'closed_at' => Carbon::now()
         ]);
-                
+
+        UserLog::create([
+            'user_id' => Auth::id(),
+            'log_activity' => 'Warned user',
+            'log_activity_content' => "Warned user <strong>{$user->name} (" . strtoupper($user->user_type) . ")</strong> regarding a report on their activity. No violation found, but advised to review community guidelines.",
+        ]);
 
         return response()->json();
     }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Models\UserLog;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Auth\Events\Registered;
@@ -166,6 +167,13 @@ class RegisteredUserController extends Controller
             //         }
             //     }                
             // }
+
+            UserLog::create([
+                'user_id' =>  $user->id,
+                'log_activity' =>  'Created account',
+                'log_activity_content' =>  'Account created successfully.',
+            ]);
+
 
             event(new Registered($user));
 

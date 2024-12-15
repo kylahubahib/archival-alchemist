@@ -19,6 +19,7 @@ use Exception;
 
 use App\Mail\AccountCredentialsMail;
 use Illuminate\Support\Facades\Mail;
+use App\Notifications\UserNotification;
 
 class UsersImport implements ToCollection, WithHeadingRow
 {

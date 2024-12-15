@@ -11,7 +11,7 @@ import { customAutocompleteInputProps, parseNextUIDateTime, sanitizeURLParam } f
 import { autocompleteOnChangeHandler } from "@/Utils/admin-utils";
 import { renderAutocompleteList } from "@/Pages/SuperAdmin/Users/Filter";
 
-export default function Filter({ hasFacultyPremiumAccess, selectedAutocompleteItems, setSelectedAutocompleteItems,
+export default function Filter({ isAffiliated, selectedAutocompleteItems, setSelectedAutocompleteItems,
     autocompleteItems, setAutocompleteItems, isFilterOpen }) {
 
     const [isAutocompleteDataLoading, setIsAutocompleteDataLoading] = useState(false);
@@ -68,7 +68,7 @@ export default function Filter({ hasFacultyPremiumAccess, selectedAutocompleteIt
         router.get(
             route('institution-faculties.filter', {
                 ...params,
-                hasFacultyPremiumAccess,
+                isAffiliated,
                 page: null,
                 department: sanitizeURLParam(selectedAutocompleteItems.department),
                 course: sanitizeURLParam(selectedAutocompleteItems.course),
@@ -111,7 +111,7 @@ export default function Filter({ hasFacultyPremiumAccess, selectedAutocompleteIt
             {
                 ['Department', 'Current Plan', 'Plan Status', 'Date Created']
                     .filter(item => {
-                        switch (hasFacultyPremiumAccess) {
+                        switch (isAffiliated) {
                             case 'with-premium-access':
                                 return !['Role'].includes(item);
                             case 'no-premium-access':

@@ -1,7 +1,18 @@
 import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
 import { FaEye, FaComment, FaTrash, FaFlag, FaEdit, FaReply, FaEllipsisH } from 'react-icons/fa';
-import { Chip, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem } from '@nextui-org/react';
+import { Chip, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, Input, Button } from '@nextui-org/react';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
+import relativeTime from 'dayjs/plugin/relativeTime';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCommentDots, faEye } from '@fortawesome/free-solid-svg-icons';  
+import { Modal, ModalBody, ModalFooter, Alert } from '@nextui-org/react';
+// Extend dayjs with plugins
+dayjs.extend(utc);
+dayjs.extend(timezone);
+dayjs.extend(relativeTime);
 
 const PostDetailModal = ({ isOpen, onClose, post, loggedInUser, onUpdateCommentCount }) => {
  const [comments, setComments] = useState([]);
@@ -11,7 +22,16 @@ const PostDetailModal = ({ isOpen, onClose, post, loggedInUser, onUpdateCommentC
   const [isLoading, setIsLoading] = useState(false);
   const [showOptions, setShowOptions] = useState({}); // To control the visibility of options
   const optionsRef = useRef(null); // Reference for the options menu
+  const [showLoginModal, setShowLoginModal] = React.useState(false);
+  const [showAlert, setShowAlert] = useState(false); // Track alert visibility
 
+
+  
+
+  const formatPostDate = (dateString) => {
+    const date = dayjs.utc(dateString).tz(dayjs.tz.guess()); // Convert to local timezone
+    return date.fromNow(); // Display as relative time, e.g., "5 minutes ago"
+  };
   
   // Fetch comments for the post
   const fetchComments = async () => {
@@ -27,8 +47,20 @@ const PostDetailModal = ({ isOpen, onClose, post, loggedInUser, onUpdateCommentC
     }
   };
 
+   // Modal Close Handler
+   const handleLoginModalClose = () => {
+    setShowLoginModal(false);
+  };
+
+
+  
   // Submit a new comment or reply
   const handleCommentSubmit = async () => {
+    if (!loggedInUser) {
+      setShowAlert(true); // Show alert if user is not logged in
+      return;
+    }
+    
     try {
       const response = await axios.post(
         '/forum-comments',
@@ -37,11 +69,7 @@ const PostDetailModal = ({ isOpen, onClose, post, loggedInUser, onUpdateCommentC
           comment: newComment,
           parent_id: replyingTo?.id || null,
         },
-        {
-          headers: {
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-          },
-        }
+        
       );
 
       const newCommentData = response.data;
@@ -89,9 +117,7 @@ const handleEditCommentSubmit = async () => {
     const response = await axios.put(
       `/forum-comments/${editingComment.id}`,
       { comment: newComment },
-      {
-        headers: { "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').content },
-      }
+      
     );
 
     // Recursively update the specific comment or reply in the comments array
@@ -121,15 +147,37 @@ const handleEditCommentSubmit = async () => {
   }
 };
 
+// Count comments including replies recursively
+const countComments = (comments) => {
+  let count = comments.length; // Start with the main comments count
+
+  // Recursively count replies
+  comments.forEach((comment) => {
+    if (comment.replies && comment.replies.length > 0) {
+      count += countComments(comment.replies); // Add the replies count
+    }
+  });
+
+  return count;
+};
+
+// After fetching comments or updating them, calculate the total count
+useEffect(() => {
+  if (comments.length > 0) {
+    const totalCommentCount = countComments(comments); // Get total count
+    onUpdateCommentCount(totalCommentCount); // Pass the updated count to the parent
+  }
+  
+}, [comments]);
+
+
 
 
   // Delete a comment
   const handleDeleteComment = async (id) => {
     try {
       const response = await axios.delete(`/forum-comments/${id}`, {
-        headers: {
-          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-        },
+       
       });
 
       console.log('Delete Response:', response.data);
@@ -163,62 +211,83 @@ const handleEditCommentSubmit = async () => {
   const renderComments = (comments, depth = 0) => {
     if (!comments || comments.length === 0) return null;
 
-    return comments.map((comment) => (
-      <div key={comment.id} className={`ml-${depth * 4} p-4 border-b border-gray-200`}>
-        <div className="flex items-start space-x-4">
-          <img
-            src={comment.user?.avatar || '/default-avatar.png'}
-            alt={comment.user?.name || 'User'}
-            className="w-10 h-10 rounded-full object-cover"
-          />
-          <div className="flex-1">
-            <div className="flex justify-between text-sm">
-              <span className="font-semibold text-gray-700">{comment.user?.name || 'Unknown User'}</span>
-              <span className="text-gray-500">{comment.created_at}</span>
-            </div>
+    return comments.map((comment) => {
+      const isOwner = loggedInUser && loggedInUser.id === comment.user.id;
 
-            <div className="mt-1 text-base text-gray-800">{comment.comment}</div>
+      return (
+        <div key={comment.id} className={`ml-${depth * 4} p-4 border-b border-gray-200`}>
+          <div className="flex items-start space-x-4">
+            <img
+              src={comment.user?.user_pic || '/default-avatar.png'}
+              alt={comment.user?.name || 'User'}
+              className="w-10 h-10 rounded-full object-cover"
+            />
+            <div className="flex-1">
+              <div className="flex justify-between text-sm">
+                <span className="font-semibold text-gray-700">{comment.user?.name || 'Unknown User'}</span>
+                <span className="text-gray-500">{formatPostDate(comment.created_at)}</span>
+              </div>
 
-            
+              <div className="mt-1 text-base text-gray-800">{comment.comment}</div>
 
-            {/* Action Buttons */}
-            <div className="mt-2 flex items-center space-x-4 text-sm text-gray-600">
-              <button
-                onClick={() => setReplyingTo(comment)}
-                className="flex items-center space-x-1 hover:text-blue-500"
-              >
-                <FaReply />
-                <span>Reply</span>
-              </button>
+              {/* Action Buttons */}
+              <div className="mt-2 flex items-center space-x-4 text-sm text-gray-600">
+                <button
+                  onClick={() => setReplyingTo(comment)}
+                  className="flex items-center space-x-1 hover:text-blue-500"
+                >
+                  <FontAwesomeIcon icon={faCommentDots} />
+                  <span>Reply</span>
+                </button>
 
-              {/* Three-dot menu for options */}
-              <Dropdown>
-                <DropdownTrigger>
-                  <button
-                    className="text-gray-500 hover:text-gray-700"
-                    onClick={() => toggleOptions(comment.id)}
-                  >
-                    <FaEllipsisH />
-                  </button>
-                </DropdownTrigger>
-                <DropdownMenu aria-label="Actions">
-                  <DropdownItem  onClick={() => {setEditingComment(comment); setNewComment(comment.comment);
-                    }}>
-                    Edit
-                  </DropdownItem>
-                  <DropdownItem onClick={() => handleDeleteComment(comment.id)} key="delete" className="text-danger">
-                    Delete
-                  </DropdownItem>
-                </DropdownMenu>
-              </Dropdown>
+                {/* Show options based on logged-in status */}
+                {loggedInUser && (isOwner || loggedInUser.id === comment.user.id) ? (
+                  <div className="flex space-x-2">
+                    <button
+                      onClick={() => {
+                        setEditingComment(comment);
+                        setNewComment(comment.comment);
+                      }}
+                      className="text-gray-500 hover:text-gray-700"
+                    >
+                      <FaEdit /> Edit
+                    </button>
+                    <button
+                      onClick={() => handleDeleteComment(comment.id)}
+                      className="text-red-500 hover:text-red-700"
+                    >
+                      <FaTrash /> Delete
+                    </button>
+                  </div>
+                ) : (
+                  loggedInUser && (
+                    <button
+                      onClick={() => handleReportComment(comment.id)}
+                      className="text-yellow-500 hover:text-yellow-700"
+                    >
+                      <FaFlag /> Report
+                    </button>
+                  )
+                )}
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Recursive rendering of replies */}
-        {comment.replies && renderComments(comment.replies, depth + 1)}
-      </div>
-    ));
+          {/* Recursive rendering of replies */}
+          {comment.replies && renderComments(comment.replies, depth + 1)}
+        </div>
+      );
+    });
+  };
+
+   // Render the alert when showAlert is true
+   const renderAlert = () => {
+    console.log("showAlert:", showAlert);  // Debugging
+    if (!showAlert) return null;
+    return (
+      <Alert color="error" onClose={() => setShowAlert(false)} title="You must be logged in to post a comment!" className="nextui-alert mb-4" />
+    );
+    
   };
   
   // Close menu when clicking outside
@@ -256,6 +325,9 @@ const handleEditCommentSubmit = async () => {
   if (!isOpen || !post) return null;
 
   return (
+
+    
+
     <div className="inset-0 z-50 flex items-center justify-center">
       <div className="relative w-full p-5 mt-5">
         <button
@@ -266,11 +338,21 @@ const handleEditCommentSubmit = async () => {
         </button>
 
         <div className="flex items-center mb-4 mt-5">
-          <img
-            src={post.user?.user_pic || 'https://ui-avatars.com/api/?name=User&background=random'}
-            alt={`${post.user?.name}'s profile`}
-            className="w-12 h-12 rounded-full mr-3"
-          />
+        <img
+          src={
+            post.user?.user_pic && post.user.user_pic !== ''
+              ? post.user.user_pic
+              : 'https://ui-avatars.com/api/?name=User&background=random'
+          }
+          alt={post.user?.name ? `${post.user.name}'s avatar` : 'Avatar placeholder'}
+          className="w-12 h-12 rounded-full mr-3"
+        />
+
+
+
+
+
+
           <div className="flex-1">
             <div className="font-semibold text-2xl text-gray-800 ml-2">
               {post.user?.name || 'User'}
@@ -280,7 +362,10 @@ const handleEditCommentSubmit = async () => {
 
         <h2 className="text-2xl font-medium text-gray-700 mb-4">{post.title}</h2>
 
-        <div className="flex space-x-2 my-2">
+        
+        <p className="text-gray-600 mb-6 text-base font-normal">{post.body}</p>
+
+        <div className="flex space-x-2 my-2 mb-8">
           {post.tags?.map((tag, index) => (
             <Chip key={`${tag.id || index}-${tag.name}`} color="primary" variant="flat">
               {tag.name}
@@ -288,39 +373,68 @@ const handleEditCommentSubmit = async () => {
           ))}
         </div>
 
-        <p className="text-gray-600 mb-6 text-base font-normal">{post.body}</p>
-
         <div className="flex items-center text-gray-600 mb-6">
-          <div className="flex items-center mr-4 text-base font-normal">
-            <FaEye className="mr-1" />
-            {post.viewCount || 0} Views
+          <div className="flex items-center text-base font-normal ">
+          {/* Eye Icon */}
+            <FontAwesomeIcon icon={faEye} />
+            <span className='ml-2'>{post.viewCount || 0} Views</span>
           </div>
-          <div className="flex items-center text-base font-normal">
-            <FaComment className="mr-1" />
-            {comments.length} Comments
-          </div>
+         
         </div>
 
-        {/* New Comment Section */}
-        <div className="mt-6">
-          <textarea
-            value={newComment}
-            onChange={(e) => setNewComment(e.target.value)}
-            className="w-full p-2 border rounded-md"
-            placeholder="Share your thoughts..."
-          />
-          <div className="mt-2 flex justify-end">
-            <button
-              onClick={editingComment ? handleEditCommentSubmit : handleCommentSubmit}
-              className="px-4 py-2 bg-blue-500 text-white rounded-md"
-            >
-              {editingComment ? 'Save Changes' : 'Post Comment'}
-            </button>
-          </div>
-        </div>
+     {/* Add New Comment */}
+<div className="mt-6 drop-shadow-lg">
+  <Input
+    label={replyingTo 
+      ? `Replying to ${replyingTo.user?.name || 'a comment'}...` 
+      : 'Write your comment here...'}
+    type="text"
+    value={newComment}
+    onChange={(e) => setNewComment(e.target.value)}
+    classNames={{
+      base: "max-w-fullh",
+      mainWrapper: "h-full",
+      input: "text-small focus:outline-none border-transparent focus:border-transparent focus:ring-0",
+      inputWrapper: "h-full font-normal text-default-500",
+  }}  />
+  <div className="mt-3 flex justify-end space-x-4">
+    {replyingTo && (
+      <button
+        onClick={() => setReplyingTo(null)}
+        className="text-gray-500 hover:text-gray-700 transition duration-200 ease-in-out "
+      >
+        Cancel Reply
+      </button>
+    )}
+    <button
+  onClick={editingComment ? handleEditCommentSubmit : handleCommentSubmit}
+  className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-4 py-2 rounded-lg shadow-large
+             hover:from-purple-600 hover:to-blue-700
+             focus:outline-none focus:ring-2 focus:ring-green-300 focus:ring-offset-2
+             transform transition-all duration-500 ease-in-out hover:scale-105 hover:cursor-pointer mt-6 font-bold" 
+   disabled={!newComment.trim()}
+>
+      {editingComment ? 'Save' : 'Submit'}
+    </button>
+  </div>
+</div>
 
+{renderAlert()}
+
+
+<div className="mb-5 mt-6 flex items-center text-base font-extrabold">
+  Comments
+  <span className="ml-2 w-8 h-5 flex items-center justify-center bg-blue-500 text-white text-sm rounded-lg">
+  {countComments(comments)}
+  </span>
+</div>
+
+
+      
         {/* Render Comments */}
         <div>{renderComments(comments)}</div>
+
+        
       </div>
     </div>
   );

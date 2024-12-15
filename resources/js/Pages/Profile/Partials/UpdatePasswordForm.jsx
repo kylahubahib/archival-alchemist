@@ -7,16 +7,16 @@ import { useForm } from '@inertiajs/react';
 import { Transition } from '@headlessui/react';
 
 // Password validation function
-const validatePasswordStrength = (password) => {
-    const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!$%^&*()_+|~=`{}[\]:;,.<>?]).{8,}$/;
-    return strongPasswordRegex.test(password);
-};
+// const validatePasswordStrength = (password) => {
+//     const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!$%^&*()_+|~=`{}[\]:;,.<>?]).{8,}$/;
+//     return strongPasswordRegex.test(password);
+// };
 
 export default function UpdatePasswordForm({ className = '' }) {
     const passwordInput = useRef();
     const currentPasswordInput = useRef();
 
-    const [passwordStrength, setPasswordStrength] = useState(null);  // State to store password strength
+    // const [passwordStrength, setPasswordStrength] = useState(null);  // State to store password strength
     const { data, setData, errors, put, reset, processing, recentlySuccessful } = useForm({
         current_password: '',
         password: '',
@@ -48,15 +48,16 @@ export default function UpdatePasswordForm({ className = '' }) {
         setData('password', newPassword);
 
         // Check password strength
-        const isStrong = validatePasswordStrength(newPassword);
-        setPasswordStrength(isStrong ? 'strong' : 'weak');
+        // const isStrong = validatePasswordStrength(newPassword);
+        // setPasswordStrength(isStrong ? 'strong' : 'weak');
     };
 
     const handlePasswordConfirmation = (e) => {
         setData('password_confirmation', e.target.value);
     };
 
-    const isPasswordValid = passwordStrength === 'strong' && data.password === data.password_confirmation;
+    const isPasswordValid = data.password === data.password_confirmation;
+    // passwordStrength === 'strong' && 
 
     return (
         <section className={className}>
@@ -98,11 +99,11 @@ export default function UpdatePasswordForm({ className = '' }) {
                     <InputError message={errors.password} className="mt-2" />
 
                     {/* Password Strength Indicator */}
-                    {passwordStrength && (
+                    {/* {passwordStrength && (
                         <p className={`mt-2 text-sm ${passwordStrength === 'strong' ? 'text-green-600' : 'text-red-600'}`}>
                             {passwordStrength === 'strong' ? 'Password is strong.' : 'Password is weak. Must include at least 8 characters, a mix of uppercase, lowercase, numbers, and symbols.'}
                         </p>
-                    )}
+                    )} */}
                 </div>
 
                 {/* Confirm Password */}

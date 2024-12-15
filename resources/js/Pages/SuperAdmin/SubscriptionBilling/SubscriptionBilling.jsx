@@ -70,8 +70,8 @@ export default function SubscriptionBilling({ auth, subscriptions, subscriptionT
     ];
 
     const tableHeaders = {
-        'personal': ['Subscription ID', 'Plan Name', 'Customer Name', 'Start Date', 'End Date', 'Plan Status', 'Plan Term', 'Actions'],
-        'institutional': ['Subscription ID', 'Plan Name', 'Institution Name', 'No. of Users', 'Start Date', 'End Date', 'Plan Term', 'Plan Status', 'Actions']
+        'personal': ['Subscription ID', 'Plan Name', 'Subscriber', 'Start Date', 'End Date', 'Plan Term', 'Plan Status', 'Actions'],
+        'institutional': ['Subscription ID', 'Plan Name', 'Subscriber', 'No. of Users', 'Start Date', 'End Date', 'Plan Term', 'Plan Status', 'Actions']
     };
 
     const statistics = [
@@ -184,9 +184,21 @@ export default function SubscriptionBilling({ auth, subscriptions, subscriptionT
 
 
                     <div className="flex-col gap-3 max-h-[65dvh] relative bg-white flex shadow-md sm:rounded-lg overflow-hidden p-4">
-                        {renderTableControls('entries route', searchTerm, setSearchTerm, 'Search by name or user id...', subscriptions.data.length === 0,
-                            totalFilters, handleClearFiltersClick, isFilterOpen, setIsFilterOpen, handleSetEntriesPerPageClick,
-                            entriesPerPage, setEntriesPerPage, setSubscriptionsToRender)}
+                        {renderTableControls({
+                            routeName: 'subscription-billing.filter',
+                            searchVal: searchTerm,
+                            searchValSetter: setSearchTerm,
+                            searchBarPlaceholder: 'Search by plan name, subscriber, plan id...',
+                            // isDisabled: subscriptions.data.length === 0,
+                            totalFilters: totalFilters,
+                            clearFiltersOnClick: handleClearFiltersClick,
+                            isFilterOpen: isFilterOpen,
+                            isFilterOpenSetter: setIsFilterOpen,
+                            entriesPerPage: entriesPerPage,
+                            setEntriesPerPage: setEntriesPerPage,
+                            setEntriesResponseData: setSubscriptionsToRender,
+                            params: { ...params, subscriptionType: subscriptionType },
+                        })}
 
                         {/* STUDENT DATA */}
                         <div className="TableContainer border overflow-y-auto  max-h-[50vh] ">

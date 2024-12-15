@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Request as FacadesRequest;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Hash;
+use App\Http\Controllers\Pages\InsAdminCommonDataController;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Support\Str;
@@ -22,17 +23,44 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Auth;
+
+
+
 
 class UserController extends Controller
 {
+    protected $authUserId;
+    protected $adminRoleMap;
+    protected $userTypeMap;
+    // protected $totalAffiliatedPremiumUsers;
+    // protected $planUserLimit;
+
+    public function __construct()
+    {
+        $this->authUserId = Auth::id();
+        // Format roles or user types for display in user logs
+        $this->adminRoleMap = [
+            'super_admin' => 'Super Admin',
+            'co_super_admin' => 'Co-Super Admin',
+            'institution_admin' => 'Institution Admin',
+            'co_institution_admin' => 'Co-Institution Admin',
+        ];
+        $this->userTypeMap = [
+            'teacher' =>  'Teacher',
+            'student' =>  'Student',
+        ];
+
+        // Get the institution subscription related data for the authenticated institution admin
+        //     $commonData = new InsAdminCommonDataController();
+        //     $this->totalAffiliatedPremiumUsers = $commonData->getTotalAffiliatedPremiumUsers();
+        //     $this->planUserLimit = $commonData->getPlanUserLimit();
+    }
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        // Mail::to('mmpurposes1@gmail.com')->send(new AdminRegistrationMail());
-
-        // Shows the students list as the page loads 
         return $this->filter('student');
     }
 
@@ -42,14 +70,14 @@ class UserController extends Controller
         $branch = request('branch', null);
         $department = request('department', null);
         $course = request('course', null);
-        $currentPlan = request('current_plan', null);
+        $section = request('section', null);
+        $currentPlan = request('plan', null);
         $insAdminRole = request('ins_admin_role', null);
         $superAdminRole = request('super_admin_role', null);
         $dateCreated = request('date_created', null);
         $status = request('status', null);
         $searchValue = request('search', null);
-        Log::info(['searchValue' => $searchValue]);
-        $entries = request('entries', null);
+        $entries = request('entries', 10);
 
         // Base query to get the users
         $query = User::where('user_type', $userType)
@@ -82,48 +110,92 @@ class UserController extends Controller
                     'institution_admin.institution_subscription.plan:id',
                     'institution_admin.institution_subscription.university_branch:id,uni_id,uni_branch_name',
                     'institution_admin.institution_subscription.university_branch.university:id,uni_name,uni_acronym',
-                    'access_control:access_id,user_id,role',
+                    'access_control:id,user_id,role',
                 ]);
                 break;
             case 'superadmin':
                 $query->with([
-                    'access_control:access_id,user_id,role',
+                    'access_control:id,user_id,role',
                 ]);
                 break;
         }
 
-        // Filters
+
         if ($searchValue) {
             $query->where(function ($q) use ($searchValue) {
-                $q->where('name', 'LIKE', '%' . $searchValue . '%')
-                    ->orWhere('id', $searchValue); // Use orWhere here
+                $q->where('name', 'LIKE', '%' . $searchValue . '%');
+                $q->orWhere('email', 'LIKE', '%' . $searchValue . '%');
+                $q->orWhere('id', $searchValue);
             });
         }
 
         if ($university) {
             $query->whereHas('student.university_branch.university', function ($q) use ($university) {
-                $q->where('uni_name', $university);
+                $q->where('uni_acronym', $university);
             });
         }
+
         if ($branch) {
             $query->whereHas('student.university_branch', function ($q) use ($branch) {
                 $q->where('uni_branch_name', $branch);
             });
         }
+
         if ($department) {
-            $query->whereHas('student.university_branch.department', function ($q) use ($department) {
-                $q->where('dept_name', $department);
+            $query->whereHas('student.section.course.department', function ($q) use ($department) {
+                $q->where('dept_acronym', $department);
             });
         }
+
         if ($course) {
-            $query->whereHas('student.university_branch.department.course', function ($q) use ($course) {
-                $q->where('course_name', $course);
+            $query->whereHas('student.section.course', function ($q) use ($course) {
+                $q->where('course_acronym', $course);
             });
         }
 
-        $users = $query->latest()->paginate($entries);
+        if ($section) {
+            $query->whereHas('student.section', function ($q) use ($section) {
+                $q->where('section_name', $section);
+            });
+        }
 
-        Log::info($users->toArray());
+        if ($currentPlan === 'Basic') {
+            $query->where('is_premium', false);
+        } else {
+            $query->where('is_premium', true);
+        }
+
+        if ($superAdminRole === 'Super Admin') {
+            $query->whereHas('access_control', function ($q) {
+                $q->where('role', 'super_admin');
+            });
+        } else if ($superAdminRole === 'Co-Super Admin') {
+            $query->whereHas('access_control', function ($q) {
+                $q->where('role', 'co_super_admin');
+            });
+        }
+
+        if ($insAdminRole === 'Institution Admin') {
+            $query->whereHas('access_control', function ($q) {
+                $q->where('role', 'institution_admin');
+            });
+        } else if ($insAdminRole === 'Co-Institution Admin') {
+            $query->whereHas('access_control', function ($q) {
+                $q->where('role', 'co_institution_admin');
+            });
+        }
+
+        if ($dateCreated) {
+            [$startDate, $endDate] = explode(' - ', $dateCreated);
+            $query->whereBetween('created_at', [$startDate, $endDate]);
+        }
+
+        if ($status) {
+            $query->where('user_status', $status);
+        }
+
+
+        $users = $query->latest()->paginate($entries)->withQueryString();
 
         if (request()->expectsJson()) {
             return response()->json($users);
@@ -132,6 +204,7 @@ class UserController extends Controller
         return Inertia::render('SuperAdmin/Users/Users', [
             'userType' => $userType,
             'users' => $users,
+            'entries' => $entries,
             'searchValue' => $searchValue,
         ]);
     }
@@ -160,45 +233,53 @@ class UserController extends Controller
 
         $user->save();
 
+        $formatUserRole = '';
+
+        if ($user->user_type === 'superadmin' || $user->user_type === 'admin') {
+            $formatUserRole = $this->adminRoleMap[$user?->access_control?->role] ?? $user->user_type ?? 'Unknown Role';
+        } else if ($user->user_type === 'student' || $user->user_type === 'teacher') {
+            $formatUserRole = $this->userTypeMap[$user?->user_type] ?? 'Unknown Role';
+        }
+
+        UserLog::create([
+            'user_id' => $this->authUserId,
+            'log_activity' => 'Updated user status',
+            'log_activity_content' => "Updated the status of <strong>{$user->name} ({$formatUserRole})</strong> to <strong>{$user->user_status}</strong>.",
+        ]);
+
         return response()->json(['message' => 'User status updated successfully']);
-    }
-
-    // Functions that set the sesssion variables
-    public function setEntriesPerPage(Request $request)
-    {
-        session(['entries_per_page' => $request->input('entries_per_page')]);
-    }
-
-    public function setSearchedName(Request $request)
-    {
-        session(['search_name' => $request->input('search_name')]);
     }
 
     public function logs(Request $request)
     {
-        // For search filter
-        $searchActivity = $request->get('search_activity', '');
-        $userId = $request->get('user_id', null);
-        // For date filter
+        $searchActivity = $request->get('search_activity');
+        $userId = $request->get('user_id');
         $startDate = $request->get('start_date', null);
         $endDate = $request->get('end_date', null);
 
-        // Initialize the user logs query
-        $userLogs = UserLog::where('user_id', $userId);
+        Log::info(['user id' => $userId]);
 
-        if (!empty($searchActivity)) {
-            $userLogs->whereRaw('LOWER(log_activity) LIKE ?', ["%" . strtolower($searchActivity) . "%"]);
+        $query = UserLog::query();
+
+        // Filter by user ID
+        if ($userId) {
+            $query->where('user_id', $userId);
         }
 
+        // Filter by search activity
+        if ($searchActivity) {
+            $query->where('log_activity', 'like', '%' . $searchActivity . '%');
+        }
+
+        // Filter by date range
         if ($startDate && $endDate) {
-            $userLogs->whereBetween('created_at', [$startDate, $endDate]);
+            $startDate = Carbon::parse($startDate)->startOfDay();
+            $endDate = Carbon::parse($endDate)->endOfDay();
+            $query->whereBetween('created_at', [$startDate, $endDate]);
         }
 
-        // Fetch logs and format the created_at date
-        $userLogs = $userLogs->get()->map(function ($log) {
-            $log->created_at = Carbon::parse($log->created_at)->format('m-d-Y H:i');
-            return $log;
-        });
+        // Paginate results
+        $userLogs = $query->latest()->paginate(20); // Reduce page size for performance
 
         return response()->json($userLogs);
     }
@@ -207,34 +288,56 @@ class UserController extends Controller
     {
         $validatedData = $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|email|max:255|unique:users,email',  // Check if the email exists
+            'email' => 'required|email|max:255|unique:users,email',
         ]);
 
         $token = Str::random(50);
         $userType = $request->input('user_type');
+        $uniBranchId = $request->input('uni_branch_id');
         $name = $validatedData['name'];
         $email = $validatedData['email'];
         $access = json_encode($request->input('access')); // Encode the access array to JSON
-        // Log::info("access", $access);
-
         $registrationLink = route('admin.registration-form', ['token' => $token]);
 
-        // Insert the fields into this token table for temporary use
-        DB::table('admin_registration_tokens')->insert([
-            'token' => $token,
-            'name' => $name,
-            'email' => $email,
-            'user_type' => $userType,
-            'access' => $access,
-            'expires_at' => Carbon::now()->addDay(),
-        ]);
+    \Log::info(['userType' => $userType]);
 
-        // Send the email
-        Mail::to($email)->send(new AdminRegistrationMail($userType, $name, $email, $access, $registrationLink));
+        // Check if the plan user limit has been reached before adding a co-institution-admin
+        if ($userType === 'admin' && $this->totalAffiliatedPremiumUsers >= $this->planUserLimit) {
+            return back()->with('error', 'Unable to add co-institution-admin. The plan user limit has been reached.');
+        }
 
-        return redirect()->back()->with('message', 'Email sent successfully!');
+        Log::info(['uni_branch_id' => $uniBranchId]);
+
+        DB::beginTransaction();
+
+        try {
+            DB::table('admin_registration_tokens')->insert([
+                'token' => $token,
+                'uni_branch_id' => $uniBranchId,
+                'name' => $name,
+                'email' => $email,
+                'user_type' => $userType,
+                'access' => $access,
+                'expires_at' => Carbon::now()->addDay(),
+            ]);
+
+            // Attempt to send the email
+            Mail::to($email)->send(new AdminRegistrationMail($userType, $name, $email, $access, $registrationLink));
+
+            // Commit the transaction if both operations succeed
+            DB::commit();
+
+            return redirect()->back()->with('message', 'Email sent successfully!');
+        } catch (\Exception $e) {
+            // Rollback the transaction if either operation fails
+            DB::rollBack();
+
+            // Log the error for debugging
+            Log::error('Error during admin registration: ' . $e->getMessage());
+
+            return redirect()->back()->with('error', 'An error occurred while processing your request. Please try again later.');
+        }
     }
-
 
     public function adminRegistrationForm($token)
     {
@@ -252,13 +355,12 @@ class UserController extends Controller
         return Inertia::render('Auth/AdminRegistration', ['tokenData' => $tokenData]);
     }
 
-
     public function submitAdminRegistration(Request $request)
     {
         // Validate the incoming request data
         $validatedData = $request->validate([
             'email' => 'required|email|max:255',
-            'password' => 'required|string|min:8|confirmed', // Ensures password matches password_confirmation
+            'password' => 'required|string|min:8|confirmed',
             'password_confirmation' => 'required|string|min:8',
             'access' => 'nullable|json',
             'token' => 'required|string',
@@ -288,17 +390,21 @@ class UserController extends Controller
                 ->where('token', $validatedData['token'])
                 ->first();
 
+            $accessControlData = []; // Reset the data array
+
             if ($tokenTable) {
                 $accessControlData = [
-                    'user_id' => $user->id,
-                    'role' => $validatedData['user_type'] === 'institution_admin' ? "co_institution_admin" : "co_super_admin",
+                    'user_id' => $user->id, // Ensure the user_id is assigned here
+                    'role' => $validatedData['user_type'] === 'admin' ? "co_institution_admin" : "co_super_admin",
                 ];
 
                 $accessControlModel = new AccessControl();
 
+
+                // Loop through fillable fields and set the access control permissions
                 foreach ($accessControlModel->getFillable() as $fillableField) {
-                    if (in_array($fillableField, ['user_id', 'role'])) {
-                        continue;
+                    if (in_array($fillableField, ['user_id', 'role', 'uni_branch_id'])) {
+                        continue; // Skip the fields we don't want to fill here
                     }
 
                     if (Schema::hasColumn('access_controls', $fillableField)) {
@@ -306,7 +412,17 @@ class UserController extends Controller
                     }
                 }
 
-                AccessControl::create($accessControlData);
+                // Include uni_branch_id if available
+                if ($request->input('uni_branch_id')) {
+                    $accessControlData['uni_branch_id'] = $request->input('uni_branch_id');
+                }
+
+                Log::info(['ACCESSCONTROL DATA' => $accessControlData]);
+
+                // Create the access control record with the user_id and other data
+                $accessControl = AccessControl::create($accessControlData);
+
+                // Now the access control record has been created, including the uni_branch_id and user_id
 
                 // Mark token as used
                 DB::table('admin_registration_tokens')->where('token', $validatedData['token'])->update(['used' => true]);
@@ -317,7 +433,7 @@ class UserController extends Controller
 
             DB::commit();
 
-            return redirect()->back()->with('message', 'User registered successfully.');
+            return redirect('/login')->with('message', 'User registered successfully.');
         } catch (Exception $e) {
             DB::rollBack();
 
@@ -328,7 +444,6 @@ class UserController extends Controller
             return redirect()->back()->withErrors(['password_confirmation' => 'Register failed. Something went wrong.']);
         }
     }
-
 
     public function adminAccess($userId)
     {
@@ -359,9 +474,13 @@ class UserController extends Controller
         $updatedAccessColumns = $request->input('updated_access_columns', []);
         $accessControl = AccessControl::where('user_id', $userId)->first();
 
+        // // Log the action of updating admin access
+        // $user = User::findOrFail($userId);
+        // $previousAccess = $accessControl->getAttributes();
+
         // Reset all fields to false based on fillable attributes
         foreach ($accessControl->getFillable() as $accessColumn) {
-            if (in_array($accessColumn, ['user_id', 'role'])) {
+            if (in_array($accessColumn, ['user_id', 'role', 'uni_branch_id'])) {
                 continue;
             }
             if (Schema::hasColumn('access_controls', $accessColumn)) {
@@ -375,6 +494,12 @@ class UserController extends Controller
                 $accessControl->$accessColumn = true;
             }
         }
+
+        // UserLog::create([
+        //     'user_id' => Auth::id(),
+        //     'log_activity' => "Updated Admin Access",
+        //     'log_activity_content' => "Updated admin access for <strong>{$user->name}</strong>. Previous access: " . json_encode($previousAccess) . " New access: " . json_encode($accessControl->getAttributes()), // Log previous and updated access
+        // ]);
 
         $accessControl->save();
     }

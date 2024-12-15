@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Models\UserLog;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
@@ -55,6 +56,12 @@ class AuthenticatedSessionController extends Controller
             return Inertia::render('Auth/AccountSuspended');
         }
 
+        UserLog::create([
+            'user_id' =>  $authenticatedUser->id,
+            'log_activity' =>  'Logged in',
+            'log_activity_content' =>  'Logged in successfully.',
+        ]);
+
 
         if($authenticatedUser->user_type !== 'general_user')
         {
@@ -66,7 +73,7 @@ class AuthenticatedSessionController extends Controller
 
                 if ($user->user_type == 'student') {
                     $checkInSub = InstitutionSubscription::where('uni_branch_id', $user->student->uni_branch_id)->first();
-                    
+                        
                     if($checkInSub->insub_status === 'Inactive') {
                         $user->update([
                             'is_premium' => false
@@ -122,10 +129,35 @@ class AuthenticatedSessionController extends Controller
                         return redirect()->route('library')->with('user', $user);
                     case 'teacher':
                         return redirect()->route('library');
-                    case 'admin':
-                        return redirect()->route('institution-students');
-                    case 'superadmin':
-                        return redirect()->route('dashboard.index');
+                        case 'admin':
+                            $accessRoutes = [
+                                'ins_students_access' => 'institution-students',
+                                'ins_faculties_access' => 'institution-faculties',
+                                'ins_coadmins_access' => 'institution-coadmins',
+                                'ins_departments_access' => 'manage-departments.index',
+                                'ins_sections_access' => 'manage-sections.index',
+                                'ins_subscription_billing_access' => 'institution-subscription-billing.index',
+                                'ins_archives_access' => 'institution-archives',
+                            ];
+    
+                            return $this->checkAdminAccess($user, $accessRoutes);
+    
+                        case 'superadmin':
+                            $accessRoutes = [
+                                'super_dashboard_access' => 'dashboard.index',
+                                'super_users_access' => 'users',
+                                'super_archives_access' => 'archives',
+                                'super_subscription_billing_access' => 'subscription-billing',
+                                'super_user_reports_access' => 'user-reports',
+                                'super_user_feedbacks_access' => 'user-feedbacks',
+                                'super_terms_and_conditions_access' => 'terms-condition',
+                                'super_subscription_plans_access' => 'subscription-plans',
+                                'super_faqs_access' => 'faq',
+                                'super_advanced_access' => 'advanced',
+                            ];
+    
+                            return $this->checkAdminAccess($user, $accessRoutes);
+    
                     default:
                         return redirect('/');
                 }
@@ -150,6 +182,33 @@ class AuthenticatedSessionController extends Controller
 
     }
 
+    public function checkAdminAccess($user, $accessRoutes)
+    {
+        // Automatically sets the default route redirection if one of the pages can't be accessed.
+        if ($user->access_control) {  // Check if access_control is not null
+            foreach ($accessRoutes as $access => $route) {
+                if ($user->access_control->$access) {
+                    return redirect()->route(route: $route);
+                }
+            }
+        } else {
+            // Handle null access control values, specifically for superadmins and not co-superadmins
+            // created in the database where access controls were not inserted
+            if ($user->user_type === 'superadmin') {
+                return redirect()->route('dashboard.index');
+            }
+            if ($user->user_type === 'admin') {
+                return redirect()->route('institution-students');
+            }
+        }
+
+        // If no access granted for all pages, log out the user and show error
+        Auth::logout();
+        return redirect()->route('login')->withErrors([
+            'password' => "Can't log in. All page access has been blocked. Please contact support for more information.",
+        ]);
+    }
+
   
     private function checkUserSuspension($user)
     {
@@ -171,9 +230,15 @@ class AuthenticatedSessionController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
-        Log::info('Logging out...');
+        $authenticatedUser = Auth::user();
 
         Auth::guard('web')->logout();
+
+        UserLog::create([
+            'user_id' => $authenticatedUser->id,
+            'log_activity' => 'Logged out',
+            'log_activity_content' => 'Logged out successfully.',
+        ]);
 
         $request->session()->invalidate();
 

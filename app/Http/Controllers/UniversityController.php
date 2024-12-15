@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\University;
 use App\Models\UniversityBranch;
 use App\Models\InstitutionSubscription;
+use App\Models\UserLog;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
@@ -85,6 +86,10 @@ class UniversityController extends Controller
             return redirect()->back()->with('error', 'University branch not found.');
         }
 
+        // Capture old values for logging
+        $oldBranchName = $uniBranch->uni_branch_name;
+        $oldUniName = University::find($uniBranch->uni_id)?->uni_name;
+
         // Validate the incoming data
         $validatedData = $request->validate([
             'uni_branch_name' => [
@@ -121,8 +126,26 @@ class UniversityController extends Controller
             ]);
         }
 
+        // Log the changes
+        $logMessage = '';
+        if ($oldBranchName && $oldBranchName !== $validatedData['uni_branch_name']) {
+            $logMessage .= "Updated branch name from <strong>{$oldBranchName}</strong> to <strong>{$validatedData['uni_branch_name']}</strong>. ";
+        }
+
+        if ($oldUniName && $oldUniName !== $validatedData['uni_name']) {
+            $logMessage .= "Updated university name from <strong>{$oldUniName}</strong> to <strong>{$validatedData['uni_name']}</strong>. ";
+        }
+        if ($logMessage !== '') {
+            UserLog::create([
+                'user_id' => Auth::id(),
+                'log_activity' => 'Updated University',
+                'log_activity_content' => $logMessage,
+            ]);
+        }
+
         return redirect(route('manage-universities.index'))->with('success', 'University successfully updated.');
     }
+
 
 
 

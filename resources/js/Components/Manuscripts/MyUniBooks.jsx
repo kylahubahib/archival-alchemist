@@ -276,62 +276,63 @@ const MyUniBooks = ({auth, user, choice}) => {
     };
 
 
-    // Handle the rating submission
-    const handleSubmit = async () => {
-        if (!selectedManuscript || selectedRating === 0) {
-            toast.error('Please select a rating before submitting.');
+   // Handle the rating submission
+   const handleSubmit = async () => {
+    if (!selectedManuscript || selectedRating === 0) {
+        toast.error('Please select a rating before submitting.');
+        return;
+    }
+
+    try {
+        const response = await fetch('/ratings', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrfToken
+            },
+            body: JSON.stringify({
+                manuscript_id: selectedManuscript.id,
+                rating: selectedRating
+            }),
+        });
+
+        if (response.status === 401) {
+            toast.error('To submit a rating, please log in.');
+            resetRating(); // Reset rating after successful submission
             return;
         }
 
-        try {
-            const response = await fetch('/ratings', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': csrfToken
-                },
-                body: JSON.stringify({
-                    manuscript_id: selectedManuscript.id,
-                    rating: selectedRating
-                }),
-            });
-
-            if (response.status === 401) {
-                toast.error('To submit a rating, please log in.');
-                resetRating(); // Reset rating after successful submission
-                return;
-            }
-
-            if (response.status === 409) {
-                const data = await response.json();
-                toast.error(data.message || 'You have already rated this manuscript.');
-                resetRating(); // Reset rating after successful submission
-                return;
-            }
-
-            if (response.status === 422) {
-                const errorData = await response.json();
-                resetRating(); // Reset rating after successful submission
-                toast.error(errorData.message || 'Validation error.');
-                return;
-            }
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                toast.error(errorData.error || 'Failed to submit rating');
-                resetRating(); // Reset rating after successful submission
-                return;
-            }
-
+        if (response.status === 409) {
             const data = await response.json();
-            toast.info('Rating submitted successfully!');
+            toast.error(data.message || 'You have already rated this manuscript.');
             resetRating(); // Reset rating after successful submission
-            setIsModalOpen(false); // Close the modal after submission
-        } catch (error) {
-            console.error(error);
-            toast.error('Error submitting rating: ' + error.message);
+            return;
         }
-    };
+
+        if (response.status === 422) {
+            const errorData = await response.json();
+            resetRating(); // Reset rating after successful submission
+            toast.error(errorData.message || 'Validation error.');
+            return;
+        }
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            toast.error(errorData.error || 'Failed to submit rating');
+            resetRating(); // Reset rating after successful submission
+            return;
+        }
+
+        const data = await response.json();
+        toast.info('Rating submitted successfully!');
+        resetRating(); // Reset rating after successful submission
+        setIsModalOpen(false); // Close the modal after submission
+    } catch (error) {
+        console.error(error);
+        toast.error('Error submitting rating: ' + error.message);
+    }
+};
+
 
 
 

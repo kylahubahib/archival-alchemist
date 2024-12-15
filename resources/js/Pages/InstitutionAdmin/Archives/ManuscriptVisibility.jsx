@@ -1,17 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import Modal from '@/Components/Modal';
 import { Button, RadioGroup, Radio } from "@nextui-org/react";
-import { useForm } from '@inertiajs/react';
+import { router, useForm } from '@inertiajs/react';
 import { showToast } from '@/Components/Toast';
 
 export default function ManuscriptVisibility({ isOpen, onClose, id, title, visibility }) {
+
     const { data, setData, patch, processing, reset } = useForm({
         manuscript_id: id,
         manuscript_visibility: visibility,
     });
 
     const visibilityOptions = [
-        { label: 'Public', description: 'Accessible to other universities' },
+        { label: 'Public', description: 'Accessible to users with premium access' },
         { label: 'Private', description: 'Accessible to the local university' }
     ];
 
@@ -35,28 +36,43 @@ export default function ManuscriptVisibility({ isOpen, onClose, id, title, visib
     //     return () => clearTimeout(counterModalCloseDelay);
     // }, [onClose]);
 
-    const handleUpdateManuscriptVisibility = () => {
-        patch(route('institution-archives.set-manuscript-visibility'), {
-            preserveState: true,
-            preserveScroll: true,
-            onSuccess: () => {
-                showToast('success',
+    const handleUpdateManuscriptVisibility = async () => {
+        try {
+            const response = await axios.patch(route('institution-archives.set-manuscript-visibility'), {
+                manuscript_id: data.manuscript_id,
+                manuscript_visibility: data.manuscript_visibility,
+            });
+
+            // Show success message
+            console.log('man doc visibility', response.data.message);
+            showToast(
+                'success',
+                <>
+                    <strong>{title}</strong> {response.data.message}
+                </>,
+                {
+                    className: 'max-w-[400px]',
+                }
+            );
+            onClose();
+        } catch (error) {
+            console.error('Failed to update visibility.', error);
+            if (error.response && error.response.data.message) {
+                showToast(
+                    'error',
                     <>
-                        <strong>{title}</strong> visibility updated successfully.
+                        {error.response.data.message}
                     </>,
                     {
-                        // autoClose: 6000,
                         className: 'max-w-[400px]',
                     }
                 );
-                onClose(); // Close the modal on successful update
-            },
-            onError: (error) => {
-                showToast('error', 'Failed to update visibility.');
-                console.error(error);
-            },
-        });
+            }
+        } finally {
+            router.reload();
+        }
     };
+
 
     return (
         <Modal show={isOpen} onClose={onClose} maxWidth={"lg"}>
@@ -103,4 +119,3 @@ export default function ManuscriptVisibility({ isOpen, onClose, id, title, visib
         </Modal>
     );
 }
-        

@@ -59,12 +59,25 @@ class SubscriptionBillingController extends Controller
                 $q->whereRaw('LOWER(plan_type) = ?', [strtolower($subscriptionType)]);
             });
         }
-
         // Filters
         if ($searchValue) {
             $query->where(function ($q) use ($searchValue) {
-                $q->where('name', 'LIKE', '%' . $searchValue . '%')
-                    ->orWhere('id', $searchValue); // Use orWhere here
+                // Personal subscription filters
+                $q->whereHas('personal_subscription.plan', function ($q) use ($searchValue) {
+                    $q->where('plan_name', 'LIKE', '%' . $searchValue . '%');
+                })
+                    ->orWhereHas('personal_subscription', function ($q) use ($searchValue) {
+                        $q->where('id', $searchValue);
+                    })
+                    ->orWhere('name', 'LIKE', '%' . $searchValue . '%');
+
+                // Institutional subscription filters
+                $q->orWhereHas('institution_admin.institution_subscription.plan', function ($q) use ($searchValue) {
+                    $q->where('plan_name', 'LIKE', '%' . $searchValue . '%');
+                })
+                    ->orWhereHas('institution_admin.institution_subscription', function ($q) use ($searchValue) {
+                        $q->where('id', $searchValue);
+                    });
             });
         }
 

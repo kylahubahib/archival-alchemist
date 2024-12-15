@@ -77,9 +77,20 @@ class ForumCommentController extends Controller
         if ($comment->user_id !== auth()->id()) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
+        
+        // Recursively delete replies
+        $this->deleteReplies($comment);
 
         $comment->delete();
 
         return response()->json(['message' => 'Comment deleted']);
+    }
+
+        private function deleteReplies($comment)
+    {
+        foreach ($comment->replies as $reply) {
+            $this->deleteReplies($reply);
+            $reply->delete();
+        }
     }
 }

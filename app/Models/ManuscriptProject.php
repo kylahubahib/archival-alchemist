@@ -30,7 +30,7 @@ class ManuscriptProject extends Model
         'group_id',
         'section_id',
         'class_id',
-        'uni-branch_id'
+        'uni_branch_id'
     ];
 
     /**

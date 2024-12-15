@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\UserLog;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -98,21 +99,24 @@ class AdvancedForumController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id): RedirectResponse
+    public function update(Request $request, string $id)
     {
-        $forumPost = ForumPost::findOrFail($id);
-    
-        $validated = $request->validate([
-            'status' => 'required|in:Hidden,Visible', 
+        $forumPost = ForumPost::find($id);
+
+        $previousStatus = $forumPost->status;
+
+
+        $forumPost->update([
+            'status' => 'Hidden'
         ]);
 
-        \Log::info($validated['status']);
-    
-        $forumPost->update([
-            'status' => $validated['status']
+        UserLog::create([
+            'user_id' => Auth::id(),
+            'log_activity' => 'Updated Forum Post Status',
+            'log_activity_content' => "Updated the status of the forum post titled <strong>{$forumPost->title}</strong> from <strong>{$previousStatus}</strong> to <strong>Hidden</strong>.",
         ]);
-    
-        return redirect()->route('manage-forum-posts.index')->with('success', 'Status updated.');
+
+        return redirect(route('manage-forum-posts.index'))->with('success', 'Status updated.');
     }
 
 

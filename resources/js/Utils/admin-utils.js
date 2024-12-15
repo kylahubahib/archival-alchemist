@@ -1,5 +1,5 @@
 import { router } from "@inertiajs/react";
-import { encodeURLParam, updateURLParams } from "./common-utils";
+import { encodeURLParam, sanitizeURLParam, updateURLParams } from "./common-utils";
 import axios from "axios";
 import { showToast } from "@/Components/Toast";
 
@@ -24,6 +24,8 @@ export const autocompleteOnChangeHandler = (setter, category, value) => {
         university: category === 'University' ? value : prev.university,
         department: category === 'Department' ? value : prev.department,
         course: category === 'Course' ? value : prev.course,
+        section: category === 'Section' ? value : prev.section,
+        status: category === 'Status' ? value : prev.status,
     }));
 };
 
@@ -52,14 +54,18 @@ export const fetchSearchFilteredData = async (routeName, requiredRouteParam, par
         const response = await axios.get(route(routeName, { ...requiredRouteParam }), {
             params: {
                 ...params,
-                search: encodeURLParam(searchTerm),
+                search: sanitizeURLParam(searchTerm),
             },
         });
 
-        updateURLParams('search', encodeURLParam(searchTerm.trim()));
+        updateURLParams('search', searchTerm.trim());
         setFilesToDisplay(response.data);
 
+        console.log('setFilesToDiplsay', response.data);
+
         response.data.length > 0 ? setHasFilteredData(true) : setHasFilteredData(false);
+
+        router.reload();
 
     } catch (error) {
         console.error("Error fetching search results:", error);
@@ -148,10 +154,10 @@ export const getLastFileCategory = (setLastFileCategory, fileCategories) => {
 }
 
 export const handleFileCategoryClick = (routeName, params, fileCategoryCollections, fileCategories,
-    setFileCategories, selectedCategory, setSearchTerm, setIsDataLoading) => {
-    setSearchTerm('');
+    setFileCategories, selectedCategory, setSearchTerm, setIsDataLoading, setManDocVisibility) => {
 
-    console.log('Initial fileCategories:', fileCategories);
+    setSearchTerm('');
+    // setManDocVisibility('None');
 
     // Get the index of the selected file category
     const selectedIndex = fileCategories.indexOf(selectedCategory);
@@ -176,7 +182,9 @@ export const handleFileCategoryClick = (routeName, params, fileCategoryCollectio
             console.log('Removed categories:', removedCategories);
 
             // Initialize updatedParams with the current values from params to preserve the current state in the URL
-            const updatedParams = { ...params };
+            // Remove the manuscript_visibility param after clicking a file category
+            const updatedParams = { ...params, manuscript_visibility: null };
+
 
             // Remove the parameters for the selected category and those after it
             removedCategories.forEach(removedCategory => {
@@ -199,6 +207,9 @@ export const handleFileCategoryClick = (routeName, params, fileCategoryCollectio
 export const handleFileClick = (routeName, params, fileCategoryCollections, setSearchTerm, fileCategories,
     setFileCategories, setFilesToDisplay, setIsDataLoading, selectedFileName) => {
     setSearchTerm('');
+
+    // Remove the manuscript_visibility param after clicking a file
+    updateURLParams('manuscript_visibility', null);
 
     // Iterate through fileCategoryCollections to find the selected file name
     fileCategoryCollections.forEach(({ files, param, category }, index) => {
@@ -259,22 +270,31 @@ export const handleOpenPDFClick = (routeName, id, title) => {
     }
 };
 
-export const handleSetEntriesPerPageClick = async (routeName, selectedEntries, setEntriesPerPage, setEntriesData) => {
-    console.log('setEntriesPerPage:', setEntriesPerPage);
+export const handleSetEntriesPerPageClick = async (routeName, selectedEntries, setEntriesPerPage, setEntriesData, params) => {
+    console.log('Selected entries per page:', selectedEntries);
     setEntriesPerPage(selectedEntries);
 
     try {
-        const response = await axios.get(route(routeName, { params }), {
+        const response = await axios.get(route(routeName, { ...params }), {
             params: {
-                entries: entries,
+                entries: selectedEntries,
                 search: params.search,
             }
         });
         setEntriesData(response.data);
-        updateURLParams('entries', entries);
+        updateURLParams('entries', selectedEntries);
         updateURLParams('page', null);
 
     } catch (error) {
-        showToast('error', 'Failed to set entries');
+        showToast('error', `Failed to set entries ${error}`);
+        console.error('error', error);
     }
 };
+
+export const handleManDocVisibilityFilterClick = (routeName, params, selectedVisibility, setManDocVisibility) => {
+    setManDocVisibility(selectedVisibility);
+
+    router.get(route(routeName, { ...params }), {}, {
+        preserveState: true, preserveScroll: true
+    })
+}

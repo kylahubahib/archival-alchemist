@@ -1,6 +1,6 @@
 
 import TextInput from '@/Components/TextInput';
-import { Input, Button, CheckboxGroup, Checkbox } from '@nextui-org/react';
+import { Input, Button, CheckboxGroup, Checkbox, Divider } from '@nextui-org/react';
 import React, { useState, useEffect } from 'react';
 import { useForm } from '@inertiajs/react';
 import { FaUser } from "react-icons/fa6";
@@ -9,16 +9,28 @@ import { MdRemoveDone } from "react-icons/md";
 import { adminAccessOptions, handleCheckAll, handleClearAll } from './AccessControl';
 import { showToast } from '@/Components/Toast';
 import Modal from '@/Components/Modal';
-export default function Add({ userType, isOpen, onClose }) {
+
+export default function Add({ userType, routeName = 'users.send-admin-registration',
+    planUserLimit, remainingUserSlots, uniBranchId, isOpen, onClose }) {
+
+    console.log('uniBranchIdSheesh', uniBranchId);
+    console.log('userType', userType);
 
     const { data, setData, post, processing, errors, clearErrors, reset } = useForm({
         user_type: userType,
+        uni_branch_id: uniBranchId,
         name: '',
         email: '',
         access: [],
     });
 
-    console.log("add usertype", data.user_type);
+    // useEffect(() => {
+    //     setData ({user_type: userType});
+    // }, [userType])
+
+    // useEffect(() => {
+    //     setData('uni_branch_id', uniBranchId);
+    // },);
 
     const inputClassName = {
         base: "tracking-wide pb-2",
@@ -29,32 +41,44 @@ export default function Add({ userType, isOpen, onClose }) {
         },
     };
     // Check all access by default
-    useEffect(() => {
-        if (isOpen) {
-            return;
-        } else if (onClose) {
-            // Add a delay so that resetting the default values will not be visible when the modal closes
-            const counterModalCloseDelay = setTimeout(() => {
-                reset();
-                setDefaultAdminAccess();
-                clearErrors();
-            }, 300)
+    // useEffect(() => {
+    //     if (isOpen) {
+    //         return;
+    //     } else if (onClose) {
+    //         // Add a delay so that resetting the default values will not be visible when the modal closes
+    //         const counterModalCloseDelay = setTimeout(() => {
+    //             reset();
+    //             setDefaultAdminAccess();
+    //             clearErrors();
+    //         }, 300)
 
-            return () => clearTimeout(counterModalCloseDelay);
-        }
+    //         return () => clearTimeout(counterModalCloseDelay);
+    //     }
 
-    }, [onClose])
+    // }, [onClose])
 
     const handleSendRegistration = (e) => {
         e.preventDefault();
 
+        if (remainingUserSlots === 0) {
+            return (showToast('error',
+                <div>
+                    Cannot add! There are no <strong>available slots</strong> left.
+                </div>,
+            ))
+        }
+
         // The `processing` state will automatically be true during the request
-        post(route('users.send-admin-registration'), {
+        post(route(routeName), {
+            data: {
+                ...data,  // This will spread the current form data
+                uni_branch_id: uniBranchId, // Add the uni_branch_id here
+            },
             onSuccess: () => {
                 setTimeout(() => {
                     showToast('success',
                         <div>
-                            The <strong>{userType === 'institution_admin' ? 'Co-Institution Admin' : 'Co-Super Admin'} registration link</strong>
+                            The <strong>{userType === 'admin' ? 'Co-Institution Admin' : 'Co-Super Admin'} registration link</strong>
                             &nbsp;has been successfully sent to <strong className="underline min-w-28 text-blue-600">{data.email}</strong>!
                         </div>,
                         {
@@ -63,10 +87,6 @@ export default function Add({ userType, isOpen, onClose }) {
                         });
                 }, 300);
                 onClose();
-
-            },
-            onError: () => {
-                console.log('Error occurred while adding the admin.');
             },
         });
     };
@@ -76,25 +96,33 @@ export default function Add({ userType, isOpen, onClose }) {
             ...prevData,
             user_type: userType, // Make sure to reset the userType as well
             access:
-                userType === "institution_admin"
-                    ? adminAccessOptions.institution_admin.map(option => option.value)
-                    : adminAccessOptions.super_admin.map(option => option.value)
+                userType === "admin"
+                    ? adminAccessOptions?.institution_admin?.map(option => option.value)
+                    : adminAccessOptions?.super_admin?.map(option => option.value)
         }));
     }
 
     return (
-        <Modal show={isOpen} onClose={onClose} maxWidth={userType === "institution_admin" ? "xl" : "3xl"}>
-            <div className="bg-customBlue p-3">
+        <Modal show={isOpen} onClose={onClose} maxWidth={userType === "admin" ? "2xl" : "3xl"}>
+            <div className={`bg-customBlue p-3 ${userType === 'admin' && 'text-white p-3 flex justify-between'}`}>
                 <h2 className="text-xl text-white inline-block font-bold tracking-widest">
-                    {userType === "institution_admin" ? "Add co-institution admin" : "Add co-super admin"}
+                    {userType === "admin" ? "Add co-institution admin" : "Add co-super admin"}
                 </h2>
+                {userType === 'admin' && (
+                    <div className="flex justify-between items-center gap-3 tracking-wide">
+                        <span><strong>Plan User Limit: </strong>{planUserLimit}</span>
+                        <Divider className="bg-white" orientation="vertical" />
+                        <span><strong>Remaining User Slots: </strong>{remainingUserSlots}</span>
+                    </div>
+                )
+                }
             </div>
 
             <form onSubmit={handleSendRegistration}>
                 <div className="text-customGray flex gap-9 p-6 overflow-auto tracking-wide">
 
                     {/* Details */}
-                    <div className={`flex-grow 1 flex flex-col ${userType === "institution_admin" ? "w-[50%]" : "w-[35%]"} gap-2`}>
+                    <div className={`flex-grow 1 flex flex-col ${userType === "admin" ? "w-[50%]" : "w-[35%]"} gap-2`}>
                         <div className="pb-2">
                             <label className="font-bold text-md">Details</label>
                             <hr />
@@ -126,7 +154,7 @@ export default function Add({ userType, isOpen, onClose }) {
                     </div>
 
                     {/* Access Control */}
-                    <div className={`flex-grow-2 ${userType === "institution_admin" ? "w-[50%]" : "w-[65%]"} flex flex-col gap-4`}>
+                    <div className={`flex-grow-2 ${userType === "admin" ? "w-[50%]" : "w-[65%]"} flex flex-col gap-4`}>
                         <div className="flex flex-col gap-2">
                             <div className="pb-2">
                                 <label className="font-bold text-md">Access</label>
@@ -138,7 +166,7 @@ export default function Add({ userType, isOpen, onClose }) {
                                         value={data.access}
                                         onChange={(value) => setData('access', value)}
                                     >
-                                        {userType === "institution_admin" ? (
+                                        {userType === "admin" ? (
                                             adminAccessOptions.institution_admin.map((option) => (
                                                 <Checkbox key={option.value} value={option.value}>
                                                     {option.label}
@@ -174,7 +202,7 @@ export default function Add({ userType, isOpen, onClose }) {
                                 radius="sm"
                                 className="p-2"
                                 isDisabled={
-                                    userType === 'institution_admin'
+                                    userType === 'admin'
                                         ? data.access.length === adminAccessOptions.institution_admin.length
                                         : data.access.length === adminAccessOptions.super_admin.length
                                 }

@@ -44,7 +44,7 @@ class FetchDataController extends Controller
 
     public function fetchDistinctUserStatus()
     {
-        $status = User::distinct()->pluck('user_status');
+        $status = User::distinct()->get(['user_status'])->pluck('user_status');
 
         $capitalizedStatus = $status->map(function ($status) {
             return ucwords($status);
@@ -53,10 +53,9 @@ class FetchDataController extends Controller
         return response()->json($capitalizedStatus);
     }
 
-
     public function fetchDistinctCurrentPlans()
     {
-        $users = User::distinct()->pluck('is_premium');
+        $users = User::distinct()->get(['is_premium'])->pluck('is_premium');
 
         $currentPlan = $users->map(function ($isPremium) {
             return $isPremium ? 'Premium' : 'Basic';
@@ -65,20 +64,19 @@ class FetchDataController extends Controller
         return response()->json($currentPlan);
     }
 
-
     public function fetchRelatedDataForUniversity(Request $request)
     {
         $uniName = $request->get('university');
 
         // Get the uni_id since this is the FK on the university_branches table
-        $uniId = University::where('uni_name', $uniName)->value('uni_id');
+        $uniId = University::where('uni_name', $uniName)->value('id');
 
         // Fetch related data
         $universityRelatedData = UniversityBranch::where('uni_id', $uniId)
             ->select(['uni_branch_id', 'uni_branch_name'])
             ->with([
-                'department:dept_id,dept_name,uni_branch_id',
-                'department.course:course_id,course_name,dept_id',
+                'department:id,dept_name,uni_branch_id',
+                'department.course:id,course_name,dept_id',
             ])
             ->get();
 
@@ -106,18 +104,17 @@ class FetchDataController extends Controller
 
     public function fetchSuperAdminRoles()
     {
-        // Fetch user IDs of super admins
-        $ids = User::where('user_type', 'super_admin')->pluck('user_id');
-        // Fetch distinct roles associated with those user IDs
-        $roles = AccessControl::whereIn('user_id', $ids)->distinct()->pluck('role');
+        $ids = User::where('user_type', 'superadmin')->pluck('id');
+        \Log::info('Superadmin IDs:', $ids->toArray()); // Debugging
 
-        // Format roles for the response
+        $roles = AccessControl::whereIn('user_id', $ids)->distinct()->pluck('role');
+        \Log::info('Superadmin Roles:', $roles->toArray()); // Debugging
+
         $formattedRoles = [
             'super_admin' => 'Super Admin',
             'co_super_admin' => 'Co-Super Admin',
         ];
 
-        // Check if any roles exist in the database and format accordingly
         $responseRoles = $roles->map(function ($role) use ($formattedRoles) {
             return $formattedRoles[$role] ?? $role;
         });
@@ -127,9 +124,15 @@ class FetchDataController extends Controller
 
     public function fetchInstitutionAdminRoles()
     {
-        $ids = User::where('user_type', 'institution_admin')->pluck('user_id');
-        $roles = AccessControl::whereIn('user_id', $ids)->distinct()->pluck('role');
+        // Fetch user IDs of institution admins
+        $ids = User::where('user_type', 'admin')->pluck('id');
+        \Log::info('Institution Admin IDs:', $ids->toArray()); // Debugging
 
+        // Fetch distinct roles associated with those user IDs
+        $roles = AccessControl::whereIn('user_id', $ids)->distinct()->pluck('role');
+        \Log::info('Institution Admin Roles:', $roles->toArray()); // Debugging
+
+        // Map roles to formatted values
         $formattedRoles = [
             'institution_admin' => 'Institution Admin',
             'co_institution_admin' => 'Co-Institution Admin',
@@ -140,5 +143,13 @@ class FetchDataController extends Controller
         });
 
         return response()->json($responseRoles);
+    }
+
+
+    public function fetchUniversityRelatedData()
+    {
+        $universities = University::with('university_branch.department.course.sections')->get();
+
+        return response()->json($universities);
     }
 }
