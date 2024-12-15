@@ -49,13 +49,13 @@ export default function Forum({ auth }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState(''); 
-  const [comments, setComments] = useState([]);
-  const [commentCounts, setCommentCounts] = useState({});
+  const [commentCount, setCommentCount] = useState(0); // State to hold the comment count
+
 
 
   // Set up Axios CSRF token configuration globally
-  axios.defaults.headers.common['X-CSRF-TOKEN'] = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-  axios.defaults.withCredentials = true;
+  // axios.defaults.headers.common['X-CSRF-TOKEN'] = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+  // axios.defaults.withCredentials = true;
 
 
   const formatPostDate = (dateString) => {
@@ -63,16 +63,19 @@ export default function Forum({ auth }) {
     return date.fromNow(); // Display as relative time, e.g., "5 minutes ago"
 };
 
+
+
 useEffect(() => {
   if (!searchQuery) {
     setFilteredPosts(posts);
   }
 }, [posts, searchQuery]);
 
-const handleUpdateCommentCount = (postId, count) => {
-  setCommentCounts((prevCounts) => ({
-      ...prevCounts,
-      [postId]: count,
+
+const handleCommentCountUpdate = (postId, newCount) => {
+  setCommentCount((prevCount) => ({
+    ...prevCount,
+    [postId]: newCount, // Update the count for the specific post
   }));
 };
 
@@ -188,7 +191,7 @@ const handlePostSubmit = async () => {
 
 
 // Render loading or error states
-if (loading) return <div>Loading posts...</div>;
+// if (loading) return <div className="flex justify-center mt-20"><Spinner/></div>;
 if (error) return <div>Error: {error}</div>;
 
 const handleTitleClick = async (postId) => {
@@ -213,6 +216,8 @@ const handleTitleClick = async (postId) => {
   }
 };
 
+
+
 // Open the modal with post details
 const showModal = (postDetails) => {
   setSelectedPost(postDetails); // Set the selected post details
@@ -229,7 +234,8 @@ const closeModal = () => {
 const handlePostError = async (error, newPost) => {
   if (error.response?.status === 419) {
     console.warn("CSRF token error. Refreshing token and retrying...");
-    await axios.get('/sanctum/csrf-cookie'); // Refresh CSRF token
+
+    // await axios.get('/sanctum/csrf-cookie'); // Refresh CSRF token
     try {
       const retryResponse = await axios.post('/forum-posts', newPost);
       if (retryResponse.status === 201) {
@@ -280,12 +286,12 @@ const handleDeleteConfirmation = (postId) => {
 
 const handleDeletePost = async () => {
   if (postToDelete !== null) {
-    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    // const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
     try {
       const response = await axios.delete(`/forum-posts/${postToDelete}`, {
         headers: {
-          'X-CSRF-TOKEN': csrfToken,
+          // 'X-CSRF-TOKEN': csrfToken,
         },
       });
 
@@ -349,7 +355,7 @@ const handleStartDiscussion = () => {
                 
                 <Dropdown>
                   <DropdownTrigger>
-                    <Button className="bg-customBlue text-white" variant="solid">
+                    <Button className="bg-customBlue text-white ml-3  mt-6" variant="solid ">
                       Sort by
                     </Button>
                   </DropdownTrigger>
@@ -361,14 +367,14 @@ const handleStartDiscussion = () => {
                 </Dropdown>
 
                 {/* Search Bar */}
-                <div className="flex justify-between mb-6">
+                <div className="flex justify-between mb-6 mt-6">
                   <div className="relative w-full max-w-lg">
                     <Input
                       value={searchQuery}
                       onChange={handleSearchChange}
                       placeholder="Search by title, author, or tags"
                       classNames={{
-                        base: "max-w-full h-10",
+                        base: "max-w-full drop-shadow-lg",
                         mainWrapper: "h-full",
                         input: "text-small focus:outline-none border-transparent focus:border-transparent focus:ring-0",
                         inputWrapper: "h-full font-normal text-default-500",
@@ -387,10 +393,10 @@ const handleStartDiscussion = () => {
                 </div>
 
 
-                <div className="ml-auto">
+                <div className="ml-auo mt-6">
                   <Button
                     radius="full"
-                    className="bg-gradient-to-r from-sky-400 to-blue-800 text-white w-60"
+                    className="bg-gradient-to-r from-sky-400 to-blue-800 text-white w-56 font-bold box drop-shadow-lg "
                     onClick={handleStartDiscussion}
                   >
                     Start Discussion
@@ -463,7 +469,7 @@ const handleStartDiscussion = () => {
                       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-4 w-4 mr-1">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 0 1 .865-.501 48.172 48.172 0 0 0 3.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018Z" />
                       </svg>
-                      {commentCounts[post.id] || 0}
+                      {commentCount[post.id] || 0}
                     </span>
                   </div>
 
@@ -533,7 +539,7 @@ const handleStartDiscussion = () => {
                 onClose={closeModal}
                 post={selectedPost}
                 loggedInUser={auth.user}
-                onUpdateCommentCount={handleUpdateCommentCount}
+                onUpdateCommentCount={(newCount) => handleCommentCountUpdate(post.id, newCount)} // Pass post.id
 
               />
           </div>

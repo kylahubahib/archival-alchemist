@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Models\UserLog;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
@@ -13,6 +14,7 @@ use Inertia\Response;
 
 use App\Traits\CheckSubscriptionTrait;
 use App\Models\InstitutionSubscription;
+use App\Models\UserReport;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\UsersImport;
 use App\Models\UserLog;
@@ -43,11 +45,18 @@ class AuthenticatedSessionController extends Controller
      */
     public function store(LoginRequest $request)
     {
-
-        \Log::info("hello");
+        \Log::info("Logging in...");
 
         $request->authenticate();
         $authenticatedUser = Auth::user();
+
+        $this->checkUserSuspension($authenticatedUser);
+
+        // Refresh the user model incase status updates in the checkUserSuspension
+        if ($authenticatedUser->fresh()->user_status === 'Suspended') {
+            Auth::guard('web')->logout();
+            return Inertia::render('Auth/AccountSuspended');
+        }
 
         UserLog::create([
             'user_id' =>  $authenticatedUser->id,
@@ -55,20 +64,40 @@ class AuthenticatedSessionController extends Controller
             'log_activity_content' =>  'Logged in successfully.',
         ]);
 
+
         if ($authenticatedUser->user_type !== 'general_user') {
             // Get the data of the user and student table
             $user = $authenticatedUser->load(['student', 'faculty']);
 
             // Check if user is affiliated with an institution
             if ($user->user_type != 'admin' && $user->user_type != 'superadmin') {
+
                 if ($user->user_type == 'student') {
                     $checkInSub = InstitutionSubscription::where('uni_branch_id', $user->student->uni_branch_id)->first();
-                } elseif ($user->user_type == 'teacher') {
-                    $checkInSub = InstitutionSubscription::where('uni_branch_id', $user->faculty->first()->uni_branch_id)->first();
-                }
 
-                if ($user->is_premium == 0 || $user->is_affiliated == 0) {
-                    $this->checkInstitutionSubscription($checkInSub, $user);
+                    if ($checkInSub->insub_status === 'Inactive') {
+                        $user->update([
+                            'is_premium' => false
+                        ]);
+                    } else {
+
+                        if ($user->is_premium == 0 && $user->is_affiliated == 1) {
+                            $this->checkInstitutionSubscription($checkInSub, $user);
+                        }
+                    }
+                } else if ($user->user_type == 'teacher') {
+                    $checkInSub = InstitutionSubscription::where('uni_branch_id', $user->faculty->first()->uni_branch_id)->first();
+
+                    if ($checkInSub->insub_status === 'Inactive') {
+                        $user->update([
+                            'is_premium' => false
+                        ]);
+                    } else {
+
+                        if ($user->is_premium == 0 && $user->is_affiliated == 1) {
+                            $this->checkInstitutionSubscription($checkInSub, $user);
+                        }
+                    }
                 }
             }
 
@@ -83,9 +112,11 @@ class AuthenticatedSessionController extends Controller
 
             // If it's not a JSON request, regenerate session and redirect
             if (!$request->expectsJson()) {
-                $request->session()->regenerate();
+                $session = $request->session()->regenerate();
 
-                Log::info(['userType' => $user->user_type]);
+                Log::info('Token...');
+                Log::info($session);
+
 
                 // Redirect based on user_type
                 switch ($user->user_type) {
@@ -111,7 +142,7 @@ class AuthenticatedSessionController extends Controller
                             'super_dashboard_access' => 'dashboard.index',
                             'super_users_access' => 'users',
                             'super_archives_access' => 'archives',
-                            'super_subscription_and_billing_access' => 'subscription-billing',
+                            'super_subscription_billing_access' => 'subscription-billing',
                             'super_user_reports_access' => 'user-reports',
                             'super_user_feedbacks_access' => 'user-feedbacks',
                             'super_terms_and_conditions_access' => 'terms-condition',
@@ -149,7 +180,7 @@ class AuthenticatedSessionController extends Controller
         if ($user->access_control) {  // Check if access_control is not null
             foreach ($accessRoutes as $access => $route) {
                 if ($user->access_control->$access) {
-                    return redirect()->route($route);
+                    return redirect()->route(route: $route);
                 }
             }
         } else {
@@ -169,6 +200,22 @@ class AuthenticatedSessionController extends Controller
             'password' => "Can't log in. All page access has been blocked. Please contact support for more information.",
         ]);
     }
+
+
+    private function checkUserSuspension($user)
+    {
+        $report = UserReport::where('reported_user_id', $user->id)
+            ->whereNotNull('suspension_start_date')
+            ->whereNotNull('suspension_end_date')
+            ->latest('suspension_end_date')
+            ->first();
+
+        if ($report && now()->greaterThan($report->suspension_end_date)) {
+            $user->update(['user_status' => 'Active']);
+        }
+    }
+
+
 
     /**
      * Destroy an authenticated session.

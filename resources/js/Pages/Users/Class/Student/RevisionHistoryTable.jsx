@@ -99,7 +99,7 @@ const RevisionHistoryTable = ({ groupId, classes }) => {
                   {new Date(revision.updated_at).toLocaleDateString() || "N/A"}
                 </TableCell>
                 <TableCell className="text-center w-200">
-                  {revision.ins_comment || "No comments available"}
+                  {revision.ins_comment || "⦿⦿⦿"}
                 </TableCell>
               </TableRow>
             ))}

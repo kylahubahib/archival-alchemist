@@ -20,17 +20,17 @@ const JoinClassSection = ({ auth, user, userId, }) => {
 
     useEffect(() => {
         // Retrieve CSRF token from the meta tag
-        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-        console.log("CSRF Token Retrieved: ", csrfToken); // Log the CSRF token
+        // const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+        // console.log("CSRF Token Retrieved: ", csrfToken); // Log the CSRF token
 
         // Set default CSRF token for axios requests
-        axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken;
+        // axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken;
 
         // Fetch classes
         fetch('/fetch-studentClasses', {
             method: 'GET',
             headers: {
-                'X-CSRF-TOKEN': csrfToken,  // CSRF token applied here
+                // 'X-CSRF-TOKEN': csrfToken,  // CSRF token applied here
                 'Authorization': `Bearer ${userToken}`,
             }
         })
@@ -50,16 +50,6 @@ const JoinClassSection = ({ auth, user, userId, }) => {
                 setFetchError(true);
             });
 
-        // Fetch courses
-        fetch('/fetch-courses', {
-            method: 'GET',
-            headers: {
-                'X-CSRF-TOKEN': csrfToken,  // CSRF token applied here
-            }
-        })
-            .then(response => response.json())
-            .then(data => setCourses(data))
-            .catch(error => console.error("Error fetching courses:", error));
 
     }, [userId]);
 
@@ -97,6 +87,27 @@ const JoinClassSection = ({ auth, user, userId, }) => {
             } else {
                 alert('You need to be a premium user to join the class.');
             }
+
+            fetch('/fetch-studentClasses')
+    .then(response => {
+        if (!response.ok) {
+            setFetchError(true);
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .then(data => {
+        setFolders(data);
+        setFetchError(false);
+    })
+    .catch(error => {
+        console.error("Error fetching folders:", error);
+        setFetchError(true);
+    })
+    .finally(() => {
+        setIsJoining(false); // Always reset loading state
+    });
+
         } catch (error) {
             console.error('Error joining class:', error);
             alert('An error occurred while joining the class.');
@@ -152,7 +163,7 @@ const JoinClassSection = ({ auth, user, userId, }) => {
                                         {/* Text (Subject and Section) */}
                                         <div className="ml-4">
                                             <p className="text-lg font-semibold text-black">{folder.subject_name}</p>
-                                            <p className="text-sm text-black">{folder.course_acronym} {folder.section_name}</p>
+                                            <p className="text-sm text-black">{folder.course?.course_acronym} {folder.section_name}</p>
                                         </div>
                                     </div>
                                     <CardFooter className="justify-between before:bg-white/10 border-white/20 border-1 overflow-hidden py-1 absolute before:rounded-xl rounded-large bottom-1 w-[calc(100%_-_8px)] shadow-small ml-1 z-10">

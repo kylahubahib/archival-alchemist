@@ -299,6 +299,8 @@ class UserController extends Controller
         $access = json_encode($request->input('access')); // Encode the access array to JSON
         $registrationLink = route('admin.registration-form', ['token' => $token]);
 
+        \Log::info(['userType' => $userType]);
+
         // Check if the plan user limit has been reached before adding a co-institution-admin
         if ($userType === 'admin' && $this->totalAffiliatedPremiumUsers >= $this->planUserLimit) {
             return back()->with('error', 'Unable to add co-institution-admin. The plan user limit has been reached.');

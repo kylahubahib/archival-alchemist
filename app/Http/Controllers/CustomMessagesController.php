@@ -143,6 +143,7 @@ class CustomMessagesController extends Controller
         return redirect(route('manage-custom-messages.index'))->with('success', 'Updated successfully.');
     }
 
+
     public function updateIcon(Request $request)
     {
         $file = $request->file('subject');
@@ -174,6 +175,8 @@ class CustomMessagesController extends Controller
 
         return response()->json();
     }
+
+
 
     public function storeService(Request $request)
     {
@@ -235,6 +238,7 @@ class CustomMessagesController extends Controller
         //return response()->json(['message' => 'Team added successfully!']);
         return redirect(route('manage-custom-messages.index'))->with('success', 'Updated successfully.');
     }
+
 
     /**
      * Remove the specified resource from storage.

@@ -11,7 +11,8 @@ import { showToast } from '@/Components/Toast';
 export default function AffiliateUniversity({ isOpen, onOpenChange, setIsAffiliated }) {
     const [universities, setUniversities] = useState([]);
     const [message, setMessage] = useState('');
-    const { data, setData, post, processing, errors, reset } = useForm({
+    const [processing, setProcessing] = useState(false);
+    const { data, setData, post, errors, reset } = useForm({
         uni_branch_id: '',
         uni_id_num: '',
         user_role: ''
@@ -33,7 +34,8 @@ export default function AffiliateUniversity({ isOpen, onOpenChange, setIsAffilia
 
     const submit = (e) => {
         e.preventDefault();
-
+        
+        setProcessing(true);
         setMessage('');
         axios.post('/affiliate-university', data)
             .then((response) => {
@@ -41,6 +43,7 @@ export default function AffiliateUniversity({ isOpen, onOpenChange, setIsAffilia
                 ///console.log('Success:', response.data.message);
                 //console.log('affiliation', response.data.is_affiliated);
                 setIsAffiliated(response.data.is_affiliated);
+                setProcessing(false);
                 router.reload();
             })
             .catch((error) => {

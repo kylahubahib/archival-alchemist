@@ -5,8 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Course;
 use App\Models\Faculty;
 use App\Models\Department;
-use App\Models\User;
 use App\Models\UserLog;
+use Google\Service\Blogger\UserBlogs;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Validation\Rules;
@@ -23,6 +23,14 @@ class CoursesController extends Controller
     /**
      * Display the courses under a specific department
      */
+
+    //  public function __construct()
+    //  {
+    //      // Apply 'can_add' access to 'create' and 'store' actions.
+    //      $this->middleware('access:can_add')->only(['create', 'store']);
+    //      // Apply 'can_edit' access to 'edit', 'update', and 'destroy' actions.
+    //      $this->middleware('access:can_edit')->only(['edit', 'update', 'destroy']);
+    //  }
 
     public function getCourses(Request $request)
     {
@@ -91,7 +99,7 @@ class CoursesController extends Controller
         // ]);
 
         // Log the course creation in UserLog
-        UserLog::create([
+        UserBlogs::create([
             'user_id' => Auth::id(), // Log the action by the currently authenticated user
             'log_activity' => "Created Course", // Activity title
             'log_activity_content' => "Created course <strong>{$course->course_name}</strong>"
@@ -101,6 +109,9 @@ class CoursesController extends Controller
 
         return redirect()->back()->with(['success' => true]);
     }
+
+
+
 
     /**
      * Update the specified resource in storage.
@@ -145,6 +156,7 @@ class CoursesController extends Controller
 
         return redirect()->back();
     }
+
 
     /**
      * Remove the specified resource from storage.
@@ -214,7 +226,6 @@ class CoursesController extends Controller
         ]);
     }
 
-
     /**
      * Unassign the courses
      */
@@ -248,6 +259,7 @@ class CoursesController extends Controller
     }
 
 
+
     public function getUnassignedCourses()
     {
         $courses = Course::where('dept_id', null)->get();
@@ -266,34 +278,34 @@ class CoursesController extends Controller
         ]);
     }
 
-public function assignCourses(Request $request)
-{
-$deptId = $request->get('deptId');
-$courses = $request->get('courses');
+    public function assignCourses(Request $request)
+    {
+        $deptId = $request->get('deptId');
+        $courses = $request->get('courses');
 
-// Get the department for logging purposes
-$department = Department::firstWhere('id', $deptId); // Fetch the department
+        // Get the department for logging purposes
+        $department = Department::firstWhere('id', $deptId); // Fetch the department
 
-// If no department is found, return an error
-if (!$department) {
-    return response()->json(['message' => 'Department not found'], 404);
-}
+        // If no department is found, return an error
+        if (!$department) {
+            return response()->json(['message' => 'Department not found'], 404);
+        }
 
-// Get the course names for logging purposes
-$courseNames = Course::whereIn('id', $courses)->pluck('course_acronym')->implode(', ');
+        // Get the course names for logging purposes
+        $courseNames = Course::whereIn('id', $courses)->pluck('course_acronym')->implode(', ');
 
-// Update the department assignment for the selected courses
-Course::whereIn('id', $courses)->update(['dept_id' => $deptId]);
+        // Update the department assignment for the selected courses
+        Course::whereIn('id', $courses)->update(['dept_id' => $deptId]);
 
-// Log the activity
-UserLog::create([
-    'user_id' => Auth::id(), // Log the action by the currently authenticated user
-    'log_activity' => "Assigned Courses", // Activity title
-    'log_activity_content' => "Assigned courses <strong>{$courseNames}</strong> to department <strong>{$department->dept_acronym}</strong>.",
-]);
+        // Log the activity
+        UserLog::create([
+            'user_id' => Auth::id(), // Log the action by the currently authenticated user
+            'log_activity' => "Assigned Courses", // Activity title
+            'log_activity_content' => "Assigned courses <strong>{$courseNames}</strong> to department <strong>{$department->dept_acronym}</strong>.",
+        ]);
 
-return response()->json([
-    'message' => 'Successfully assigned courses!'
-]);
-}
+        return response()->json([
+            'message' => 'Successfully assigned courses!'
+        ]);
+    }
 }

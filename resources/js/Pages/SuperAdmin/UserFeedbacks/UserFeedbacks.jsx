@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { Progress, Select, SelectItem } from "@nextui-org/react";
 import { dateFilters, ratingFilters } from "@/Components/data";
+import PageHeader from "@/Components/Admin/PageHeader";
 
 export default function UserFeedbacks({ auth, feedbacks, feedbackCount, averageRating, ratingCounts, AllRatingCount }) {
     const [filteredData, setFilteredData] = useState(feedbacks.data);
@@ -39,8 +40,9 @@ export default function UserFeedbacks({ auth, feedbacks, feedbackCount, averageR
         >
             <Head title="User Feedbacks" />
             <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
+                
                 <div className="flex flex-row justify-between my-3">
-                    <div className="text-gray-800 text-3xl font-bold">User Feedbacks</div>
+                <PageHeader>USER FEEDBACKS</PageHeader>
                 </div>
 
                 <div className="flex flex-row space-x-4">

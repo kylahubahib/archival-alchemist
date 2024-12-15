@@ -19,9 +19,18 @@ use Exception;
 
 use App\Mail\AccountCredentialsMail;
 use Illuminate\Support\Facades\Mail;
+use App\Notifications\UserNotification;
 
 class UsersImport implements ToCollection, WithHeadingRow
 {
+
+    protected $userId;
+
+    public function __construct($userId)
+    {
+        $this->userId = $userId; 
+    }
+
     /**
      * Handles the imported data row by row as a collection.
      * 
@@ -30,7 +39,15 @@ class UsersImport implements ToCollection, WithHeadingRow
      */
     public function collection(Collection $collection)
     {
-        $authUser = Auth::user(); 
+        Log::info('Start processing csv...');
+
+        $authUser = User::find($this->userId); 
+
+        if (!$authUser) {
+            Log::error("User not found with ID {$this->userId}");
+            return;
+        }
+
         $institution = InstitutionAdmin::with('institution_subscription')
             ->where('user_id', $authUser->id)->first();
         $uniBranchId = $institution->institution_subscription->uni_branch_id;
@@ -51,6 +68,19 @@ class UsersImport implements ToCollection, WithHeadingRow
                 $userExist = User::where('email', $row['email'])->first();
                 if ($userExist) {
                     Log::info("User already exists: {$row['email']}");
+                    if($userExist->is_affiliated == 1)
+                    {
+                        $userExist->update([
+                            'is_premium' => true
+                        ]);
+
+                        $userExist->notify(new UserNotification([
+                            'message' => "Congratulations! Your account has been upgraded to premium status, thanks to your institution's active subscription. Enjoy exclusive access to premium features and resources!",
+                            'user_id' => $userExist->id
+                        ]));
+                        
+                    }
+
                     continue;
                 }
 

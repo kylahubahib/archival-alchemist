@@ -284,4 +284,4 @@ export default function Filter({ userType, selectedAutocompleteItems, setSelecte
             }
         </motion.div>
     )
-}
+}       

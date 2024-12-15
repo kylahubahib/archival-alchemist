@@ -25,7 +25,7 @@ export default function Edit({ auth, mustVerifyEmail, status }) {
     const [errorMessage, setErrorMessage] = useState('');
     const [showErrorModal, setShowErrorModal] = useState(false);
     const [showConfirmModal, setShowConfirmModal] = useState(false);
-    const [userType, setUserType] = useState(null); // Initialize as null or an appropriate value
+    const [userType, setUserType] = useState(null); // Initialize as null or an appropriate values
 
     useEffect(() => {
       axios.get('/fetch-userType') // Replace with your actual API endpoint
@@ -148,12 +148,12 @@ export default function Edit({ auth, mustVerifyEmail, status }) {
                             <h3 className="text-2xl font-semibold">{auth.user.name}</h3>
                             <p className="text-xs font-medium text-gray-800">Has been a member since {format(new Date(auth.user.created_at), 'yyyy')}</p>
                             <p className="text-sm text-gray-600 mt-2">{auth.user.user_aboutme}</p>
-                            <div className="mt-4">
+                            {/* <div className="mt-4">
                                 <a href={route('chatify')} className="text-gray-600 hover:text-gray-800 flex items-center">
                                     <MdMessage size={32} className="mr-2" />
                                     <span>Message</span>
                                 </a>
-                            </div>
+                            </div> */}
                         </div>
                     </div>
 
@@ -207,9 +207,9 @@ export default function Edit({ auth, mustVerifyEmail, status }) {
                                 <AccordionItem key="3" aria-label="Password Information" title="Password Information">
                                     <UpdatePasswordForm className="max-w-xl" />
                                 </AccordionItem>
-                                <AccordionItem key="4" aria-label="Account Deletio" title="Account Deletion">
+                                {/* <AccordionItem key="4" aria-label="Account Deletio" title="Account Deletion">
                                     <DeleteUserForm className="max-w-xl" />
-                                </AccordionItem>
+                                </AccordionItem> */}
                             </Accordion>
                         </div>
 
@@ -223,7 +223,7 @@ export default function Edit({ auth, mustVerifyEmail, status }) {
 
 
                             <div className="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
-                                <Posts user={auth.user} className="max-w-xl" />
+                                <Posts user={auth.user} />
                             </div>
 
                         </div>
@@ -236,7 +236,7 @@ export default function Edit({ auth, mustVerifyEmail, status }) {
 
 
 <div className="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
-  {userType === 'student' ? (
+  {auth.user.user_type === 'student' ? (
     <StudentRepository auth={auth} user={auth.user} className="max-w-xl" />
   ) : (
     <TeacherRepository auth={auth} user={auth.user} className="max-w-xl" />

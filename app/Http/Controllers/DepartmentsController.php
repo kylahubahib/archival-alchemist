@@ -24,7 +24,13 @@ class DepartmentsController extends Controller
      * Display a listing of the resource.
      */
 
-
+    //  public function __construct()
+    // {
+    //     // Apply 'can_add' access to 'create' and 'store' actions.
+    //     $this->middleware('access:can_add')->only(['create', 'store']);
+    //     // Apply 'can_edit' access to 'edit', 'update', and 'destroy' actions.
+    //     $this->middleware('access:can_edit')->only(['edit', 'update', 'destroy']);
+    // }
 
     public function index()
     {
@@ -104,6 +110,8 @@ class DepartmentsController extends Controller
     /**
      * Store a newly created resource in storage.
      */
+
+
     public function store(Request $request)
     {
         \Log::info('ok');
@@ -212,6 +220,7 @@ class DepartmentsController extends Controller
         return redirect(route('manage-departments.index'))->with('success', 'Departments created successfully.');
     }
 
+
     /**
      * Remove the specified resource from storage.
      */
@@ -238,6 +247,7 @@ class DepartmentsController extends Controller
     /**
      * Reassign the courses
      */
+
     public function reassignCourses(Request $request, string $id)
     {
         $deptId = $request->get('dept_id');

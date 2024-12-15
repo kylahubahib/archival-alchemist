@@ -7,6 +7,7 @@ import { TbDotsVertical } from 'react-icons/tb';
 import ViewPost from './ViewPost';
 import axios from 'axios'; // Ensure axios is imported
 import SearchBar from '@/Components/Admin/SearchBar';
+import { router } from '@inertiajs/core';
 
 export default function Forum({ auth, forumPost }) {
     const [filteredData, setFilteredData] = useState(forumPost);
@@ -48,6 +49,27 @@ export default function Forum({ auth, forumPost }) {
     
         setFilteredData(searchedData);
     };
+
+    const handleStatusChange = (post) => {
+        const newStatus = post.status === 'Visible' ? 'Hidden' : 'Visible';
+    
+        router.put(route('manage-forum-posts.update', post.id), {status: newStatus}, {
+            preserveScroll: true,
+            onSuccess: () => {
+                setFilteredData((prevData) =>
+                    prevData.map((item) =>
+                        item.id === post.id
+                            ? { ...item, status: newStatus } 
+                            : item
+                    )
+                );
+            },
+            onError: (errors) => {
+                console.error('Update failed', errors);
+            },
+        });
+    };
+
     
 
     return (
@@ -92,7 +114,7 @@ export default function Forum({ auth, forumPost }) {
                             </div>
 
                             <div className="border-1 shadow-sm rounded-lg m-3">
-                                <table className="w-full text-sm text-left rtl:text-right text-gray-500">
+                                <table className="text-sm text-left rtl:text-right text-gray-500">
                                     <thead className="text-xs sticky z-20 -top-[1px] pb-[20px] text-customGray uppercase align-top bg-customLightGray">
                                         <tr>
                                             <th className="px-6 py-3">Post Title</th>
@@ -115,7 +137,7 @@ export default function Forum({ auth, forumPost }) {
                                                     </th>
                                                     <td className="px-6 py-4">{post.user.name}</td>
                                                     <td className="px-6 py-4">
-                                                        <Chip color={post.status === "Visible" ? "success" : post.status === "Hidden" ? "default" : "danger"} variant="flat">
+                                                        <Chip color={post.status === "Visible" ? "success" : post.status === "Hidden" ? "default" : "danger"} variant="flat" >
                                                             {post.status}
                                                         </Chip>
                                                     </td>
@@ -132,7 +154,10 @@ export default function Forum({ auth, forumPost }) {
                                                                 </DropdownTrigger>
                                                                 <DropdownMenu>
                                                                     <DropdownItem onClick={() => handleViewPost(post)}>View Post</DropdownItem>
-                                                                    <DropdownItem>Hide</DropdownItem>
+                                                                    { post.status != 'Deleted' &&
+                                                                    <DropdownItem onClick={() => handleStatusChange(post)}>
+                                                                        {post.status === 'Visible' ? 'Hide' : 'Unhide'}
+                                                                    </DropdownItem> }
                                                                 </DropdownMenu>
                                                             </Dropdown>
                                                         </div>

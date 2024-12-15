@@ -359,6 +359,7 @@ const Manuscript = ({auth, user, choice}) => {
 
 
 
+
     // const handleDownload = async (manuscriptId, title) => {
     //     console.log("Attempting to download manuscript ID:", manuscriptId);
     //     try {

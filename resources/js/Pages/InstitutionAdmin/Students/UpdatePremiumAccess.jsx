@@ -83,7 +83,7 @@ export default function UpdatePremiumAccess({ routeName = 'institution-students.
                         size="sm"
                         className="capitalize"
                     >
-                        {processing ? `${action?.slice(0, -1)?.concat('ing...')}` : 'Yes'}
+                        {processing ? `${action?.concat('ing...')}` : 'Yes'}
                     </Button>
                     <Button
                         color="danger"

@@ -13,7 +13,7 @@ class UserLog extends Model
     protected $fillable = [
         'user_id',
         'log_activity',
-        'log_activity_content',
+        'log_activity_content'
     ];
 
     const CREATED_AT = 'created_at';

@@ -5,9 +5,30 @@ import { format } from 'date-fns';
 import UserPost from './UserPost';
 import { MdMessage } from 'react-icons/md';
 import UserRepository from './UserRepository';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
+import relativeTime from "dayjs/plugin/relativeTime";
+import { formatDistanceToNow } from 'date-fns';
+import ReportModal from '@/Components/ReportModal';
 
 export default function UserProfile({ auth, selectedUser }) {
     const [activeTab, setActiveTab] = useState('posts');
+    const [openPost, setOpenPost] = useState(false);
+    const [selectedPost, setSelectedPost] = useState(null);
+    const [posts, setPosts] = useState(selectedUser.forum_post);
+    const [commentCounts, setCommentCounts] = useState({});
+    const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+
+    const formatPostDate = (dateString) => {
+        const date = dayjs.utc(dateString).tz(dayjs.tz.guess()); // Adjust to local timezone
+        return date.fromNow(); // Display as relative time, e.g., "5 minutes ago"
+    };
+
+    const closePost = () => {
+        setSelectedPost(null);
+        setIsReportModalOpen(false);
+    }
 
     return (
         <AuthenticatedLayout
@@ -63,9 +84,10 @@ export default function UserProfile({ auth, selectedUser }) {
                 <div className="my-4">
                     {activeTab === 'posts' && (
                         <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
-                            {/* Posts Content */}
+                            {/* Repository Content */}
                             <div className="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
-                                <UserPost posts={selectedUser.forum_post}/>
+                                {/* Display repository here */}
+                                <UserPost forum_posts={selectedUser.forum_post} auth={auth}/>
                             </div>
                         </div>
                     )}
@@ -83,6 +105,9 @@ export default function UserProfile({ auth, selectedUser }) {
                     )}
                 </div>
             </div>
+          
+
+            <ReportModal isOpen={isReportModalOpen} onClose={closePost} reportLocation={'Forum'} reportedID={selectedPost}/> 
         </AuthenticatedLayout>
     );
 }

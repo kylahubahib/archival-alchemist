@@ -14,7 +14,7 @@ const People = ({auth, user, onBack, folders }) => {
     const [StudentsUsers, setStudentUser] = useState(null); // Declare the user state
     const [isLoading, setIsLoading] = useState(false);
 
-    const [csrfToken, setCsrfToken] = useState(null);
+    // const [csrfToken, setCsrfToken] = useState(null);
     const [isGroupModalOpen, setIsGroupModalOpen] = useState(false);
     const [errorMessage, setErrorMessage] = useState(''); // Add state for error message
     const [errors, setErrors] = useState({});
@@ -59,7 +59,7 @@ useEffect(() => {
             await axios.delete(`/delete-groupmembers/${studentId}`);
 
             // Refetch the students list from the server
-            const response = await axios.get("/fetch-groupmembers");
+            const response = await axios.get(`/fetch-groupmembers/${folders.id}`);
             setStudentUser(response.data);  // Update state with fresh student data
         } catch (error) {
             // Handle error (show message, etc.)
@@ -130,14 +130,14 @@ useEffect(() => {
     };
 
     // Fetch the CSRF token and set it in axios defaults
-    useEffect(() => {
-        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-        if (csrfToken) {
-            setCsrfToken(csrfToken);
-            axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken;
-            axios.defaults.headers.common['Content-Type'] = 'application/json';
-        }
-    }, []);
+    // useEffect(() => {
+    //     const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    //     if (csrfToken) {
+    //         setCsrfToken(csrfToken);
+    //         axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken;
+    //         axios.defaults.headers.common['Content-Type'] = 'application/json';
+    //     }
+    // }, []);
 
 
 
@@ -146,10 +146,10 @@ useEffect(() => {
         const folder = folders;  // Or use a condition to select a specific folder
         console.log('Folder ID:', folder.id);  // Check if folder.id is valid
 
-        if (!csrfToken) {
-            setErrorMessage('CSRF token not found. Please try again.');
-            return;
-        }
+        // if (!csrfToken) {
+        //     setErrorMessage('CSRF token not found. Please try again.');
+        //     return;
+        // }
 
         setIsLoading(true);
         setErrorMessage(''); // Clear any previous error message
@@ -170,7 +170,7 @@ useEffect(() => {
                 students: users, // Assuming users is an array of student names
             }, {
                 headers: {
-                    'X-CSRF-TOKEN': csrfToken,  // CSRF token applied here
+                    // 'X-CSRF-TOKEN': csrfToken,  // CSRF token applied here
                     'Content-Type': 'application/json',
                 }
             });
@@ -179,7 +179,7 @@ useEffect(() => {
             console.log("API Response:", response.data)
 
             // Refetch the students list from the server after the student has been added
-            const groupResponse = await axios.get("/fetch-groupmembers");
+            const groupResponse = await axios.get(`/fetch-groupmembers/${folders.id}`);
 
             if (groupResponse.data) {
                 setStudentUser(groupResponse.data);  // Update the students state with the fresh data
@@ -214,7 +214,7 @@ useEffect(() => {
 
     console.log('Folders in People:', folders);  // Check the folders prop
     return (
-        <div className="pl-10 mt-0 bg-gray-100 rounded-lg shadow-lg w-full pb-20">
+        <div className="pl-10 bg-gray-100 pt-5 w-full pb-20">
             {/* Teachers Section */}
             <div className="relative w-relative h-48 mb-5 bg-white p-10 rounded-md shadow ml-5 mr-20">
                 <h3 className="text-lg font-semibold text-gray-600 mb-4">Teachers</h3>
@@ -294,7 +294,7 @@ useEffect(() => {
                             </div>
                         ))
                     ) : (
-                        <p>No students enrolled.</p>
+                        <p className="text-gray-500">No students enrolled.</p>
                     )}
                 </div>
 

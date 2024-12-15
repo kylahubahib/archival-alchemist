@@ -19,7 +19,7 @@ class AccessControl extends Model
         'super_dashboard_access',
         'super_users_access',
         'super_archives_access',
-        'super_subscription_and_billing_access',
+        'super_subscription_billing_access',
         'super_user_reports_access',
         'super_user_feedbacks_access',
         'super_terms_and_conditions_access',

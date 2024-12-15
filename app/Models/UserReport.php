@@ -23,7 +23,8 @@ class UserReport extends Model
         'report_location',
         'closed_at',
         'suspension_end_date',
-        'suspension_start_date'
+        'suspension_start_date',
+        'reported_user_id'
     ];
 
     public function getCreatedAtAttribute($value)

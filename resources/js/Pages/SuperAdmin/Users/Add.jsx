@@ -14,6 +14,7 @@ export default function Add({ userType, routeName = 'users.send-admin-registrati
     planUserLimit, remainingUserSlots, uniBranchId, isOpen, onClose }) {
 
     console.log('uniBranchIdSheesh', uniBranchId);
+    console.log('userType', userType);
 
     const { data, setData, post, processing, errors, clearErrors, reset } = useForm({
         user_type: userType,
@@ -22,6 +23,10 @@ export default function Add({ userType, routeName = 'users.send-admin-registrati
         email: '',
         access: [],
     });
+
+    // useEffect(() => {
+    //     setData ({user_type: userType});
+    // }, [userType])
 
     // useEffect(() => {
     //     setData('uni_branch_id', uniBranchId);
@@ -92,8 +97,8 @@ export default function Add({ userType, routeName = 'users.send-admin-registrati
             user_type: userType, // Make sure to reset the userType as well
             access:
                 userType === "admin"
-                    ? adminAccessOptions.institution_admin.map(option => option.value)
-                    : adminAccessOptions.super_admin.map(option => option.value)
+                    ? adminAccessOptions?.institution_admin?.map(option => option.value)
+                    : adminAccessOptions?.super_admin?.map(option => option.value)
         }));
     }
 

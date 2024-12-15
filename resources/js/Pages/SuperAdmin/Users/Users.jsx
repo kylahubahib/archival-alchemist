@@ -45,7 +45,6 @@ export const renderTableHeaders = (headers, headerType, className) => {
         </thead>
     );
 };
-
 export const renderTableControls = ({
     routeName, searchVal, searchValSetter, searchBarPlaceholder, isDisabled, totalFilters,
     clearFiltersOnClick, isFilterOpen, isFilterOpenSetter, entriesPerPage, setEntriesPerPage,

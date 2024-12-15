@@ -8,6 +8,7 @@ import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import { formatDateString } from '@/utils';
+import { router } from '@inertiajs/core';
 
 export default function UpdateProfileInformationForm({ mustVerifyEmail, status, className = '' }) {
     const user = usePage().props.auth.user;
@@ -22,26 +23,36 @@ export default function UpdateProfileInformationForm({ mustVerifyEmail, status, 
         user_dob: user.user_dob || ''
     });
 
-    useEffect(() => {
-        console.log(user);
-    })
-
     const [profilePic, setProfilePic] = useState(user.user_pic);
     const [message, setMessage] = useState('');
 
-    // useEffect(() => {
-    //     if (data.user_pic) {
-    //         setProfilePic(URL.createObjectURL(data.user_pic));
-    //     }
-    // }, [data.user_pic]);
-
+    useEffect(() => {
+        if (data.user_pic instanceof File) {
+            // Create an object URL for uploaded files
+            const objectUrl = URL.createObjectURL(data.user_pic);
+            setProfilePic(objectUrl);
+    
+            // Revoke object URL to avoid memory leaks
+            return () => {
+                URL.revokeObjectURL(objectUrl);
+            };
+        } else if (typeof data.user_pic === 'string') {
+            // Use the existing path if it's a string
+            setProfilePic(data.user_pic);
+        }
+    }, [data.user_pic]);
+    
     const handleFileChange = (e) => {
-        setData('user_pic', e.target.files[0]);
+        const file = e.target.files[0];
+        if (file) {
+            setData('user_pic', file); // Store the file
+        }
     };
 
     const submit = async (e) => {
         e.preventDefault();
 
+        setMessage('');
         const formData = new FormData();
         formData.append('name', data.name);
         formData.append('email', data.email);
@@ -49,9 +60,10 @@ export default function UpdateProfileInformationForm({ mustVerifyEmail, status, 
         formData.append('user_pnum', data.user_pnum);
         formData.append('user_aboutme', data.user_aboutme);
         formData.append('user_dob', data.user_dob);
-        // if (data.user_pic) {
-        //     formData.append('user_pic', data.user_pic);
-        // }
+        
+        if (data.user_pic) {
+            handleProfileSave();
+        }
 
         try {
             await axios.patch(route('profile.update', data), {
@@ -60,6 +72,7 @@ export default function UpdateProfileInformationForm({ mustVerifyEmail, status, 
                 },
             });
             setMessage('Profile updated successfully!');
+            router.reload();
         } catch (error) {
             console.error('There was an error updating the profile!', error);
             setMessage('Error updating profile.');
@@ -78,6 +91,17 @@ export default function UpdateProfileInformationForm({ mustVerifyEmail, status, 
         return parsedDate.toLocaleDateString('en-CA'); // 'en-CA' ensures YYYY-MM-DD format
     };
     
+    const handleProfileSave = () => {
+        const formData = new FormData();
+        console.log('Confirm', data.user_pic);
+        formData.append('user_pic', data.user_pic);
+
+        axios.post(route('profile.updatePicture'), formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        })
+    };
     
 
     return (
@@ -239,4 +263,3 @@ export default function UpdateProfileInformationForm({ mustVerifyEmail, status, 
         </section>
     );
 }
-

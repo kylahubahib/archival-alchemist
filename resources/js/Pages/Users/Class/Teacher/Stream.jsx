@@ -60,7 +60,7 @@ const Stream = ({auth, user, folders, onBack }) => {
       window.innerHeight + document.documentElement.scrollTop === document.documentElement.offsetHeight;
 
     if (bottom && !loading && hasMore) {
-      setPage((prevPage) => prevPage + 1); // Load next page
+      setPage((prevPage)); // Load next page
     }
   };
 
@@ -97,7 +97,7 @@ const Stream = ({auth, user, folders, onBack }) => {
   const MemoizedCard = React.memo(({ task }) => (
     <Card
       key={task.id}
-      className="w-[95%] max-w-4xl p-6 bg-white shadow-md rounded-lg"
+      className="w-[100%] max-w-4xl p-6 bg-white shadow-md rounded-lg"
     >
       <h4 className="text-gray-800 text-xl font-semibold mb-2">
         {task.task_title}
@@ -121,33 +121,54 @@ const Stream = ({auth, user, folders, onBack }) => {
     </Card>
   ));
 
+
+
 // Assuming folders is an array, and you are using the first folder object
 const folder = folders.id; // Use optional chaining to safely access the first item
-const courseAcronym = folder?.course?.course_acronym || 'Unknown Course'; // Safe access to course_acronym
-const sectionName = folder?.section_name || 'Unknown Section'; // Safe access to section_name
+  // Log the folder and its properties outside of JSX
+  console.log("folder:", folders);
+  console.log("folder.course:", folders?.course);
+  console.log("folder.course.course_acronym:", folders?.course?.course_acronym);
+  console.log("folder.section_name:", folders?.section_name);
 
+  // Fallback to defaults if the properties are undefined
+  const courseAcronym = folders?.course?.course_acronym || 'Unknown Course';
+  const sectionName = folders?.section_name || 'Unknown Section';
   if (isPreviewMode) {
     return <PreviewTask auth={auth} user={user} folders={folders} onBack={handleBackToStream} task={selectedTask} taskID={selectedTask?.id}/>;
   }
 
   return (
-    <div className="mt-0 bg-gray-100 rounded-lg shadow-lg w-full">
+    <div className="mt-0 bg-gray-100 w-relative h-screen">
       {/* Static Cover Photo */}
-      <div className="relative w-full h-48 mb-5">
+      <div className="relative w-relative h-48">
         <img
           src="images/coverphoto.jpg"
           alt="Class Cover"
-          className="w-full h-full object-cover rounded-lg"
+          className="w-full h-full object-cover"
         />
         <div className="absolute inset-0 flex flex-col justify-center items-center bg-black bg-opacity-50">
           <h2 className="text-white text-3xl font-bold">"Always make a total effort,</h2>
           <h2 className="text-white text-1xl font-bold">even when the odds are against you."</h2>
           <h2 className="text-white text-xl font-bold">- Alan Palmer -</h2>
-        </div>
+        </div>    {folders && (
+
+<div className="absolute bottom-0 left-0 p-3 bg-black bg-opacity-50">
+<h3 className="text-white text-xl font-semibold">
+{console.log("folder:", folders)}
+{console.log("folder.course:", folders?.course)}
+{console.log("courseAcronym:", courseAcronym)}
+{console.log("sectionName:", sectionName)}
+<h3 className="text-white text-xl font-semibold">
+{courseAcronym} {sectionName}
+</h3>
+</h3>
+</div>
+)}
       </div>
 
       {/* Class Code and Course Info */}
-      <div className="relative flex items-center justify-between w-full p-4 bg-white rounded-lg shadow-md">
+      <div className="relative flex items-center justify-between w-full p-4 bg-white rounded-bl-lg rounded-br-lg shadow-md">
         {/* Left: Class Code */}
         <div className="relative flex items-center">
       <div
@@ -183,14 +204,7 @@ theme="light"
     </div>
 
 
-    {/* Right: Course Acronym and Section Name */}
-    {folder && (
-      <div className="text-right">
-        <h3 className="text-white text-xl font-semibold">
-          {courseAcronym} {sectionName}
-        </h3>
-      </div>
-    )}
+
       </div>
 
       {/* Other Content */}
@@ -219,7 +233,7 @@ theme="light"
       )}
 
       {tasks.length === 0 && !loading && !error && (
-        <p className="text-center text-gray-500 italic">No projects assigned yet.</p>
+        <p className="text-center text-gray-500 italic h-screen">No projects assigned yet.</p>
       )}
 
       {!loading && !error && tasks.length > 0 && (

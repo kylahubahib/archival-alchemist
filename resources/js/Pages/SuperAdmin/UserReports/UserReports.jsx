@@ -158,8 +158,8 @@ export default function UserReports({ auth, userReports, pendingCount, solvedCou
                             </div>
 
                             <div className="overflow-y-auto h-480">
-                            <table className="w-full text-sm text-left rtl:text-right text-gray-500">
-                                <thead className="text-xs text-gray-700 uppercase bg-gray-50">
+                            <table className="w-full text-sm text-left rtl:text-right text-gray-500 border-1">
+                                <thead className="text-xs sticky z-20 -top-[1px] pb-[20px] text-customGray uppercase align-top bg-customLightGray">
                                     <tr>
                                         <th scope="col" className="px-6 py-3">
                                             Reporter Name

@@ -95,6 +95,8 @@ class SubscriptionPlanController extends Controller
     /**
      * Store a newly created resource in storage.
      */
+
+
     public function store(Request $request)
     {
         Log::info('Create request data: ', $request->all());
@@ -234,9 +236,12 @@ class SubscriptionPlanController extends Controller
         return redirect(route('manage-subscription-plans.index'))->with('success', 'Subscription Plan updated successfully.');
     }
 
+
+
     /**
      * Remove the specified resource from storage.
      */
+
     public function destroy(string $id)
     {
         $subscriptionPlan = SubscriptionPlan::findOrFail($id);

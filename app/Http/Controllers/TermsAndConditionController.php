@@ -120,6 +120,9 @@ class TermsAndConditionController extends Controller
         return redirect(route('manage-terms-and-conditions.index'))->with('success', 'Terms and conditions created successfully.');
     }
 
+
+
+
     /**
      * Display the specified resource.
      */
@@ -265,6 +268,8 @@ class TermsAndConditionController extends Controller
     }
 
 
+
+
     /**
      * Remove the specified resource from storage.
      */
@@ -300,6 +305,7 @@ class TermsAndConditionController extends Controller
     {
 
         $termsAndCondition = CustomContent::find($id);
+        $oldStatus = $termsAndCondition->content_status;
 
 
         if ($termsAndCondition->content_status === 'available') {

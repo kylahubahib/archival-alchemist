@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\UserLog;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -78,7 +79,13 @@ class AdvancedForumController extends Controller
      */
     public function show(string $id)
     {
-        $comments = ForumComment::with('user:id,user_pic,email,name')->where('forum_post_id', $id)->get();
+        $comments = ForumComment::with([
+            'user:id,user_pic,email,name',
+            'replies.user:id,user_pic,email,name'
+        ])
+            ->where('forum_post_id', $id)
+            ->whereNull('parent_id')
+            ->get();
 
         \Log::info($comments);
 
@@ -86,6 +93,7 @@ class AdvancedForumController extends Controller
             'comments' => $comments
         ]);
     }
+
 
     /**
      * Update the specified resource in storage.

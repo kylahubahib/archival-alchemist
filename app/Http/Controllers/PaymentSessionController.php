@@ -148,6 +148,10 @@ class PaymentSessionController extends Controller
 
         \Log::info('Checkout session id:'. $checkoutId);
 
+        \Log::info($userInfo);
+        
+
+
         // dd($request->session()->all());
 
         if($user) 
@@ -211,8 +215,11 @@ class PaymentSessionController extends Controller
                                 'insub_num_user' => $num_user,
                                 'start_date' => $currentDate->toDateString(),
                                 'end_date' => $endDate,
-                                'notify_renewal' => 1
+                                'notify_renewal' => 1,
+                                'is_premium' => 1,
                             ]);
+
+                            return redirect()->route('institution-subscription-billing.index');
 
                         } else {
                             $persubExist = PersonalSubscription::where('user_id', $user->id)->first();
@@ -227,6 +234,12 @@ class PaymentSessionController extends Controller
                                     'end_date' => $endDate,
                                     'notify_renewal' => 1
                                 ]);
+
+                                $user->update([
+                                    'is_premium' => 1
+                                ]);
+
+                                return redirect()->route('library');
                             }
                             else 
                             {
@@ -234,21 +247,22 @@ class PaymentSessionController extends Controller
                                     'user_id' => $user->id,
                                     'plan_id' => $plan->id,
                                     'persub_status' => 'Active',
+                                    'user_type' => 'general_user',
                                     'total_amount' => $finalAmount,
                                     'start_date' => $currentDate->toDateString(),
                                     'end_date' => $endDate,
-                                    'notify_renewal' => 1
+                                    'notify_renewal' => 1,
                                 ]);
+
+                                $user->update([
+                                    'is_premium' => 1
+                                ]);
+
+                                return redirect()->route('library');
                             }
                         
                         }
-                        
-                        //Updates user is_premium status
-                        $user->update([
-                            'is_premium' => 1
-                        ]);
 
-                        return redirect()->back();
 
                     
                 } else {
@@ -264,6 +278,10 @@ class PaymentSessionController extends Controller
         else {
 
             $password = Str::random(8);
+
+            // dd($request->session()->all());
+            \Log::info('This is the user info');
+            \Log::info($userInfo);
 
             $user = User::create([
                 'name' => $userInfo['name'],
@@ -346,7 +364,7 @@ class PaymentSessionController extends Controller
                         $institutionAdmin = InstitutionAdmin::create([
                             'user_id' => $user->id,
                             'insub_id' => $institutionSubscription->id,
-                            'ins_admin_proof' => 'storage/admin_proof_files/' . $userInfo['fileName']
+                            // 'ins_admin_proof' => 'storage/admin_proof_files/' . $userInfo['fileName']
                         ]);
             
                         \Log::info('Institution Admin created:', ['ins_admin_id' => $institutionAdmin->id]);
@@ -396,8 +414,9 @@ class PaymentSessionController extends Controller
             }
         }
 
-
     }
+
+    
 
     public function paymentCancel(Request $request)
     {
@@ -417,7 +436,8 @@ class PaymentSessionController extends Controller
             'campus' => 'nullable|string|max:255',
             'pnum' => 'nullable|string|max:11',
             'uni_branch_id' => 'nullable|integer',
-            'number_of_users' => 'required|integer'
+            'number_of_users' => 'required|integer',
+            'uni_acro' => 'required|string'
         ]);
     
         \Log::info($request->all());
@@ -427,7 +447,11 @@ class PaymentSessionController extends Controller
     
         \Log::info('Plan:', $plan);
     
-        $uniExist = University::firstOrCreate(['uni_name' => $request->university]);
+        $uniExist = University::firstOrCreate(
+            ['uni_name' => $request->university],
+            ['uni_acronym' => $request->uni_acro]
+        
+        );
 
         $uniBranchExist = UniversityBranch::where('uni_id', $uniExist->id)
             ->where('uni_branch_name', $request->campus)

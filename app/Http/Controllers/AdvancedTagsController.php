@@ -59,7 +59,6 @@ class AdvancedTagsController extends Controller
 
         return redirect(route('manage-tags.index'));
     }
-
     /**
      * Display the specified resource.
      */
@@ -113,6 +112,7 @@ class AdvancedTagsController extends Controller
 
         return redirect(route('manage-tags.index'));
     }
+
 
 
     /**

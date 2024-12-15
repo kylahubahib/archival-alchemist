@@ -14,6 +14,7 @@ import Edit from "./Edit";
 import BillingAgreement from './BillingAgreement';
 import PrivacyPolicy from './PrivacyPolicy';
 import PageHeader from "@/Components/Admin/PageHeader";
+import SearchBar from '@/Components/Admin/SearchBar';
 
 
 export default function TermsCondition({ auth, termsConditions = [], billingAgreement, privacyPolicy }) {
@@ -119,22 +120,18 @@ export default function TermsCondition({ auth, termsConditions = [], billingAgre
 
                     <div className="overflow-x-auto shadow-md sm:rounded-lg px-5 sm:px-5">
                         <div className="flex items-center justify-between flex-column md:flex-row flex-wrap space-y-4 md:space-y-0 py-4 bg-white">
-                            <label className="sr-only">Search</label>
-                            <div className="relative">
-                                <div className="absolute inset-y-0 rtl:inset-r-0 start-0 flex items-center ps-3 pointer-events-none">
-                                    <svg className="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
-                                        <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
-                                    </svg>
-                                </div>
-                                <input
-                                    type="text"
-                                    id="table-search-users"
-                                    className="block pt-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg w-80 bg-gray-50 focus:ring-blue-500 focus:border-blue-500"
-                                    placeholder="Search"
-                                    value={wordEntered}
-                                    onChange={handleFilter}
-                                />
-                            </div>
+                            
+                             {/* Search Filter */}
+                             <div className="w-1/2">
+                                    <SearchBar 
+                                        name='search'
+                                        value={wordEntered}
+                                        variant="bordered"
+                                        onChange={handleFilter}
+                                        placeholder="Search (Title, Name)..."
+                                        className=" min-w-sm flex-1"
+                                    />
+                            </div> 
 
                             <div className="inline-flex overflow-hidden bg-white border divide-x rounded-lg dark:bg-gray-900 rtl:flex-row-reverse">
                                 <button onClick={() => {filterStatus("All")}}

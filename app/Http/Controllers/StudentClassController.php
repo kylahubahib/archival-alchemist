@@ -21,6 +21,7 @@ use App\Models\Tags;
 use App\Models\User;
 
 use App\Models\ClassStudent;
+use App\Models\Faculty;
 use App\Models\RevisionHistory;
 use App\Models\Section;
 use Illuminate\Support\Facades\Auth;
@@ -207,12 +208,14 @@ class StudentClassController extends Controller
                     ->where('section_id', $section_id) // Add the filter for section_id
                     ->update([
                         'group_id' => $group->id,    // Set the new group_id
+                        'task_id' => $task_id,
                     ]);
 
                 Log::info("Updated Group Member Table:", [
                     'stud_id' => $userId,
                     'group_id' => $group->id,  // Log the updated group ID
                     'section_id' => $section_id, // Log the section ID
+                    'task_id' => $task_id,
                 ]);
             }
 
@@ -245,7 +248,7 @@ class StudentClassController extends Controller
                  $faculty = $section->ins_id;
 
                  RevisionHistory::create([
-                     'ins_comment' => null,
+                     'ins_comment' => "Start",
                      'man_doc_id' => $manuscriptProject->id,
                      'ins_id' => $faculty,
                      'man_doc_status' => 'P',
@@ -261,6 +264,67 @@ class StudentClassController extends Controller
             return response()->json(['message' => 'Error uploading manuscript project.', 'errors' => $e->getMessage()], 422);
         }
     }
+
+
+
+    public function storeAuthor(Request $request)
+    {
+        Log::info('Request Data:', $request->all());
+        try {
+            $validatedData = $request->validate([
+                'man_doc_id' => 'required|string|max:255',
+                'man_doc_author' => 'nullable|array',
+                'man_doc_author.*' => '.string|max:255',
+
+            ]);
+
+            // Handle users and store them in the Author table
+            $userIds = []; // Array to hold the IDs of the users to be associated with the manuscript
+
+            if (!empty($users) && is_array($users)) { // Ensure $users is an array and not empty
+                foreach ($users as $userName) {
+                    // Convert name to lowercase for consistency and trim any whitespace
+                    $userName = strtolower(trim($userName));
+
+                    // Find the users by its name
+                    $user = User::where('name', $userName)->first();
+
+                    // If the users does not exist, create a new record and get its ID
+                    if (!$user) {
+                        return response()->json(['message' => 'User does not exist.', 'errors'], 422);
+                    } else {
+                        // $author = User::create(['name' => $userName]);
+                        Log::info("Author '$userName' found with ID: " . $user->id);
+                        // Store the Users ID for the Authors table
+                        $userIds[] = $user->id;
+                    }
+                }
+            } else {
+                Log::info('No users provided or users is not an array.');
+            }
+            $authorIds = [];
+
+            // Insert the users into the author table
+            foreach ($userIds as $userId) {
+                Author::create([
+                    'man_doc_id' => $ManuscriptProject->id, // The manuscript ID from the saved manuscript
+                    'user_id' => $userId, // The tag ID from the tags table
+                ]);
+                Log::info("Inserted into Authors Table:", [
+                    'man_doc_id' => $manuscriptProject->id,
+                    'user_id' => $userId,
+                ]);
+
+                $authorIds[] = $userId;
+            }
+            return response()->json(['message' => 'Manuscript project uploaded successfully.'], 200);
+
+        } catch (\Exception $e) {
+            Log::error('Error uploading manuscript project:', ['error' => $e->getMessage()]);
+            return response()->json(['message' => 'Error uploading manuscript project.', 'errors' => $e->getMessage()], 422);
+        }
+    }
+
 
     public function checkClassCode(Request $request)
     {
@@ -579,16 +643,16 @@ public function getPublishedRecManuscripts(Request $request)
 
 public function getMyUniBooks(Request $request)
 {
-
     try {
-
+        // Fetch Uni Branch ID
         $uniBranchId = $this->fetchUniBranchId();
-        // Log::info('Uni Branch Id: ', $uniBranchId);
+        Log::info('Uni Branch Id: ', ['uniBranchId' => $uniBranchId]);  // Updated to pass array
+
         // Retrieve the 'keyword' and 'searchField' query parameters
         $keyword = $request->query('keyword');
         $searchField = $request->query('searchField', 'Title'); // Default to Title if not specified
-        Log::info('My keyword: ' . $keyword);
-        Log::info('Search field: ' . $searchField);
+        Log::info('My keyword: ', ['keyword' => $keyword]);  // Updated to pass array
+        Log::info('Search field: ', ['searchField' => $searchField]);  // Updated to pass array
 
         // Optionally, you can check if the user is authenticated
         if (auth()->check()) {
@@ -627,7 +691,7 @@ public function getMyUniBooks(Request $request)
 
         // Log the number of manuscripts found
         if ($fetchedManuscripts->isNotEmpty()) {
-            Log::info('Found manuscripts:', $fetchedManuscripts->toArray());
+            Log::info('Found manuscripts:', ['manuscripts' => $fetchedManuscripts->toArray()]);
         } else {
             Log::info('No manuscripts found for the given keyword and search field.');
         }
@@ -644,27 +708,71 @@ public function getMyUniBooks(Request $request)
 }
 
 
-    /**
-     * Retrieve the uni_branch_id for the logged-in user.
-     *
-     * @return int|null
-     */
+
+    // /**
+    // public function fetchUniBranchId()
+    // {
+    //     // Get the authenticated user's ID
+    //     $userId = Auth::id();
+
+    //     // Find the student record where user_id matches Auth::id()
+    //     $student = Student::where('user_id', $userId)->first();
+
+    //     // Log the student's details
+    //     Log::info('Users uni branch ID:', $student ? $student->toArray() : []);
+    //     Log::info('Users uni branch ID:', ['uni_branch_id' => $student?->uni_branch_id]);
+
+
+    //     // Return the uni_branch_id if a student record exists
+    //     return $student ? $student->uni_branch_id : null;
+    // }
+
+
+
+
     public function fetchUniBranchId()
     {
         // Get the authenticated user's ID
         $userId = Auth::id();
 
-        // Find the student record where user_id matches Auth::id()
-        $student = Student::where('user_id', $userId)->first();
+        // Find the user record by user_id (this can be a student, teacher, or null)
+        $user = User::where('id', $userId)->first(); // Assuming 'id' is the correct column
 
-        // Log the student's details
-        Log::info('Users uni branch ID:', $student ? $student->toArray() : []);
-        Log::info('Users uni branch ID:', ['uni_branch_id' => $student?->uni_branch_id]);
+        // Log the user's details
+        Log::info('User Details:', $user ? $user->toArray() : []);
 
+        // Check if user record exists and handle based on user type (student, teacher, or null)
+        if ($user) {
+            // Log the user_type value from the user record
+            Log::info('User Type:', ['user_type' => $user->user_type]);
 
-        // Return the uni_branch_id if a student record exists
-        return $student ? $student->uni_branch_id : null;
+            // Check if the user is a student or teacher based on the 'user_type' column
+            if ($user->user_type === 'student') {
+                // Find the student record where user_id matches Auth::id()
+                $student = Student::where('user_id', $userId)->first();
+
+                // Log the fetched student record
+                Log::info('Student Details:', $student ? $student->toArray() : []);
+
+                // If the user is a student, return their associated uni_branch_id
+                return $student ? $student->uni_branch_id : null;
+            } elseif ($user->user_type === 'teacher') {
+                // If the user is a teacher, you might want to return something else or null
+                $faculty = Faculty::where('user_id', $userId)->first();
+
+                // Log the fetched faculty record
+                Log::info('Faculty Details:', $faculty ? $faculty->toArray() : []);
+
+                return $faculty ? $faculty->uni_branch_id : null;  // Or any other value specific to the teacher type
+            }
+        }
+
+        // If no user record or undefined user_type, log the situation and return null
+        Log::info('No user found or undefined user_type, returning null.');
+        return null;
     }
+
+
 
 
 // SELECT *
@@ -940,14 +1048,18 @@ public function myfavoriteManuscripts()
         Log::info('hi');
 
         $section_id = $request->get('section_id');
+        $task_id = $request->get('task_id');
 
         Log::info($section_id);
+
+        Log::info('this is the task ID:', ['task_id' => $task_id]);
 
         // Get the authenticated user's ID
         $userId = Auth::id();
 
         // Check if the user has a non-null group_id
         $hasGroup = GroupMember::where('stud_id', $userId)
+            ->where('task_id', $task_id)
             ->where('section_id', $section_id)
             ->whereNotNull('group_id')
             ->exists();
@@ -1136,7 +1248,7 @@ public function isPremium()
     public function uploadToDrive($file, $authorIds, $teacherId, $manuscriptId)
     {
 
-        Log::info('Start Google Drive Upload Process'); 
+        Log::info('Start Google Drive Upload Process');
 
         $keyFilePath = storage_path('app/document-management-438910-d2725c4da7e7.json');
 
@@ -1187,6 +1299,34 @@ public function isPremium()
         Log::error('Error uploading file to Google Drive: ' . $e->getMessage());
         return response()->json(['error' => 'Error uploading file: ' . $e->getMessage()], 500);
     }
+}
+
+
+public function updateProject(Request $request, $id)
+{
+    // Validate incoming data
+    $request->validate([
+        'title' => 'required|string|max:255',
+        'description' => 'required|string',
+        'adviser' => 'required|string|max:255',
+    ]);
+
+    // Find the project by ID
+    $project = ManuscriptProject::find($id);
+
+    if (!$project) {
+        return response()->json(['message' => 'Project not found'], 404);
+    }
+
+    // Update the project with new data
+    $project->update([
+        'man_doc_title' => $request->input('title'),
+        'man_doc_description' => $request->input('description'),
+        'man_doc_adviser' => $request->input('adviser'),
+    ]);
+
+    // Return success response
+    return response()->json(['message' => 'Project updated successfully', 'data' => $project]);
 }
 
 
@@ -1365,7 +1505,7 @@ public function sendForRevision(Request $request)
 
         if ($teacherId) {
             $user = User::find($teacherId);
-            
+
             if ($user) {
                 $user->notify(new UserNotification([
                     'message' => "A manuscript titled '{$manuscript->man_doc_title}' is ready for review",

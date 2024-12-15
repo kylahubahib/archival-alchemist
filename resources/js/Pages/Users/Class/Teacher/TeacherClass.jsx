@@ -14,7 +14,7 @@ import CreateClassSection from '@/Pages/Users/Class/Teacher/CreateClassSection';
 
 
 //axios.defaults.headers.common['X-CSRF-TOKEN'] = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-axios.defaults.headers['X-CSRF-TOKEN'] = document.querySelector('meta[name="csrf-token"]').content;
+// axios.defaults.headers['X-CSRF-TOKEN'] = document.querySelector('meta[name="csrf-token"]').content;
 
 export default function TeacherClass({ auth }) {
     const [isCreating, setIsCreating] = useState(true);
@@ -293,6 +293,7 @@ useEffect(() => {
                 setDropdownVisible={setDropdownVisible}
         visible={dropdownVisible} // Control visibility
                 selectedSemester={selectedSemester}
+                semesterStatus={semesters.status}
                 semesters={semesters} // Passing fetched semesters here as a prop
                     onCreate={handleCreate}
                     className="flex justify-between items-center w-h-full"

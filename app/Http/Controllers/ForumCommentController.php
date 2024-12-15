@@ -3,11 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\ForumComment;
-use App\Models\ForumPost;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Log;
 
 
 
@@ -16,89 +14,83 @@ class ForumCommentController extends Controller
     public function index($postId)
     {
         $comments = ForumComment::where('forum_post_id', $postId)
-        ->whereNull('parent_id') 
-        ->where('status', 'Visible')
-        ->with([
-            'user', 
-            'replies.user' 
-        ])->get();
+            ->whereNull('parent_id') // Only top-level comments
+            ->with(['user', 'replies.user'])
+            ->get();
 
-        Log::info($comments->toArray());
-
-        return response()->json([
-            'comments' => $comments,
-        ]);
+        return response()->json($comments);
     }
-
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
+        Log::info('Request Data:', $request->all());
+
+        $request->validate([
             'forum_post_id' => 'required|exists:forum_posts,id',
-            'comment' => 'required|string|max:500',
-            'parent_id' => 'nullable|integer'
+            'comment' => 'required|string|max:1000',
+            'parent_id' => 'nullable|exists:forum_comments,id',
         ]);
-
-        Log::info($request->all());
-
-
-        Log::info($request->get('comment'));
 
         $comment = ForumComment::create([
-            'forum_post_id' => $validated['forum_post_id'],
+            'forum_post_id' => $request->forum_post_id,
             'user_id' => Auth::id(),
-            'comment' => $validated['comment'],
-            'parent_id' => $validated['parent_id'] ?? null,
-        ]);
-        
-        $forum= ForumPost::find($validated['forum_post_id']);
-            
-        $forum->update([
-                'comments' => $forum->comments + 1,
+            'comment' => $request->comment,
+            'parent_id' => $request->parent_id,
         ]);
 
-
-        // Log the created comment details
-        Log::info('Created comment:', $comment->toArray());
-
-        return response()->json([
-            'comment' => $comment->load('user'),
-        ], 201);
+        return response()->json($comment->load('user'));
     }
 
-    public function update(Request $request, string $id)
+    public function update(Request $request, $id)
     {
+        Log::info('Update Request:', $request->all());
+
         // Validate the request
         $request->validate([
-            'comment' => 'required|string|max:1000', 
+            'comment' => 'required|string|max:1000',
         ]);
-
+        
+    
         // Find the comment
         $comment = ForumComment::findOrFail($id);
-
-        // Update the comment
-        $comment->comment = $request->input('comment');
-        $comment->save();
-
-        return response()->json([
-            'message' => 'Comment updated successfully',
-            'comment' => $comment,
-        ], 200);
-    }
-
     
-    public function destroy(string $id)
+        // Check if the authenticated user is the owner of the comment
+        if ($comment->user_id !== Auth::id()) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+    
+        // Update the comment
+        $comment->update(['comment' => $request->comment]);
+    
+        // Return the updated comment
+        return response()->json($comment);
+    }
+    
+
+    public function destroy($id)
     {
         $comment = ForumComment::findOrFail($id);
 
-        Log::info($comment);
+        Log::info('Comment Deletion Request:', ['comment_id' => $id, 'user_id' => Auth::id()]);
 
-        ForumComment::where('id', $id)->orWhere('parent_id', $id)->delete();
 
-        return response()->json([
-            'message' => 'Comment and its replies deleted successfully',
-        ], 200);
+        if ($comment->user_id !== auth()->id()) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+        
+        // Recursively delete replies
+        $this->deleteReplies($comment);
+
+        $comment->delete();
+
+        return response()->json(['message' => 'Comment deleted']);
     }
 
-        
+        private function deleteReplies($comment)
+    {
+        foreach ($comment->replies as $reply) {
+            $this->deleteReplies($reply);
+            $reply->delete();
+        }
+    }
 }

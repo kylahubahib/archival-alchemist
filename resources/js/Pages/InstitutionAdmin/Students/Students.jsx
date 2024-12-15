@@ -15,7 +15,7 @@ import TableSkeleton from "@/Components/Admin/TableSkeleton";
 import NoDataPrompt from "@/Components/Admin/NoDataPrompt";
 import Filter from "./Filter";
 import Add from "./Add";
-import UpdatePremiumAccess from "./UpdatePremiumAccess";
+import UpdatePremiumAccess from "./UpdatePremiumAccess.jsx";
 
 export default function Students({ auth, insAdminAffiliation, students, hasStudentPremiumAccess,
     planUserLimit, totalAffiliatedPremiumUsers, search, entries }) {
@@ -256,29 +256,7 @@ export default function Students({ auth, insAdminAffiliation, students, hasStude
                 planUserLimit={planUserLimit}
                 remainingUserSlots={remainingUserSlots}
             />
-            <UpdatePre
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            miumAccess
+            <UpdatePremiumAccess
                 hasStudentPremiumAccess={hasStudentPremiumAccess}
                 planUserLimit={planUserLimit}
                 remainingUserSlots={remainingUserSlots}

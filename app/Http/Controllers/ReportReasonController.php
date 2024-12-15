@@ -54,6 +54,7 @@ class ReportReasonController extends Controller
         return redirect(route('manage-report-reason.index'))->with('success', 'Report reason created successfully.');
     }
 
+
     /**
      * Update the specified resource in storage.
      */
@@ -88,6 +89,8 @@ class ReportReasonController extends Controller
 
         return redirect(route('manage-report-reason.index'))->with('success', 'Report Reason updated successfully.');
     }
+
+
 
 
     /**

@@ -81,6 +81,7 @@ class FAQController extends Controller
         return redirect(route('manage-faqs.index'))->with('success', 'FAQ created successfully.');
     }
 
+
     /**
      * Display the specified resource.
      */
@@ -158,7 +159,6 @@ class FAQController extends Controller
 
         return redirect(route('manage-faqs.index'))->with('success', 'FAQ deleted successfully.');
     }
-
     public function change_status(Request $request, $id): RedirectResponse
     {
 

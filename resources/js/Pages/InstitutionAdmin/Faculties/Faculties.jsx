@@ -15,7 +15,7 @@ import TableSkeleton from "@/Components/Admin/TableSkeleton";
 import NoDataPrompt from "@/Components/Admin/NoDataPrompt";
 import Filter from "./Filter";
 import Add from "./Add";
-import UpdatePremiumAccess from "../Students/UpdatePremiumAccess";
+import UpdatePremiumAccess from "../Students/UpdatePremiumAccess.jsx";
 
 export default function Faculties({ auth, insAdminAffiliation, faculties, hasFacultyPremiumAccess,
     planUserLimit, totalAffiliatedPremiumUsers, search, entries }) {
