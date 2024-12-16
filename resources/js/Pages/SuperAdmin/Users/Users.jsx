@@ -45,9 +45,10 @@ export const renderTableHeaders = (headers, headerType, className) => {
         </thead>
     );
 };
+
 export const renderTableControls = ({
     routeName, searchVal, searchValSetter, searchBarPlaceholder, isDisabled, totalFilters,
-    clearFiltersOnClick, isFilterOpen, isFilterOpenSetter, entriesPerPage, setEntriesPerPage,
+    clearFiltersOnClick, isFilterOpen, isFilterOpenSetter, showFilter = true, entriesPerPage, setEntriesPerPage,
     setEntriesResponseData, params
 }) => {
     return (
@@ -65,59 +66,61 @@ export const renderTableControls = ({
             <div className="flex w-full flex-1 gap-2 ml-auto min-h-[35px]">
 
                 {/* FILTER */}
-                <div className="flex flex-1 gap-1 justify-end">
+                {showFilter && (
+                    <div className="flex flex-1 gap-1 justify-end">
 
-                    {/* CLEAR FILTERS */}
-                    <AnimatePresence>
-                        {totalFilters > 0 && (
-                            <motion.div
-                                key="close-button"
-                                initial={{ opacity: 0, scale: 0.8 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                exit={{ opacity: 0, scale: 0.8 }}
-                                transition={{ duration: 0.3 }}
-                            >
-                                <Tooltip
-                                    color="danger"
-                                    size="sm"
-                                    closeDelay={180}
-                                    content="Clear filters"
+                        {/* CLEAR FILTERS */}
+                        <AnimatePresence>
+                            {totalFilters > 0 && (
+                                <motion.div
+                                    key="close-button"
+                                    initial={{ opacity: 0, scale: 0.8 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    exit={{ opacity: 0, scale: 0.8 }}
+                                    transition={{ duration: 0.3 }}
                                 >
-                                    <Button
-                                        preserveScroll
-                                        preserveState
-                                        isIconOnly
-                                        radius="sm"
-                                        variant="bordered"
-                                        onClick={clearFiltersOnClick}
-                                        className="border ml-auto flex border-red-500 bg-white"
+                                    <Tooltip
+                                        color="danger"
+                                        size="sm"
+                                        closeDelay={180}
+                                        content="Clear filters"
                                     >
-                                        <FaFilterCircleXmark size={19} className="text-red-500" />
-                                    </Button>
-                                </Tooltip>
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
+                                        <Button
+                                            preserveScroll
+                                            preserveState
+                                            isIconOnly
+                                            radius="sm"
+                                            variant="bordered"
+                                            onClick={clearFiltersOnClick}
+                                            className="border ml-auto flex border-red-500 bg-white"
+                                        >
+                                            <FaFilterCircleXmark size={19} className="text-red-500" />
+                                        </Button>
+                                    </Tooltip>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
 
-                    {/* TOGGLE FILTER */}
-                    <div>
-                        <Button
-                            className="text-customGray border min-w-[100px] border-customLightGray bg-white"
-                            radius="sm"
-                            disableRipple
-                            startContent={<FaFilter size={16} />}
-                            onClick={() => isFilterOpenSetter((prev) => !prev)}
-                        >
-                            <span className="tracking-wide">
-                                {!isFilterOpen ? 'Filters' : 'Hide Filters'}
-                                {totalFilters > 0 && <strong>: {totalFilters}</strong>}
-                            </span>
-                        </Button>
+                        {/* TOGGLE FILTER */}
+                        <div>
+                            <Button
+                                className="text-customGray border min-w-[100px] border-customLightGray bg-white"
+                                radius="sm"
+                                disableRipple
+                                startContent={<FaFilter size={16} />}
+                                onClick={() => isFilterOpenSetter((prev) => !prev)}
+                            >
+                                <span className="tracking-wide">
+                                    {!isFilterOpen ? 'Filters' : 'Hide Filters'}
+                                    {totalFilters > 0 && <strong>: {totalFilters}</strong>}
+                                </span>
+                            </Button>
+                        </div>
                     </div>
-                </div>
+                )}
 
                 {/* ENTRIES PER PAGE */}
-                <Dropdown>
+                <Dropdown className="w-full justify">
                     <DropdownTrigger>
                         <Button
                             radius="sm"
@@ -172,11 +175,11 @@ export default function Users({ auth, users, userType, searchValue, entries }) {
     const [isFilterOpen, setIsFilterOpen] = useState(false);
 
     const [autocompleteItems, setAutocompleteItems] = useState(
-        { university: [], branch: [], department: [], course: [], currentPlan: [], insAdminRole: [], superAdminRole: [], status: [] }
+        { university: [], branch: [], department: [], course: [], section: [], currentPlan: [], insAdminRole: [], superAdminRole: [], status: [] }
     );
     const [selectedAutocompleteItems, setSelectedAutocompleteItems] = useState(
         { // Set the default value of dateCreated to null to avoid date format errors, and keep the other default values as empty strings to prevent input null errors.
-            university: '', branch: '', department: '', course: '',
+            university: '', branch: '', department: '', course: '', section: '',
             currentPlan: '', insAdminRole: '', superAdminRole: '', dateCreated: null, status: ''
         });
 
@@ -252,7 +255,7 @@ export default function Users({ auth, users, userType, searchValue, entries }) {
 
     const handleClearFiltersClick = () => {
         setSelectedAutocompleteItems({
-            university: '', branch: '', department: '', course: '', currentPlan: '', insAdminRole: '',
+            university: '', branch: '', department: '', course: '', section: '', currentPlan: '', insAdminRole: '',
             superAdminRole: '', dateCreated: { start: null, end: null, }, status: ''
         })
     }
@@ -358,10 +361,11 @@ export default function Users({ auth, users, userType, searchValue, entries }) {
                             <MainNav
                                 key={index}
                                 icon={nav.icon}
-                                href={route('users.filter', nav.param)}
+                                href={route('users.filter', { userType: nav.param })}
                                 active={nav.param === 'student' ?
                                     route().current('users') :
                                     route().current('users.filter', nav.param)}
+                                onClick={() => handleClearFiltersClick}
                             >
                                 {nav.text}
                             </MainNav>
@@ -382,7 +386,7 @@ export default function Users({ auth, users, userType, searchValue, entries }) {
                             searchVal: searchTerm,
                             searchValSetter: setSearchTerm,
                             searchBarPlaceholder: 'Search by name, email, user id...',
-                            isDisabled: users.data.length === 0,
+                            // isDisabled: users.data.length === 0,
                             totalFilters: totalFilters,
                             clearFiltersOnClick: handleClearFiltersClick,
                             isFilterOpen: isFilterOpen,
@@ -395,7 +399,8 @@ export default function Users({ auth, users, userType, searchValue, entries }) {
 
                         {/* FILTER COMPONENT PLACEMENT */}
                         <Filter
-                            userType={userType}
+                            type={userType}
+                            params={{ ...params, userType: userType }}
                             autocompleteItems={autocompleteItems}
                             setAutocompleteItems={setAutocompleteItems}
                             selectedAutocompleteItems={selectedAutocompleteItems}

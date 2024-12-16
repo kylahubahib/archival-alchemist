@@ -42,7 +42,7 @@ class InsAdminArchiveController extends Controller
 
     public function filter($department = null, $course = null, $section = null)
     {
-        $search = request('search', null);
+        $search = request('search');
         $manDocVisibility = request('manuscript_visibility', null);
         $departmentFolders = [];
         $courseFolders = [];
@@ -154,6 +154,10 @@ class InsAdminArchiveController extends Controller
         $this->selectedSectionId = Section::where('section_name', $sectionName)
             ->where('course_id', $this->selectedCourseId)
             ->value('id');
+
+
+        \Log::info(['searchTerm', $searchTerm]);
+        \Log::info(['manDocVisibility ', $manDocVisibility]);
 
         $manuscripts = ManuscriptProject::where('section_id', $this->selectedSectionId)
             ->where('is_publish', true)

@@ -14,7 +14,6 @@ use App\Models\ForumComment;
 use Inertia\Inertia;
 use App\Models\CustomContent;
 use App\Models\User;
-use App\Models\UserLog;
 use App\Notifications\InstitutionAdminNotification;
 use App\Notifications\UserNotification;
 

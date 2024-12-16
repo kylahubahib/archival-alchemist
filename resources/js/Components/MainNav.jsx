@@ -16,6 +16,7 @@ export default function MainNav({ href, onClick, active = false, icon = null, ic
                     : 'bg-customBlue hover:bg-blue-900 focus:bg-customBlue focus:outline-customBlue focus:ring-indigo-500 focus:ring-offset-2'
                 }
              `}
+            // onClick={active ? (e) => e.preventDefault() : onClick}
             onClick={active ? (e) => e.preventDefault() : onClick}
         >
             {icon && <span className="mr-2">{React.cloneElement(icon, { size: iconSize })}</span>}

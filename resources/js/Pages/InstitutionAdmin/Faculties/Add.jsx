@@ -1,7 +1,7 @@
 import TextInput from '@/Components/TextInput';
 import { Input, Button, Autocomplete, useCalendar, DatePicker, Divider } from '@nextui-org/react';
 import React, { useState, useEffect } from 'react';
-import { useForm } from '@inertiajs/react';
+import { router, useForm } from '@inertiajs/react';
 import { FaFileExcel, FaUser } from "react-icons/fa6";
 import { IoMail, IoCheckmarkDone } from "react-icons/io5";
 import { GiGraduateCap } from "react-icons/gi";
@@ -116,7 +116,6 @@ export default function Add({ isOpen, onClose, planUserLimit, remainingUserSlots
                         </div>,
                         {
                             autoClose: 6000,
-                            className: 'min-w-[450px] max-w-sm'
                         }
                     );
                 }, 300);
@@ -130,6 +129,7 @@ export default function Add({ isOpen, onClose, planUserLimit, remainingUserSlots
                 //     className: 'min-w-[350px] max-w-sm'
                 // });
             },
+            onFinish: () => router.reload()
         });
     };
 

@@ -209,7 +209,7 @@ class StudentController extends Controller
             ],
             [],
             [
-                'uni_id_num' => 'university ID',
+                'uni_id_num' => 'university student ID',
             ]
         );
 
@@ -256,17 +256,10 @@ class StudentController extends Controller
                 $password,
                 $loginPageLink
             ));
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Student added successfully!',
-            ]);
+            return redirect()->back()->with('success', 'Student added successfully!');
         } catch (\Exception $e) {
             DB::rollBack(); // Rollback the transaction on error
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to add student: ' . $e->getMessage(),
-            ], 500);
+            return redirect()->back()->with('error', 'Failed to add student: ' . $e->getMessage());
         }
     }
 }

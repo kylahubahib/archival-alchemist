@@ -152,7 +152,7 @@ class FacultyController extends Controller
             ],
             [],
             [
-                'uni_id_num' => 'university ID',
+                'uni_id_num' => 'university faculty ID',
             ]
         );
 
@@ -202,16 +202,11 @@ class FacultyController extends Controller
                 $loginPageLink
             ));
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Faculty added successfully!',
-            ]);
+            return redirect()->back()->with('success', 'Faculty added successfully!');
         } catch (\Exception $e) {
             DB::rollBack(); // Rollback the transaction on error
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to add faculty: ' . $e->getMessage(),
-            ], 500);
+
+            return redirect()->back()->with('error', 'Failed to add faculty: ' . $e->getMessage());
         }
     }
 }

@@ -70,8 +70,8 @@ export default function SubscriptionBilling({ auth, subscriptions, subscriptionT
     ];
 
     const tableHeaders = {
-        'personal': ['Subscription ID', 'Plan Name', 'Subscriber', 'Start Date', 'End Date', 'Plan Term', 'Plan Status', 'Actions'],
-        'institutional': ['Subscription ID', 'Plan Name', 'Subscriber', 'No. of Users', 'Start Date', 'End Date', 'Plan Term', 'Plan Status', 'Actions']
+        'personal': ['Subscription ID', 'Plan Name', 'Subscriber', 'Start Date', 'End Date', 'Plan Term', 'Plan Status', 'Action'],
+        'institutional': ['Subscription ID', 'Plan Name', 'Subscriber', 'Plan User Limit', 'Start Date', 'End Date', 'Plan Term', 'Plan Status', 'Action']
     };
 
     const statistics = [
@@ -198,6 +198,7 @@ export default function SubscriptionBilling({ auth, subscriptions, subscriptionT
                             setEntriesPerPage: setEntriesPerPage,
                             setEntriesResponseData: setSubscriptionsToRender,
                             params: { ...params, subscriptionType: subscriptionType },
+                            showFilter: false,
                         })}
 
                         {/* STUDENT DATA */}
@@ -246,6 +247,8 @@ export default function SubscriptionBilling({ auth, subscriptions, subscriptionT
                                                     ?? institution_admin?.institution_subscription?.insub_status
                                                     ?? 'N/A';
 
+                                                const planUserLimit = institution_admin?.institution_subscription?.insub_num_user ?? 'N/A';
+
                                                 // setSubscriptionData({})
 
                                                 return (
@@ -274,7 +277,7 @@ export default function SubscriptionBilling({ auth, subscriptions, subscriptionT
                                                         {subscriptionType === 'institutional' && (
                                                             <>
                                                                 <td className="p-2">{institutionName}</td>
-                                                                <td className="p-2">{planName}</td>
+                                                                <td className="p-2">{planUserLimit}</td>
                                                                 <td className="p-2">{planStartDate}</td>
                                                                 <td className="p-2">{planEndDate}</td>
                                                                 <td className="p-2">{capitalize(planTerm)}</td>

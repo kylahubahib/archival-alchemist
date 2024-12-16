@@ -72,7 +72,8 @@ export const encodeAllParams = (params) => {
 };
 
 export const sanitizeURLParam = (param) => {
-    const trimmedValue = param?.trim();
+    // Ensure param is a string before calling trim
+    const trimmedValue = typeof param === 'string' ? param.trim() : null;
     return trimmedValue === '' ? null : trimmedValue;
 };
 

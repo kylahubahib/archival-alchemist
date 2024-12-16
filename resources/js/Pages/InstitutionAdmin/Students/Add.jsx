@@ -64,7 +64,7 @@ export default function Add({ isOpen, onClose, planUserLimit, remainingUserSlots
         } else if (onClose) {
             // Add a delay so that resetting the default values will not be visible when the modal closes
             const counterModalCloseDelay = setTimeout(() => {
-                
+
                 reset();
                 clearErrors();
             }, 300)
@@ -117,7 +117,6 @@ export default function Add({ isOpen, onClose, planUserLimit, remainingUserSlots
                         </div>,
                         {
                             autoClose: 6000,
-                            className: 'min-w-[450px] max-w-sm'
                         }
                     );
                 }, 300);
@@ -131,6 +130,8 @@ export default function Add({ isOpen, onClose, planUserLimit, remainingUserSlots
                 //     className: 'min-w-[350px] max-w-sm'
                 // });
             },
+            onFinish: () => router.reload()
+
         });
     };
 

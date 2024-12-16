@@ -17,7 +17,6 @@ use App\Models\InstitutionSubscription;
 use App\Models\UserReport;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\UsersImport;
-use App\Models\UserLog;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;

@@ -64,7 +64,7 @@ export default function InsAdminArchives({ auth, folders, manuscripts, search })
     useEffect(() => {
         loadSearchBarPlaceholder(fileCategories, fileCategoryCollections, setSearchBarPlaceholder);
         getLastFileCategory(setLastFileCategory, fileCategories);
-    }, [fileCategories]);
+    }, [fileCategories, fileCategoryCollections]);
 
     // Filter data
     useEffect(() => {

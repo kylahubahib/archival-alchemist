@@ -21,6 +21,7 @@ import { FaUserCheck, FaUserSlash } from "react-icons/fa";
 import Logs from "@/Pages/SuperAdmin/Users/Logs";
 import UpdateStatus from "@/Pages/SuperAdmin/Users/UpdateStatus";
 import { router } from "@inertiajs/react";
+import Filter from "@/Pages/SuperAdmin/Users/Filter";
 
 export default function CoAdmins({ auth, insAdminAffiliation, coAdmins, planUserLimit, totalAffiliatedPremiumUsers, search, entries }) {
     console.log('coAdmins', coAdmins);
@@ -54,7 +55,7 @@ export default function CoAdmins({ auth, insAdminAffiliation, coAdmins, planUser
     const [autocompleteItems, setAutocompleteItems] = useState({ role: [], course: [], plan: [], status: [] });
     const [selectedAutocompleteItems, setSelectedAutocompleteItems] = useState({ department: '', course: '', plan: '', currentPlanStatus: '', dateCreated: { start: null, end: null, } });
 
-    const [{ university, uni_branch_name, id: uni_branch_id }] = insAdminAffiliation;
+    const [{ id, university, uni_branch_name }] = insAdminAffiliation;
     const remainingUserSlots = planUserLimit - totalAffiliatedPremiumUsers;
     const params = route().params;
 
@@ -206,13 +207,17 @@ export default function CoAdmins({ auth, insAdminAffiliation, coAdmins, planUser
                         })}
 
                         {/* FILTER COMPONENT PLACEMENT */}
-                        {/* <Filter
+                        <Filter
+                            uniBranchId={id}
+                            filterRoute="institution-coadmins"
+                            type="ins-coadmin"
+                            params={{ ...params }}
                             autocompleteItems={autocompleteItems}
                             setAutocompleteItems={setAutocompleteItems}
                             selectedAutocompleteItems={selectedAutocompleteItems}
                             setSelectedAutocompleteItems={setSelectedAutocompleteItems}
                             isFilterOpen={isFilterOpen}
-                        /> */}
+                        />
 
                         {/* STUDENT DATA */}
                         <div className="TableContainer border overflow-y-auto  max-h-[50vh] ">
@@ -281,7 +286,7 @@ export default function CoAdmins({ auth, insAdminAffiliation, coAdmins, planUser
                 onClose={() => setIsAddInsAdminModalOpen(false)}
                 routeName="institution-coadmins.send-registration"
                 userType='admin'
-                uniBranchId={uni_branch_id}
+                uniBranchId={id}
                 planUserLimit={planUserLimit}
                 remainingUserSlots={remainingUserSlots}
             />

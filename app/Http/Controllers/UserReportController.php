@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\ReportType;
-use App\Models\UserLog;
 use App\Models\UserReport;
 use App\Models\User;
 use App\Models\ForumPost;
@@ -56,7 +55,7 @@ class UserReportController extends Controller
 
     private function deleteOldReports()
     {
-        $thresholdDate = now()->subDays(30); 
+        $thresholdDate = now()->subDays(30);
         $oldReports = UserReport::where('updated_at', '<', $thresholdDate)->delete();
 
         \Log::info("Deleted $oldReports old reports older than 30 days.");

@@ -19,21 +19,46 @@ export const renderAutocompleteList = (items, onClick = null) => {
     ));
 };
 
-export default function Filter({ userType, selectedAutocompleteItems, setSelectedAutocompleteItems,
+export default function Filter({ filterRoute = 'users.filter', type, params, uniBranchId, selectedAutocompleteItems, setSelectedAutocompleteItems,
     autocompleteItems, setAutocompleteItems, isFilterOpen }) {
 
     const [isAutocompleteDataLoading, setIsAutocompleteDataLoading] = useState(false);
-    const [universitiesRelatedData, setUniversitiesRelatedData] = useState(false);
-    const [unfilteredBranches, setUnfilteredBranches] = useState([]);
-    const [unfilteredDepartments, setUnfilteredDepartments] = useState([]);
-    const [unfilteredCourses, setUnfilteredCourses] = useState([]);
-    const [unfilteredSections, setUnfilteredSections] = useState([]);
+    // Main data
+    const [universitiesRelatedData, setUniversitiesRelatedData] = useState([]);
 
-    const params = route().params;
+    // Can be filtered  when its dependent automplete is selected
+    const [unfilteredBranchesRelatedData, setUnfilteredBranchesRelatedData] = useState([]);
+    const [unfilteredDepartmentsRelatedData, setUnfilteredDepartmentsRelatedData] = useState([]);
+    const [unfilteredCoursesRelatedData, setUnfilteredCoursesRelatedData] = useState([]);
+    const [unfilteredSectionsRelatedData, setUnfilteredSectionsRelatedData] = useState([]);
+
+    // Items for autocomplete
+    const [unfilteredBranchesArray, setUnfilteredBranchesArray] = useState([]);
+    const [unfilteredDepartmentsArray, setUnfilteredDepartmentsArray] = useState([]);
+    const [unfilteredCoursesArray, setUnfilteredCoursesArray] = useState([]);
+    const [unfilteredSectionsArray, setUnfilteredSectionsArray] = useState([]);
+
 
     // useEffect(() => {
     //     fetchData();
     // }, []);
+
+    useEffect(() => {
+        console.log('universitiesRelatedData', universitiesRelatedData);
+    }, [universitiesRelatedData]);
+
+
+    useEffect(() => {
+        console.log('unfilteredBranchesRelatedData:', unfilteredBranchesRelatedData);
+
+    }, [unfilteredBranchesRelatedData]);
+
+
+    useEffect(() => {
+        setUnfilteredAutocompleteItems();
+        updateSelectedAutocompleteItems();
+    }, [selectedAutocompleteItems.university, selectedAutocompleteItems.branch, selectedAutocompleteItems.department, selectedAutocompleteItems.course]);
+
 
     useEffect(() => {
         const debounce = setTimeout(() => {
@@ -49,6 +74,8 @@ export default function Filter({ userType, selectedAutocompleteItems, setSelecte
     }, []);
 
     const fetchData = async () => {
+        setIsAutocompleteDataLoading(true);
+
         try {
             const [universitiesResponse, currentPlansResponse, statusResponse,
                 insAdminRolesResponse, superAdminRolesResponse] = await axios.all([
@@ -61,55 +88,77 @@ export default function Filter({ userType, selectedAutocompleteItems, setSelecte
 
             setUniversitiesRelatedData(universitiesResponse.data);
 
+            // Used for display as autocomplete items
+            const universitiesArray = universitiesResponse?.data?.map(university => university.uni_acronym);
 
-            const universityAcronyms = universitiesResponse?.data?.map(university => university.uni_acronym);
-
-            const branches = universitiesResponse?.data?.flatMap(universiy =>
-                universiy.university_branch.map(branch => branch.uni_branch_name)
+            // Used for displaying the related data when its dependent automplete is selected
+            const branchesRelatedData = universitiesResponse?.data?.flatMap(universiy =>
+                universiy.university_branch.map(branch => ({
+                    uni_branch_name: branch.uni_branch_name,
+                    department: branch.department // Add department here for it to be accessible whenever there's a selected university
+                }))
             );
 
-            const departmentAcronyms = universitiesResponse?.data?.flatMap(universiy =>
+            const branchesArray = branchesRelatedData.map(branch => branch.uni_branch_name);
+
+            const departmentsRelatedData = universitiesResponse?.data?.flatMap(universiy =>
                 universiy.university_branch.flatMap(branch =>
-                    branch.department.map(department => department.dept_acronym))
+                    branch.department.map(department => ({
+                        uni_branch_id: department.uni_branch_id,
+                        dept_acronym: department.dept_acronym,
+                        course: department.course
+                    })))
             );
 
-            const courseAcronyms = universitiesResponse?.data?.flatMap(universiy =>
+            let departmentsArray;
+
+            // For ins admin students filter setup intended for the ins admin university branch
+            if (uniBranchId) {
+                departmentsArray = departmentsRelatedData
+                    .filter(department => department.uni_branch_id === uniBranchId) // filter by uniBranchId
+                    .map(department => department.dept_acronym);
+            } else {
+                departmentsArray = departmentsRelatedData.map(department => department.dept_acronym);
+            }
+
+
+            const coursesRelatedData = universitiesResponse?.data?.flatMap(universiy =>
                 universiy.university_branch.flatMap(branch =>
                     branch.department.flatMap(department =>
-                        department.course.map(course => course.course_acronym)))
+                        department.course.map(course => ({
+                            course_acronym: course.course_acronym,
+                            sections: course.sections
+                        }))))
             );
 
-            const sections = universitiesResponse?.data?.flatMap(universiy =>
+            const coursesArray = coursesRelatedData.map(course => course.course_acronym);
+
+            const sectionsArray = universitiesResponse?.data?.flatMap(universiy =>
                 universiy.university_branch.flatMap(branch =>
                     branch.department.flatMap(department =>
                         department.course.flatMap(course =>
                             course.sections.map(section => section.section_name))))
             );
 
+            // Store the related data to the unfiltered data except to the last which is the section
+            setUnfilteredBranchesRelatedData(branchesRelatedData);
+            setUnfilteredDepartmentsRelatedData(departmentsRelatedData);
+            setUnfilteredCoursesRelatedData(coursesRelatedData);
+            setUnfilteredSectionsRelatedData(sectionsArray);
 
-            setUnfilteredBranches(branches);
-            setUnfilteredDepartments(departmentAcronyms);
-            setUnfilteredCourses(courseAcronyms);
-            setUnfilteredSections(sections);
-
-            console.log('universityAcronyms', universityAcronyms);
-            console.log('branches', branches);
-            console.log('departmentAcronyms', departmentAcronyms);
-            console.log('courseAcronyms', courseAcronyms);
-            console.log('sections', sections);
-            console.log('insAdminRolesResponse', insAdminRolesResponse);
-            console.log('superAdminRolesResponse', superAdminRolesResponse);
-
-            console.log('universitiesResponse.data', universitiesResponse.data);
-
+            // Store the unfiltered arrays
+            setUnfilteredBranchesArray(branchesArray);
+            setUnfilteredDepartmentsArray(departmentsArray);
+            setUnfilteredCoursesArray(coursesArray);
+            setUnfilteredSectionsArray(sectionsArray);
 
             setAutocompleteItems({
                 ...autocompleteItems,
-                university: universityAcronyms,
-                branch: branches,
-                department: departmentAcronyms,
-                course: courseAcronyms,
-                section: sections,
+                university: universitiesArray,
+                branch: branchesArray,
+                department: departmentsArray,
+                course: coursesArray,
+                section: sectionsArray,
                 currentPlan: currentPlansResponse.data,
                 insAdminRole: insAdminRolesResponse.data,
                 superAdminRole: superAdminRolesResponse.data,
@@ -118,15 +167,16 @@ export default function Filter({ userType, selectedAutocompleteItems, setSelecte
         }
         catch (error) {
             console.error("There was an error fetching the data!", error);
+        } finally {
+            setIsAutocompleteDataLoading(false);
         }
     };
 
 
     const setFilters = () => {
         router.get(
-            route('users.filter', {
+            route(filterRoute, {
                 ...params,
-                userType,
                 page: null,
                 university: sanitizeURLParam(selectedAutocompleteItems.university),
                 branch: sanitizeURLParam(selectedAutocompleteItems.branch),
@@ -144,6 +194,138 @@ export default function Filter({ userType, selectedAutocompleteItems, setSelecte
             { preserveScroll: true, preserveState: true }
         );
     };
+
+
+    const setUnfilteredAutocompleteItems = () => {
+        if (!selectedAutocompleteItems.university) {
+            setAutocompleteItems(prevState => ({
+                ...prevState,
+                branch: unfilteredBranchesArray,
+                department: unfilteredDepartmentsArray,
+                course: unfilteredCoursesArray,
+                section: unfilteredSectionsArray,
+            }));
+        }
+
+        if (!selectedAutocompleteItems.branch) {
+            setAutocompleteItems(prevState => ({
+                ...prevState,
+                department: unfilteredDepartmentsArray,
+                course: unfilteredCoursesArray,
+                section: unfilteredSectionsArray,
+            }));
+        }
+
+        if (!selectedAutocompleteItems.department) {
+            setAutocompleteItems(prevState => ({
+                ...prevState,
+                course: unfilteredCoursesArray,
+                section: unfilteredSectionsArray,
+            }));
+        }
+
+        if (!selectedAutocompleteItems.course) {
+            setAutocompleteItems(prevState => ({
+                ...prevState,
+                section: unfilteredSectionsArray,
+            }));
+        }
+    }
+
+    // Clears the selected item for the related autocomplete item
+    const updateSelectedAutocompleteItems = () => {
+
+        // If no university or branch is selected but a department, course, and section are selected, reset department, course, and section.
+        if (!selectedAutocompleteItems.university && selectedAutocompleteItems.branch && selectedAutocompleteItems.department && !selectedAutocompleteItems.course && !selectedAutocompleteItems.section) {
+            setSelectedAutocompleteItems(prevState => ({
+                ...prevState,
+                department: '',
+            }));
+        }
+
+        // If no university is selected but a branch, department, course, and section are selected, reset all values.
+        else if (!selectedAutocompleteItems.university && selectedAutocompleteItems.branch && selectedAutocompleteItems.department && selectedAutocompleteItems.course && selectedAutocompleteItems.section) {
+            setSelectedAutocompleteItems(prevState => ({
+                ...prevState,
+                branch: '',
+                department: '',
+                course: '',
+                section: '',
+            }));
+        }
+
+        else if (!selectedAutocompleteItems.university && selectedAutocompleteItems.branch && selectedAutocompleteItems.department && !selectedAutocompleteItems.course && !selectedAutocompleteItems.section) {
+            setSelectedAutocompleteItems(prevState => ({
+                ...prevState,
+                branch: '',
+                department: '',
+            }));
+        }
+
+        // If no university or branch is selected but a department, course, and section are selected, reset department, course, and section.
+        else if (!selectedAutocompleteItems.university && !selectedAutocompleteItems.branch && selectedAutocompleteItems.department && selectedAutocompleteItems.course && selectedAutocompleteItems.section) {
+            setSelectedAutocompleteItems(prevState => ({
+                ...prevState,
+                department: '',
+                course: '',
+                section: '',
+            }));
+        }
+
+        // If no university, branch, or department is selected but a course and section are selected, reset course and section.
+        else if (!selectedAutocompleteItems.university && !selectedAutocompleteItems.branch && !selectedAutocompleteItems.department && selectedAutocompleteItems.course && selectedAutocompleteItems.section) {
+            setSelectedAutocompleteItems(prevState => ({
+                ...prevState,
+                course: '',
+                section: '',
+            }));
+        }
+
+        // If a university is selected but no branch is selected, clear department, course, and section selections.
+        else if (selectedAutocompleteItems.university && !selectedAutocompleteItems.branch) {
+            setSelectedAutocompleteItems(prevState => ({
+                ...prevState,
+                department: '',
+                course: '',
+                section: '',
+            }));
+        }
+
+        // If both a university and a branch are selected, but no department is selected, clear course and section selections.
+        else if (selectedAutocompleteItems.university && selectedAutocompleteItems.branch && !selectedAutocompleteItems.department) {
+            setSelectedAutocompleteItems(prevState => ({
+                ...prevState,
+                course: '',
+                section: '',
+            }));
+        }
+
+        // If a university, branch, and department are selected, but no course is selected, clear the section selection.
+        else if (selectedAutocompleteItems.university && selectedAutocompleteItems.branch && selectedAutocompleteItems.department && !selectedAutocompleteItems.course) {
+            setSelectedAutocompleteItems(prevState => ({
+                ...prevState,
+                section: '',
+            }));
+        }
+
+        // If all required data for a course is selected but no course is found, reset section.
+        else if (selectedAutocompleteItems.university && selectedAutocompleteItems.branch && selectedAutocompleteItems.department && selectedAutocompleteItems.course && !selectedAutocompleteItems.section) {
+            setSelectedAutocompleteItems(prevState => ({
+                ...prevState,
+                section: '',
+            }));
+        }
+
+        // If university is cleared, reset the branch, department, course, and section to empty.
+        else if (!selectedAutocompleteItems.university && selectedAutocompleteItems.branch) {
+            setSelectedAutocompleteItems(prevState => ({
+                ...prevState,
+                department: '',
+                course: '',
+                section: '',
+            }));
+        }
+    }
 
     const handleInputValue = (category) => {
         const selectedWithCategories = {
@@ -169,6 +351,92 @@ export default function Filter({ userType, selectedAutocompleteItems, setSelecte
         }
     };
 
+    const handleUniversityClick = () => {
+        // Find the selected university using the university acronym from the selected items
+        const selectedUniversity = universitiesRelatedData?.find(university => university.uni_acronym === selectedAutocompleteItems.university);
+
+        // Get the related branches for the selected university
+        const branches = selectedUniversity?.university_branch.map(branch => branch.uni_branch_name);
+
+        // Update the autocomplete items state with the branches for the selected university
+        setAutocompleteItems(prevState => ({
+            ...prevState,
+            branch: branches,
+        }));
+
+        // Clear the currently selected branch, department, course, and section
+        setSelectedAutocompleteItems(prevState => ({
+            ...prevState,
+            branch: '',
+            department: '',
+            course: '',
+            section: '',
+        }));
+    };
+
+    const handleBranchClick = () => {
+        // Find the selected branch based on the branch name from the selected items
+        const selectedBranch = unfilteredBranchesRelatedData.find(branch => branch.uni_branch_name === selectedAutocompleteItems.branch);
+
+        // Get the departments related to the selected branch (or an empty array if none)
+        const departments = selectedBranch?.department?.map(department => department.dept_acronym) || [];
+
+        // Update the autocomplete items state with the departments for the selected branch
+        setAutocompleteItems(prevState => ({
+            ...prevState,
+            department: departments, // Safely update with departments or an empty array
+        }));
+
+        // Clear the currently selected department, course, and section
+        setSelectedAutocompleteItems(prevState => ({
+            ...prevState,
+            department: '',
+            course: '',
+            section: '',
+        }));
+    };
+
+    const handleDepartmentClick = () => {
+        // Find the selected department based on the department acronym from the selected items
+        const selectedDepartment = unfilteredDepartmentsRelatedData.find(department => department.dept_acronym === selectedAutocompleteItems.department);
+
+        // Get the courses related to the selected department
+        const courses = selectedDepartment?.course.map(course => course.course_acronym) || [];
+
+        // Update the autocomplete items state with the courses for the selected department
+        setAutocompleteItems(prevState => ({
+            ...prevState,
+            course: courses,
+        }));
+
+        // Clear the currently selected course and section
+        setSelectedAutocompleteItems(prevState => ({
+            ...prevState,
+            course: '',
+            section: '',
+        }));
+    };
+
+    const handleCourseClick = () => {
+        // Find the selected course based on the course acronym from the selected items
+        const selectedCourse = unfilteredCoursesRelatedData.find(course => course.course_acronym === selectedAutocompleteItems.course);
+
+        // Get the sections related to the selected course
+        const sections = selectedCourse?.sections.map(section => section.section_name) || [];
+
+        // Update the autocomplete items state with the sections for the selected course
+        setAutocompleteItems(prevState => ({
+            ...prevState,
+            section: sections,
+        }));
+
+        // Clear the currently selected section
+        setSelectedAutocompleteItems(prevState => ({
+            ...prevState,
+            section: '',
+        }));
+    };
+
     return (
         <motion.div
             initial={{ opacity: 0, y: -20 }} // Initial animation state
@@ -177,9 +445,9 @@ export default function Filter({ userType, selectedAutocompleteItems, setSelecte
             className={`${isFilterOpen ? 'flex' : 'hidden'} justify-center gap-2 text-sm items-center text-customGray -my-2`}
         >
             {
-                ['University', 'Branch', 'Department', 'Course', 'Section', 'Current Plan', 'Super Admin Role', 'Institution Admin Role', 'Date Created', 'Status']
-                    .filter(item => { // Show specific dropdowns based on userType
-                        switch (userType) {
+                ['University', 'Branch', 'Department', 'Course', 'Section', 'Current Plan', 'Super Admin Role', 'Institution Admin Role', 'Status']
+                    .filter(item => { // Show specific dropdowns based on type
+                        switch (type) {
                             case 'student':
                                 return !['Super Admin Role', 'Institution Admin Role'].includes(item);
                             case 'teacher':
@@ -188,6 +456,14 @@ export default function Filter({ userType, selectedAutocompleteItems, setSelecte
                                 return !['Department', 'Course', 'Section', 'Current Plan', 'Super Admin Role'].includes(item);
                             case 'superadmin':
                                 return !['University', 'Branch', 'Department', 'Course', 'Section', 'Current Plan', 'Institution Admin Role'].includes(item);
+                            case 'superadmin-subscription-billing':
+                                return !['University', 'Branch', 'Department', 'Course', 'Section', 'Current Plan', 'Institution Admin Role'].includes(item);
+                            case 'ins-student':
+                                return !['University', 'Branch', 'Current Plan', 'Status', 'Super Admin Role', 'Institution Admin Role'].includes(item);
+                            case 'ins-teacher':
+                                return !['Course', 'Section', 'Current Plan', 'Status', 'University', 'Branch', 'Super Admin Role', 'Institution Admin Role'].includes(item);
+                            case 'ins-coadmin':
+                                return !['University', 'Branch', 'Department', 'Course', 'Section', 'Current Plan', 'Super Admin Role'].includes(item);
                         }
                     })
                     .map((category, index) => (
@@ -234,33 +510,60 @@ export default function Filter({ userType, selectedAutocompleteItems, setSelecte
                                         autoFocus={false}
                                         inputProps={customAutocompleteInputProps()}
                                         // defaultInputValue={handleInputValue(category)}
-                                        inputValue={handleInputValue(category)}
-                                        defaultSelectedKey={
-                                            category === 'University' && params.university ||
-                                            category === 'Branch' && params.branch ||
-                                            category === 'Department' && params.department ||
-                                            category === 'Course' && params.course ||
-                                            category === 'Section' && params.section ||
-                                            category === 'Current Plan' && params.plan ||
-                                            category === 'Plan Status' && params.plan_status ||
-                                            category === 'Status' && params.status ||
-                                            category === 'Date Created' && params.date_created
+                                        isDisabled={
+                                            // Disable department, course, and section filters if a university is selected but no branch is selected.
+                                            (category === 'Department' && selectedAutocompleteItems.university && !selectedAutocompleteItems.branch) ||
+                                            (category === 'Course' && selectedAutocompleteItems.university && !selectedAutocompleteItems.branch) ||
+                                            (category === 'Course' && !selectedAutocompleteItems.university && selectedAutocompleteItems.branch && !selectedAutocompleteItems.department) ||
+
+                                            // Disable section filter if a university is selected but no branch is selected.
+                                            (category === 'Section' && selectedAutocompleteItems.university && !selectedAutocompleteItems.branch) ||
+
+                                            // Disable section filter if university and branch are selected but no department and no course are selected.
+                                            (category === 'Section' && !selectedAutocompleteItems.university && selectedAutocompleteItems.branch && !selectedAutocompleteItems.department && !selectedAutocompleteItems.course) ||
+
+                                            // Disable section filter if university is not selected, branch is not selected, but department is selected without a course.
+                                            (category === 'Section' && !selectedAutocompleteItems.university && !selectedAutocompleteItems.branch && selectedAutocompleteItems.department && !selectedAutocompleteItems.course) ||
+
+                                            // Disable course filter if both university and branch are selected but no department is selected.
+                                            (category === 'Course' && selectedAutocompleteItems.university && selectedAutocompleteItems.branch && !selectedAutocompleteItems.department) ||
+
+                                            // Disable section filter if university, branch, and department are selected but no course is selected.
+                                            (category === 'Section' && selectedAutocompleteItems.university && selectedAutocompleteItems.branch && selectedAutocompleteItems.department && !selectedAutocompleteItems.course) ||
+
+                                            // Disable section filter if university and branch are selected, but no department and no course are selected.
+                                            (category === 'Section' && selectedAutocompleteItems.university && selectedAutocompleteItems.branch && !selectedAutocompleteItems.department && !selectedAutocompleteItems.course)
                                         }
+
+
+
+                                        inputValue={handleInputValue(category)}
+                                        // defaultSelectedKey={
+                                        //     category === 'University' && params.university ||
+                                        //     category === 'Branch' && params.branch ||
+                                        //     category === 'Department' && params.department ||
+                                        //     category === 'Course' && params.course ||
+                                        //     category === 'Section' && params.section ||
+                                        //     category === 'Current Plan' && params.plan ||
+                                        //     category === 'Plan Status' && params.plan_status ||
+                                        //     category === 'Status' && params.status ||
+                                        //     category === 'Date Created' && params.date_created
+                                        // }
                                         onInputChange={(value) => autocompleteOnChangeHandler(setSelectedAutocompleteItems, category, value)}
                                         onSelectionChange={(value) => autocompleteOnChangeHandler(setSelectedAutocompleteItems, category, value)}
                                         className="min-w-11"
                                     >
                                         {category === 'University' && (
-                                            renderAutocompleteList(autocompleteItems.university)
+                                            renderAutocompleteList(autocompleteItems.university, handleUniversityClick)
                                         )}
                                         {category === 'Branch' && (
-                                            renderAutocompleteList(autocompleteItems.branch)
+                                            renderAutocompleteList(autocompleteItems.branch, handleBranchClick)
                                         )}
                                         {category === 'Department' && (
-                                            renderAutocompleteList(autocompleteItems.department)
+                                            renderAutocompleteList(autocompleteItems.department, handleDepartmentClick)
                                         )}
                                         {category === 'Course' && (
-                                            renderAutocompleteList(autocompleteItems.course)
+                                            renderAutocompleteList(autocompleteItems.course, handleCourseClick)
                                         )}
                                         {category === 'Section' && (
                                             renderAutocompleteList(autocompleteItems.section)
@@ -269,7 +572,7 @@ export default function Filter({ userType, selectedAutocompleteItems, setSelecte
                                             renderAutocompleteList(autocompleteItems.currentPlan)
                                         )}
                                         {category === 'Role' && (
-                                            userType === 'institution_admin' ?
+                                            type === 'institution_admin' ?
                                                 renderAutocompleteList(autocompleteItems.insAdminRole) :
                                                 renderAutocompleteList(autocompleteItems.superAdminRole)
                                         )}
@@ -282,6 +585,6 @@ export default function Filter({ userType, selectedAutocompleteItems, setSelecte
                         </div>
                     ))
             }
-        </motion.div>
+        </motion.div >
     )
 }       

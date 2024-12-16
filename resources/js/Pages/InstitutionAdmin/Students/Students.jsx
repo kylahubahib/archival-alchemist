@@ -13,9 +13,9 @@ import ActionButton from "@/Components/Admin/ActionButton";
 import Pagination from "@/Components/Admin/Pagination";
 import TableSkeleton from "@/Components/Admin/TableSkeleton";
 import NoDataPrompt from "@/Components/Admin/NoDataPrompt";
-import Filter from "./Filter";
 import Add from "./Add";
 import UpdatePremiumAccess from "./UpdatePremiumAccess.jsx";
+import Filter from "@/Pages/SuperAdmin/Users/Filter";
 
 export default function Students({ auth, insAdminAffiliation, students, hasStudentPremiumAccess,
     planUserLimit, totalAffiliatedPremiumUsers, search, entries }) {
@@ -41,7 +41,8 @@ export default function Students({ auth, insAdminAffiliation, students, hasStude
         department: '', course: '', section: '', dateCreated: { start: null, end: null, }
     });
 
-    const [{ university, uni_branch_name }] = insAdminAffiliation;
+
+    const [{ id, university, uni_branch_name }] = insAdminAffiliation;
     const remainingUserSlots = planUserLimit - totalAffiliatedPremiumUsers;
     const params = route().params;
 
@@ -176,7 +177,10 @@ export default function Students({ auth, insAdminAffiliation, students, hasStude
 
                         {/* FILTER COMPONENT PLACEMENT */}
                         <Filter
-                            hasStudentPremiumAccess={hasStudentPremiumAccess}
+                            uniBranchId={id}
+                            filterRoute="institution-students.filter"
+                            type="ins-student"
+                            params={{ ...params, hasStudentPremiumAccess: hasStudentPremiumAccess }}
                             autocompleteItems={autocompleteItems}
                             setAutocompleteItems={setAutocompleteItems}
                             selectedAutocompleteItems={selectedAutocompleteItems}

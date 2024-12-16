@@ -90,7 +90,7 @@ export const renderTableControls = (routeName, params, fileCategoryCollections, 
                                     <DropdownItem
                                         key={visibility}
                                         className="!text-customGray"
-                                        onClick={() => handleManDocVisibilityFilterClick('archives.filter',
+                                        onClick={() => handleManDocVisibilityFilterClick('institution-archives.filter',
                                             { ...params, manuscript_visibility: visibility === 'None' ? null : visibility }, visibility, setManDocVisibility)}
                                     >
                                         {visibility}
